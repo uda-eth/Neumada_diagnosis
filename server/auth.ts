@@ -10,11 +10,11 @@ import { eq } from "drizzle-orm";
 
 // Simplified password hashing for demo purposes
 const crypto = {
-  hash: (password: string): string => {
+  hash: async (password: string): Promise<string> => {
     return createHash('sha256').update(password).digest('hex');
   },
-  compare: (suppliedPassword: string, storedPassword: string): boolean => {
-    const hashedSupplied = createHash('sha256').update(suppliedPassword).digest('hex');
+  compare: async (suppliedPassword: string, storedPassword: string): Promise<boolean> => {
+    const hashedSupplied = await createHash('sha256').update(suppliedPassword).digest('hex'); //Added await here
     return hashedSupplied === storedPassword;
   }
 };
@@ -66,7 +66,7 @@ export function setupAuth(app: Express) {
           return done(null, false, { message: "Invalid username or password." });
         }
 
-        const isMatch = crypto.compare(password, user.password);
+        const isMatch = await crypto.compare(password, user.password); //Added await here
         if (!isMatch) {
           console.log("Password mismatch for username:", username);
           return done(null, false, { message: "Invalid username or password." });
@@ -127,7 +127,7 @@ export function setupAuth(app: Express) {
       }
 
       // Hash the password
-      const hashedPassword = crypto.hash(password);
+      const hashedPassword = await crypto.hash(password);
 
       // Ensure interests is always an array or null
       const processedInterests = interests && Array.isArray(interests) ? interests : null;
