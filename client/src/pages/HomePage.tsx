@@ -53,11 +53,11 @@ const locations = [
 ];
 
 export default function HomePage() {
-  const [selectedCategory, setSelectedCategory] = useState<string>();
-  const [selectedLocation, setSelectedLocation] = useState<string>();
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const { events, isLoading, createEvent } = useEvents(
-    selectedCategory,
-    selectedLocation
+    selectedCategory || undefined,
+    selectedLocation || undefined
   );
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -210,7 +210,7 @@ export default function HomePage() {
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Categories</SelectItem>
+              <SelectItem value="all">All Categories</SelectItem>
               {categories.map((cat) => (
                 <SelectItem key={cat} value={cat}>
                   {cat}
@@ -224,7 +224,7 @@ export default function HomePage() {
               <SelectValue placeholder="Location" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Locations</SelectItem>
+              <SelectItem value="all">All Locations</SelectItem>
               {locations.map((loc) => (
                 <SelectItem key={loc} value={loc}>
                   {loc}
