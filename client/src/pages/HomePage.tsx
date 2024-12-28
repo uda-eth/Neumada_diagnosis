@@ -31,6 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Calendar, Globe, MapPin, Users } from "lucide-react";
 import { format } from "date-fns";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { useRecommendedEvents } from "@/hooks/use-recommended-events";
 
 const categories = [
   "Networking",
@@ -60,6 +61,7 @@ export default function HomePage() {
     selectedCategory,
     selectedLocation
   );
+  const { recommendedEvents, isLoading: isLoadingRecommended } = useRecommendedEvents();
   const { user } = useUser();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -75,11 +77,10 @@ export default function HomePage() {
 
   const handleCreateEvent = async () => {
     try {
-      // Convert the date string to a Date object for the API
       const eventData = {
         ...newEvent,
         date: new Date(newEvent.date).toISOString(),
-        capacity: newEvent.capacity || null // Make capacity optional
+        capacity: newEvent.capacity || null
       };
 
       await createEvent(eventData);
@@ -212,6 +213,60 @@ export default function HomePage() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        {user && recommendedEvents && recommendedEvents.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold mb-6">Recommended for You</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {isLoadingRecommended ? (
+                <div className="col-span-full text-center py-8">
+                  Loading recommendations...
+                </div>
+              ) : (
+                recommendedEvents.map((event) => (
+                  <Card
+                    key={event.id}
+                    className="cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => setLocation(`/event/${event.id}`)}
+                  >
+                    {event.image && (
+                      <img
+                        src={event.image}
+                        alt={event.title}
+                        className="w-full h-48 object-cover"
+                      />
+                    )}
+                    <CardHeader>
+                      <CardTitle>{event.title}</CardTitle>
+                      <CardDescription className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4" />
+                        {format(new Date(event.date), "PPP")}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <MapPin className="w-4 h-4" />
+                          {event.location}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Globe className="w-4 h-4" />
+                          {event.category}
+                        </div>
+                        {event.capacity && (
+                          <div className="flex items-center gap-1">
+                            <Users className="w-4 h-4" />
+                            {event.capacity}
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="flex gap-4 mb-8">
           <Select onValueChange={setSelectedCategory}>
             <SelectTrigger className="w-[200px]">
@@ -242,6 +297,7 @@ export default function HomePage() {
           </Select>
         </div>
 
+        <h2 className="text-2xl font-bold mb-6">All Events</h2>
         {isLoading ? (
           <div className="text-center py-8">Loading events...</div>
         ) : (
