@@ -5,7 +5,7 @@ import session from "express-session";
 import createMemoryStore from "memorystore";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
-import { users, type User } from "@db/schema";
+import { users, insertUserSchema, type User } from "@db/schema";
 import { db } from "@db";
 import { eq } from "drizzle-orm";
 
@@ -63,6 +63,7 @@ export function setupAuth(app: Express) {
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       try {
+        console.log("Attempting login for username:", username); // Add logging
         const [user] = await db
           .select()
           .from(users)
@@ -70,14 +71,18 @@ export function setupAuth(app: Express) {
           .limit(1);
 
         if (!user) {
+          console.log("No user found with username:", username); // Add logging
           return done(null, false, { message: "Invalid username or password." });
         }
         const isMatch = await crypto.compare(password, user.password);
         if (!isMatch) {
+          console.log("Password mismatch for username:", username); // Add logging
           return done(null, false, { message: "Invalid username or password." });
         }
+        console.log("Login successful for username:", username); // Add logging
         return done(null, user);
       } catch (err) {
+        console.error("Login error:", err); // Add logging
         return done(err);
       }
     })
@@ -102,6 +107,7 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
+      console.log("Registration attempt:", req.body); // Add logging
       const { username, password, fullName, bio, location, interests } = req.body;
 
       if (!username || !password) {
@@ -140,31 +146,30 @@ export function setupAuth(app: Express) {
         })
         .returning();
 
+      console.log("User registered successfully:", username); // Add logging
+
       req.login(newUser, (err) => {
         if (err) {
           return next(err);
         }
-        return res.json({
-          id: newUser.id,
-          username: newUser.username,
-          fullName: newUser.fullName,
-          bio: newUser.bio,
-          location: newUser.location,
-          interests: newUser.interests,
-        });
+        return res.json(newUser);
       });
     } catch (error) {
-      console.error("Registration error:", error);
+      console.error("Registration error:", error); // Add logging
       next(error);
     }
   });
 
   app.post("/api/login", (req, res, next) => {
+    console.log("Login attempt:", req.body); // Add logging
+
     if (!req.body.username || !req.body.password) {
       return res.status(400).send("Username and password are required");
     }
 
     passport.authenticate("local", (err: any, user: Express.User, info: IVerifyOptions) => {
+      console.log("Passport auth result:", { err, user, info }); // Add logging
+
       if (err) {
         return next(err);
       }
@@ -177,14 +182,7 @@ export function setupAuth(app: Express) {
         if (err) {
           return next(err);
         }
-        return res.json({
-          id: user.id,
-          username: user.username,
-          fullName: user.fullName,
-          bio: user.bio,
-          location: user.location,
-          interests: user.interests,
-        });
+        return res.json(user);
       });
     })(req, res, next);
   });
@@ -201,14 +199,7 @@ export function setupAuth(app: Express) {
   app.get("/api/user", (req, res) => {
     if (req.isAuthenticated()) {
       const user = req.user;
-      return res.json({
-        id: user.id,
-        username: user.username,
-        fullName: user.fullName,
-        bio: user.bio,
-        location: user.location,
-        interests: user.interests,
-      });
+      return res.json(user);
     }
     res.status(401).send("Not authenticated");
   });
