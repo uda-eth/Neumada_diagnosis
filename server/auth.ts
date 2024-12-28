@@ -40,15 +40,20 @@ export function setupAuth(app: Express) {
     secret: process.env.REPL_ID || "nomad-platform-secret",
     resave: false,
     saveUninitialized: false,
-    cookie: {},
+    cookie: {
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    },
     store: new MemoryStore({
-      checkPeriod: 86400000,
+      checkPeriod: 86400000, // 24 hours
     }),
   };
 
   if (app.get("env") === "production") {
     app.set("trust proxy", 1);
-    sessionSettings.cookie = { secure: true };
+    sessionSettings.cookie = { 
+      ...sessionSettings.cookie,
+      secure: true 
+    };
   }
 
   app.use(session(sessionSettings));
@@ -65,11 +70,11 @@ export function setupAuth(app: Express) {
           .limit(1);
 
         if (!user) {
-          return done(null, false, { message: "Incorrect username." });
+          return done(null, false, { message: "Invalid username or password." });
         }
         const isMatch = await crypto.compare(password, user.password);
         if (!isMatch) {
-          return done(null, false, { message: "Incorrect password." });
+          return done(null, false, { message: "Invalid username or password." });
         }
         return done(null, user);
       } catch (err) {
@@ -99,6 +104,18 @@ export function setupAuth(app: Express) {
     try {
       const { username, password, fullName, bio, location, interests } = req.body;
 
+      if (!username || !password) {
+        return res.status(400).send("Username and password are required");
+      }
+
+      if (username.length < 3) {
+        return res.status(400).send("Username must be at least 3 characters long");
+      }
+
+      if (password.length < 6) {
+        return res.status(400).send("Password must be at least 6 characters long");
+      }
+
       const [existingUser] = await db
         .select()
         .from(users)
@@ -116,10 +133,10 @@ export function setupAuth(app: Express) {
         .values({
           username,
           password: hashedPassword,
-          fullName,
-          bio,
-          location,
-          interests,
+          fullName: fullName || null,
+          bio: bio || null,
+          location: location || null,
+          interests: interests || null,
         })
         .returning();
 
@@ -127,28 +144,47 @@ export function setupAuth(app: Express) {
         if (err) {
           return next(err);
         }
-        return res.json(newUser);
+        return res.json({
+          id: newUser.id,
+          username: newUser.username,
+          fullName: newUser.fullName,
+          bio: newUser.bio,
+          location: newUser.location,
+          interests: newUser.interests,
+        });
       });
     } catch (error) {
+      console.error("Registration error:", error);
       next(error);
     }
   });
 
   app.post("/api/login", (req, res, next) => {
+    if (!req.body.username || !req.body.password) {
+      return res.status(400).send("Username and password are required");
+    }
+
     passport.authenticate("local", (err: any, user: Express.User, info: IVerifyOptions) => {
       if (err) {
         return next(err);
       }
 
       if (!user) {
-        return res.status(400).send(info.message ?? "Login failed");
+        return res.status(400).send(info.message ?? "Invalid username or password");
       }
 
       req.logIn(user, (err) => {
         if (err) {
           return next(err);
         }
-        return res.json(user);
+        return res.json({
+          id: user.id,
+          username: user.username,
+          fullName: user.fullName,
+          bio: user.bio,
+          location: user.location,
+          interests: user.interests,
+        });
       });
     })(req, res, next);
   });
@@ -164,7 +200,15 @@ export function setupAuth(app: Express) {
 
   app.get("/api/user", (req, res) => {
     if (req.isAuthenticated()) {
-      return res.json(req.user);
+      const user = req.user;
+      return res.json({
+        id: user.id,
+        username: user.username,
+        fullName: user.fullName,
+        bio: user.bio,
+        location: user.location,
+        interests: user.interests,
+      });
     }
     res.status(401).send("Not authenticated");
   });
