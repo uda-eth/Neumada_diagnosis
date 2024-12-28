@@ -30,6 +30,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Calendar, Globe, MapPin, Users } from "lucide-react";
 import { format } from "date-fns";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const categories = [
   "Networking",
@@ -90,10 +91,11 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b">
+      <header className="border-b border-border">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Nomad Events</h1>
+          <h1 className="text-2xl font-bold text-foreground">Nomad Events</h1>
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             <Button
               variant="ghost"
               onClick={() => setLocation(`/profile/${user?.username}`)}
