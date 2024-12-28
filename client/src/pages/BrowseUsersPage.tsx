@@ -47,16 +47,14 @@ const item = {
 };
 
 const cities = [
-  "London",
-  "New York",
-  "Los Angeles",
-  "Paris",
-  "Tokyo",
+  "Bali",
+  "Bangkok",
+  "Barcelona",
   "Berlin",
-  "Sydney",
-  "Singapore",
-  "Dubai",
-  "Mumbai"
+  "Lisbon",
+  "London",
+  "Mexico City",
+  "New York",
 ];
 
 const interests = [
@@ -95,7 +93,7 @@ const getProfileImage = (user: User): string | undefined => {
 export default function BrowseUsersPage() {
   const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCity, setSelectedCity] = useState<string>("all");
+  const [selectedCity, setSelectedCity] = useState<string>("Bali"); // Default city
   const [selectedGender, setSelectedGender] = useState<string>("all");
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
@@ -106,8 +104,8 @@ export default function BrowseUsersPage() {
     queryKey: ['/api/users/browse', searchTerm, selectedCity, selectedGender, selectedInterests, selectedMoods, ageRange],
     queryFn: async () => {
       const params = new URLSearchParams();
+      params.append('city', selectedCity); //Always include city
       if (searchTerm) params.append('search', searchTerm);
-      if (selectedCity !== 'all') params.append('city', selectedCity);
       if (selectedGender !== 'all') params.append('gender', selectedGender);
       if (ageRange.min) params.append('minAge', ageRange.min);
       if (ageRange.max) params.append('maxAge', ageRange.max);
@@ -156,7 +154,6 @@ export default function BrowseUsersPage() {
                   <SelectValue placeholder="Select City" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Cities</SelectItem>
                   {cities.map(city => (
                     <SelectItem key={city} value={city}>{city}</SelectItem>
                   ))}
