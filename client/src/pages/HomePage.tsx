@@ -75,16 +75,23 @@ export default function HomePage() {
 
   const handleCreateEvent = async () => {
     try {
-      await createEvent(newEvent);
+      // Convert the date string to a Date object for the API
+      const eventData = {
+        ...newEvent,
+        date: new Date(newEvent.date).toISOString(),
+        capacity: newEvent.capacity || null // Make capacity optional
+      };
+
+      await createEvent(eventData);
       toast({
         title: "Success",
-        description: "Event created successfully",
+        description: "Event created successfully"
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to create event",
+        description: error.message || "Failed to create event"
       });
     }
   };
