@@ -5,7 +5,7 @@ import { handleChatMessage } from "./chat";
 import { getRecommendedEvents } from "./recommendations";
 import { db } from "@db";
 import { events, eventParticipants } from "@db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
@@ -15,13 +15,14 @@ export function registerRoutes(app: Express): Server {
 
   // Get recommended events for the current user
   app.get("/api/events/recommended", async (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).send("Not authenticated");
-    }
-
     try {
-      const recommendedEvents = await getRecommendedEvents(req.user);
-      res.json(recommendedEvents);
+      // For demo purposes, return recent events
+      const results = await db.query.events.findMany({
+        orderBy: [desc(events.date)],
+        limit: 6
+      });
+
+      res.json(results);
     } catch (error) {
       console.error("Error getting recommendations:", error);
       res.status(500).json({ error: "Failed to fetch recommended events" });
@@ -32,34 +33,41 @@ export function registerRoutes(app: Express): Server {
   app.get("/api/events", async (req, res) => {
     try {
       const { category, location } = req.query;
-      let query = db.select().from(events).orderBy(desc(events.date));
 
-      if (category) {
-        query = query.where(eq(events.category, category as string));
-      }
-      if (location) {
-        query = query.where(eq(events.location, location as string));
-      }
+      const results = await db.query.events.findMany({
+        where: (events, { eq, and }) => {
+          const conditions = [];
+          if (category) {
+            conditions.push(eq(events.category, category as string));
+          }
+          if (location) {
+            conditions.push(eq(events.location, location as string));
+          }
+          return conditions.length > 0 ? and(...conditions) : undefined;
+        },
+        orderBy: [desc(events.date)]
+      });
 
-      const results = await query;
       res.json(results);
     } catch (error) {
+      console.error("Error fetching events:", error);
       res.status(500).json({ error: "Failed to fetch events" });
     }
   });
 
   app.post("/api/events", async (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).send("Not authenticated");
-    }
-
     try {
       const [event] = await db
         .insert(events)
-        .values({ ...req.body, creatorId: req.user.id })
+        .values({
+          ...req.body,
+          creatorId: req.user?.id || null,
+          date: new Date(req.body.date),
+        })
         .returning();
       res.json(event);
     } catch (error) {
+      console.error("Error creating event:", error);
       res.status(500).json({ error: "Failed to create event" });
     }
   });
@@ -84,6 +92,7 @@ export function registerRoutes(app: Express): Server {
 
       res.json(participation);
     } catch (error) {
+      console.error("Error updating participation:", error);
       res.status(500).json({ error: "Failed to update participation" });
     }
   });

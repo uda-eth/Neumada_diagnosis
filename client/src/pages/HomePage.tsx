@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useEvents } from "@/hooks/use-events";
-import { useUser } from "@/hooks/use-user";
 import {
   Card,
   CardContent,
@@ -31,7 +30,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Calendar, Globe, MapPin, Users } from "lucide-react";
 import { format } from "date-fns";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { useRecommendedEvents } from "@/hooks/use-recommended-events";
 
 const categories = [
   "Networking",
@@ -61,8 +59,6 @@ export default function HomePage() {
     selectedCategory,
     selectedLocation
   );
-  const { recommendedEvents, isLoading: isLoadingRecommended } = useRecommendedEvents();
-  const { user } = useUser();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [newEvent, setNewEvent] = useState({
@@ -79,8 +75,9 @@ export default function HomePage() {
     try {
       const eventData = {
         ...newEvent,
-        date: new Date(newEvent.date).toISOString(),
-        capacity: newEvent.capacity || null
+        date: new Date(newEvent.date),
+        capacity: newEvent.capacity || null,
+        image: "https://picsum.photos/800/400" // Default image for demo
       };
 
       await createEvent(eventData);
@@ -104,12 +101,6 @@ export default function HomePage() {
           <h1 className="text-2xl font-bold text-foreground">Nomad Events</h1>
           <div className="flex items-center gap-4">
             <ThemeToggle />
-            <Button
-              variant="ghost"
-              onClick={() => setLocation(`/profile/${user?.username}`)}
-            >
-              Profile
-            </Button>
             <Dialog>
               <DialogTrigger asChild>
                 <Button>Create Event</Button>
@@ -213,60 +204,6 @@ export default function HomePage() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {user && recommendedEvents && recommendedEvents.length > 0 && (
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold mb-6">Recommended for You</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {isLoadingRecommended ? (
-                <div className="col-span-full text-center py-8">
-                  Loading recommendations...
-                </div>
-              ) : (
-                recommendedEvents.map((event) => (
-                  <Card
-                    key={event.id}
-                    className="cursor-pointer hover:shadow-lg transition-shadow"
-                    onClick={() => setLocation(`/event/${event.id}`)}
-                  >
-                    {event.image && (
-                      <img
-                        src={event.image}
-                        alt={event.title}
-                        className="w-full h-48 object-cover"
-                      />
-                    )}
-                    <CardHeader>
-                      <CardTitle>{event.title}</CardTitle>
-                      <CardDescription className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        {format(new Date(event.date), "PPP")}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <MapPin className="w-4 h-4" />
-                          {event.location}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Globe className="w-4 h-4" />
-                          {event.category}
-                        </div>
-                        {event.capacity && (
-                          <div className="flex items-center gap-1">
-                            <Users className="w-4 h-4" />
-                            {event.capacity}
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </div>
-          </div>
-        )}
-
         <div className="flex gap-4 mb-8">
           <Select onValueChange={setSelectedCategory}>
             <SelectTrigger className="w-[200px]">
