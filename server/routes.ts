@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
+import { handleChatMessage } from "./chat";
 import { db } from "@db";
 import { events, eventParticipants } from "@db/schema";
 import { eq, and, gte, desc } from "drizzle-orm";
@@ -8,12 +9,15 @@ import { eq, and, gte, desc } from "drizzle-orm";
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
 
+  // Chat API
+  app.post("/api/chat", handleChatMessage);
+
   // Events API
   app.get("/api/events", async (req, res) => {
     try {
       const { category, location } = req.query;
       let query = db.select().from(events).orderBy(desc(events.date));
-      
+
       if (category) {
         query = query.where(eq(events.category, category as string));
       }
