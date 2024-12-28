@@ -93,6 +93,7 @@ export default function BrowseUsersPage() {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
   const [ageRange, setAgeRange] = useState({ min: "", max: "" });
+  const [isFiltersVisible, setIsFiltersVisible] = useState(false);
 
   const { data: users, isLoading } = useQuery<User[]>({
     queryKey: ['/api/users/browse', searchTerm, selectedCity, selectedGender, selectedInterests, selectedMoods, ageRange],
@@ -121,8 +122,6 @@ export default function BrowseUsersPage() {
 
   const toggleFilter = (item: string, filterType: 'interests' | 'moods') => {
     const setterFn = filterType === 'interests' ? setSelectedInterests : setSelectedMoods;
-    const currentFilters = filterType === 'interests' ? selectedInterests : selectedMoods;
-
     setterFn(prev =>
       prev.includes(item)
         ? prev.filter(i => i !== item)
@@ -133,107 +132,118 @@ export default function BrowseUsersPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col space-y-8">
-          {/* Header and Search */}
+        {/* Header Section */}
+        <div className="flex flex-col space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-4xl">Discover Members</h1>
-            <div className="relative w-64">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search members..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+            <h1 className="text-4xl font-bold">Connect</h1>
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                onClick={() => setIsFiltersVisible(!isFiltersVisible)}
+                className="gap-2"
+              >
+                <Search className="w-4 h-4" />
+                Filters
+              </Button>
+              <Select value={selectedCity} onValueChange={setSelectedCity}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select City" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Cities</SelectItem>
+                  {cities.map(city => (
+                    <SelectItem key={city} value={city}>{city}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          {/* Filters Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-muted/50 p-6 rounded-lg">
-            {/* Location and Demographics */}
-            <div className="space-y-4">
-              <h3 className="font-semibold">Location & Demographics</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <Select value={selectedCity} onValueChange={setSelectedCity}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="City" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Cities</SelectItem>
-                    {cities.map(city => (
-                      <SelectItem key={city} value={city}>{city}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+          {/* Filters Panel */}
+          <AnimatePresence>
+            {isFiltersVisible && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-muted/50 p-6 rounded-lg">
+                  {/* Demographics */}
+                  <div className="space-y-4">
+                    <h3 className="font-semibold">Demographics</h3>
+                    <div className="space-y-4">
+                      <Select value={selectedGender} onValueChange={setSelectedGender}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Gender" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Genders</SelectItem>
+                          <SelectItem value="male">Male</SelectItem>
+                          <SelectItem value="female">Female</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          type="number"
+                          placeholder="Min age"
+                          value={ageRange.min}
+                          onChange={(e) => setAgeRange(prev => ({ ...prev, min: e.target.value }))}
+                        />
+                        <Input
+                          type="number"
+                          placeholder="Max age"
+                          value={ageRange.max}
+                          onChange={(e) => setAgeRange(prev => ({ ...prev, max: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+                  </div>
 
-                <Select value={selectedGender} onValueChange={setSelectedGender}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Genders</SelectItem>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
+                  {/* Interests */}
+                  <div className="space-y-4">
+                    <h3 className="font-semibold">Interests</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {interests.map(interest => (
+                        <Badge
+                          key={interest}
+                          variant={selectedInterests.includes(interest) ? "default" : "outline"}
+                          className="cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => toggleFilter(interest, 'interests')}
+                        >
+                          {interest}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
 
-                <Input
-                  type="number"
-                  placeholder="Min age"
-                  value={ageRange.min}
-                  onChange={(e) => setAgeRange(prev => ({ ...prev, min: e.target.value }))}
-                  className="w-full"
-                />
-                <Input
-                  type="number"
-                  placeholder="Max age"
-                  value={ageRange.max}
-                  onChange={(e) => setAgeRange(prev => ({ ...prev, max: e.target.value }))}
-                  className="w-full"
-                />
-              </div>
-            </div>
+                  {/* Current Mood */}
+                  <div className="space-y-4">
+                    <h3 className="font-semibold">Current Mood</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {moods.map(mood => (
+                        <Badge
+                          key={mood}
+                          variant={selectedMoods.includes(mood) ? "default" : "outline"}
+                          className="cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => toggleFilter(mood, 'moods')}
+                        >
+                          {mood}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-            {/* Interests */}
-            <div className="space-y-4">
-              <h3 className="font-semibold">Interests</h3>
-              <div className="flex flex-wrap gap-2">
-                {interests.map(interest => (
-                  <Badge
-                    key={interest}
-                    variant={selectedInterests.includes(interest) ? "default" : "outline"}
-                    className="cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => toggleFilter(interest, 'interests')}
-                  >
-                    {interest}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
-            {/* Moods */}
-            <div className="space-y-4">
-              <h3 className="font-semibold">Current Mood</h3>
-              <div className="flex flex-wrap gap-2">
-                {moods.map(mood => (
-                  <Badge
-                    key={mood}
-                    variant={selectedMoods.includes(mood) ? "default" : "outline"}
-                    className="cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => toggleFilter(mood, 'moods')}
-                  >
-                    {mood}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Users Grid */}
+          {/* Members Grid */}
           {isLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-              {[...Array(10)].map((_, i) => (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {[...Array(12)].map((_, i) => (
                 <div key={i} className="animate-pulse">
                   <div className="aspect-[3/4] bg-muted rounded-lg"></div>
                 </div>
@@ -241,7 +251,7 @@ export default function BrowseUsersPage() {
             </div>
           ) : (
             <motion.div
-              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
+              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
               variants={container}
               initial="hidden"
               animate="show"
@@ -257,9 +267,9 @@ export default function BrowseUsersPage() {
                   >
                     <Card className="overflow-hidden border-0 shadow-lg transition-all duration-300 group-hover:shadow-xl">
                       <div className="aspect-[3/4] relative">
-                        {user.profileImage ? (
+                        {user.profileImages?.[0] ? (
                           <img
-                            src={user.profileImage}
+                            src={user.profileImages[0]}
                             alt={user.fullName || user.username}
                             className="w-full h-full object-cover"
                           />
@@ -275,11 +285,23 @@ export default function BrowseUsersPage() {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                           <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
                             <h3 className="font-bold">{user.fullName || user.username}</h3>
-                            {user.location && (
-                              <p className="text-sm flex items-center gap-1">
-                                <MapPin className="w-3 h-3" />
-                                {user.location}
-                              </p>
+                            <div className="flex items-center gap-2 text-sm">
+                              <MapPin className="w-3 h-3" />
+                              {user.location}
+                            </div>
+                            {user.interests && user.interests.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {user.interests.slice(0, 2).map(interest => (
+                                  <span key={interest} className="text-xs bg-white/20 px-2 py-0.5 rounded-full">
+                                    {interest}
+                                  </span>
+                                ))}
+                                {user.interests.length > 2 && (
+                                  <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">
+                                    +{user.interests.length - 2}
+                                  </span>
+                                )}
+                              </div>
                             )}
                           </div>
                         </div>

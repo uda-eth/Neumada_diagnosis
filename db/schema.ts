@@ -9,7 +9,7 @@ export const users = pgTable("users", {
   fullName: text("full_name"),
   gender: text("gender"),
   bio: text("bio"),
-  profileImage: text("profile_image"),
+  profileImages: jsonb("profile_images").$type<string[]>(), // Array of image URLs
   location: text("location"),
   interests: jsonb("interests").$type<string[]>(),
   currentMoods: jsonb("current_moods").$type<string[]>(), 
