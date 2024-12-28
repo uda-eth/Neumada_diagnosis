@@ -98,14 +98,14 @@ export default function HomePage() {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-foreground">Nomad Events</h1>
+          <h1 className="text-2xl font-bold text-foreground">Neumada Events</h1>
           <div className="flex items-center gap-4">
             <ThemeToggle />
             <Dialog>
               <DialogTrigger asChild>
                 <Button>Create Event</Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
                 <DialogHeader>
                   <DialogTitle>Create New Event</DialogTitle>
                 </DialogHeader>
@@ -139,7 +139,7 @@ export default function HomePage() {
                         <SelectTrigger>
                           <SelectValue placeholder="Select location" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent position="popper" className="w-[200px]">
                           {locations.map((loc) => (
                             <SelectItem key={loc} value={loc}>
                               {loc}
@@ -158,7 +158,7 @@ export default function HomePage() {
                         <SelectTrigger>
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent position="popper" className="w-[200px]">
                           {categories.map((cat) => (
                             <SelectItem key={cat} value={cat}>
                               {cat}
@@ -187,13 +187,17 @@ export default function HomePage() {
                         onChange={(e) =>
                           setNewEvent({
                             ...newEvent,
-                            capacity: parseInt(e.target.value),
+                            capacity: parseInt(e.target.value) || 0,
                           })
                         }
                       />
                     </div>
                   </div>
-                  <Button onClick={handleCreateEvent} className="w-full">
+                  <Button 
+                    onClick={handleCreateEvent} 
+                    className="w-full mt-6"
+                    disabled={!newEvent.title || !newEvent.description || !newEvent.location || !newEvent.category || !newEvent.date}
+                  >
                     Create Event
                   </Button>
                 </div>
