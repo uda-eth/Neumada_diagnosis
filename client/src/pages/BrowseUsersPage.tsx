@@ -85,6 +85,13 @@ const moods = [
   "Working"
 ];
 
+const getProfileImage = (user: User): string | undefined => {
+  if (user.profileImages && user.profileImages.length > 0) {
+    return user.profileImages[0];
+  }
+  return user.profileImage || undefined;
+};
+
 export default function BrowseUsersPage() {
   const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
@@ -132,7 +139,6 @@ export default function BrowseUsersPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        {/* Header Section */}
         <div className="flex flex-col space-y-6">
           <div className="flex items-center justify-between">
             <h1 className="text-4xl font-bold">Connect</h1>
@@ -159,7 +165,6 @@ export default function BrowseUsersPage() {
             </div>
           </div>
 
-          {/* Filters Panel */}
           <AnimatePresence>
             {isFiltersVisible && (
               <motion.div
@@ -170,7 +175,6 @@ export default function BrowseUsersPage() {
                 className="overflow-hidden"
               >
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-muted/50 p-6 rounded-lg">
-                  {/* Demographics */}
                   <div className="space-y-4">
                     <h3 className="font-semibold">Demographics</h3>
                     <div className="space-y-4">
@@ -202,7 +206,6 @@ export default function BrowseUsersPage() {
                     </div>
                   </div>
 
-                  {/* Interests */}
                   <div className="space-y-4">
                     <h3 className="font-semibold">Interests</h3>
                     <div className="flex flex-wrap gap-2">
@@ -219,7 +222,6 @@ export default function BrowseUsersPage() {
                     </div>
                   </div>
 
-                  {/* Current Mood */}
                   <div className="space-y-4">
                     <h3 className="font-semibold">Current Mood</h3>
                     <div className="flex flex-wrap gap-2">
@@ -240,7 +242,6 @@ export default function BrowseUsersPage() {
             )}
           </AnimatePresence>
 
-          {/* Members Grid */}
           {isLoading ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {[...Array(12)].map((_, i) => (
@@ -267,9 +268,9 @@ export default function BrowseUsersPage() {
                   >
                     <Card className="overflow-hidden border-0 shadow-lg transition-all duration-300 group-hover:shadow-xl">
                       <div className="aspect-[3/4] relative">
-                        {user.profileImages?.[0] ? (
+                        {getProfileImage(user) ? (
                           <img
-                            src={user.profileImages[0]}
+                            src={getProfileImage(user)}
                             alt={user.fullName || user.username}
                             className="w-full h-full object-cover"
                           />
@@ -277,7 +278,7 @@ export default function BrowseUsersPage() {
                           <div className="w-full h-full bg-muted flex items-center justify-center">
                             <Avatar className="h-20 w-20">
                               <AvatarFallback>
-                                {user.fullName?.[0] || user.username[0]}
+                                {(user.fullName?.[0] || user.username[0]).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
                           </div>
@@ -285,10 +286,12 @@ export default function BrowseUsersPage() {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                           <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
                             <h3 className="font-bold">{user.fullName || user.username}</h3>
-                            <div className="flex items-center gap-2 text-sm">
-                              <MapPin className="w-3 h-3" />
-                              {user.location}
-                            </div>
+                            {user.location && (
+                              <div className="flex items-center gap-2 text-sm">
+                                <MapPin className="w-3 h-3" />
+                                {user.location}
+                              </div>
+                            )}
                             {user.interests && user.interests.length > 0 && (
                               <div className="flex flex-wrap gap-1 mt-2">
                                 {user.interests.slice(0, 2).map(interest => (

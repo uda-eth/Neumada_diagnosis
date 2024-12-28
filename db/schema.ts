@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, integer, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 
@@ -9,7 +9,8 @@ export const users = pgTable("users", {
   fullName: text("full_name"),
   gender: text("gender"),
   bio: text("bio"),
-  profileImages: jsonb("profile_images").$type<string[]>(), // Array of image URLs
+  profileImage: text("profile_image"), 
+  profileImages: jsonb("profile_images").$type<string[]>().default([]), 
   location: text("location"),
   interests: jsonb("interests").$type<string[]>(),
   currentMoods: jsonb("current_moods").$type<string[]>(), 
