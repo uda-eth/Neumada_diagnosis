@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useEvents } from "@/hooks/use-events";
+import { useUser } from "@/hooks/use-user";
 import {
   Card,
   CardContent,
@@ -16,6 +17,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -27,9 +34,10 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, Globe, MapPin, Users } from "lucide-react";
+import { Calendar, Globe, MapPin, Users, UserCircle2 } from "lucide-react";
 import { format } from "date-fns";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { getEventImage } from "@/lib/eventImages";
 
 const categories = [
   "Networking",
@@ -70,6 +78,7 @@ export default function HomePage() {
     image: "",
     capacity: 0,
   });
+  const { user } = useUser();
 
   const handleCreateEvent = async () => {
     try {
@@ -77,19 +86,19 @@ export default function HomePage() {
         ...newEvent,
         date: new Date(newEvent.date),
         capacity: newEvent.capacity || null,
-        image: "https://picsum.photos/800/400" // Default image for demo
+        image: getEventImage(newEvent.category),
       };
 
       await createEvent(eventData);
       toast({
         title: "Success",
-        description: "Event created successfully"
+        description: "Event created successfully",
       });
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to create event"
+        description: error.message || "Failed to create event",
       });
     }
   };
@@ -101,6 +110,25 @@ export default function HomePage() {
           <h1 className="text-2xl font-bold text-foreground">Neumada Events</h1>
           <div className="flex items-center gap-4">
             <ThemeToggle />
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="gap-2">
+                    <UserCircle2 className="h-5 w-5" />
+                    {user.username}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setLocation(`/profile/${user.username}`)}>
+                    My Profile
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button variant="ghost" onClick={() => setLocation("/auth")}>
+                Sign In
+              </Button>
+            )}
             <Dialog>
               <DialogTrigger asChild>
                 <Button>Create Event</Button>
@@ -193,10 +221,16 @@ export default function HomePage() {
                       />
                     </div>
                   </div>
-                  <Button 
-                    onClick={handleCreateEvent} 
+                  <Button
+                    onClick={handleCreateEvent}
                     className="w-full mt-6"
-                    disabled={!newEvent.title || !newEvent.description || !newEvent.location || !newEvent.category || !newEvent.date}
+                    disabled={
+                      !newEvent.title ||
+                      !newEvent.description ||
+                      !newEvent.location ||
+                      !newEvent.category ||
+                      !newEvent.date
+                    }
                   >
                     Create Event
                   </Button>
