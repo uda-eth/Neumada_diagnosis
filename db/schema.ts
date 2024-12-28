@@ -7,10 +7,13 @@ export const users = pgTable("users", {
   username: text("username").unique().notNull(),
   password: text("password").notNull(),
   fullName: text("full_name"),
+  gender: text("gender"),
   bio: text("bio"),
   profileImage: text("profile_image"),
   location: text("location"),
   interests: jsonb("interests").$type<string[]>(),
+  profession: text("profession"),
+  age: integer("age"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
