@@ -9,6 +9,7 @@ import { eq, desc, ilike, and, or } from "drizzle-orm";
 
 // Mock user data for development
 const mockUsers = [
+  // Bali
   {
     username: "sarah_digital",
     fullName: "Sarah Chen",
@@ -23,6 +24,34 @@ const mockUsers = [
     ],
   },
   {
+    username: "emma_yoga",
+    fullName: "Emma Wilson",
+    bio: "Yoga instructor & wellness coach",
+    location: "Bali",
+    interests: ["Yoga", "Meditation", "Wellness"],
+    currentMoods: ["Peaceful", "Teaching"],
+    age: 26,
+    gender: "female",
+    profileImages: [
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=600&fit=crop",
+    ],
+  },
+  {
+    username: "maya_creative",
+    fullName: "Maya Patel",
+    bio: "Creative Director | Digital Artist",
+    location: "Bali",
+    interests: ["Art", "Design", "Technology"],
+    currentMoods: ["Creating", "Collaborating"],
+    age: 29,
+    gender: "female",
+    profileImages: [
+      "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=400&h=600&fit=crop",
+    ],
+  },
+
+  // Bangkok
+  {
     username: "alex_remote",
     fullName: "Alex Rodriguez",
     bio: "Software Engineer | Coffee Enthusiast",
@@ -35,7 +64,73 @@ const mockUsers = [
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop",
     ],
   },
-  // Add more mock users for each city
+  {
+    username: "lisa_content",
+    fullName: "Lisa Thompson",
+    bio: "Content Creator | Travel Blogger",
+    location: "Bangkok",
+    interests: ["Travel", "Photography", "Writing"],
+    currentMoods: ["Exploring", "Creating"],
+    age: 27,
+    gender: "female",
+    profileImages: [
+      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=600&fit=crop",
+    ],
+  },
+  {
+    username: "sophia_chef",
+    fullName: "Sophia Lee",
+    bio: "Chef | Food Photography",
+    location: "Bangkok",
+    interests: ["Cooking", "Photography", "Culture"],
+    currentMoods: ["Foodie", "Teaching"],
+    age: 30,
+    gender: "female",
+    profileImages: [
+      "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=600&fit=crop",
+    ],
+  },
+
+  // Barcelona
+  {
+    username: "maria_architect",
+    fullName: "Maria Garcia",
+    bio: "Architect | Design Consultant",
+    location: "Barcelona",
+    interests: ["Architecture", "Design", "Art"],
+    currentMoods: ["Creating", "Exploring"],
+    age: 32,
+    gender: "female",
+    profileImages: [
+      "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=600&fit=crop",
+    ],
+  },
+  {
+    username: "carmen_artist",
+    fullName: "Carmen Rodriguez",
+    bio: "Visual Artist | Art Teacher",
+    location: "Barcelona",
+    interests: ["Art", "Teaching", "Culture"],
+    currentMoods: ["Creative", "Social"],
+    age: 28,
+    gender: "female",
+    profileImages: [
+      "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=400&h=600&fit=crop",
+    ],
+  },
+  {
+    username: "ana_dance",
+    fullName: "Ana Martinez",
+    bio: "Dance Instructor | Event Organizer",
+    location: "Barcelona",
+    interests: ["Dance", "Events", "Music"],
+    currentMoods: ["Energetic", "Teaching"],
+    age: 25,
+    gender: "female",
+    profileImages: [
+      "https://images.unsplash.com/photo-1524502397800-2eeaad7c3fe5?w=400&h=600&fit=crop",
+    ],
+  },
   {
     username: "john_explorer",
     fullName: "John Doe",
@@ -62,7 +157,6 @@ const mockUsers = [
       "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=600&fit=crop",
     ],
   },
-
 ];
 
 export function registerRoutes(app: Express): Server {
