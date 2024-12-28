@@ -4,8 +4,66 @@ import { setupAuth } from "./auth";
 import { handleChatMessage } from "./chat";
 import { getRecommendedEvents } from "./recommendations";
 import { db } from "@db";
-import { events, eventParticipants } from "@db/schema";
-import { eq, desc } from "drizzle-orm";
+import { events, eventParticipants, users } from "@db/schema";
+import { eq, desc, ilike, and, or } from "drizzle-orm";
+
+// Mock user data for development
+const mockUsers = [
+  {
+    username: "sarah_digital",
+    fullName: "Sarah Chen",
+    bio: "Digital nomad | UX Designer",
+    location: "Bali",
+    interests: ["Design", "Travel", "Photography"],
+    currentMoods: ["Exploring", "Networking"],
+    age: 28,
+    gender: "female",
+    profileImages: [
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=600&fit=crop",
+    ],
+  },
+  {
+    username: "alex_remote",
+    fullName: "Alex Rodriguez",
+    bio: "Software Engineer | Coffee Enthusiast",
+    location: "Bangkok",
+    interests: ["Tech", "Coffee", "Digital Marketing"],
+    currentMoods: ["Networking", "Learning"],
+    age: 31,
+    gender: "male",
+    profileImages: [
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop",
+    ],
+  },
+  // Add more mock users for each city
+  {
+    username: "john_explorer",
+    fullName: "John Doe",
+    bio: "Adventurer | Nature Lover",
+    location: "Kyoto",
+    interests: ["Hiking", "Nature", "Photography"],
+    currentMoods: ["Relaxed", "Adventurous"],
+    age: 25,
+    gender: "male",
+    profileImages: [
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=600&fit=crop",
+    ],
+  },
+  {
+    username: "jane_artist",
+    fullName: "Jane Smith",
+    bio: "Artist | Musician",
+    location: "Paris",
+    interests: ["Art", "Music", "Culture"],
+    currentMoods: ["Creative", "Inspired"],
+    age: 35,
+    gender: "female",
+    profileImages: [
+      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=600&fit=crop",
+    ],
+  },
+
+];
 
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
@@ -13,10 +71,64 @@ export function registerRoutes(app: Express): Server {
   // Chat API
   app.post("/api/chat", handleChatMessage);
 
+  // Browse Users API
+  app.get("/api/users/browse", async (req, res) => {
+    try {
+      const { city, gender, minAge, maxAge, interests, moods } = req.query;
+
+      // For development, return mock data
+      let filteredUsers = [...mockUsers];
+
+      if (city && city !== 'all') {
+        filteredUsers = filteredUsers.filter(user => 
+          user.location.toLowerCase() === (city as string).toLowerCase()
+        );
+      }
+
+      if (gender && gender !== 'all') {
+        filteredUsers = filteredUsers.filter(user => 
+          user.gender === gender
+        );
+      }
+
+      if (minAge) {
+        filteredUsers = filteredUsers.filter(user => 
+          user.age >= parseInt(minAge as string)
+        );
+      }
+
+      if (maxAge) {
+        filteredUsers = filteredUsers.filter(user => 
+          user.age <= parseInt(maxAge as string)
+        );
+      }
+
+      if (interests && Array.isArray(interests)) {
+        filteredUsers = filteredUsers.filter(user => 
+          interests.some(interest => 
+            user.interests.includes(interest as string)
+          )
+        );
+      }
+
+      if (moods && Array.isArray(moods)) {
+        filteredUsers = filteredUsers.filter(user => 
+          moods.some(mood => 
+            user.currentMoods.includes(mood as string)
+          )
+        );
+      }
+
+      res.json(filteredUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
   // Get recommended events for the current user
   app.get("/api/events/recommended", async (req, res) => {
     try {
-      // For demo purposes, return recent events
       const results = await db.query.events.findMany({
         orderBy: [desc(events.date)],
         limit: 6
