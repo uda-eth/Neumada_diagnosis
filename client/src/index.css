@@ -3,11 +3,67 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Core brand colors */
+    --color-brand: 200 82% 45%; /* Primary blue */
+    --color-brand-light: 200 82% 55%;
+    --color-brand-dark: 200 82% 35%;
+
+    /* Accent colors */
+    --color-accent-coral: 12 85% 60%; /* Warm, energetic accent */
+    --color-accent-sage: 150 25% 60%; /* Natural, calming accent */
+
+    /* Background variations */
+    --color-surface-50: 210 20% 98%;
+    --color-surface-100: 210 20% 96%;
+    --color-surface-200: 210 20% 94%;
+    --color-surface-300: 210 20% 90%;
+
+    /* Text colors */
+    --color-text-primary: 210 25% 25%;
+    --color-text-secondary: 210 15% 45%;
+    --color-text-tertiary: 210 10% 60%;
+
+    /* Status colors */
+    --color-success: 142 72% 45%;
+    --color-warning: 38 92% 50%;
+    --color-error: 0 84% 60%;
+    --color-info: 200 82% 45%;
+  }
+
   * {
     @apply border-border;
   }
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+  }
+
+  /* Typography scale */
+  h1 {
+    @apply text-4xl font-bold tracking-tight;
+  }
+
+  h2 {
+    @apply text-3xl font-semibold tracking-tight;
+  }
+
+  h3 {
+    @apply text-2xl font-semibold;
+  }
+
+  h4 {
+    @apply text-xl font-medium;
+  }
+
+  /* Interactive elements */
+  .hover-transition {
+    @apply transition-all duration-200 ease-in-out;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
   }
 }
