@@ -69,22 +69,31 @@ export default function AuthPage() {
         if (!result.ok) {
           throw new Error(result.message);
         }
+        toast({
+          title: "Success",
+          description: "Logged in successfully",
+        });
       } else {
-        // Convert interests string to array if provided
+        // Convert interests string to array and clean it up
         const registerData = {
           ...formData,
           interests: formData.interests ? formData.interests.split(',').map(i => i.trim()) : undefined,
         };
+
         const result = await register(registerData);
         if (!result.ok) {
           throw new Error(result.message);
         }
+        toast({
+          title: "Success",
+          description: "Registered successfully",
+        });
       }
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message,
+        description: error.message || "An error occurred",
       });
     } finally {
       setIsSubmitting(false);
@@ -187,18 +196,18 @@ export default function AuthPage() {
                 "Register"
               )}
             </Button>
+            <Button
+              variant="ghost"
+              type="button"
+              className="w-full mt-4"
+              onClick={() => setIsLogin(!isLogin)}
+              disabled={isSubmitting}
+            >
+              {isLogin
+                ? "Don't have an account? Register"
+                : "Already have an account? Login"}
+            </Button>
           </form>
-
-          <Button
-            variant="ghost"
-            className="w-full mt-4"
-            onClick={() => setIsLogin(!isLogin)}
-            disabled={isSubmitting}
-          >
-            {isLogin
-              ? "Don't have an account? Register"
-              : "Already have an account? Login"}
-          </Button>
         </CardContent>
       </Card>
     </div>

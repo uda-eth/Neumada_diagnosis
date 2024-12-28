@@ -115,6 +115,7 @@ export function setupAuth(app: Express) {
         return res.status(400).send("Password must be at least 6 characters long");
       }
 
+      // Check if user already exists
       const [existingUser] = await db
         .select()
         .from(users)
@@ -125,28 +126,38 @@ export function setupAuth(app: Express) {
         return res.status(400).send("Username already exists");
       }
 
+      // Hash the password
       const hashedPassword = crypto.hash(password);
 
-      const [newUser] = await db
-        .insert(users)
-        .values({
-          username,
-          password: hashedPassword,
-          fullName: fullName || null,
-          bio: bio || null,
-          location: location || null,
-          interests: interests || null,
-        })
-        .returning();
+      // Ensure interests is always an array or null
+      const processedInterests = interests && Array.isArray(interests) ? interests : null;
 
-      console.log("User registered successfully:", username);
+      try {
+        const [newUser] = await db
+          .insert(users)
+          .values({
+            username,
+            password: hashedPassword,
+            fullName: fullName || null,
+            bio: bio || null,
+            location: location || null,
+            interests: processedInterests,
+          })
+          .returning();
 
-      req.login(newUser, (err) => {
-        if (err) {
-          return next(err);
-        }
-        return res.json(newUser);
-      });
+        console.log("User registered successfully:", username);
+
+        req.login(newUser, (err) => {
+          if (err) {
+            console.error("Login after registration failed:", err);
+            return next(err);
+          }
+          return res.json(newUser);
+        });
+      } catch (dbError) {
+        console.error("Database error during registration:", dbError);
+        return res.status(500).send("Error creating user account");
+      }
     } catch (error) {
       console.error("Registration error:", error);
       next(error);
