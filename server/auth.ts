@@ -3,29 +3,20 @@ import { IVerifyOptions, Strategy as LocalStrategy } from "passport-local";
 import { type Express } from "express";
 import session from "express-session";
 import createMemoryStore from "memorystore";
-import { scrypt, randomBytes, timingSafeEqual } from "crypto";
-import { promisify } from "util";
-import { users, insertUserSchema, type User } from "@db/schema";
+import { createHash } from "crypto";
+import { users, type User } from "@db/schema";
 import { db } from "@db";
 import { eq } from "drizzle-orm";
 
-const scryptAsync = promisify(scrypt);
+// Simplified password hashing for demo purposes
 const crypto = {
-  hash: async (password: string) => {
-    const salt = randomBytes(16).toString("hex");
-    const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-    return `${buf.toString("hex")}.${salt}`;
+  hash: (password: string): string => {
+    return createHash('sha256').update(password).digest('hex');
   },
-  compare: async (suppliedPassword: string, storedPassword: string) => {
-    const [hashedPassword, salt] = storedPassword.split(".");
-    const hashedPasswordBuf = Buffer.from(hashedPassword, "hex");
-    const suppliedPasswordBuf = (await scryptAsync(
-      suppliedPassword,
-      salt,
-      64
-    )) as Buffer;
-    return timingSafeEqual(hashedPasswordBuf, suppliedPasswordBuf);
-  },
+  compare: (suppliedPassword: string, storedPassword: string): boolean => {
+    const hashedSupplied = createHash('sha256').update(suppliedPassword).digest('hex');
+    return hashedSupplied === storedPassword;
+  }
 };
 
 declare global {
@@ -63,7 +54,7 @@ export function setupAuth(app: Express) {
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       try {
-        console.log("Attempting login for username:", username); // Add logging
+        console.log("Attempting login for username:", username);
         const [user] = await db
           .select()
           .from(users)
@@ -71,18 +62,20 @@ export function setupAuth(app: Express) {
           .limit(1);
 
         if (!user) {
-          console.log("No user found with username:", username); // Add logging
+          console.log("No user found with username:", username);
           return done(null, false, { message: "Invalid username or password." });
         }
-        const isMatch = await crypto.compare(password, user.password);
+
+        const isMatch = crypto.compare(password, user.password);
         if (!isMatch) {
-          console.log("Password mismatch for username:", username); // Add logging
+          console.log("Password mismatch for username:", username);
           return done(null, false, { message: "Invalid username or password." });
         }
-        console.log("Login successful for username:", username); // Add logging
+
+        console.log("Login successful for username:", username);
         return done(null, user);
       } catch (err) {
-        console.error("Login error:", err); // Add logging
+        console.error("Login error:", err);
         return done(err);
       }
     })
@@ -107,7 +100,7 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
-      console.log("Registration attempt:", req.body); // Add logging
+      console.log("Registration attempt:", req.body);
       const { username, password, fullName, bio, location, interests } = req.body;
 
       if (!username || !password) {
@@ -132,7 +125,7 @@ export function setupAuth(app: Express) {
         return res.status(400).send("Username already exists");
       }
 
-      const hashedPassword = await crypto.hash(password);
+      const hashedPassword = crypto.hash(password);
 
       const [newUser] = await db
         .insert(users)
@@ -146,7 +139,7 @@ export function setupAuth(app: Express) {
         })
         .returning();
 
-      console.log("User registered successfully:", username); // Add logging
+      console.log("User registered successfully:", username);
 
       req.login(newUser, (err) => {
         if (err) {
@@ -155,20 +148,20 @@ export function setupAuth(app: Express) {
         return res.json(newUser);
       });
     } catch (error) {
-      console.error("Registration error:", error); // Add logging
+      console.error("Registration error:", error);
       next(error);
     }
   });
 
   app.post("/api/login", (req, res, next) => {
-    console.log("Login attempt:", req.body); // Add logging
+    console.log("Login attempt:", req.body);
 
     if (!req.body.username || !req.body.password) {
       return res.status(400).send("Username and password are required");
     }
 
     passport.authenticate("local", (err: any, user: Express.User, info: IVerifyOptions) => {
-      console.log("Passport auth result:", { err, user, info }); // Add logging
+      console.log("Passport auth result:", { err, user, info });
 
       if (err) {
         return next(err);
