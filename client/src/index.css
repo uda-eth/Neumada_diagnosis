@@ -4,33 +4,86 @@
 
 @layer base {
   :root {
-    /* Core brand colors */
-    --color-brand: 200 82% 45%; /* Primary blue */
+    /* Core brand colors - Light theme */
+    --color-brand: 200 82% 45%;
     --color-brand-light: 200 82% 55%;
     --color-brand-dark: 200 82% 35%;
 
-    /* Accent colors */
-    --color-accent-coral: 12 85% 60%; /* Warm, energetic accent */
-    --color-accent-sage: 150 25% 60%; /* Natural, calming accent */
+    /* Background colors - Light theme */
+    --background: 0 0% 100%;
+    --foreground: 210 25% 25%;
 
-    /* Background variations */
-    --color-surface-50: 210 20% 98%;
-    --color-surface-100: 210 20% 96%;
-    --color-surface-200: 210 20% 94%;
-    --color-surface-300: 210 20% 90%;
+    /* Surface colors - Light theme */
+    --surface-50: 210 20% 98%;
+    --surface-100: 210 20% 96%;
+    --surface-200: 210 20% 94%;
+    --surface-300: 210 20% 90%;
 
-    /* Text colors */
-    --color-text-primary: 210 25% 25%;
-    --color-text-secondary: 210 15% 45%;
-    --color-text-tertiary: 210 10% 60%;
+    /* Text colors - Light theme */
+    --text-primary: 210 25% 25%;
+    --text-secondary: 210 15% 45%;
+    --text-tertiary: 210 10% 60%;
 
     /* Status colors */
     --color-success: 142 72% 45%;
     --color-warning: 38 92% 50%;
     --color-error: 0 84% 60%;
     --color-info: 200 82% 45%;
+
+    /* UI Elements */
+    --card: 0 0% 100%;
+    --card-foreground: 210 25% 25%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 25% 25%;
+    --primary: 200 82% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 210 25% 25%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 20% 96%;
+    --accent-foreground: 210 25% 25%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 200 82% 45%;
+    --radius: 0.75rem;
   }
 
+  .dark {
+    /* Background colors - Dark theme */
+    --background: 210 25% 8%;
+    --foreground: 210 20% 98%;
+
+    /* Surface colors - Dark theme */
+    --surface-50: 210 25% 12%;
+    --surface-100: 210 25% 16%;
+    --surface-200: 210 25% 20%;
+    --surface-300: 210 25% 24%;
+
+    /* UI Elements - Dark theme */
+    --card: 210 25% 12%;
+    --card-foreground: 210 20% 98%;
+    --popover: 210 25% 12%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 200 82% 45%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 210 25% 16%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 210 25% 16%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 210 25% 16%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 210 25% 16%;
+    --input: 210 25% 16%;
+    --ring: 200 82% 45%;
+  }
+}
+
+@layer base {
   * {
     @apply border-border;
   }
