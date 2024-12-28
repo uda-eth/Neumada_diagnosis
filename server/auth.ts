@@ -4,11 +4,29 @@ import { type Express } from "express";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { createHash } from "crypto";
-import { users, type User } from "@db/schema";
+import { users } from "@db/schema";
 import { db } from "@db";
 import { eq } from "drizzle-orm";
 
-// Enhanced password hashing with detailed logging
+// Define the User type to match our schema
+type User = {
+  id: number;
+  username: string;
+  password: string;
+  fullName: string | null;
+  bio: string | null;
+  profileImage: string | null;
+  location: string | null;
+  interests: string[] | null;
+  createdAt: Date | null;
+};
+
+declare global {
+  namespace Express {
+    interface User extends User {}
+  }
+}
+
 const crypto = {
   hash: async (password: string): Promise<string> => {
     console.log("Hashing new password");
@@ -25,12 +43,6 @@ const crypto = {
     return hashedSupplied === storedPassword;
   }
 };
-
-declare global {
-  namespace Express {
-    interface User extends User {}
-  }
-}
 
 export function setupAuth(app: Express) {
   const MemoryStore = createMemoryStore(session);

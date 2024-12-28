@@ -1,27 +1,11 @@
 import { Switch, Route } from "wouter";
-import { Loader2 } from "lucide-react";
-import AuthPage from "./pages/AuthPage";
 import HomePage from "./pages/HomePage";
 import EventPage from "./pages/EventPage";
 import ProfilePage from "./pages/ProfilePage";
 import ChatbotPage from "./pages/ChatbotPage";
-import { useUser } from "./hooks/use-user";
 
 function App() {
-  const { user, isLoading } = useUser();
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <AuthPage />;
-  }
-
+  // Temporarily bypass authentication for demo
   return (
     <Switch>
       <Route path="/" component={HomePage} />
