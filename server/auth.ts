@@ -8,13 +8,20 @@ import { users, type User } from "@db/schema";
 import { db } from "@db";
 import { eq } from "drizzle-orm";
 
-// Simplified password hashing for demo purposes
+// Enhanced password hashing with detailed logging
 const crypto = {
   hash: async (password: string): Promise<string> => {
-    return createHash('sha256').update(password).digest('hex');
+    console.log("Hashing new password");
+    const hashedPassword = createHash('sha256').update(password).digest('hex');
+    console.log("Generated hash length:", hashedPassword.length);
+    return hashedPassword;
   },
   compare: async (suppliedPassword: string, storedPassword: string): Promise<boolean> => {
-    const hashedSupplied = await createHash('sha256').update(suppliedPassword).digest('hex'); //Added await here
+    console.log("Comparing passwords");
+    console.log("Stored password hash length:", storedPassword.length);
+    const hashedSupplied = createHash('sha256').update(suppliedPassword).digest('hex');
+    console.log("Supplied password hash length:", hashedSupplied.length);
+    console.log("Hashes match:", hashedSupplied === storedPassword);
     return hashedSupplied === storedPassword;
   }
 };
@@ -54,7 +61,7 @@ export function setupAuth(app: Express) {
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       try {
-        console.log("Attempting login for username:", username);
+        console.log("Login attempt for username:", username);
         const [user] = await db
           .select()
           .from(users)
@@ -66,7 +73,9 @@ export function setupAuth(app: Express) {
           return done(null, false, { message: "Invalid username or password." });
         }
 
-        const isMatch = await crypto.compare(password, user.password); //Added await here
+        console.log("Found user:", { id: user.id, username: user.username });
+        const isMatch = await crypto.compare(password, user.password);
+
         if (!isMatch) {
           console.log("Password mismatch for username:", username);
           return done(null, false, { message: "Invalid username or password." });
@@ -82,18 +91,22 @@ export function setupAuth(app: Express) {
   );
 
   passport.serializeUser((user, done) => {
+    console.log("Serializing user:", user.id);
     done(null, user.id);
   });
 
   passport.deserializeUser(async (id: number, done) => {
     try {
+      console.log("Deserializing user:", id);
       const [user] = await db
         .select()
         .from(users)
         .where(eq(users.id, id))
         .limit(1);
+      console.log("Deserialized user found:", !!user);
       done(null, user);
     } catch (err) {
+      console.error("Deserialization error:", err);
       done(err);
     }
   });
@@ -128,6 +141,7 @@ export function setupAuth(app: Express) {
 
       // Hash the password
       const hashedPassword = await crypto.hash(password);
+      console.log("Password hashed successfully for new user");
 
       // Ensure interests is always an array or null
       const processedInterests = interests && Array.isArray(interests) ? interests : null;
@@ -165,14 +179,14 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/login", (req, res, next) => {
-    console.log("Login attempt:", req.body);
+    console.log("Login attempt:", { username: req.body.username });
 
     if (!req.body.username || !req.body.password) {
       return res.status(400).send("Username and password are required");
     }
 
     passport.authenticate("local", (err: any, user: Express.User, info: IVerifyOptions) => {
-      console.log("Passport auth result:", { err, user, info });
+      console.log("Passport auth result:", { err, user: !!user, info });
 
       if (err) {
         return next(err);
@@ -184,18 +198,24 @@ export function setupAuth(app: Express) {
 
       req.logIn(user, (err) => {
         if (err) {
+          console.error("Login error:", err);
           return next(err);
         }
+        console.log("Login successful, session established");
         return res.json(user);
       });
     })(req, res, next);
   });
 
   app.post("/api/logout", (req, res) => {
+    const username = req.user?.username;
+    console.log("Logout attempt for user:", username);
     req.logout((err) => {
       if (err) {
+        console.error("Logout error:", err);
         return res.status(500).send("Logout failed");
       }
+      console.log("Logout successful for user:", username);
       res.json({ message: "Logged out successfully" });
     });
   });
@@ -203,8 +223,10 @@ export function setupAuth(app: Express) {
   app.get("/api/user", (req, res) => {
     if (req.isAuthenticated()) {
       const user = req.user;
+      console.log("Authenticated user request:", user.username);
       return res.json(user);
     }
+    console.log("Unauthenticated user request");
     res.status(401).send("Not authenticated");
   });
 }
