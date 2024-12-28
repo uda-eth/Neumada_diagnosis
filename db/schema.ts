@@ -12,6 +12,7 @@ export const users = pgTable("users", {
   profileImage: text("profile_image"),
   location: text("location"),
   interests: jsonb("interests").$type<string[]>(),
+  currentMoods: jsonb("current_moods").$type<string[]>(), 
   profession: text("profession"),
   age: integer("age"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -34,7 +35,7 @@ export const eventParticipants = pgTable("event_participants", {
   id: serial("id").primaryKey(),
   eventId: integer("event_id").references(() => events.id),
   userId: integer("user_id").references(() => users.id),
-  status: text("status").notNull(), // attending, interested, etc.
+  status: text("status").notNull(),
 });
 
 export const userRelations = relations(users, ({ many }) => ({
