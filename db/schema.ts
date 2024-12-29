@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, jsonb, numeric } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 
@@ -12,6 +12,8 @@ export const users = pgTable("users", {
   profileImage: text("profile_image"), 
   profileImages: jsonb("profile_images").$type<string[]>().default([]), 
   location: text("location"),
+  birthLocation: text("birth_location"),
+  nextLocation: text("next_location"),
   interests: jsonb("interests").$type<string[]>(),
   currentMoods: jsonb("current_moods").$type<string[]>(), 
   profession: text("profession"),
@@ -29,6 +31,7 @@ export const events = pgTable("events", {
   category: text("category").notNull(),
   creatorId: integer("creator_id").references(() => users.id),
   capacity: integer("capacity"),
+  price: numeric("price"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
