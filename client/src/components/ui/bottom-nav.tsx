@@ -3,7 +3,6 @@ import {
   Compass, 
   UsersRound,
   PlusSquare,
-  UserCircle,
   Globe,
   Settings
 } from "lucide-react";
@@ -13,7 +12,6 @@ const navItems = [
   { icon: UsersRound, label: "Connect", href: "/connect" },
   { icon: PlusSquare, label: "Create", href: "/create" },
   { icon: Globe, label: "Concierge", href: "/companion" },
-  { icon: UserCircle, label: "Profile", href: "/profile" },
   { icon: Settings, label: "Settings", href: "/settings" }
 ];
 
