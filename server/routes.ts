@@ -267,58 +267,50 @@ export function registerRoutes(app: Express): Server {
 
       // For development, return mock data
       let filteredUsers = [...mockUsers];
-      let filteredEvents = [...mockEvents];
 
       // Filter users by city
       if (city && city !== 'all') {
-        filteredUsers = filteredUsers.filter(user => 
-          user.location.toLowerCase() === (city as string).toLowerCase()
-        );
-        filteredEvents = filteredEvents.filter(event =>
-          event.location.toLowerCase() === (city as string).toLowerCase()
+        filteredUsers = filteredUsers.filter(user =>
+          user.location?.toLowerCase() === (city as string).toLowerCase()
         );
       }
 
       // Apply other filters
       if (gender && gender !== 'all') {
-        filteredUsers = filteredUsers.filter(user => 
+        filteredUsers = filteredUsers.filter(user =>
           user.gender === gender
         );
       }
 
       if (minAge) {
-        filteredUsers = filteredUsers.filter(user => 
+        filteredUsers = filteredUsers.filter(user =>
           user.age >= parseInt(minAge as string)
         );
       }
 
       if (maxAge) {
-        filteredUsers = filteredUsers.filter(user => 
+        filteredUsers = filteredUsers.filter(user =>
           user.age <= parseInt(maxAge as string)
         );
       }
 
       if (interests && Array.isArray(interests)) {
-        filteredUsers = filteredUsers.filter(user => 
-          interests.some(interest => 
-            user.interests.includes(interest as string)
+        filteredUsers = filteredUsers.filter(user =>
+          user.interests?.some(interest =>
+            interests.includes(interest as string)
           )
         );
       }
 
       if (moods && Array.isArray(moods)) {
-        filteredUsers = filteredUsers.filter(user => 
-          moods.some(mood => 
-            user.currentMoods.includes(mood as string)
+        filteredUsers = filteredUsers.filter(user =>
+          user.currentMoods?.some(mood =>
+            moods.includes(mood as string)
           )
         );
       }
 
-      // Return both filtered users and events for the selected city
-      res.json({
-        users: filteredUsers,
-        events: filteredEvents
-      });
+      res.json(filteredUsers);
     } catch (error) {
       console.error("Error fetching users:", error);
       res.status(500).json({ error: "Failed to fetch users" });
@@ -329,7 +321,7 @@ export function registerRoutes(app: Express): Server {
   app.get("/api/events/city/:city", async (req, res) => {
     try {
       const { city } = req.params;
-      const cityEvents = mockEvents.filter(event => 
+      const cityEvents = mockEvents.filter(event =>
         event.location.toLowerCase() === city.toLowerCase()
       );
       res.json(cityEvents);
