@@ -31,7 +31,7 @@ export function BottomNav() {
                     isActive ? "text-white" : "text-white/60"
                   }`} 
                 />
-                <span className={`text-xs ${
+                <span className={`text-xs uppercase tracking-wider ${
                   isActive ? "text-white" : "text-white/60"
                 }`}>
                   {label}

@@ -2,7 +2,7 @@ import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useUser } from "@/hooks/use-user";
 import { Button } from "@/components/ui/button";
-import { Share2, Calendar, MapPin, Users, ArrowLeft } from "lucide-react";
+import { Share2, Calendar, MapPin, Users, ChevronLeft } from "lucide-react"; // Changed ArrowLeft to ChevronLeft
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -70,7 +70,7 @@ export default function EventPage() {
             className="text-white/60 hover:text-white"
             onClick={() => setLocation("/")}
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
+            <ChevronLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
           <Button variant="ghost" className="text-white/60 hover:text-white">
@@ -93,7 +93,7 @@ export default function EventPage() {
         <div className="space-y-8">
           {/* Title and Meta */}
           <div>
-            <h1 className="text-3xl font-bold mb-4">{event.title}</h1>
+            <h1 className="text-2xl font-bold mb-4 uppercase">{event.title}</h1> {/* Reduced font size and uppercase */}
             <div className="flex flex-wrap gap-4 text-white/60">
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5" />
@@ -114,7 +114,7 @@ export default function EventPage() {
 
           {/* Price and Interested */}
           <div className="flex items-center justify-between py-4 border-y border-white/10">
-            <div className="text-xl font-semibold">
+            <div className="text-lg font-semibold"> {/*Reduced font size */}
               {isPrivateEvent ? "RSVP required" : `$${event.price} USD`}
             </div>
             <div className="flex items-center gap-3">
@@ -133,7 +133,7 @@ export default function EventPage() {
 
           {/* Description */}
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold">About this event</h2>
+            <h2 className="text-lg font-semibold"> {/*Reduced font size */}About this event</h2>
             <p className="text-white/80 whitespace-pre-wrap leading-relaxed">
               {event.description}
             </p>
@@ -141,11 +141,11 @@ export default function EventPage() {
 
           {/* Created By */}
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Created by</h2>
+            <h2 className="text-lg font-semibold"> {/*Reduced font size */}Created by</h2>
             <div className="flex items-center gap-4">
               <Avatar className="w-12 h-12">
                 <AvatarFallback className="bg-white/10">
-                  {event.creatorId?.toString()[0] || 'H'}
+                  {event.creatorId?.toString()[0] || "H"}
                 </AvatarFallback>
               </Avatar>
               <div>
@@ -158,7 +158,7 @@ export default function EventPage() {
           {/* CTA Buttons */}
           {user && user.id !== event.creatorId && (
             <div className="flex gap-4 pt-4">
-              <Button 
+              <Button
                 className="flex-1 h-12"
                 onClick={() => participateMutation.mutate("attending")}
                 disabled={participateMutation.isPending}

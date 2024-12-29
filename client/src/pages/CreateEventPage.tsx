@@ -85,7 +85,7 @@ export default function CreateEventPage() {
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-lg font-medium tracking-wide">Create</h1>
+          <h1 className="text-sm font-medium uppercase tracking-wider">Create</h1>
         </div>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
