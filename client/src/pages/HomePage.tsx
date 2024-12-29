@@ -5,39 +5,30 @@ import { useUser } from "@/hooks/use-user";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, Globe, MapPin, Users, UserCircle2 } from "lucide-react";
+import { MapPin, Users, Plus, UserCircle2 } from "lucide-react";
 import { format } from "date-fns";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { getEventImage } from "@/lib/eventImages";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+
+const cities = [
+  "Bali",
+  "Bangkok",
+  "Barcelona",
+  "Berlin",
+  "Lisbon",
+  "London",
+  "Mexico City",
+  "New York",
+];
 
 const categories = [
   "Networking",
@@ -49,26 +40,16 @@ const categories = [
   "Travel",
 ];
 
-const locations = [
-  "Bali",
-  "Bangkok",
-  "Barcelona",
-  "Berlin",
-  "Lisbon",
-  "London",
-  "Mexico City",
-  "New York",
-];
-
 export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
+  const [selectedCity, setSelectedCity] = useState("Mexico City");
   const { events, isLoading, createEvent } = useEvents(
     selectedCategory || undefined,
-    selectedLocation || undefined
+    selectedCity || undefined
   );
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { user } = useUser();
   const [newEvent, setNewEvent] = useState({
     title: "",
     description: "",
@@ -78,7 +59,20 @@ export default function HomePage() {
     image: "",
     capacity: 0,
   });
-  const { user } = useUser();
+
+  // Group events by time period
+  const today = new Date();
+  const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  const groupedEvents = events?.reduce((acc: any, event) => {
+    const eventDate = new Date(event.date);
+    if (eventDate <= nextWeek && eventDate >= today) {
+      acc.thisWeekend.push(event);
+    } else {
+      acc.nextWeek.push(event);
+    }
+    return acc;
+  }, { thisWeekend: [], nextWeek: [] });
 
   const handleCreateEvent = async () => {
     try {
@@ -104,29 +98,34 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border">
+    <div className="min-h-screen bg-[#121212] text-white">
+      {/* Header */}
+      <header className="border-b border-white/10">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-foreground">Neumada Events</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold">Discover events</h1>
+            <Select value={selectedCity} onValueChange={setSelectedCity}>
+              <SelectTrigger className="w-[180px] bg-transparent border-white/20">
+                <SelectValue placeholder="Select city" />
+              </SelectTrigger>
+              <SelectContent>
+                {cities.map(city => (
+                  <SelectItem key={city} value={city}>{city}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="flex items-center gap-4">
             <Button variant="ghost" onClick={() => setLocation("/browse")}>
               Browse Members
             </Button>
             <ThemeToggle />
             {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="gap-2">
-                    <UserCircle2 className="h-5 w-5" />
-                    {user.username}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setLocation(`/profile/${user.username}`)}>
-                    My Profile
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Button variant="ghost" onClick={() => setLocation(`/profile/${user.username}`)}>
+                <UserCircle2 className="h-5 w-5 mr-2" />
+                {user.username}
+              </Button>
             ) : (
               <Button variant="ghost" onClick={() => setLocation("/auth")}>
                 Sign In
@@ -171,9 +170,9 @@ export default function HomePage() {
                           <SelectValue placeholder="Select location" />
                         </SelectTrigger>
                         <SelectContent position="popper" className="w-[200px]">
-                          {locations.map((loc) => (
-                            <SelectItem key={loc} value={loc}>
-                              {loc}
+                          {cities.map((city) => (
+                            <SelectItem key={city} value={city}>
+                              {city}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -244,82 +243,144 @@ export default function HomePage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="flex gap-4 mb-8">
-          <Select onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select onValueChange={setSelectedLocation}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Location" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Locations</SelectItem>
-              {locations.map((loc) => (
-                <SelectItem key={loc} value={loc}>
-                  {loc}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <h2 className="text-2xl font-bold mb-6">All Events</h2>
+      <main className="container mx-auto px-4 py-8 max-w-3xl">
         {isLoading ? (
-          <div className="text-center py-8">Loading events...</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {events?.map((event) => (
-              <Card
-                key={event.id}
-                className="cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => setLocation(`/event/${event.id}`)}
-              >
-                {event.image && (
-                  <img
-                    src={event.image}
-                    alt={event.title}
-                    className="w-full h-48 object-cover"
-                  />
-                )}
-                <CardHeader>
-                  <CardTitle>{event.title}</CardTitle>
-                  <CardDescription className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    {format(new Date(event.date), "PPP")}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
-                      {event.location}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Globe className="w-4 h-4" />
-                      {event.category}
-                    </div>
-                    {event.capacity && (
-                      <div className="flex items-center gap-1">
-                        <Users className="w-4 h-4" />
-                        {event.capacity}
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+          <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="h-48 bg-white/5 rounded-lg mb-2"></div>
+              </div>
             ))}
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {/* This Weekend Section */}
+            {groupedEvents?.thisWeekend.length > 0 && (
+              <section>
+                <h2 className="text-sm font-medium text-white/60 mb-4">THIS WEEKEND</h2>
+                <div className="space-y-4">
+                  {groupedEvents.thisWeekend.map((event: any) => (
+                    <Card
+                      key={event.id}
+                      className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors cursor-pointer"
+                      onClick={() => setLocation(`/event/${event.id}`)}
+                    >
+                      <CardContent className="p-0">
+                        <div className="flex h-[140px]">
+                          <div className="w-1/3">
+                            <img
+                              src={event.image}
+                              alt={event.title}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 p-4 flex flex-col justify-between">
+                            <div>
+                              <h3 className="font-semibold mb-1">{event.title}</h3>
+                              <p className="text-sm text-white/60">
+                                {format(new Date(event.date), "EEE, MMM d, yyyy · h:mm a")}
+                              </p>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <MapPin className="w-4 h-4 text-white/60" />
+                                <span className="text-sm text-white/60">{event.location}</span>
+                                {event.capacity && (
+                                  <>
+                                    <span className="text-white/60">·</span>
+                                    <span className="text-sm text-white/60">
+                                      ${event.price || "Free"}
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className="flex -space-x-2">
+                                  {[...Array(3)].map((_, i) => (
+                                    <Avatar key={i} className="w-6 h-6 border-2 border-[#121212]">
+                                      <AvatarFallback className="bg-white/10 text-xs">
+                                        {String.fromCharCode(65 + i)}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                  ))}
+                                </div>
+                                <span className="text-sm text-white/60">
+                                  {Math.floor(Math.random() * 50 + 10)} interested
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Next Week Section */}
+            {groupedEvents?.nextWeek.length > 0 && (
+              <section>
+                <h2 className="text-sm font-medium text-white/60 mb-4">NEXT WEEK</h2>
+                <div className="space-y-4">
+                  {groupedEvents.nextWeek.map((event: any) => (
+                    <Card
+                      key={event.id}
+                      className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors cursor-pointer"
+                      onClick={() => setLocation(`/event/${event.id}`)}
+                    >
+                      <CardContent className="p-0">
+                        <div className="flex h-[140px]">
+                          <div className="w-1/3">
+                            <img
+                              src={event.image}
+                              alt={event.title}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 p-4 flex flex-col justify-between">
+                            <div>
+                              <h3 className="font-semibold mb-1">{event.title}</h3>
+                              <p className="text-sm text-white/60">
+                                {format(new Date(event.date), "EEE, MMM d, yyyy · h:mm a")}
+                              </p>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <MapPin className="w-4 h-4 text-white/60" />
+                                <span className="text-sm text-white/60">{event.location}</span>
+                                {event.capacity && (
+                                  <>
+                                    <span className="text-white/60">·</span>
+                                    <span className="text-sm text-white/60">
+                                      ${event.price || "Free"}
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className="flex -space-x-2">
+                                  {[...Array(3)].map((_, i) => (
+                                    <Avatar key={i} className="w-6 h-6 border-2 border-[#121212]">
+                                      <AvatarFallback className="bg-white/10 text-xs">
+                                        {String.fromCharCode(65 + i)}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                  ))}
+                                </div>
+                                <span className="text-sm text-white/60">
+                                  {Math.floor(Math.random() * 50 + 10)} interested
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
         )}
       </main>
