@@ -80,7 +80,7 @@ export default function ProfilePage() {
     );
   }
 
-  const currentImageIndex = 0; // TODO: Add image carousel state
+  const currentImageIndex = 0; 
 
   return (
     <div className="min-h-screen bg-[#121212] text-white">
@@ -140,7 +140,7 @@ export default function ProfilePage() {
             animate="show"
           >
             <motion.div variants={item}>
-              <h1 className="text-2xl font-bold">{profile.fullName}</h1>
+              <h1 className="text-lg font-medium tracking-wide">{profile.fullName}</h1>
               {profile.profession && (
                 <p className="text-white/60">{profile.profession}</p>
               )}
