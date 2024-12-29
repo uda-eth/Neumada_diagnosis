@@ -6,10 +6,23 @@ import CreateEventPage from "./pages/CreateEventPage";
 import ChatbotPage from "./pages/ChatbotPage";
 import MatchesPage from "./pages/MatchesPage";
 import { BottomNav } from "./components/ui/bottom-nav";
+import { useEffect, useState } from "react";
 
 function App() {
+  const [theme, setTheme] = useState<"light" | "dark">(
+    () => (localStorage.getItem("theme") as "light" | "dark") || 
+    (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+  );
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.remove("light", "dark");
+    root.classList.add(theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
   return (
-    <>
+    <div className={`min-h-screen bg-background text-foreground ${theme}`}>
       <Switch>
         <Route path="/" component={HomePage} />
         <Route path="/event/:id" component={EventPage} />
@@ -22,7 +35,7 @@ function App() {
         </Route>
       </Switch>
       <BottomNav />
-    </>
+    </div>
   );
 }
 
