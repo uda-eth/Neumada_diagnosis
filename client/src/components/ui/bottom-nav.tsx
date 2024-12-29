@@ -4,14 +4,17 @@ import {
   UsersRound,
   PlusSquare,
   UserCircle,
-  Globe
+  Globe,
+  Settings
 } from "lucide-react";
 
 const navItems = [
   { icon: Compass, label: "Discover", href: "/" },
-  { icon: Globe, label: "Companion", href: "/companion" },
+  { icon: UsersRound, label: "Connect", href: "/connect" },
   { icon: PlusSquare, label: "Create", href: "/create" },
+  { icon: Globe, label: "Concierge", href: "/companion" },
   { icon: UserCircle, label: "Profile", href: "/profile" },
+  { icon: Settings, label: "Settings", href: "/settings" }
 ];
 
 export function BottomNav() {
