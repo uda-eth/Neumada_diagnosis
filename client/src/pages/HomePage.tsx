@@ -103,7 +103,7 @@ export default function HomePage() {
       <header className="border-b border-white/10">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <h1 className="text-sm font-medium uppercase tracking-wider">Discover</h1>
+            <h1 className="text-sm font-medium uppercase tracking-[.5em]">Discover</h1>
             <Select value={selectedCity} onValueChange={setSelectedCity}>
               <SelectTrigger className="w-[180px] bg-transparent border-white/20">
                 <SelectValue placeholder="Select city" />
