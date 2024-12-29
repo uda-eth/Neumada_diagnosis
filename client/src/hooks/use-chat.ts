@@ -10,7 +10,7 @@ export function useChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
-      content: "Hello! I'm your AI travel companion. How can I help you plan your journey today?",
+      content: "Hello! I'm your AI travel companion for exploring the digital nomad lifestyle. I can help you discover local spots, connect with fellow travelers, and make the most of your journey. What would you like to know about your current or next destination?",
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
@@ -24,7 +24,10 @@ export function useChat() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ 
+          message,
+          context: "You are a knowledgeable AI travel companion specializing in digital nomad lifestyle, local experiences, and cultural insights. Focus on providing personalized recommendations and practical advice for travelers."
+        }),
       });
 
       if (!response.ok) {
@@ -37,7 +40,7 @@ export function useChat() {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: error.message || 'Failed to get response from the chatbot',
+        description: error.message || 'Failed to get response from the travel companion',
       });
     } finally {
       setIsLoading(false);

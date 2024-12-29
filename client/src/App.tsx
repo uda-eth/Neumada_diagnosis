@@ -3,6 +3,7 @@ import HomePage from "./pages/HomePage";
 import EventPage from "./pages/EventPage";
 import ProfilePage from "./pages/ProfilePage";
 import CreateEventPage from "./pages/CreateEventPage";
+import ChatbotPage from "./pages/ChatbotPage";
 import { BottomNav } from "./components/ui/bottom-nav";
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
         <Route path="/event/:id" component={EventPage} />
         <Route path="/profile/:username" component={ProfilePage} />
         <Route path="/create" component={CreateEventPage} />
+        <Route path="/companion" component={ChatbotPage} />
         <Route path="/:rest*">
           {() => <div className="text-center p-8">404 - Page Not Found</div>}
         </Route>
