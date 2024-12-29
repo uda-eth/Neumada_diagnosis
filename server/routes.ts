@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { handleChatMessage } from "./chat";
 import { getRecommendedEvents } from "./recommendations";
+import { findMatches } from "./services/matchingService";
 import { db } from "@db";
 import { events, eventParticipants, users } from "@db/schema";
 import { eq, desc, ilike, and, or } from "drizzle-orm";
@@ -164,6 +165,21 @@ export function registerRoutes(app: Express): Server {
 
   // Chat API
   app.post("/api/chat", handleChatMessage);
+
+  // Find matches API
+  app.get("/api/matches", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Authentication required");
+    }
+
+    try {
+      const matches = await findMatches(req.user);
+      res.json(matches);
+    } catch (error) {
+      console.error("Error finding matches:", error);
+      res.status(500).json({ error: "Failed to find matches" });
+    }
+  });
 
   // Browse Users API
   app.get("/api/users/browse", async (req, res) => {
