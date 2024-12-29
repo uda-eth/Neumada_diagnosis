@@ -102,7 +102,7 @@ export default function BrowseUsersPage() {
     queryKey: ['/api/users/browse', selectedCity, selectedGender, selectedInterests, selectedMoods, ageRange],
     queryFn: async () => {
       const params = new URLSearchParams();
-      params.append('city', selectedCity);
+      if (selectedCity !== 'all') params.append('city', selectedCity);
       if (selectedGender !== 'all') params.append('gender', selectedGender);
       if (ageRange.min) params.append('minAge', ageRange.min);
       if (ageRange.max) params.append('maxAge', ageRange.max);
@@ -119,7 +119,8 @@ export default function BrowseUsersPage() {
 
       const response = await fetch(`/api/users/browse?${params}`);
       if (!response.ok) throw new Error("Failed to fetch users");
-      return response.json();
+      const data = await response.json();
+      return data;
     },
   });
 
