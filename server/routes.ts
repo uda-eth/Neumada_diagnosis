@@ -160,6 +160,85 @@ const mockUsers = [
   },
 ];
 
+// Mock events data for development
+const mockEvents = [
+  // Bali Events
+  {
+    id: 1,
+    title: "Digital Nomad Meetup",
+    description: "Weekly gathering of digital nomads to share experiences and network",
+    location: "Bali",
+    date: new Date("2024-12-31T18:00:00"),
+    category: "Networking",
+    image: "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=1200",
+    price: 0,
+    capacity: 50,
+    creatorId: 1
+  },
+  {
+    id: 2,
+    title: "Sunset Yoga Session",
+    description: "Beachside yoga session followed by meditation",
+    location: "Bali",
+    date: new Date("2024-12-30T17:00:00"),
+    category: "Wellness",
+    image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=1200",
+    price: 15,
+    capacity: 20,
+    creatorId: 2
+  },
+  // Bangkok Events
+  {
+    id: 3,
+    title: "Street Food Tour",
+    description: "Explore the best street food spots with local guides",
+    location: "Bangkok",
+    date: new Date("2024-12-29T19:00:00"),
+    category: "Food",
+    image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200",
+    price: 25,
+    capacity: 15,
+    creatorId: 3
+  },
+  {
+    id: 4,
+    title: "Tech Startup Mixer",
+    description: "Network with local and international tech entrepreneurs",
+    location: "Bangkok",
+    date: new Date("2024-12-30T18:30:00"),
+    category: "Networking",
+    image: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=1200",
+    price: 0,
+    capacity: 100,
+    creatorId: 4
+  },
+  // Barcelona Events
+  {
+    id: 5,
+    title: "Tapas Crawl",
+    description: "Experience the best tapas bars in Gothic Quarter",
+    location: "Barcelona",
+    date: new Date("2024-12-31T20:00:00"),
+    category: "Food",
+    image: "https://images.unsplash.com/photo-1515443961218-a51367888e4b?w=1200",
+    price: 30,
+    capacity: 12,
+    creatorId: 5
+  },
+  {
+    id: 6,
+    title: "Creative Coworking Day",
+    description: "Join fellow digital nomads for a productive day of coworking",
+    location: "Barcelona",
+    date: new Date("2024-12-29T09:00:00"),
+    category: "Coworking",
+    image: "https://images.unsplash.com/photo-1517502884422-41eaead166d4?w=1200",
+    price: 10,
+    capacity: 30,
+    creatorId: 6
+  }
+];
+
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
 
@@ -181,20 +260,26 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Browse Users API
+  // Browse Users API with improved filtering
   app.get("/api/users/browse", async (req, res) => {
     try {
       const { city, gender, minAge, maxAge, interests, moods } = req.query;
 
       // For development, return mock data
       let filteredUsers = [...mockUsers];
+      let filteredEvents = [...mockEvents];
 
+      // Filter users by city
       if (city && city !== 'all') {
         filteredUsers = filteredUsers.filter(user => 
           user.location.toLowerCase() === (city as string).toLowerCase()
         );
+        filteredEvents = filteredEvents.filter(event =>
+          event.location.toLowerCase() === (city as string).toLowerCase()
+        );
       }
 
+      // Apply other filters
       if (gender && gender !== 'all') {
         filteredUsers = filteredUsers.filter(user => 
           user.gender === gender
@@ -229,10 +314,28 @@ export function registerRoutes(app: Express): Server {
         );
       }
 
-      res.json(filteredUsers);
+      // Return both filtered users and events for the selected city
+      res.json({
+        users: filteredUsers,
+        events: filteredEvents
+      });
     } catch (error) {
       console.error("Error fetching users:", error);
       res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  // Get city-specific events
+  app.get("/api/events/city/:city", async (req, res) => {
+    try {
+      const { city } = req.params;
+      const cityEvents = mockEvents.filter(event => 
+        event.location.toLowerCase() === city.toLowerCase()
+      );
+      res.json(cityEvents);
+    } catch (error) {
+      console.error("Error fetching city events:", error);
+      res.status(500).json({ error: "Failed to fetch city events" });
     }
   });
 
