@@ -8,18 +8,20 @@ export function ThemeToggle() {
     (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
   );
 
-  useEffect(() => {
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
-    root.classList.add(theme);
-    localStorage.setItem("theme", theme);
-  }, [theme]);
+    root.classList.add(newTheme);
+    localStorage.setItem("theme", newTheme);
+  };
 
   return (
     <Button
       variant="outline"
       size="icon"
-      onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+      onClick={toggleTheme}
       className="rounded-full border-white/10 bg-white/5"
     >
       <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
