@@ -1,5 +1,6 @@
 import { BottomNav } from "./bottom-nav";
 import { ThemeToggle } from "./theme-toggle";
+import { Logo } from "./logo";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -13,13 +14,13 @@ export function Layout({ children }: LayoutProps) {
         <div className="container flex h-14 max-w-screen-2xl items-center">
           <div className="mr-4 hidden md:flex">
             <a className="mr-6 flex items-center space-x-2" href="/">
-              <span className="hidden font-bold sm:inline-block">Maly</span>
+              <Logo className="h-8 w-auto" />
             </a>
           </div>
           <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
             <div className="w-full flex-1 md:w-auto md:flex-none">
               <nav className="flex items-center">
-                <span className="font-bold md:hidden">Maly</span>
+                <Logo className="h-6 w-auto md:hidden" />
               </nav>
             </div>
             <ThemeToggle />
