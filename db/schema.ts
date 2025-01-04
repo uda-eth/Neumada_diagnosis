@@ -28,6 +28,7 @@ export const events = pgTable("events", {
   location: text("location").notNull(),
   date: timestamp("date").notNull(),
   image: text("image"),
+  image_url: text("image_url"), 
   category: text("category").notNull(),
   creatorId: integer("creator_id").references(() => users.id),
   capacity: integer("capacity"),
