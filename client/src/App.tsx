@@ -7,6 +7,7 @@ import ChatbotPage from "./pages/ChatbotPage";
 import MatchesPage from "./pages/MatchesPage";
 import BrowseUsersPage from "./pages/BrowseUsersPage";
 import TutorialPage from "./pages/TutorialPage";
+import ProfileGeneratorPage from "./pages/ProfileGeneratorPage";
 import { Layout } from "./components/ui/layout";
 import { ThemeProvider } from "./lib/theme-provider";
 
@@ -18,6 +19,7 @@ function App() {
           <Route path="/" component={HomePage} />
           <Route path="/event/:id" component={EventPage} />
           <Route path="/profile/:username" component={ProfilePage} />
+          <Route path="/profile/edit" component={ProfileGeneratorPage} />
           <Route path="/create" component={CreateEventPage} />
           <Route path="/companion" component={ChatbotPage} />
           <Route path="/connect" component={MatchesPage} />
