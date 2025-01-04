@@ -8,6 +8,7 @@ import MatchesPage from "./pages/MatchesPage";
 import BrowseUsersPage from "./pages/BrowseUsersPage";
 import TutorialPage from "./pages/TutorialPage";
 import ProfileGeneratorPage from "./pages/ProfileGeneratorPage";
+import MessagesPage from "./pages/MessagesPage";
 import { Layout } from "./components/ui/layout";
 import { ThemeProvider } from "./lib/theme-provider";
 
@@ -25,6 +26,7 @@ function App() {
           <Route path="/connect" component={MatchesPage} />
           <Route path="/browse" component={BrowseUsersPage} />
           <Route path="/tutorial" component={TutorialPage} />
+          <Route path="/messages" component={MessagesPage} />
           <Route path="/:rest*">
             {() => <div className="text-center p-8">404 - Page Not Found</div>}
           </Route>
