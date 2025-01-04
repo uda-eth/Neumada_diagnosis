@@ -5,6 +5,8 @@ import ProfilePage from "./pages/ProfilePage";
 import CreateEventPage from "./pages/CreateEventPage";
 import ChatbotPage from "./pages/ChatbotPage";
 import MatchesPage from "./pages/MatchesPage";
+import BrowseUsersPage from "./pages/BrowseUsersPage";
+import TutorialPage from "./pages/TutorialPage"; // Added import for TutorialPage
 import { BottomNav } from "./components/ui/bottom-nav";
 import { useEffect, useState } from "react";
 
@@ -30,6 +32,8 @@ function App() {
         <Route path="/create" component={CreateEventPage} />
         <Route path="/companion" component={ChatbotPage} />
         <Route path="/connect" component={MatchesPage} />
+        <Route path="/browse" component={BrowseUsersPage} />
+        <Route path="/tutorial" component={TutorialPage} /> {/* Added route for TutorialPage */}
         <Route path="/:rest*">
           {() => <div className="text-center p-8">404 - Page Not Found</div>}
         </Route>

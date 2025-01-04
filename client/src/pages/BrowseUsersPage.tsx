@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,24 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Search, MapPin, CalendarDays } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { User } from "@db/schema";
+
+// Define the User interface locally since we can't import from schema
+interface User {
+  id: number;
+  username: string;
+  fullName?: string | null;
+  gender?: string | null;
+  bio?: string | null;
+  profileImage?: string | null;
+  profileImages?: string[];
+  location?: string | null;
+  birthLocation?: string | null;
+  nextLocation?: string | null;
+  interests?: string[];
+  currentMoods?: string[];
+  profession?: string | null;
+  age?: number | null;
+}
 
 // Animation variants
 const container = {
@@ -91,7 +108,7 @@ const getProfileImage = (user: User): string | undefined => {
 
 export default function BrowseUsersPage() {
   const [, setLocation] = useLocation();
-  const [selectedCity, setSelectedCity] = useState<string>("Bali");
+  const [selectedCity, setSelectedCity] = useState<string>("all");
   const [selectedGender, setSelectedGender] = useState<string>("all");
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
@@ -154,6 +171,7 @@ export default function BrowseUsersPage() {
                   <SelectValue placeholder="Select City" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="all">All Cities</SelectItem>
                   {cities.map(city => (
                     <SelectItem key={city} value={city}>{city}</SelectItem>
                   ))}
@@ -289,10 +307,12 @@ export default function BrowseUsersPage() {
                       <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
                         <div className="flex items-center justify-between mb-2">
                           <h3 className="font-bold text-lg">{user.fullName || user.username}</h3>
-                          <span className="text-sm flex items-center gap-1">
-                            <CalendarDays className="w-3 h-3" />
-                            {user.age}
-                          </span>
+                          {user.age && (
+                            <span className="text-sm flex items-center gap-1">
+                              <CalendarDays className="w-3 h-3" />
+                              {user.age}
+                            </span>
+                          )}
                         </div>
                         {user.location && (
                           <div className="flex items-center gap-2 text-sm text-white/80">
