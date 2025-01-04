@@ -27,18 +27,18 @@ export function BottomNav() {
           const isActive = location === href;
           return (
             <Link key={href} href={href}>
-              <a className="flex flex-col items-center gap-1">
-                <Icon 
-                  className={`w-6 h-6 ${
-                    isActive ? "text-white" : "text-white/60"
-                  }`} 
-                />
-                <span className={`text-xs uppercase tracking-wider ${
+              <span 
+                role="button"
+                tabIndex={0}
+                className={`flex flex-col items-center gap-1 w-full cursor-pointer focus:outline-none ${
                   isActive ? "text-white" : "text-white/60"
-                }`}>
+                }`}
+              >
+                <Icon className="w-6 h-6" />
+                <span className="text-xs uppercase tracking-wider">
                   {label}
                 </span>
-              </a>
+              </span>
             </Link>
           );
         })}

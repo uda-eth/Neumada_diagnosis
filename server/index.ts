@@ -1,13 +1,11 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { createServer } from "http";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Enhanced logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -42,50 +40,59 @@ app.use((req, res, next) => {
   try {
     const server = registerRoutes(app);
 
-    // Error handling middleware
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
-      log(`Error: ${status} - ${message}`);
       res.status(status).json({ message });
     });
 
-    // Setup vite in development
     if (app.get("env") === "development") {
       await setupVite(app, server);
     } else {
       serveStatic(app);
     }
 
-    // Try to start server on available port
-    const tryPort = async (port: number): Promise<number> => {
-      try {
-        await new Promise<void>((resolve, reject) => {
-          server.listen(port, "0.0.0.0")
-            .once('listening', () => {
-              log(`Server started on port ${port}`);
-              resolve();
-            })
-            .once('error', (err: any) => {
-              if (err.code === 'EADDRINUSE') {
-                server.close();
-                reject(err);
-              } else {
-                reject(err);
-              }
-            });
+    // Try ports in sequence
+    const ports = [5000, 5001, 5002];
+    let currentPortIndex = 0;
+
+    const tryPort = () => {
+      const port = ports[currentPortIndex];
+      server.listen(port, "0.0.0.0")
+        .on("error", (error: NodeJS.ErrnoException) => {
+          if (error.code === "EADDRINUSE") {
+            currentPortIndex++;
+            if (currentPortIndex < ports.length) {
+              log(`Port ${port} in use, trying ${ports[currentPortIndex]}`);
+              tryPort();
+            } else {
+              log("All ports in use. Please free up one of the ports and try again.");
+              process.exit(1);
+            }
+          } else {
+            log(`Failed to start server: ${error}`);
+            process.exit(1);
+          }
+        })
+        .on("listening", () => {
+          log(`Server started on port ${port}`);
+          process.env.PORT = port.toString();
         });
-        return port;
-      } catch (err) {
-        if (err.code === 'EADDRINUSE') {
-          log(`Port ${port} in use, trying next port`);
-          return tryPort(port + 1);
-        }
-        throw err;
-      }
     };
 
-    await tryPort(5000);
+    tryPort();
+
+    // Handle graceful shutdown
+    const cleanup = () => {
+      server.close(() => {
+        log('Server closed');
+        process.exit(0);
+      });
+    };
+
+    process.on('SIGTERM', cleanup);
+    process.on('SIGINT', cleanup);
+
   } catch (err) {
     log(`Failed to start server: ${err}`);
     process.exit(1);
