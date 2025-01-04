@@ -7,13 +7,13 @@ import ChatbotPage from "./pages/ChatbotPage";
 import MatchesPage from "./pages/MatchesPage";
 import BrowseUsersPage from "./pages/BrowseUsersPage";
 import TutorialPage from "./pages/TutorialPage";
-import { BottomNav } from "./components/ui/bottom-nav";
+import { Layout } from "./components/ui/layout";
 import { ThemeProvider } from "./lib/theme-provider";
 
 function App() {
   return (
     <ThemeProvider>
-      <div className="min-h-screen bg-background text-foreground">
+      <Layout>
         <Switch>
           <Route path="/" component={HomePage} />
           <Route path="/event/:id" component={EventPage} />
@@ -27,8 +27,7 @@ function App() {
             {() => <div className="text-center p-8">404 - Page Not Found</div>}
           </Route>
         </Switch>
-        <BottomNav />
-      </div>
+      </Layout>
     </ThemeProvider>
   );
 }
