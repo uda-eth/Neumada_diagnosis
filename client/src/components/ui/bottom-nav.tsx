@@ -4,7 +4,8 @@ import {
   UsersRound,
   PlusSquare,
   Globe,
-  Settings
+  Settings,
+  BookOpen
 } from "lucide-react";
 
 const navItems = [
@@ -12,6 +13,7 @@ const navItems = [
   { icon: UsersRound, label: "Connect", href: "/connect" },
   { icon: PlusSquare, label: "Create", href: "/create" },
   { icon: Globe, label: "Concierge", href: "/companion" },
+  { icon: BookOpen, label: "Tutorial", href: "/tutorial" },
   { icon: Settings, label: "Settings", href: "/settings" }
 ];
 
