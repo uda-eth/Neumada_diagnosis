@@ -6,12 +6,12 @@ interface LogoProps {
 
 export function Logo({ className = "" }: LogoProps) {
   const { theme } = useTheme();
-  
+
   return (
     <svg
       viewBox="0 0 400 120"
-      className={`${className} ${theme === 'dark' ? 'text-white' : 'text-black'}`}
-      fill="currentColor"
+      className={`${className}`}
+      fill={theme === 'dark' ? 'white' : 'black'}
     >
       <text
         x="50%"
