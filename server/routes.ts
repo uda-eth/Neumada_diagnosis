@@ -25,6 +25,15 @@ interface MockUser {
   updatedAt: string;
 }
 
+// Update the mock users with curated profile images
+const PROFILE_IMAGES = [
+  "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=600&h=600&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&h=600&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&h=600&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&h=600&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=600&fit=crop&q=80"
+];
+
 // Mock user data until we have real users
 const MOCK_USERS: Record<string, MockUser[]> = DIGITAL_NOMAD_CITIES.reduce((acc, city) => {
   acc[city] = Array.from({ length: 10 }, (_, i) => ({
@@ -55,7 +64,7 @@ const MOCK_USERS: Record<string, MockUser[]> = DIGITAL_NOMAD_CITIES.reduce((acc,
       'Networking',
       'Learning'
     ].sort(() => Math.random() - 0.5).slice(0, 2),
-    profileImage: `https://source.unsplash.com/600x600/?portrait,professional,${Math.random()}`,
+    profileImage: PROFILE_IMAGES[i % PROFILE_IMAGES.length],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   }));
@@ -69,17 +78,17 @@ export function registerRoutes(app: Express): Server {
   // Browse Users API with improved filtering
   app.get("/api/users/browse", async (req, res) => {
     try {
-      const { 
-        city, 
-        gender, 
-        minAge, 
-        maxAge, 
-        interests, 
-        moods 
+      const {
+        city,
+        gender,
+        minAge,
+        maxAge,
+        interests,
+        moods
       } = req.query;
 
       // Get mock users for the selected city or all cities
-      let filteredUsers = city && city !== 'all' 
+      let filteredUsers = city && city !== 'all'
         ? MOCK_USERS[city as string] || []
         : Object.values(MOCK_USERS).flat();
 
@@ -142,13 +151,13 @@ export function registerRoutes(app: Express): Server {
 
       // Apply category filter if specified
       if (category && category !== 'all') {
-        filteredEvents = filteredEvents.filter(event => 
+        filteredEvents = filteredEvents.filter(event =>
           event.category.toLowerCase() === category.toString().toLowerCase()
         );
       }
 
       // Sort by date
-      filteredEvents.sort((a, b) => 
+      filteredEvents.sort((a, b) =>
         new Date(b.date).getTime() - new Date(a.date).getTime()
       );
 
