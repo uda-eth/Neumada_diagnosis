@@ -51,58 +51,56 @@ app.use((req, res, next) => {
 
 (async () => {
   try {
-    // Kill any existing process on port 5000 (Unix-like systems)
+    // Force kill any existing process on port 5000 (Unix-like systems)
     try {
-      const server = await registerRoutes(app);
-
-      app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-        const status = err.status || err.statusCode || 500;
-        const message = err.message || "Internal Server Error";
-        res.status(status).json({ message });
-      });
-
-      if (app.get("env") === "development") {
-        await setupVite(app, server);
-      } else {
-        serveStatic(app);
-      }
-
-      const PORT = 5000;
-      server.listen(PORT, "0.0.0.0")
-        .on("error", (error: NodeJS.ErrnoException) => {
-          if (error.code === 'EADDRINUSE') {
-            log(`Port ${PORT} is already in use. Trying to close existing connection...`);
-            server.close(() => {
-              server.listen(PORT, "0.0.0.0");
-            });
-          } else {
-            log(`Failed to start server: ${error}`);
-            process.exit(1);
-          }
-        })
-        .on("listening", () => {
-          log(`Server started on port ${PORT}`);
-          process.env.PORT = PORT.toString();
-        });
-
-      // Handle graceful shutdown
-      const cleanup = () => {
-        server.close(() => {
-          log('Server closed');
-          process.exit(0);
-        });
-      };
-
-      process.on('SIGTERM', cleanup);
-      process.on('SIGINT', cleanup);
-
-    } catch (error) {
-      log(`Error setting up server: ${error}`);
-      process.exit(1);
+      const execSync = require('child_process').execSync;
+      execSync('lsof -ti :5000 | xargs kill -9', { stdio: 'ignore' });
+    } catch (err) {
+      // Ignore errors if no process was found
     }
 
-  } catch (err) {
-    log(`Failed to start server: ${err}`);
+    const server = await registerRoutes(app);
+
+    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+      res.status(status).json({ message });
+    });
+
+    if (app.get("env") === "development") {
+      await setupVite(app, server);
+    } else {
+      serveStatic(app);
+    }
+
+    const PORT = 5000;
+    server.listen(PORT, "0.0.0.0")
+      .on("error", (error: NodeJS.ErrnoException) => {
+        if (error.code === 'EADDRINUSE') {
+          log(`Port ${PORT} is already in use. Please try restarting the server.`);
+          process.exit(1);
+        } else {
+          log(`Failed to start server: ${error}`);
+          process.exit(1);
+        }
+      })
+      .on("listening", () => {
+        log(`Server started on port ${PORT}`);
+      });
+
+    // Handle graceful shutdown
+    const cleanup = () => {
+      server.close(() => {
+        log('Server closed');
+        process.exit(0);
+      });
+    };
+
+    process.on('SIGTERM', cleanup);
+    process.on('SIGINT', cleanup);
+
+  } catch (error) {
+    log(`Error setting up server: ${error}`);
     process.exit(1);
   }
 })();

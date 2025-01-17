@@ -19,7 +19,6 @@ import { Badge } from "@/components/ui/badge";
 import { Search, MapPin, CalendarDays } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Define the User interface locally since we can't import from schema
 interface User {
   id: number;
   username: string;
@@ -60,7 +59,6 @@ const item = {
   }
 };
 
-// List of hub cities
 const cities = [
   "Bali",
   "Bangkok",
@@ -97,13 +95,6 @@ const moods = [
   "Learning",
   "Working"
 ];
-
-const getProfileImage = (user: User): string | undefined => {
-  if (user.profileImages && user.profileImages.length > 0) {
-    return user.profileImages[0];
-  }
-  return user.profileImage || undefined;
-};
 
 export default function BrowseUsersPage() {
   const [, setLocation] = useLocation();
@@ -154,11 +145,10 @@ export default function BrowseUsersPage() {
 
   return (
     <div className="min-h-screen bg-[#121212] text-white">
-      {/* Header */}
       <header className="sticky top-0 z-50 bg-[#121212]/95 backdrop-blur supports-[backdrop-filter]:bg-[#121212]/60 border-b border-white/10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">Connect in {selectedCity}</h1>
+            <h1 className="text-2xl font-bold">Connect in {selectedCity === 'all' ? 'All Cities' : selectedCity}</h1>
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
@@ -173,7 +163,7 @@ export default function BrowseUsersPage() {
                   <SelectValue placeholder="Select City" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#1a1a1a] border-white/10">
-                  <SelectItem value="all">All Cities</SelectItem>
+                  <SelectItem value="all" className="text-white">All Cities</SelectItem>
                   {cities.map(city => (
                     <SelectItem key={city} value={city} className="text-white">{city}</SelectItem>
                   ))}
@@ -185,7 +175,6 @@ export default function BrowseUsersPage() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {/* Filters Panel */}
         <AnimatePresence>
           {isFiltersVisible && (
             <motion.div
@@ -196,7 +185,6 @@ export default function BrowseUsersPage() {
               className="overflow-hidden mb-8"
             >
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-[#1a1a1a] p-6 rounded-lg border border-white/10">
-                {/* Demographics section */}
                 <div className="space-y-4">
                   <h3 className="font-semibold text-white">Demographics</h3>
                   <div className="space-y-4">
@@ -266,7 +254,6 @@ export default function BrowseUsersPage() {
           )}
         </AnimatePresence>
 
-        {/* User Grid */}
         {isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {[...Array(12)].map((_, i) => (
@@ -308,7 +295,6 @@ export default function BrowseUsersPage() {
                           </Avatar>
                         </div>
                       )}
-                      {/* Overlay with user info */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
                         <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
                           <div className="flex items-center justify-between mb-2">
