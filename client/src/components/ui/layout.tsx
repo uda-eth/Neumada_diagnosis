@@ -9,7 +9,7 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Header with Maly branding */}
+      {/* Header with branding */}
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 max-w-screen-2xl items-center">
           <div className="mr-4 hidden md:flex">
@@ -28,13 +28,15 @@ export function Layout({ children }: LayoutProps) {
         </div>
       </header>
 
-      {/* Main content */}
-      <main className="flex-1">
+      {/* Main content with bottom padding for mobile nav */}
+      <main className="flex-1 pb-20">
         {children}
       </main>
 
-      {/* Bottom navigation */}
-      <BottomNav />
+      {/* Bottom navigation - only visible on mobile */}
+      <div className="md:hidden">
+        <BottomNav />
+      </div>
     </div>
   );
 }
