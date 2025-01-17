@@ -52,35 +52,17 @@ app.use((req, res, next) => {
       serveStatic(app);
     }
 
-    // Try ports in sequence
-    const ports = [5000, 5001, 5002];
-    let currentPortIndex = 0;
-
-    const tryPort = () => {
-      const port = ports[currentPortIndex];
-      server.listen(port, "0.0.0.0")
-        .on("error", (error: NodeJS.ErrnoException) => {
-          if (error.code === "EADDRINUSE") {
-            currentPortIndex++;
-            if (currentPortIndex < ports.length) {
-              log(`Port ${port} in use, trying ${ports[currentPortIndex]}`);
-              tryPort();
-            } else {
-              log("All ports in use. Please free up one of the ports and try again.");
-              process.exit(1);
-            }
-          } else {
-            log(`Failed to start server: ${error}`);
-            process.exit(1);
-          }
-        })
-        .on("listening", () => {
-          log(`Server started on port ${port}`);
-          process.env.PORT = port.toString();
-        });
-    };
-
-    tryPort();
+    // ALWAYS serve on port 5000
+    const PORT = 5000;
+    server.listen(PORT, "0.0.0.0")
+      .on("error", (error: NodeJS.ErrnoException) => {
+        log(`Failed to start server: ${error}`);
+        process.exit(1);
+      })
+      .on("listening", () => {
+        log(`Server started on port ${PORT}`);
+        process.env.PORT = PORT.toString();
+      });
 
     // Handle graceful shutdown
     const cleanup = () => {

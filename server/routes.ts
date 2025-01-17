@@ -7,6 +7,58 @@ import { findMatches } from "./services/matchingService";
 import { db } from "@db";
 import { events, eventParticipants, users } from "@db/schema";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
+import { MOCK_EVENTS, DIGITAL_NOMAD_CITIES } from "../client/src/lib/constants";
+
+interface MockUser {
+  id: number;
+  username: string;
+  fullName: string;
+  age: number;
+  gender: string;
+  profession: string;
+  location: string;
+  bio: string;
+  interests: string[];
+  currentMoods: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Mock user data until we have real users
+const MOCK_USERS: Record<string, MockUser[]> = DIGITAL_NOMAD_CITIES.reduce((acc, city) => {
+  acc[city] = Array.from({ length: 10 }, (_, i) => ({
+    id: Math.floor(Math.random() * 1000),
+    username: `user${i}_${city.toLowerCase().replace(/\s+/g, '')}`,
+    fullName: `Digital Nomad ${i + 1}`,
+    age: 25 + Math.floor(Math.random() * 15),
+    gender: Math.random() > 0.5 ? 'male' : 'female',
+    profession: [
+      'Software Developer',
+      'Digital Marketer',
+      'Content Creator',
+      'UX Designer',
+      'Startup Founder'
+    ][Math.floor(Math.random() * 5)],
+    location: city,
+    bio: `Digital nomad based in ${city}, passionate about technology and travel.`,
+    interests: [
+      'Remote Work',
+      'Technology',
+      'Travel',
+      'Photography',
+      'Entrepreneurship'
+    ].sort(() => Math.random() - 0.5).slice(0, 3),
+    currentMoods: [
+      'Working',
+      'Exploring',
+      'Networking',
+      'Learning'
+    ].sort(() => Math.random() - 0.5).slice(0, 2),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }));
+  return acc;
+}, {} as Record<string, MockUser[]>);
 
 export function registerRoutes(app: Express): Server {
   // Chat API
@@ -24,47 +76,41 @@ export function registerRoutes(app: Express): Server {
         moods 
       } = req.query;
 
-      let conditions = [];
+      // Get mock users for the selected city or all cities
+      let filteredUsers = city && city !== 'all' 
+        ? MOCK_USERS[city as string] || []
+        : Object.values(MOCK_USERS).flat();
 
-      if (city && city !== 'all') {
-        conditions.push(eq(users.location, city as string));
-      }
-
+      // Apply filters
       if (gender && gender !== 'all') {
-        conditions.push(eq(users.gender, gender as string));
+        filteredUsers = filteredUsers.filter(user => user.gender === gender);
       }
 
       if (minAge && !isNaN(Number(minAge))) {
-        conditions.push(gte(users.age, parseInt(minAge as string)));
+        filteredUsers = filteredUsers.filter(user => user.age >= Number(minAge));
       }
 
       if (maxAge && !isNaN(Number(maxAge))) {
-        conditions.push(lte(users.age, parseInt(maxAge as string)));
+        filteredUsers = filteredUsers.filter(user => user.age <= Number(maxAge));
       }
 
-      const results = await db.select().from(users)
-        .where(conditions.length > 0 ? and(...conditions) : undefined);
-
-      // Filter by interests and moods in memory since they're JSON fields
-      let filteredResults = [...results];
-
       if (interests && Array.isArray(interests)) {
-        filteredResults = filteredResults.filter(user =>
-          user.interests?.some(interest =>
+        filteredUsers = filteredUsers.filter(user =>
+          user.interests?.some((interest: string) =>
             (interests as string[]).includes(interest)
           )
         );
       }
 
       if (moods && Array.isArray(moods)) {
-        filteredResults = filteredResults.filter(user =>
-          user.currentMoods?.some(mood =>
+        filteredUsers = filteredUsers.filter(user =>
+          user.currentMoods?.some((mood: string) =>
             (moods as string[]).includes(mood)
           )
         );
       }
 
-      res.json(filteredResults);
+      res.json(filteredUsers);
     } catch (error) {
       console.error("Error fetching users:", error);
       res.status(500).json({ error: "Failed to fetch users" });
@@ -86,41 +132,59 @@ export function registerRoutes(app: Express): Server {
   app.get("/api/events", async (req, res) => {
     try {
       const { category, location } = req.query;
-      let conditions = [];
 
-      if (category) {
-        conditions.push(eq(events.category, category as string));
+      // Get events for the specified location or all locations
+      let filteredEvents = location && location !== 'all'
+        ? MOCK_EVENTS[location as string] || []
+        : Object.values(MOCK_EVENTS).flat();
+
+      // Apply category filter if specified
+      if (category && category !== 'all') {
+        filteredEvents = filteredEvents.filter(event => 
+          event.category.toLowerCase() === category.toString().toLowerCase()
+        );
       }
-      if (location) {
-        conditions.push(eq(events.location, location as string));
-      }
 
-      const results = await db.select().from(events)
-        .where(conditions.length > 0 ? and(...conditions) : undefined)
-        .orderBy(desc(events.date));
+      // Sort by date
+      filteredEvents.sort((a, b) => 
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
 
-      res.json(results);
+      res.json(filteredEvents);
     } catch (error) {
       console.error("Error fetching events:", error);
       res.status(500).json({ error: "Failed to fetch events" });
     }
   });
 
-  app.post("/api/events", async (req, res) => {
-    if (!req.user?.id) {
-      return res.status(401).json({ error: "Authentication required" });
-    }
-
+  app.get("/api/events/:id", async (req, res) => {
     try {
-      const [event] = await db
-        .insert(events)
-        .values({
-          ...req.body,
-          creatorId: req.user.id,
-          date: new Date(req.body.date),
-        })
-        .returning();
+      const { id } = req.params;
+      const allEvents = Object.values(MOCK_EVENTS).flat();
+      const event = allEvents.find(e => e.id === parseInt(id));
+
+      if (!event) {
+        return res.status(404).json({ error: "Event not found" });
+      }
+
       res.json(event);
+    } catch (error) {
+      console.error("Error fetching event:", error);
+      res.status(500).json({ error: "Failed to fetch event" });
+    }
+  });
+
+  app.post("/api/events", async (req, res) => {
+    try {
+      // Since we're using mock data, just return a success response
+      const mockEvent = {
+        id: Math.floor(Math.random() * 1000),
+        ...req.body,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      res.json(mockEvent);
     } catch (error) {
       console.error("Error creating event:", error);
       res.status(500).json({ error: "Failed to create event" });
@@ -128,24 +192,20 @@ export function registerRoutes(app: Express): Server {
   });
 
   app.post("/api/events/:eventId/participate", async (req, res) => {
-    if (!req.user?.id) {
-      return res.status(401).json({ error: "Authentication required" });
-    }
-
     try {
       const { eventId } = req.params;
       const { status } = req.body;
 
-      const [participation] = await db
-        .insert(eventParticipants)
-        .values({
-          eventId: parseInt(eventId),
-          userId: req.user.id,
-          status,
-        })
-        .returning();
+      // Since we're using mock data, just return a success response
+      const mockParticipation = {
+        id: Math.floor(Math.random() * 1000),
+        eventId: parseInt(eventId),
+        status,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
 
-      res.json(participation);
+      res.json(mockParticipation);
     } catch (error) {
       console.error("Error updating participation:", error);
       res.status(500).json({ error: "Failed to update participation" });
