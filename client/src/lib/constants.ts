@@ -18,16 +18,16 @@ export const PROFILE_TYPES = [
   { id: "non_profit", label: "Non-Profit Organization" }
 ];
 
-// Sample event images - using Unsplash for high-quality images
+// High-quality curated event images
 const EVENT_IMAGES = {
-  djParty: "https://source.unsplash.com/1600x900/?concert,nightlife,dj",
-  hiking: "https://source.unsplash.com/1600x900/?hiking,adventure,nature",
-  dinner: "https://source.unsplash.com/1600x900/?dining,restaurant,social",
-  art: "https://source.unsplash.com/1600x900/?gallery,exhibition,art",
-  yoga: "https://source.unsplash.com/1600x900/?yoga,wellness,meditation",
-  coworking: "https://source.unsplash.com/1600x900/?coworking,office,modern",
-  networking: "https://source.unsplash.com/1600x900/?business,meeting,networking",
-  workshop: "https://source.unsplash.com/1600x900/?workshop,learning,tech"
+  musicFestival: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1600&h=900&fit=crop&q=80",
+  intimateDinner: "https://images.unsplash.com/photo-1615937722923-67f6deaf2cc9?w=1600&h=900&fit=crop&q=80",
+  hiking: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=1600&h=900&fit=crop&q=80",
+  artGallery: "https://images.unsplash.com/photo-1577720580479-7d839d829c73?w=1600&h=900&fit=crop&q=80",
+  beachYoga: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=1600&h=900&fit=crop&q=80",
+  coworking: "https://images.unsplash.com/photo-1600508774634-4e11d34730e2?w=1600&h=900&fit=crop&q=80",
+  networking: "https://images.unsplash.com/photo-1511578314322-379afb476865?w=1600&h=900&fit=crop&q=80",
+  workshop: "https://images.unsplash.com/photo-1558008258-3256797b43f3?w=1600&h=900&fit=crop&q=80"
 };
 
 // Event categories for filtering
@@ -56,88 +56,54 @@ export const MOCK_EVENTS: Record<string, Event[]> = DIGITAL_NOMAD_CITIES.reduce(
   acc[city] = [
     {
       id: Math.floor(Math.random() * 1000),
-      title: "Digital Nomad DJ Night",
-      description: "Join us for an unforgettable night of electronic music and networking with fellow digital nomads. Local and international DJs will be spinning the latest tracks while you connect with like-minded individuals.",
-      date: new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-      location: `Nightclub District, ${city}`,
-      image: EVENT_IMAGES.djParty,
+      title: "Bravo Music & Art Festival",
+      description: "An unforgettable night of electronic music, art installations, and networking with fellow digital nomads. Experience the city's vibrant creative scene while connecting with like-minded individuals.",
+      date: new Date(2024, 8, 7, 18, 0), // Sept 7, 2024, 6pm
+      location: `Downtown Festival Grounds, ${city}`,
+      image: EVENT_IMAGES.musicFestival,
       category: "Nightlife",
       creatorId: 1,
-      capacity: 200,
-      ticketPrice: "25",
+      capacity: 600,
+      ticketPrice: "250",
       ticketType: "paid",
-      availableTickets: 150,
+      availableTickets: 586,
       isBusinessEvent: true,
       isPrivate: false,
-      createdAt: new Date().toISOString()
+      createdAt: new Date()
     },
     {
       id: Math.floor(Math.random() * 1000),
-      title: "Weekend Hiking Adventure",
-      description: "Escape the city and explore the beautiful trails around the area. Perfect for nature lovers and photography enthusiasts. All skill levels welcome!",
-      date: new Date(Date.now() + Math.random() * 14 * 24 * 60 * 60 * 1000).toISOString(),
-      location: `Nature Reserve, ${city}`,
-      image: EVENT_IMAGES.hiking,
-      category: "Adventure",
+      title: "Intimate Dinner Party",
+      description: "Join us for an exclusive culinary experience featuring local chefs and fellow nomads. Share stories, make connections, and enjoy exceptional cuisine.",
+      date: new Date(2024, 8, 7, 19, 0), // Sept 7, 2024, 7pm
+      location: `Secret Garden Venue, ${city}`,
+      image: EVENT_IMAGES.intimateDinner,
+      category: "Social",
       creatorId: 2,
       capacity: 30,
-      ticketPrice: "0",
       ticketType: "rsvp",
-      availableTickets: 20,
+      ticketPrice: "0",
+      availableTickets: 28,
       isBusinessEvent: false,
-      isPrivate: false,
-      createdAt: new Date().toISOString()
+      isPrivate: true,
+      createdAt: new Date()
     },
     {
       id: Math.floor(Math.random() * 1000),
-      title: "International Dinner Party",
-      description: "Experience a unique culinary journey with fellow travelers. Each guest brings a dish from their home country, creating a truly international feast.",
-      date: new Date(Date.now() + Math.random() * 5 * 24 * 60 * 60 * 1000).toISOString(),
-      location: `Community Center, ${city}`,
-      image: EVENT_IMAGES.dinner,
-      category: "Social",
+      title: "Hiking + Waterfall Daytrip",
+      description: "Escape the city for a day of adventure, photography, and natural beauty. Perfect for nature enthusiasts and adventure seekers.",
+      date: new Date(2024, 8, 7, 8, 0), // Sept 7, 2024, 8am
+      location: `Mountain Trails, ${city}`,
+      image: EVENT_IMAGES.hiking,
+      category: "Adventure",
       creatorId: 3,
-      capacity: 50,
-      ticketPrice: "20",
+      capacity: 60,
+      ticketPrice: "50",
       ticketType: "paid",
-      availableTickets: 35,
+      availableTickets: 56,
       isBusinessEvent: false,
       isPrivate: false,
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: Math.floor(Math.random() * 1000),
-      title: "Digital Nomad Art Exhibition",
-      description: "Discover amazing artworks created by traveling artists. Network with creative professionals while enjoying wine and refreshments.",
-      date: new Date(Date.now() + Math.random() * 10 * 24 * 60 * 60 * 1000).toISOString(),
-      location: `Art District Gallery, ${city}`,
-      image: EVENT_IMAGES.art,
-      category: "Arts",
-      creatorId: 4,
-      capacity: 100,
-      ticketPrice: "30",
-      ticketType: "paid",
-      availableTickets: 75,
-      isBusinessEvent: true,
-      isPrivate: false,
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: Math.floor(Math.random() * 1000),
-      title: "Sunset Rooftop Yoga",
-      description: "Join our mindful community for a relaxing yoga session with a breathtaking view. All levels welcome. Mats provided.",
-      date: new Date(Date.now() + Math.random() * 3 * 24 * 60 * 60 * 1000).toISOString(),
-      location: `Rooftop Garden, ${city}`,
-      image: EVENT_IMAGES.yoga,
-      category: "Wellness",
-      creatorId: 5,
-      capacity: 40,
-      ticketPrice: "18",
-      ticketType: "paid",
-      availableTickets: 25,
-      isBusinessEvent: true,
-      isPrivate: false,
-      createdAt: new Date().toISOString()
+      createdAt: new Date()
     }
   ];
   return acc;
