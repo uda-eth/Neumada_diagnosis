@@ -4,6 +4,7 @@ import { setupAuth } from "./auth";
 import { handleChatMessage } from "./chat";
 import { getRecommendedEvents } from "./recommendations";
 import { findMatches } from "./services/matchingService";
+import { translateMessage } from "./services/translationService";
 import { db } from "@db";
 import { events, eventParticipants, users } from "@db/schema";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
@@ -25,7 +26,6 @@ interface MockUser {
   updatedAt: string;
 }
 
-// Update the mock users with curated profile images
 const PROFILE_IMAGES = [
   "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=600&h=600&fit=crop&q=80",
   "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&h=600&fit=crop&q=80",
@@ -34,7 +34,6 @@ const PROFILE_IMAGES = [
   "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=600&fit=crop&q=80"
 ];
 
-// Mock user data until we have real users
 const MOCK_USERS: Record<string, MockUser[]> = DIGITAL_NOMAD_CITIES.reduce((acc, city) => {
   acc[city] = Array.from({ length: 10 }, (_, i) => ({
     id: Math.floor(Math.random() * 1000),
@@ -87,12 +86,10 @@ export function registerRoutes(app: Express): Server {
         moods
       } = req.query;
 
-      // Get mock users for the selected city or all cities
       let filteredUsers = city && city !== 'all'
         ? MOCK_USERS[city as string] || []
         : Object.values(MOCK_USERS).flat();
 
-      // Apply filters
       if (gender && gender !== 'all') {
         filteredUsers = filteredUsers.filter(user => user.gender === gender);
       }
@@ -144,19 +141,16 @@ export function registerRoutes(app: Express): Server {
     try {
       const { category, location } = req.query;
 
-      // Get events for the specified location or all locations
       let filteredEvents = location && location !== 'all'
         ? MOCK_EVENTS[location as string] || []
         : Object.values(MOCK_EVENTS).flat();
 
-      // Apply category filter if specified
       if (category && category !== 'all') {
         filteredEvents = filteredEvents.filter(event =>
           event.category.toLowerCase() === category.toString().toLowerCase()
         );
       }
 
-      // Sort by date
       filteredEvents.sort((a, b) =>
         new Date(b.date).getTime() - new Date(a.date).getTime()
       );
@@ -187,7 +181,6 @@ export function registerRoutes(app: Express): Server {
 
   app.post("/api/events", async (req, res) => {
     try {
-      // Since we're using mock data, just return a success response
       const mockEvent = {
         id: Math.floor(Math.random() * 1000),
         ...req.body,
@@ -207,7 +200,6 @@ export function registerRoutes(app: Express): Server {
       const { eventId } = req.params;
       const { status } = req.body;
 
-      // Since we're using mock data, just return a success response
       const mockParticipation = {
         id: Math.floor(Math.random() * 1000),
         eventId: parseInt(eventId),
@@ -220,6 +212,27 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error("Error updating participation:", error);
       res.status(500).json({ error: "Failed to update participation" });
+    }
+  });
+
+  // Add translation endpoint
+  app.post("/api/translate", async (req, res) => {
+    try {
+      const { text, targetLanguage } = req.body;
+
+      if (!text || !targetLanguage) {
+        return res.status(400).json({ 
+          error: "Missing required fields: text and targetLanguage" 
+        });
+      }
+
+      const translation = await translateMessage(text, targetLanguage);
+      res.json({ translation });
+    } catch (error) {
+      console.error("Translation error:", error);
+      res.status(500).json({ 
+        error: "Failed to translate message" 
+      });
     }
   });
 

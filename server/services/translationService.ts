@@ -16,7 +16,12 @@ export async function translateMessage(text: string, targetLanguage: string): Pr
       }],
     });
 
-    return response.content[0].text;
+    // Access the text content safely from the response
+    const translation = response.content[0].type === 'text' 
+      ? response.content[0].text 
+      : 'Translation failed';
+
+    return translation;
   } catch (error) {
     console.error('Translation error:', error);
     throw new Error('Failed to translate message');

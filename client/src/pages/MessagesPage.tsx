@@ -4,8 +4,16 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Globe, Languages } from "lucide-react";
 import { useLocation } from "wouter";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { SUPPORTED_LANGUAGES } from "../../../server/services/translationService";
 
 interface Message {
   id: number;
@@ -13,6 +21,8 @@ interface Message {
   timestamp: string;
   sender: string;
   isMe: boolean;
+  originalLanguage?: string;
+  translatedContent?: string;
 }
 
 interface Chat {
@@ -22,6 +32,7 @@ interface Chat {
     title?: string;
     avatar?: string;
     isOnline: boolean;
+    language?: string;
   };
   messages: Message[];
 }
@@ -33,11 +44,14 @@ const mockChat: Chat = {
     name: "Claire",
     title: "Digital Marketing Manager",
     isOnline: true,
+    language: "fr", // French
   },
   messages: [
     {
       id: 1,
-      content: "Hey, great to meet you last night!",
+      content: "Salut, ravi de t'avoir rencontré hier soir!",
+      translatedContent: "Hey, great to meet you last night!",
+      originalLanguage: "fr",
       timestamp: "16:55",
       sender: "Claire",
       isMe: false,
@@ -45,6 +59,7 @@ const mockChat: Chat = {
     {
       id: 2,
       content: "Hey, let's do brunch?",
+      originalLanguage: "en",
       timestamp: "16:55",
       sender: "Me",
       isMe: true,
@@ -53,46 +68,71 @@ const mockChat: Chat = {
 };
 
 const quickReplies = [
-  "Sure, let's meet!",
+  "Nice to meet you!",
+  "Let's meet for coffee",
+  "Are you free today?",
   "Thanks for the invite",
-  "I'll get back to you",
-  "Sounds good",
+  "See you soon!",
+  "What's your favorite spot here?",
+  "Any recommendations?"
 ];
 
 export default function MessagesPage() {
   const [, setLocation] = useLocation();
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>(mockChat.messages);
+  const [selectedLanguage, setSelectedLanguage] = useState("en");
+  const [isTranslating, setIsTranslating] = useState(false);
 
-  const sendMessage = () => {
-    if (!newMessage.trim()) return;
+  const sendMessage = async () => {
+    if (!newMessage.trim() || isTranslating) return;
 
-    const message: Message = {
-      id: messages.length + 1,
-      content: newMessage,
-      timestamp: new Date().toLocaleTimeString([], { 
-        hour: '2-digit', 
-        minute: '2-digit',
-        hour12: false 
-      }),
-      sender: "Me",
-      isMe: true,
-    };
+    setIsTranslating(true);
+    try {
+      // In a real app, this would call the translation service
+      const translatedContent = await fetch('/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: newMessage,
+          targetLanguage: mockChat.user.language || 'en'
+        })
+      }).then(res => res.json());
 
-    setMessages([...messages, message]);
-    setNewMessage("");
+      const message: Message = {
+        id: messages.length + 1,
+        content: newMessage,
+        translatedContent: translatedContent.translation,
+        timestamp: new Date().toLocaleTimeString([], { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: false 
+        }),
+        sender: "Me",
+        isMe: true,
+        originalLanguage: selectedLanguage,
+      };
+
+      setMessages([...messages, message]);
+      setNewMessage("");
+    } catch (error) {
+      console.error('Translation error:', error);
+      // Handle error appropriately
+    } finally {
+      setIsTranslating(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-[#121212] text-white">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-black border-b border-white/10">
+      <div className="sticky top-0 z-10 bg-black/40 backdrop-blur-sm border-b border-white/10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="icon"
-              className="text-white/60"
+              className="text-white/60 hover:text-white hover:bg-white/10"
               onClick={() => setLocation("/messages")}
             >
               <ChevronLeft className="w-5 h-5" />
@@ -103,8 +143,25 @@ export default function MessagesPage() {
                 <p className="text-sm text-white/60">{mockChat.user.title}</p>
               )}
             </div>
-            <Avatar className="h-10 w-10">
-              <AvatarFallback>{mockChat.user.name[0]}</AvatarFallback>
+            <Select
+              value={selectedLanguage}
+              onValueChange={setSelectedLanguage}
+            >
+              <SelectTrigger className="w-[180px] bg-white/5 border-white/10 hover:bg-white/10">
+                <Globe className="w-4 h-4 mr-2" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SUPPORTED_LANGUAGES.map((lang) => (
+                  <SelectItem key={lang.code} value={lang.code}>
+                    {lang.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Avatar className="h-10 w-10 ring-2 ring-primary/10">
+              <AvatarImage src={mockChat.user.avatar} />
+              <AvatarFallback className="bg-primary/20">{mockChat.user.name[0]}</AvatarFallback>
             </Avatar>
           </div>
         </div>
@@ -118,23 +175,35 @@ export default function MessagesPage() {
               key={message.id}
               className={`flex ${message.isMe ? "justify-end" : "justify-start"}`}
             >
-              <div className="flex items-end gap-2 max-w-[80%]">
+              <div className="flex items-end gap-2 max-w-[80%] group">
                 {!message.isMe && (
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback>{message.sender[0]}</AvatarFallback>
+                    <AvatarImage src={mockChat.user.avatar} />
+                    <AvatarFallback className="bg-primary/20">{message.sender[0]}</AvatarFallback>
                   </Avatar>
                 )}
                 <div
-                  className={`rounded-2xl px-4 py-2 ${
+                  className={`rounded-2xl px-4 py-2.5 ${
                     message.isMe
                       ? "bg-primary text-primary-foreground"
-                      : "bg-[#E8E8E8] text-black"
+                      : "bg-white/10 text-white"
                   }`}
                 >
-                  <p className="text-[15px]">{message.content}</p>
-                  <span className="text-xs opacity-60 mt-1 block">
-                    {message.timestamp}
-                  </span>
+                  <p className="text-[15px] leading-relaxed">{message.content}</p>
+                  {message.translatedContent && (
+                    <p className="text-[13px] mt-1.5 opacity-80 leading-relaxed">
+                      {message.translatedContent}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-2 text-xs opacity-60 mt-2">
+                    <span>{message.timestamp}</span>
+                    {message.originalLanguage && (
+                      <span className="flex items-center gap-1">
+                        <Globe className="w-3 h-3" />
+                        {message.originalLanguage.toUpperCase()}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -143,23 +212,25 @@ export default function MessagesPage() {
       </ScrollArea>
 
       {/* Input Area */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#1A1A1A] border-t border-white/10">
+      <div className="fixed bottom-0 left-0 right-0 bg-black/40 backdrop-blur-sm border-t border-white/10">
         <div className="container mx-auto px-4 py-4">
           {/* Quick Replies */}
-          <ScrollArea className="whitespace-nowrap mb-4" orientation="horizontal">
-            <div className="flex gap-2">
-              {quickReplies.map((reply) => (
-                <Button
-                  key={reply}
-                  variant="outline"
-                  className="border-white/10 bg-white/5 hover:bg-white/10"
-                  onClick={() => setNewMessage(reply)}
-                >
-                  {reply}
-                </Button>
-              ))}
-            </div>
-          </ScrollArea>
+          <div className="pb-4 mb-4 border-b border-white/10">
+            <ScrollArea>
+              <div className="flex gap-2 pb-2">
+                {quickReplies.map((reply) => (
+                  <Button
+                    key={reply}
+                    variant="outline"
+                    className="border-white/10 bg-white/5 hover:bg-white/10 whitespace-nowrap"
+                    onClick={() => setNewMessage(reply)}
+                  >
+                    {reply}
+                  </Button>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
 
           {/* Message Input */}
           <form
@@ -172,9 +243,17 @@ export default function MessagesPage() {
             <Input
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Type a message..."
-              className="flex-1 bg-white/5 border-white/10"
+              placeholder={`Type a message in ${SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage)?.name}...`}
+              className="flex-1 bg-white/5 border-white/10 focus:border-white/20"
+              disabled={isTranslating}
             />
+            <Button 
+              type="submit" 
+              disabled={isTranslating || !newMessage.trim()}
+              className="px-6 bg-primary hover:bg-primary/90"
+            >
+              Send
+            </Button>
           </form>
         </div>
       </div>
