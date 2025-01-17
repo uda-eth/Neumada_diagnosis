@@ -1,34 +1,22 @@
 import { type Event } from "@db/schema";
 
 export const DIGITAL_NOMAD_CITIES = [
-  "Amsterdam",
-  "Bali",
-  "Bangkok",
-  "Barcelona",
-  "Berlin",
-  "Buenos Aires",
-  "Cape Town",
-  "Chiang Mai",
-  "Dubai",
-  "Ho Chi Minh City",
-  "Kuala Lumpur",
-  "Lisbon",
-  "London",
-  "Madrid",
-  "Melbourne",
-  "Mexico City",
-  "Miami",
-  "New York",
-  "Porto",
-  "Prague",
-  "Singapore",
-  "Stockholm",
-  "Taipei",
-  "Tokyo",
-  "Vancouver"
+  "Amsterdam", "Bali", "Bangkok", "Barcelona", "Berlin",
+  "Buenos Aires", "Cape Town", "Chiang Mai", "Dubai",
+  "Ho Chi Minh City", "Kuala Lumpur", "Lisbon", "London",
+  "Madrid", "Melbourne", "Mexico City", "Miami", "New York",
+  "Porto", "Prague", "Singapore", "Stockholm", "Taipei",
+  "Tokyo", "Vancouver"
 ].sort();
 
 export const DEFAULT_CITY = "Mexico City";
+
+export const PROFILE_TYPES = [
+  { id: "member", label: "Member" },
+  { id: "business", label: "Business" },
+  { id: "promoter", label: "Event Promoter" },
+  { id: "non_profit", label: "Non-Profit Organization" }
+];
 
 // Sample event images - in production these would be actual URLs
 const EVENT_IMAGES = {
@@ -38,6 +26,27 @@ const EVENT_IMAGES = {
   art: "/images/art-gallery.jpg",
   yoga: "/images/yoga.jpg",
 };
+
+// Event categories for filtering
+export const EVENT_CATEGORIES = [
+  "Nightlife",
+  "Adventure",
+  "Social",
+  "Arts",
+  "Wellness",
+  "Tech",
+  "Business",
+  "Sports",
+  "Workshops",
+  "Networking"
+];
+
+// Event types
+export const EVENT_TYPES = [
+  { id: "free", label: "Free Event" },
+  { id: "paid", label: "Paid Event" },
+  { id: "rsvp", label: "RSVP Required" }
+];
 
 // Create sample events for each city
 export const MOCK_EVENTS: Record<string, Event[]> = DIGITAL_NOMAD_CITIES.reduce((acc, city) => {
@@ -49,11 +58,15 @@ export const MOCK_EVENTS: Record<string, Event[]> = DIGITAL_NOMAD_CITIES.reduce(
       date: new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
       location: `Nightclub District, ${city}`,
       image: EVENT_IMAGES.djParty,
-      price: 25,
       category: "Nightlife",
       creatorId: 1,
       capacity: 200,
-      tags: ["Networking", "Music", "Nightlife"]
+      ticketPrice: "25",
+      ticketType: "paid",
+      availableTickets: 150,
+      isBusinessEvent: true,
+      isPrivate: false,
+      createdAt: new Date().toISOString()
     },
     {
       id: Math.floor(Math.random() * 1000),
@@ -62,11 +75,15 @@ export const MOCK_EVENTS: Record<string, Event[]> = DIGITAL_NOMAD_CITIES.reduce(
       date: new Date(Date.now() + Math.random() * 14 * 24 * 60 * 60 * 1000).toISOString(),
       location: `Nature Reserve, ${city}`,
       image: EVENT_IMAGES.hiking,
-      price: 15,
       category: "Adventure",
       creatorId: 2,
       capacity: 30,
-      tags: ["Outdoor", "Adventure", "Nature"]
+      ticketPrice: "0",
+      ticketType: "rsvp",
+      availableTickets: 20,
+      isBusinessEvent: false,
+      isPrivate: false,
+      createdAt: new Date().toISOString()
     },
     {
       id: Math.floor(Math.random() * 1000),
@@ -75,11 +92,15 @@ export const MOCK_EVENTS: Record<string, Event[]> = DIGITAL_NOMAD_CITIES.reduce(
       date: new Date(Date.now() + Math.random() * 5 * 24 * 60 * 60 * 1000).toISOString(),
       location: `Community Center, ${city}`,
       image: EVENT_IMAGES.dinner,
-      price: 20,
       category: "Social",
       creatorId: 3,
       capacity: 50,
-      tags: ["Food", "Social", "Culture"]
+      ticketPrice: "20",
+      ticketType: "paid",
+      availableTickets: 35,
+      isBusinessEvent: false,
+      isPrivate: false,
+      createdAt: new Date().toISOString()
     },
     {
       id: Math.floor(Math.random() * 1000),
@@ -88,11 +109,15 @@ export const MOCK_EVENTS: Record<string, Event[]> = DIGITAL_NOMAD_CITIES.reduce(
       date: new Date(Date.now() + Math.random() * 10 * 24 * 60 * 60 * 1000).toISOString(),
       location: `Art District Gallery, ${city}`,
       image: EVENT_IMAGES.art,
-      price: 30,
       category: "Arts",
       creatorId: 4,
       capacity: 100,
-      tags: ["Art", "Culture", "Networking"]
+      ticketPrice: "30",
+      ticketType: "paid",
+      availableTickets: 75,
+      isBusinessEvent: true,
+      isPrivate: false,
+      createdAt: new Date().toISOString()
     },
     {
       id: Math.floor(Math.random() * 1000),
@@ -101,27 +126,19 @@ export const MOCK_EVENTS: Record<string, Event[]> = DIGITAL_NOMAD_CITIES.reduce(
       date: new Date(Date.now() + Math.random() * 3 * 24 * 60 * 60 * 1000).toISOString(),
       location: `Rooftop Garden, ${city}`,
       image: EVENT_IMAGES.yoga,
-      price: 18,
       category: "Wellness",
       creatorId: 5,
       capacity: 40,
-      tags: ["Yoga", "Wellness", "Singles"]
+      ticketPrice: "18",
+      ticketType: "paid",
+      availableTickets: 25,
+      isBusinessEvent: true,
+      isPrivate: false,
+      createdAt: new Date().toISOString()
     }
   ];
   return acc;
 }, {} as Record<string, Event[]>);
-
-// Event categories for filtering
-export const EVENT_CATEGORIES = [
-  "Nightlife",
-  "Adventure",
-  "Social",
-  "Arts",
-  "Wellness",
-  "Tech",
-  "Business",
-  "Sports"
-];
 
 // Interest tags for user profiles
 export const INTEREST_TAGS = [
@@ -138,3 +155,46 @@ export const INTEREST_TAGS = [
   "Music",
   "Food & Cuisine"
 ];
+
+export const MOOD_TAGS = [
+  "Working",
+  "Exploring",
+  "Networking",
+  "Learning",
+  "Teaching",
+  "Socializing",
+  "Focusing",
+  "Adventure",
+  "Relaxing",
+  "Creating"
+];
+
+export const MOCK_USER_PROFILES = {
+  member: {
+    profileType: "member",
+    interests: ["Travel", "Photography", "Languages"],
+    currentMoods: ["Exploring", "Networking"],
+    bio: "Digital nomad exploring the world while working remotely"
+  },
+  business: {
+    profileType: "business",
+    businessName: "Remote Workspace Co.",
+    businessDescription: "Premium coworking spaces for digital nomads",
+    interests: ["Remote Work", "Entrepreneurship", "Networking"],
+    currentMoods: ["Working", "Creating"]
+  },
+  promoter: {
+    profileType: "promoter",
+    businessName: "Global Events Network",
+    businessDescription: "Connecting digital nomads through unforgettable experiences",
+    interests: ["Events", "Networking", "Marketing"],
+    currentMoods: ["Networking", "Creating"]
+  },
+  non_profit: {
+    profileType: "non_profit",
+    businessName: "Digital Nomad Foundation",
+    businessDescription: "Supporting sustainable digital nomad communities worldwide",
+    interests: ["Community", "Sustainability", "Education"],
+    currentMoods: ["Teaching", "Creating"]
+  }
+};
