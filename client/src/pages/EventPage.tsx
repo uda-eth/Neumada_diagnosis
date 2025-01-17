@@ -2,7 +2,7 @@ import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useUser } from "@/hooks/use-user";
 import { Button } from "@/components/ui/button";
-import { Share2, Calendar, MapPin, Users, ChevronLeft } from "lucide-react"; // Changed ArrowLeft to ChevronLeft
+import { ChevronLeft } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,11 +16,6 @@ export default function EventPage() {
 
   const { data: event, isLoading } = useQuery<Event>({
     queryKey: [`/api/events/${id}`],
-    queryFn: async () => {
-      const response = await fetch(`/api/events/${id}`);
-      if (!response.ok) throw new Error("Failed to fetch event");
-      return response.json();
-    },
   });
 
   const participateMutation = useMutation({
@@ -51,7 +46,7 @@ export default function EventPage() {
 
   if (isLoading || !event) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#121212] text-white/60">
+      <div className="min-h-screen flex items-center justify-center bg-black text-white/60">
         Loading...
       </div>
     );
@@ -61,89 +56,80 @@ export default function EventPage() {
   const interestedCount = Math.floor(Math.random() * 50 + 10); // Placeholder for demo
 
   return (
-    <div className="min-h-screen bg-[#121212] text-white">
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
+    <div className="min-h-screen bg-black text-white">
+      {/* Header */}
+      <div className="sticky top-0 z-10 bg-black/80 backdrop-blur-sm">
+        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
           <Button
             variant="ghost"
-            className="text-white/60 hover:text-white"
+            size="icon"
+            className="text-white/60"
             onClick={() => setLocation("/")}
           >
-            <ChevronLeft className="w-4 h-4 mr-2" />
-            Back
+            <ChevronLeft className="w-5 h-5" />
           </Button>
-          <Button variant="ghost" className="text-white/60 hover:text-white">
-            <Share2 className="w-4 h-4" />
-          </Button>
+          <h1 className="text-sm font-medium">Back</h1>
+        </div>
+      </div>
+
+      {/* Event Image */}
+      {event.image && (
+        <div className="aspect-[3/2] w-full">
+          <img
+            src={event.image}
+            alt={event.title}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
+
+      {/* Event Details */}
+      <div className="container mx-auto px-4 py-6 space-y-6">
+        {/* Tags */}
+        <div className="flex gap-2 flex-wrap">
+          {event.category && (
+            <div className="px-3 py-1 rounded-full bg-white/10 text-sm">
+              {event.category}
+            </div>
+          )}
+          <div className="px-3 py-1 rounded-full bg-white/10 text-sm">
+            {interestedCount} interested
+          </div>
         </div>
 
-        {/* Event Image */}
-        {event.image && (
-          <div className="aspect-[16/9] mb-8">
-            <img
-              src={event.image}
-              alt={event.title}
-              className="w-full h-full object-cover rounded-lg"
-            />
-          </div>
-        )}
-
-        {/* Event Details */}
-        <div className="space-y-8">
-          {/* Title and Meta */}
-          <div>
-            <h1 className="text-2xl font-bold mb-4 uppercase">{event.title}</h1> {/* Reduced font size and uppercase */}
-            <div className="flex flex-wrap gap-4 text-white/60">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
-                {format(new Date(event.date), "EEE, MMM d · h:mm a")}
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="w-5 h-5" />
-                {event.location}
-              </div>
-              {event.capacity && (
-                <div className="flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  {event.capacity} spots
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Price and Interested */}
-          <div className="flex items-center justify-between py-4 border-y border-white/10">
-            <div className="text-lg font-semibold"> {/*Reduced font size */}
-              {isPrivateEvent ? "RSVP required" : `$${event.price} USD`}
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex -space-x-2">
-                {[...Array(4)].map((_, i) => (
-                  <Avatar key={i} className="w-8 h-8 border-2 border-[#121212]">
-                    <AvatarFallback className="bg-white/10">
-                      {String.fromCharCode(65 + i)}
-                    </AvatarFallback>
-                  </Avatar>
-                ))}
-              </div>
-              <span className="text-white/60">{interestedCount} interested</span>
-            </div>
-          </div>
-
-          {/* Description */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold"> {/*Reduced font size */}About this event</h2>
-            <p className="text-white/80 whitespace-pre-wrap leading-relaxed">
-              {event.description}
+        {/* Title and Meta */}
+        <div>
+          <h1 className="text-2xl font-bold">{event.title}</h1>
+          <div className="mt-2 text-white/60">
+            <p>{format(new Date(event.date), "EEE, MMM d")}</p>
+            <p className="mt-1">
+              {format(new Date(event.date), "h:mm a")} -{" "}
+              {format(new Date(event.date).setHours(new Date(event.date).getHours() + 2), "h:mm a")}
             </p>
+            <p className="mt-1">{event.location}</p>
           </div>
+        </div>
 
-          {/* Created By */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold"> {/*Reduced font size */}Created by</h2>
-            <div className="flex items-center gap-4">
-              <Avatar className="w-12 h-12">
+        {/* Price */}
+        <div className="py-4 border-t border-white/10">
+          <div className="text-xl font-semibold">
+            {isPrivateEvent ? "RSVP required" : `$${event.price} USD`}
+          </div>
+        </div>
+
+        {/* Description */}
+        <div className="space-y-2">
+          <h2 className="text-lg font-semibold">Details</h2>
+          <p className="text-white/80 whitespace-pre-wrap">
+            {event.description}
+          </p>
+        </div>
+
+        {/* Created By */}
+        <div className="py-4 border-t border-white/10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-12 w-12">
                 <AvatarFallback className="bg-white/10">
                   {event.creatorId?.toString()[0] || "H"}
                 </AvatarFallback>
@@ -153,30 +139,27 @@ export default function EventPage() {
                 <div className="text-sm text-white/60">Event Organizer</div>
               </div>
             </div>
+            <Button variant="outline" className="h-9">
+              Follow
+            </Button>
           </div>
-
-          {/* CTA Buttons */}
-          {user && user.id !== event.creatorId && (
-            <div className="flex gap-4 pt-4">
-              <Button
-                className="flex-1 h-12"
-                onClick={() => participateMutation.mutate("attending")}
-                disabled={participateMutation.isPending}
-              >
-                {isPrivateEvent ? "Request Access" : `Buy Ticket • $${event.price}`}
-              </Button>
-              <Button
-                variant="outline"
-                className="px-8 h-12"
-                onClick={() => participateMutation.mutate("interested")}
-                disabled={participateMutation.isPending}
-              >
-                Interested
-              </Button>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Bottom Actions */}
+      {user && user.id !== event.creatorId && (
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-black/80 backdrop-blur-lg border-t border-white/10">
+          <div className="container mx-auto max-w-2xl">
+            <Button
+              className="w-full h-12"
+              onClick={() => participateMutation.mutate("attending")}
+              disabled={participateMutation.isPending}
+            >
+              {isPrivateEvent ? "Request Access" : `Buy ticket $${event.price}`}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
