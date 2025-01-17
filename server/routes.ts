@@ -26,19 +26,85 @@ interface MockUser {
   updatedAt: string;
 }
 
-const PROFILE_IMAGES = [
-  "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=600&h=600&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&h=600&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&h=600&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&h=600&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=600&fit=crop&q=80"
-];
+// City-specific profile images to make the experience more realistic
+const PROFILE_IMAGES_BY_CITY: Record<string, string[]> = {
+  "Bali": [
+    "https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1552058544-f2b08422138a?w=600&h=600&fit=crop&q=80"
+  ],
+  "Bangkok": [
+    "https://images.unsplash.com/photo-1607346256330-dee7af15f7c5?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=600&h=600&fit=crop&q=80"
+  ],
+  "Barcelona": [
+    "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&h=600&fit=crop&q=80"
+  ],
+  "Berlin": [
+    "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1534751516642-a1af1ef26a56?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=600&h=600&fit=crop&q=80"
+  ],
+  "Lisbon": [
+    "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1598550874175-4d0ef436c909?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1539386276791-0fd5b1756cdf?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=600&h=600&fit=crop&q=80"
+  ],
+  "London": [
+    "https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&h=600&fit=crop&q=80"
+  ],
+  "Mexico City": [
+    "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1557555187-23d685287bc3?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1545167622-3a6ac756afa4?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1534751516642-a1af1ef26a56?w=600&h=600&fit=crop&q=80"
+  ],
+  "New York": [
+    "https://images.unsplash.com/photo-1525134479668-1bee5c7c6845?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&h=600&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&h=600&fit=crop&q=80"
+  ]
+};
 
 const MOCK_USERS: Record<string, MockUser[]> = DIGITAL_NOMAD_CITIES.reduce((acc, city) => {
+  // Get city-specific profile images or use default ones
+  const cityImages = PROFILE_IMAGES_BY_CITY[city] || PROFILE_IMAGES_BY_CITY["London"];
+
   acc[city] = Array.from({ length: 10 }, (_, i) => ({
     id: Math.floor(Math.random() * 1000),
     username: `user${i}_${city.toLowerCase().replace(/\s+/g, '')}`,
-    fullName: `Digital Nomad ${i + 1}`,
+    fullName: [
+      "Sofia Rodriguez",
+      "Alex Chen",
+      "Maya Patel",
+      "Lucas Silva",
+      "Emma Thompson",
+      "Kai Nakamura",
+      "Isabella Santos",
+      "Omar Hassan",
+      "Nina Kowalski",
+      "Marcus Wong"
+    ][i],
     age: 25 + Math.floor(Math.random() * 15),
     gender: Math.random() > 0.5 ? 'male' : 'female',
     profession: [
@@ -46,25 +112,45 @@ const MOCK_USERS: Record<string, MockUser[]> = DIGITAL_NOMAD_CITIES.reduce((acc,
       'Digital Marketer',
       'Content Creator',
       'UX Designer',
-      'Startup Founder'
-    ][Math.floor(Math.random() * 5)],
+      'Startup Founder',
+      'Travel Blogger',
+      'Freelance Writer',
+      'UI Designer',
+      'Data Scientist',
+      'Product Manager'
+    ][i],
     location: city,
-    bio: `Digital nomad based in ${city}, passionate about technology and travel.`,
+    bio: `Digital nomad based in ${city}, passionate about technology and travel. ${[
+      "Love exploring local coffee shops and coworking spaces.",
+      "Always seeking new cultural experiences and connections.",
+      "Combining work and adventure while traveling the world.",
+      "Building the future of remote work one project at a time.",
+      "Creating content and sharing stories from around the globe."
+    ][Math.floor(Math.random() * 5)]}`,
     interests: [
       'Remote Work',
       'Technology',
       'Travel',
       'Photography',
-      'Entrepreneurship'
-    ].sort(() => Math.random() - 0.5).slice(0, 3),
+      'Entrepreneurship',
+      'Yoga',
+      'Surfing',
+      'Cooking',
+      'Languages',
+      'Hiking'
+    ].sort(() => Math.random() - 0.5).slice(0, 3 + Math.floor(Math.random() * 3)),
     currentMoods: [
       'Working',
       'Exploring',
       'Networking',
-      'Learning'
+      'Learning',
+      'Creating',
+      'Adventuring',
+      'Collaborating',
+      'Relaxing'
     ].sort(() => Math.random() - 0.5).slice(0, 2),
-    profileImage: PROFILE_IMAGES[i % PROFILE_IMAGES.length],
-    createdAt: new Date().toISOString(),
+    profileImage: cityImages[i % cityImages.length],
+    createdAt: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(), // Random date within last 90 days
     updatedAt: new Date().toISOString()
   }));
   return acc;
