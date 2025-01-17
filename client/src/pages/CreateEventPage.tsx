@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronLeft, Image as ImageIcon, Plus } from "lucide-react";
 import type { Event } from "@db/schema";
@@ -30,7 +29,7 @@ export default function CreateEventPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [eventImages, setEventImages] = useState<string[]>([]);
+  const [eventImage, setEventImage] = useState<string | null>(null);
 
   const form = useForm({
     resolver: zodResolver(insertEventSchema),
@@ -39,9 +38,10 @@ export default function CreateEventPage() {
       description: "",
       location: "",
       date: "",
-      category: "",
+      startTime: "",
+      endTime: "",
       price: 0,
-      capacity: undefined,
+      isPrivate: false,
     },
   });
 
@@ -50,7 +50,7 @@ export default function CreateEventPage() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setEventImages([...eventImages, reader.result as string]);
+        setEventImage(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -58,6 +58,13 @@ export default function CreateEventPage() {
 
   const onSubmit = async (data: Event) => {
     try {
+      // Combine date and time
+      const eventData = {
+        ...data,
+        image: eventImage,
+        tags: selectedTags,
+      };
+
       // TODO: Implement event creation API
       toast({
         title: "Success",
@@ -74,78 +81,90 @@ export default function CreateEventPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#121212] text-white pb-20">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Button
-            variant="ghost"
-            className="text-white/60"
-            onClick={() => setLocation("/")}
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
-          <h1 className="text-sm font-medium uppercase tracking-wider">Create</h1>
+    <div className="min-h-screen bg-[#121212] text-white">
+      {/* Header */}
+      <header className="sticky top-0 z-10 bg-[#121212]/80 backdrop-blur-lg border-b border-white/10">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white/60"
+              onClick={() => setLocation("/")}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+            <h1 className="text-sm font-medium uppercase tracking-wider">
+              Create YOUR event
+            </h1>
+          </div>
         </div>
+      </header>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="pb-24">
+        <div className="container mx-auto px-4 py-8 space-y-8 max-w-2xl">
           {/* Image Upload */}
           <div className="space-y-4">
-            <Label>Add photos or flyer to your event</Label>
-            <div className="grid grid-cols-3 gap-4">
-              {eventImages.map((img, index) => (
-                <div key={index} className="aspect-square">
-                  <img
-                    src={img}
-                    alt={`Event ${index + 1}`}
-                    className="w-full h-full object-cover rounded-lg"
-                  />
-                </div>
-              ))}
-              <label className="aspect-square bg-white/5 rounded-lg flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-white/10 transition-colors">
-                <Plus className="w-6 h-6 text-white/60" />
-                <span className="text-sm text-white/60">Add Image</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
+            <p className="text-sm text-white/60">Let's get started!</p>
+            <div className="relative aspect-[3/2] bg-white/5 rounded-lg overflow-hidden">
+              {eventImage ? (
+                <img
+                  src={eventImage}
+                  alt="Event preview"
+                  className="w-full h-full object-cover"
                 />
-              </label>
+              ) : (
+                <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-white/10 transition-colors">
+                  <div className="flex flex-col items-center gap-2">
+                    <Plus className="w-8 h-8 text-white/60" />
+                    <span className="text-sm text-white/60">
+                      Add photos or flyer for your event
+                    </span>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                </label>
+              )}
             </div>
           </div>
 
           {/* Event Details */}
-          <div className="space-y-4">
-            <div>
-              <Label>Event Title</Label>
+          <div className="space-y-6">
+            <div className="space-y-2">
               <Input
                 {...form.register("title")}
-                className="bg-white/5 border-0"
-                placeholder="Give your event a name"
+                className="bg-white/5 border-0 h-12 text-lg"
+                placeholder="Event title"
               />
             </div>
 
-            <div>
-              <Label>Description</Label>
+            <div className="space-y-2">
               <Textarea
                 {...form.register("description")}
-                className="bg-white/5 border-0 h-32"
-                placeholder="Tell people what your event is about"
+                className="bg-white/5 border-0 h-32 resize-none"
+                placeholder="Fill in event details"
               />
             </div>
           </div>
 
           {/* Target Audience */}
           <div className="space-y-4">
-            <Label>Target audience is</Label>
-            <div className="flex flex-wrap gap-2">
+            <h3 className="text-sm font-medium">Target audience is</h3>
+            <div className="grid grid-cols-3 gap-2">
               {interestTags.map((tag) => (
                 <Button
                   key={tag}
                   type="button"
                   variant={selectedTags.includes(tag) ? "default" : "outline"}
-                  className="rounded-full"
+                  className={`h-8 text-sm ${
+                    selectedTags.includes(tag)
+                      ? ""
+                      : "bg-white/5 border-white/10 hover:bg-white/10"
+                  }`}
                   onClick={() => {
                     setSelectedTags((prev) =>
                       prev.includes(tag)
@@ -161,67 +180,99 @@ export default function CreateEventPage() {
           </div>
 
           {/* Date and Time */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Event start</Label>
-              <Input
-                type="datetime-local"
-                {...form.register("date")}
-                className="bg-white/5 border-0"
-              />
-            </div>
-            <div>
-              <Label>Event end</Label>
-              <Input
-                type="datetime-local"
-                className="bg-white/5 border-0"
-              />
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Input
+                  type="time"
+                  {...form.register("startTime")}
+                  className="bg-white/5 border-0 h-12"
+                />
+              </div>
+              <div>
+                <Input
+                  type="time"
+                  {...form.register("endTime")}
+                  className="bg-white/5 border-0 h-12"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Price and Capacity */}
+          {/* Location */}
           <div className="space-y-4">
-            <div>
-              <Label>Payment</Label>
-              <div className="flex gap-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => form.setValue("price", 0)}
-                >
-                  Free
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => form.setValue("price", undefined)}
-                >
-                  Paid
-                </Button>
-              </div>
+            <Input
+              {...form.register("location")}
+              className="bg-white/5 border-0 h-12"
+              placeholder="Tell me system location"
+            />
+          </div>
+
+          {/* Price */}
+          <div className="space-y-4">
+            <div className="flex gap-4">
+              <Button
+                type="button"
+                variant={form.watch("price") === 0 ? "default" : "outline"}
+                className="flex-1 h-12"
+                onClick={() => form.setValue("price", 0)}
+              >
+                Free
+              </Button>
+              <Button
+                type="button"
+                variant={form.watch("price") !== 0 ? "default" : "outline"}
+                className="flex-1 h-12"
+                onClick={() => form.setValue("price", undefined)}
+              >
+                Paid
+              </Button>
             </div>
 
             {form.watch("price") !== 0 && (
-              <div>
-                <Label>Amount</Label>
+              <div className="space-y-2">
                 <Input
                   type="number"
                   {...form.register("price")}
-                  className="bg-white/5 border-0"
+                  className="bg-white/5 border-0 h-12"
                   placeholder="0.00"
                 />
               </div>
             )}
           </div>
 
-          {/* Submit */}
-          <Button type="submit" className="w-full h-12">
-            Publish
-          </Button>
-        </form>
-      </div>
+          {/* Privacy */}
+          <div className="space-y-4">
+            <div className="flex gap-4">
+              <Button
+                type="button"
+                variant={!form.watch("isPrivate") ? "default" : "outline"}
+                className="flex-1 h-12"
+                onClick={() => form.setValue("isPrivate", false)}
+              >
+                Public
+              </Button>
+              <Button
+                type="button"
+                variant={form.watch("isPrivate") ? "default" : "outline"}
+                className="flex-1 h-12"
+                onClick={() => form.setValue("isPrivate", true)}
+              >
+                Private
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Submit */}
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-[#121212]/80 backdrop-blur-lg border-t border-white/10">
+          <div className="container mx-auto max-w-2xl">
+            <Button type="submit" className="w-full h-12">
+              publish
+            </Button>
+          </div>
+        </div>
+      </form>
     </div>
   );
 }
