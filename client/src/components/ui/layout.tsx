@@ -29,7 +29,7 @@ export function Layout({ children }: LayoutProps) {
       </header>
 
       {/* Main content with bottom padding for mobile nav */}
-      <main className="flex-1 pb-20">
+      <main className="flex-1 pb-28 md:pb-0">
         {children}
       </main>
 
