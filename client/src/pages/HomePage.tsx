@@ -53,8 +53,8 @@ export default function HomePage() {
     image: "",
     capacity: 0,
   });
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Group events by time period
   const today = new Date();
   const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
 
@@ -85,6 +85,7 @@ export default function HomePage() {
         title: "Success",
         description: "Event created successfully",
       });
+      setIsDialogOpen(false); // Close the dialog after successful creation
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -96,7 +97,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#121212] text-white">
-      {/* Header */}
       <header className="border-b border-white/10 sticky top-0 z-10 bg-[#121212]/80 backdrop-blur-lg">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -132,47 +132,52 @@ export default function HomePage() {
                   Sign In
                 </Button>
               )}
-              <Dialog>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button>Create Event</Button>
+                  <Button className="bg-primary text-white hover:bg-primary/90">
+                    <Plus className="h-5 w-5 mr-2" />
+                    Create Event
+                  </Button>
                 </DialogTrigger>
-                <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
+                <DialogContent className="fixed left-[50%] top-[50%] z-[101] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-[#1a1a1a] p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg border-white/10">
                   <DialogHeader>
-                    <DialogTitle>Create New Event</DialogTitle>
+                    <DialogTitle className="text-white">Create New Event</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                      <Label>Title</Label>
+                      <Label className="text-white">Title</Label>
                       <Input
                         value={newEvent.title}
                         onChange={(e) =>
                           setNewEvent({ ...newEvent, title: e.target.value })
                         }
+                        className="bg-[#242424] border-white/10 text-white"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Description</Label>
+                      <Label className="text-white">Description</Label>
                       <Textarea
                         value={newEvent.description}
                         onChange={(e) =>
                           setNewEvent({ ...newEvent, description: e.target.value })
                         }
+                        className="bg-[#242424] border-white/10 text-white"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Location</Label>
+                        <Label className="text-white">Location</Label>
                         <Select
                           onValueChange={(value) =>
                             setNewEvent({ ...newEvent, location: value })
                           }
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="bg-[#242424] border-white/10 text-white">
                             <SelectValue placeholder="Select location" />
                           </SelectTrigger>
-                          <SelectContent position="popper" className="w-[200px]">
+                          <SelectContent className="bg-[#1a1a1a] border-white/10">
                             {cities.map((city) => (
-                              <SelectItem key={city} value={city}>
+                              <SelectItem key={city} value={city} className="text-white">
                                 {city}
                               </SelectItem>
                             ))}
@@ -180,18 +185,18 @@ export default function HomePage() {
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label>Category</Label>
+                        <Label className="text-white">Category</Label>
                         <Select
                           onValueChange={(value) =>
                             setNewEvent({ ...newEvent, category: value })
                           }
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="bg-[#242424] border-white/10 text-white">
                             <SelectValue placeholder="Select category" />
                           </SelectTrigger>
-                          <SelectContent position="popper" className="w-[200px]">
+                          <SelectContent className="bg-[#1a1a1a] border-white/10">
                             {categories.map((cat) => (
-                              <SelectItem key={cat} value={cat}>
+                              <SelectItem key={cat} value={cat} className="text-white">
                                 {cat}
                               </SelectItem>
                             ))}
@@ -201,17 +206,18 @@ export default function HomePage() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Date</Label>
+                        <Label className="text-white">Date</Label>
                         <Input
                           type="datetime-local"
                           value={newEvent.date}
                           onChange={(e) =>
                             setNewEvent({ ...newEvent, date: e.target.value })
                           }
+                          className="bg-[#242424] border-white/10 text-white"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Capacity</Label>
+                        <Label className="text-white">Capacity</Label>
                         <Input
                           type="number"
                           value={newEvent.capacity}
@@ -221,12 +227,16 @@ export default function HomePage() {
                               capacity: parseInt(e.target.value) || 0,
                             })
                           }
+                          className="bg-[#242424] border-white/10 text-white"
                         />
                       </div>
                     </div>
                     <Button
-                      onClick={handleCreateEvent}
-                      className="w-full mt-6"
+                      onClick={() => {
+                        handleCreateEvent();
+                        setIsDialogOpen(false);
+                      }}
+                      className="w-full mt-6 bg-primary text-white hover:bg-primary/90"
                       disabled={
                         !newEvent.title ||
                         !newEvent.description ||
@@ -245,7 +255,6 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         {isLoading ? (
           <div className="space-y-4">
@@ -257,7 +266,6 @@ export default function HomePage() {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* This Weekend Section */}
             {groupedEvents?.thisWeekend.length > 0 && (
               <section>
                 <h2 className="text-sm font-medium text-white/60 mb-4">
@@ -330,7 +338,6 @@ export default function HomePage() {
               </section>
             )}
 
-            {/* Next Week Section */}
             {groupedEvents?.nextWeek.length > 0 && (
               <section>
                 <h2 className="text-sm font-medium text-white/60 mb-4">

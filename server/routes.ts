@@ -211,6 +211,25 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  app.get("/api/users/:username", async (req, res) => {
+    try {
+      const { username } = req.params;
+      const user = Object.values(MOCK_USERS)
+        .flat()
+        .find(u => u.username === username);
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ error: "Failed to fetch user" });
+    }
+  });
+
+
   // Find matches API
   app.get("/api/matches", async (req, res) => {
     try {
