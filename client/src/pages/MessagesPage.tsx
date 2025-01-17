@@ -13,7 +13,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SUPPORTED_LANGUAGES } from "../../../server/services/translationService";
+
+// Define supported languages directly since we can't access process.env in the browser
+const SUPPORTED_LANGUAGES = [
+  { code: "en", name: "English" },
+  { code: "es", name: "Spanish" },
+  { code: "fr", name: "French" },
+  { code: "de", name: "German" },
+  { code: "it", name: "Italian" },
+  { code: "pt", name: "Portuguese" },
+  { code: "ru", name: "Russian" },
+  { code: "zh", name: "Chinese" },
+  { code: "ja", name: "Japanese" },
+  { code: "ko", name: "Korean" }
+];
 
 interface Message {
   id: number;
@@ -117,14 +130,28 @@ export default function MessagesPage() {
       setNewMessage("");
     } catch (error) {
       console.error('Translation error:', error);
-      // Handle error appropriately
+      // Add the message without translation if the service fails
+      const message: Message = {
+        id: messages.length + 1,
+        content: newMessage,
+        timestamp: new Date().toLocaleTimeString([], { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: false 
+        }),
+        sender: "Me",
+        isMe: true,
+        originalLanguage: selectedLanguage,
+      };
+      setMessages([...messages, message]);
+      setNewMessage("");
     } finally {
       setIsTranslating(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#121212] text-white">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-black/40 backdrop-blur-sm border-b border-white/10">
         <div className="container mx-auto px-4 py-4">
@@ -132,22 +159,22 @@ export default function MessagesPage() {
             <Button
               variant="ghost"
               size="icon"
-              className="text-white/60 hover:text-white hover:bg-white/10"
+              className="text-muted-foreground hover:text-foreground hover:bg-accent"
               onClick={() => setLocation("/messages")}
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
             <div className="flex-1">
-              <h1 className="text-xl font-semibold text-white">{mockChat.user.name}</h1>
+              <h1 className="text-xl font-semibold">{mockChat.user.name}</h1>
               {mockChat.user.title && (
-                <p className="text-sm text-white/60">{mockChat.user.title}</p>
+                <p className="text-sm text-muted-foreground">{mockChat.user.title}</p>
               )}
             </div>
             <Select
               value={selectedLanguage}
               onValueChange={setSelectedLanguage}
             >
-              <SelectTrigger className="w-[180px] bg-white/5 border-white/10 hover:bg-white/10">
+              <SelectTrigger className="w-[180px] bg-accent border-accent">
                 <Globe className="w-4 h-4 mr-2" />
                 <SelectValue />
               </SelectTrigger>
@@ -186,7 +213,7 @@ export default function MessagesPage() {
                   className={`rounded-2xl px-4 py-2.5 ${
                     message.isMe
                       ? "bg-primary text-primary-foreground"
-                      : "bg-white/10 text-white"
+                      : "bg-accent text-accent-foreground"
                   }`}
                 >
                   <p className="text-[15px] leading-relaxed">{message.content}</p>
@@ -212,17 +239,17 @@ export default function MessagesPage() {
       </ScrollArea>
 
       {/* Input Area */}
-      <div className="fixed bottom-0 left-0 right-0 bg-black/40 backdrop-blur-sm border-t border-white/10">
+      <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t">
         <div className="container mx-auto px-4 py-4">
           {/* Quick Replies */}
-          <div className="pb-4 mb-4 border-b border-white/10">
+          <div className="pb-4 mb-4 border-b">
             <ScrollArea>
               <div className="flex gap-2 pb-2">
                 {quickReplies.map((reply) => (
                   <Button
                     key={reply}
                     variant="outline"
-                    className="border-white/10 bg-white/5 hover:bg-white/10 whitespace-nowrap"
+                    className="whitespace-nowrap"
                     onClick={() => setNewMessage(reply)}
                   >
                     {reply}
@@ -244,13 +271,13 @@ export default function MessagesPage() {
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder={`Type a message in ${SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage)?.name}...`}
-              className="flex-1 bg-white/5 border-white/10 focus:border-white/20"
+              className="flex-1"
               disabled={isTranslating}
             />
             <Button 
               type="submit" 
               disabled={isTranslating || !newMessage.trim()}
-              className="px-6 bg-primary hover:bg-primary/90"
+              className="px-6"
             >
               Send
             </Button>
