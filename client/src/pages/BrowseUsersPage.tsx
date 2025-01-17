@@ -37,7 +37,6 @@ interface User {
   age?: number | null;
 }
 
-// Animation variants
 const container = {
   hidden: { opacity: 0 },
   show: {
@@ -136,10 +135,13 @@ export default function BrowseUsersPage() {
 
       const response = await fetch(`/api/users/browse?${params}`);
       if (!response.ok) throw new Error("Failed to fetch users");
-      const data = await response.json();
-      return data;
+      return response.json();
     },
   });
+
+  const handleUserClick = (username: string) => {
+    setLocation(`/profile/${username}`);
+  };
 
   const toggleFilter = (item: string, filterType: 'interests' | 'moods') => {
     const setterFn = filterType === 'interests' ? setSelectedInterests : setSelectedMoods;
@@ -151,9 +153,9 @@ export default function BrowseUsersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header with City Selection */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+    <div className="min-h-screen bg-[#121212] text-white">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-[#121212]/95 backdrop-blur supports-[backdrop-filter]:bg-[#121212]/60 border-b border-white/10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold">Connect in {selectedCity}</h1>
@@ -161,19 +163,19 @@ export default function BrowseUsersPage() {
               <Button
                 variant="ghost"
                 onClick={() => setIsFiltersVisible(!isFiltersVisible)}
-                className="gap-2"
+                className="gap-2 text-white/80 hover:text-white"
               >
                 <Search className="w-4 h-4" />
                 Filters
               </Button>
               <Select value={selectedCity} onValueChange={setSelectedCity}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[180px] bg-[#1a1a1a] border-white/10 text-white">
                   <SelectValue placeholder="Select City" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-[#1a1a1a] border-white/10">
                   <SelectItem value="all">All Cities</SelectItem>
                   {cities.map(city => (
-                    <SelectItem key={city} value={city}>{city}</SelectItem>
+                    <SelectItem key={city} value={city} className="text-white">{city}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -193,19 +195,20 @@ export default function BrowseUsersPage() {
               transition={{ duration: 0.2 }}
               className="overflow-hidden mb-8"
             >
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-muted/50 p-6 rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-[#1a1a1a] p-6 rounded-lg border border-white/10">
+                {/* Demographics section */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold">Demographics</h3>
+                  <h3 className="font-semibold text-white">Demographics</h3>
                   <div className="space-y-4">
                     <Select value={selectedGender} onValueChange={setSelectedGender}>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-[#242424] border-white/10 text-white">
                         <SelectValue placeholder="Gender" />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Genders</SelectItem>
-                        <SelectItem value="male">Male</SelectItem>
-                        <SelectItem value="female">Female</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
+                      <SelectContent className="bg-[#1a1a1a] border-white/10">
+                        <SelectItem value="all" className="text-white">All Genders</SelectItem>
+                        <SelectItem value="male" className="text-white">Male</SelectItem>
+                        <SelectItem value="female" className="text-white">Female</SelectItem>
+                        <SelectItem value="other" className="text-white">Other</SelectItem>
                       </SelectContent>
                     </Select>
                     <div className="grid grid-cols-2 gap-2">
@@ -214,25 +217,27 @@ export default function BrowseUsersPage() {
                         placeholder="Min age"
                         value={ageRange.min}
                         onChange={(e) => setAgeRange(prev => ({ ...prev, min: e.target.value }))}
+                        className="bg-[#242424] border-white/10 text-white placeholder:text-white/60"
                       />
                       <Input
                         type="number"
                         placeholder="Max age"
                         value={ageRange.max}
                         onChange={(e) => setAgeRange(prev => ({ ...prev, max: e.target.value }))}
+                        className="bg-[#242424] border-white/10 text-white placeholder:text-white/60"
                       />
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="font-semibold">Interests</h3>
+                  <h3 className="font-semibold text-white">Interests</h3>
                   <div className="flex flex-wrap gap-2">
                     {interests.map(interest => (
                       <Badge
                         key={interest}
                         variant={selectedInterests.includes(interest) ? "default" : "outline"}
-                        className="cursor-pointer hover:opacity-80 transition-opacity"
+                        className="cursor-pointer hover:opacity-80 transition-opacity text-white"
                         onClick={() => toggleFilter(interest, 'interests')}
                       >
                         {interest}
@@ -242,13 +247,13 @@ export default function BrowseUsersPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="font-semibold">Current Mood</h3>
+                  <h3 className="font-semibold text-white">Current Mood</h3>
                   <div className="flex flex-wrap gap-2">
                     {moods.map(mood => (
                       <Badge
                         key={mood}
                         variant={selectedMoods.includes(mood) ? "default" : "outline"}
-                        className="cursor-pointer hover:opacity-80 transition-opacity"
+                        className="cursor-pointer hover:opacity-80 transition-opacity text-white"
                         onClick={() => toggleFilter(mood, 'moods')}
                       >
                         {mood}
@@ -266,7 +271,7 @@ export default function BrowseUsersPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {[...Array(12)].map((_, i) => (
               <div key={i} className="animate-pulse">
-                <div className="aspect-[3/4] bg-muted rounded-lg"></div>
+                <div className="aspect-[3/4] bg-[#1a1a1a] rounded-lg"></div>
               </div>
             ))}
           </div>
@@ -283,63 +288,65 @@ export default function BrowseUsersPage() {
                 variants={item}
                 layout
                 className="group cursor-pointer"
-                onClick={() => setLocation(`/profile/${user.username}`)}
+                onClick={() => handleUserClick(user.username)}
               >
-                <Card className="overflow-hidden border-0 shadow-lg transition-all duration-300 group-hover:shadow-xl">
-                  <div className="aspect-[3/4] relative">
-                    {getProfileImage(user) ? (
-                      <img
-                        src={getProfileImage(user)}
-                        alt={user.fullName || user.username}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-muted flex items-center justify-center">
-                        <Avatar className="h-20 w-20">
-                          <AvatarFallback>
-                            {(user.fullName?.[0] || user.username[0]).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                      </div>
-                    )}
-                    {/* Overlay with user info */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
-                      <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="font-bold text-lg">{user.fullName || user.username}</h3>
-                          {user.age && (
-                            <span className="text-sm flex items-center gap-1">
-                              <CalendarDays className="w-3 h-3" />
-                              {user.age}
-                            </span>
-                          )}
+                <Card className="overflow-hidden border-0 bg-[#1a1a1a] shadow-lg transition-all duration-300 group-hover:shadow-xl">
+                  <CardContent className="p-0">
+                    <div className="aspect-[3/4] relative">
+                      {user.profileImage ? (
+                        <img
+                          src={user.profileImage}
+                          alt={user.fullName || user.username}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-[#242424] flex items-center justify-center">
+                          <Avatar className="h-20 w-20">
+                            <AvatarFallback className="bg-primary text-primary-foreground">
+                              {(user.fullName?.[0] || user.username[0]).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
                         </div>
-                        {user.location && (
-                          <div className="flex items-center gap-2 text-sm text-white/80">
-                            <MapPin className="w-3 h-3" />
-                            {user.location}
-                          </div>
-                        )}
-                        {user.interests && user.interests.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {user.interests.slice(0, 2).map(interest => (
-                              <span 
-                                key={interest} 
-                                className="text-xs bg-white/20 px-2 py-0.5 rounded-full"
-                              >
-                                {interest}
-                              </span>
-                            ))}
-                            {user.interests.length > 2 && (
-                              <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">
-                                +{user.interests.length - 2}
+                      )}
+                      {/* Overlay with user info */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
+                        <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className="font-bold text-lg">{user.fullName || user.username}</h3>
+                            {user.age && (
+                              <span className="text-sm flex items-center gap-1">
+                                <CalendarDays className="w-3 h-3" />
+                                {user.age}
                               </span>
                             )}
                           </div>
-                        )}
+                          {user.location && (
+                            <div className="flex items-center gap-2 text-sm text-white/80">
+                              <MapPin className="w-3 h-3" />
+                              {user.location}
+                            </div>
+                          )}
+                          {user.interests && user.interests.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {user.interests.slice(0, 2).map(interest => (
+                                <span 
+                                  key={interest} 
+                                  className="text-xs bg-white/20 px-2 py-0.5 rounded-full"
+                                >
+                                  {interest}
+                                </span>
+                              ))}
+                              {user.interests.length > 2 && (
+                                <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">
+                                  +{user.interests.length - 2}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </CardContent>
                 </Card>
               </motion.div>
             ))}
