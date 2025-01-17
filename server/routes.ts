@@ -20,6 +20,7 @@ interface MockUser {
   bio: string;
   interests: string[];
   currentMoods: string[];
+  profileImage: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -54,6 +55,7 @@ const MOCK_USERS: Record<string, MockUser[]> = DIGITAL_NOMAD_CITIES.reduce((acc,
       'Networking',
       'Learning'
     ].sort(() => Math.random() - 0.5).slice(0, 2),
+    profileImage: `https://source.unsplash.com/600x600/?portrait,professional,${Math.random()}`,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   }));

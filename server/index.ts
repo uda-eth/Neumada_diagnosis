@@ -6,6 +6,19 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Add CORS headers for development
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -38,42 +51,55 @@ app.use((req, res, next) => {
 
 (async () => {
   try {
-    const server = registerRoutes(app);
+    // Kill any existing process on port 5000 (Unix-like systems)
+    try {
+      const server = await registerRoutes(app);
 
-    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-      const status = err.status || err.statusCode || 500;
-      const message = err.message || "Internal Server Error";
-      res.status(status).json({ message });
-    });
+      app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+        const status = err.status || err.statusCode || 500;
+        const message = err.message || "Internal Server Error";
+        res.status(status).json({ message });
+      });
 
-    if (app.get("env") === "development") {
-      await setupVite(app, server);
-    } else {
-      serveStatic(app);
+      if (app.get("env") === "development") {
+        await setupVite(app, server);
+      } else {
+        serveStatic(app);
+      }
+
+      const PORT = 5000;
+      server.listen(PORT, "0.0.0.0")
+        .on("error", (error: NodeJS.ErrnoException) => {
+          if (error.code === 'EADDRINUSE') {
+            log(`Port ${PORT} is already in use. Trying to close existing connection...`);
+            server.close(() => {
+              server.listen(PORT, "0.0.0.0");
+            });
+          } else {
+            log(`Failed to start server: ${error}`);
+            process.exit(1);
+          }
+        })
+        .on("listening", () => {
+          log(`Server started on port ${PORT}`);
+          process.env.PORT = PORT.toString();
+        });
+
+      // Handle graceful shutdown
+      const cleanup = () => {
+        server.close(() => {
+          log('Server closed');
+          process.exit(0);
+        });
+      };
+
+      process.on('SIGTERM', cleanup);
+      process.on('SIGINT', cleanup);
+
+    } catch (error) {
+      log(`Error setting up server: ${error}`);
+      process.exit(1);
     }
-
-    // ALWAYS serve on port 5000
-    const PORT = 5000;
-    server.listen(PORT, "0.0.0.0")
-      .on("error", (error: NodeJS.ErrnoException) => {
-        log(`Failed to start server: ${error}`);
-        process.exit(1);
-      })
-      .on("listening", () => {
-        log(`Server started on port ${PORT}`);
-        process.env.PORT = PORT.toString();
-      });
-
-    // Handle graceful shutdown
-    const cleanup = () => {
-      server.close(() => {
-        log('Server closed');
-        process.exit(0);
-      });
-    };
-
-    process.on('SIGTERM', cleanup);
-    process.on('SIGINT', cleanup);
 
   } catch (err) {
     log(`Failed to start server: ${err}`);

@@ -18,13 +18,16 @@ export const PROFILE_TYPES = [
   { id: "non_profit", label: "Non-Profit Organization" }
 ];
 
-// Sample event images - in production these would be actual URLs
+// Sample event images - using Unsplash for high-quality images
 const EVENT_IMAGES = {
-  djParty: "/images/dj-party.jpg",
-  hiking: "/images/hiking.jpg",
-  dinner: "/images/dinner-party.jpg",
-  art: "/images/art-gallery.jpg",
-  yoga: "/images/yoga.jpg",
+  djParty: "https://source.unsplash.com/1600x900/?concert,nightlife,dj",
+  hiking: "https://source.unsplash.com/1600x900/?hiking,adventure,nature",
+  dinner: "https://source.unsplash.com/1600x900/?dining,restaurant,social",
+  art: "https://source.unsplash.com/1600x900/?gallery,exhibition,art",
+  yoga: "https://source.unsplash.com/1600x900/?yoga,wellness,meditation",
+  coworking: "https://source.unsplash.com/1600x900/?coworking,office,modern",
+  networking: "https://source.unsplash.com/1600x900/?business,meeting,networking",
+  workshop: "https://source.unsplash.com/1600x900/?workshop,learning,tech"
 };
 
 // Event categories for filtering
