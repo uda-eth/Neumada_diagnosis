@@ -19,6 +19,7 @@ app.use((req, res, next) => {
   }
 });
 
+// Request logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -37,36 +38,38 @@ app.use((req, res, next) => {
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
-
       if (logLine.length > 80) {
         logLine = logLine.slice(0, 79) + "…";
       }
-
       log(logLine);
     }
   });
-
   next();
 });
 
 (async () => {
   try {
-    // Force kill any existing process on port 5000 (Unix-like systems)
+    // Kill any existing process on port 5000
     try {
-      const execSync = require('child_process').execSync;
+      const { execSync } = require('child_process');
       execSync('lsof -ti :5000 | xargs kill -9', { stdio: 'ignore' });
     } catch (err) {
-      // Ignore errors if no process was found
+      // Ignore errors if no process was found or on Windows
     }
+
+    // Small delay to ensure port is released
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     const server = await registerRoutes(app);
 
+    // Error handling middleware
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
       res.status(status).json({ message });
     });
 
+    // Setup Vite or static serving
     if (app.get("env") === "development") {
       await setupVite(app, server);
     } else {
@@ -74,21 +77,29 @@ app.use((req, res, next) => {
     }
 
     const PORT = 5000;
-    server.listen(PORT, "0.0.0.0")
-      .on("error", (error: NodeJS.ErrnoException) => {
-        if (error.code === 'EADDRINUSE') {
-          log(`Port ${PORT} is already in use. Please try restarting the server.`);
-          process.exit(1);
-        } else {
-          log(`Failed to start server: ${error}`);
-          process.exit(1);
-        }
-      })
-      .on("listening", () => {
-        log(`Server started on port ${PORT}`);
-      });
+    let retries = 0;
+    const maxRetries = 3;
 
-    // Handle graceful shutdown
+    const startServer = () => {
+      server.listen(PORT, "0.0.0.0")
+        .on("error", (error: NodeJS.ErrnoException) => {
+          if (error.code === 'EADDRINUSE' && retries < maxRetries) {
+            retries++;
+            log(`Port ${PORT} is in use, attempting to close existing connection... (attempt ${retries}/${maxRetries})`);
+            setTimeout(startServer, 1000);
+          } else {
+            log(`Failed to start server: ${error}`);
+            process.exit(1);
+          }
+        })
+        .on("listening", () => {
+          log(`Server started on port ${PORT}`);
+        });
+    };
+
+    startServer();
+
+    // Graceful shutdown handler
     const cleanup = () => {
       server.close(() => {
         log('Server closed');
