@@ -172,7 +172,7 @@ const newEvents = {
       category: "Sports",
       image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&h=400&fit=crop&q=80",
       capacity: 20,
-      price: 45,
+      price: 2500,
       createdAt: new Date().toISOString(),
       interestedCount: 28
     },
@@ -188,6 +188,45 @@ const newEvents = {
       price: 10,
       createdAt: new Date().toISOString(),
       interestedCount: 25
+    },
+    {
+      id: 1003,
+      title: "Mexico City Street Food Festival",
+      description: "Immerse yourself in the flavors of Mexico City's renowned street food scene. Sample authentic tacos, tamales, and more from local vendors.",
+      date: new Date(tomorrow.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days after tomorrow
+      location: "Mexico City",
+      category: "Social",
+      image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&h=400&fit=crop&q=80",
+      capacity: 200,
+      price: 30,
+      createdAt: new Date().toISOString(),
+      interestedCount: 156
+    },
+    {
+      id: 1004,
+      title: "Rooftop Farm-to-Table Dinner Experience",
+      description: "Join us for an intimate farm-to-table dinner featuring seasonal ingredients and spectacular city views. Includes wine pairing and chef's introduction.",
+      date: new Date(tomorrow.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days after tomorrow
+      location: "Mexico City",
+      category: "Social",
+      image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=400&fit=crop&q=80",
+      capacity: 30,
+      price: 120,
+      createdAt: new Date().toISOString(),
+      interestedCount: 42
+    },
+    {
+      id: 1005,
+      title: "Desierto de los Leones Hiking Adventure",
+      description: "Explore the historic Desierto de los Leones National Park on this guided hiking tour. Perfect for nature enthusiasts and photography lovers.",
+      date: new Date(tomorrow.getTime() + 4 * 24 * 60 * 60 * 1000).toISOString(), // 4 days after tomorrow
+      location: "Mexico City",
+      category: "Sports",
+      image: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800&h=400&fit=crop&q=80",
+      capacity: 15,
+      price: 45,
+      createdAt: new Date().toISOString(),
+      interestedCount: 19
     }
   ]
 };
