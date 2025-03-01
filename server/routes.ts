@@ -161,21 +161,20 @@ const today = new Date();
 const tomorrow = new Date(today);
 tomorrow.setDate(tomorrow.getDate() + 1);
 
-// City-specific events to be added
 const newEvents = {
   "Mexico City": [
     {
       id: 1001,
-      title: "Sunrise Yoga in Chapultepec Park",
-      description: "Start your day with an energizing yoga session surrounded by nature in Mexico City's largest park. All levels welcome. Mats provided.",
+      title: "Yoga East Austin Retreat: Beachside Serenity",
+      description: "Experience tranquility at our exclusive beachside yoga retreat. Join us for a transformative session combining traditional yoga practices with the calming sounds of waves. Perfect for all skill levels, this retreat offers a unique blend of mindfulness and natural beauty.",
       date: tomorrow.toISOString(),
       location: "Mexico City",
       category: "Sports",
-      image: getEventImage("Sports"),
+      image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&h=400&fit=crop&q=80",
       capacity: 20,
-      price: 15,
+      price: 45,
       createdAt: new Date().toISOString(),
-      interestedCount: 12
+      interestedCount: 28
     },
     {
       id: 1002,
@@ -184,7 +183,7 @@ const newEvents = {
       date: tomorrow.toISOString(),
       location: "Mexico City",
       category: "Cultural",
-      image: getEventImage("Cultural"),
+      image: "https://images.unsplash.com/photo-1536924940846-227afb31e2a5?w=800&h=400&fit=crop&q=80",
       capacity: 50,
       price: 10,
       createdAt: new Date().toISOString(),
