@@ -196,7 +196,7 @@ const newEvents = {
       date: new Date(tomorrow.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(),
       location: "Mexico City",
       category: "Social",
-      image: "https://images.unsplash.com/photo-1577803645773-f96470509666?w=800&h=400&fit=crop&q=80",
+      image: "https://images.unsplash.com/photo-1577744486770-020ab432da65?w=800&h=400&fit=crop&q=80",
       capacity: 100,
       price: 0,
       createdAt: new Date().toISOString(),
