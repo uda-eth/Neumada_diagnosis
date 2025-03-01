@@ -253,52 +253,21 @@ export const MOCK_EVENTS = DIGITAL_NOMAD_CITIES.reduce((acc, city) => {
 }, {} as Record<string, any[]>);
 
 export function registerRoutes(app: Express): Server {
+  // Set up authentication routes first
+  setupAuth(app);
+
   // Chat API
   app.post("/api/chat", handleChatMessage);
 
   // Browse Users API with improved filtering
   app.get("/api/users/browse", async (req, res) => {
     try {
-      const {
-        city,
-        gender,
-        minAge,
-        maxAge,
-        interests,
-        moods
-      } = req.query;
+      const city = req.query.city as string;
 
+      // Get users for specific city or all cities if none specified
       let filteredUsers = city && city !== 'all'
-        ? MOCK_USERS[city as string] || []
+        ? MOCK_USERS[city] || []
         : Object.values(MOCK_USERS).flat();
-
-      if (gender && gender !== 'all') {
-        filteredUsers = filteredUsers.filter(user => user.gender === gender);
-      }
-
-      if (minAge && !isNaN(Number(minAge))) {
-        filteredUsers = filteredUsers.filter(user => user.age >= Number(minAge));
-      }
-
-      if (maxAge && !isNaN(Number(maxAge))) {
-        filteredUsers = filteredUsers.filter(user => user.age <= Number(maxAge));
-      }
-
-      if (interests && Array.isArray(interests)) {
-        filteredUsers = filteredUsers.filter(user =>
-          user.interests?.some((interest: string) =>
-            (interests as string[]).includes(interest)
-          )
-        );
-      }
-
-      if (moods && Array.isArray(moods)) {
-        filteredUsers = filteredUsers.filter(user =>
-          user.currentMoods?.some((mood: string) =>
-            (moods as string[]).includes(mood)
-          )
-        );
-      }
 
       res.json(filteredUsers);
     } catch (error) {
@@ -340,20 +309,16 @@ export function registerRoutes(app: Express): Server {
   // Events API
   app.get("/api/events", async (req, res) => {
     try {
-      const { category, location } = req.query;
+      const { location } = req.query;
 
+      // Get events for specific location or all locations
       let filteredEvents = location && location !== 'all'
         ? MOCK_EVENTS[location as string] || []
         : Object.values(MOCK_EVENTS).flat();
 
-      if (category && category !== 'all') {
-        filteredEvents = filteredEvents.filter(event =>
-          event.category.toLowerCase() === category.toString().toLowerCase()
-        );
-      }
-
+      // Sort events by date
       filteredEvents.sort((a, b) =>
-        new Date(b.date).getTime() - new Date(a.date).getTime()
+        new Date(a.date).getTime() - new Date(b.date).getTime()
       );
 
       res.json(filteredEvents);
