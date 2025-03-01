@@ -177,19 +177,6 @@ const newEvents = {
       interestedCount: 28
     },
     {
-      id: 1003,
-      title: "Octo Sunglasses Boutique Grand Opening",
-      description: "Join us for the exclusive launch of Octo, Mexico City's newest luxury eyewear destination. Experience curated collections, personalized styling sessions, and celebratory champagne. Special opening day discounts and limited edition pieces available.",
-      date: new Date(tomorrow.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-      location: "Mexico City",
-      category: "Social",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800&h=400&fit=crop&q=80",
-      capacity: 100,
-      price: 0,
-      createdAt: new Date().toISOString(),
-      interestedCount: 156
-    },
-    {
       id: 1002,
       title: "Contemporary Mexican Art Exhibition",
       description: "Explore the vibrant world of contemporary Mexican artists at this exclusive gallery exhibition. Features works from emerging local talents.",
