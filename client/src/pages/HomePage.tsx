@@ -38,6 +38,10 @@ const categories = [
   "Travel",
 ];
 
+const AvatarImage = ({ src, alt }: { src: string; alt: string }) => (
+  <img src={src} alt={alt} className="w-6 h-6 rounded-full object-cover" />
+);
+
 export default function HomePage() {
   const [selectedCity, setSelectedCity] = useState("Mexico City");
   const { events, isLoading, createEvent } = useEvents(undefined, selectedCity);
@@ -324,6 +328,14 @@ export default function HomePage() {
                                       key={i}
                                       className="w-6 h-6 border-2 border-[#121212]"
                                     >
+                                      <AvatarImage
+                                        src={`https://images.unsplash.com/photo-${[
+                                          '1494790108377-be9c29b29330',
+                                          '1438761681033-6461ffad8d80',
+                                          '1472099645785-5658abf4ff4e'
+                                        ][i]}?w=32&h=32&fit=crop&q=80`}
+                                        alt={`Interested member ${i + 1}`}
+                                      />
                                       <AvatarFallback className="bg-white/10 text-xs">
                                         {String.fromCharCode(65 + i)}
                                       </AvatarFallback>
@@ -331,7 +343,7 @@ export default function HomePage() {
                                   ))}
                                 </div>
                                 <span className="text-sm text-white/60">
-                                  {event.interestedCount || Math.floor(Math.random() * 50 + 10)} interested
+                                  {event.interestedCount} interested
                                 </span>
                               </div>
                             </div>
@@ -396,6 +408,14 @@ export default function HomePage() {
                                       key={i}
                                       className="w-6 h-6 border-2 border-[#121212]"
                                     >
+                                      <AvatarImage
+                                        src={`https://images.unsplash.com/photo-${[
+                                          '1494790108377-be9c29b29330',
+                                          '1438761681033-6461ffad8d80',
+                                          '1472099645785-5658abf4ff4e'
+                                        ][i]}?w=32&h=32&fit=crop&q=80`}
+                                        alt={`Interested member ${i + 1}`}
+                                      />
                                       <AvatarFallback className="bg-white/10 text-xs">
                                         {String.fromCharCode(65 + i)}
                                       </AvatarFallback>
@@ -403,7 +423,7 @@ export default function HomePage() {
                                   ))}
                                 </div>
                                 <span className="text-sm text-white/60">
-                                  {event.interestedCount || Math.floor(Math.random() * 50 + 10)} interested
+                                  {event.interestedCount} interested
                                 </span>
                               </div>
                             </div>
