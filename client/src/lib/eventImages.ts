@@ -1,18 +1,21 @@
-// Mapping of event categories to relevant image URLs
+// Mapping of event categories to relevant image URLs - optimized for faster loading
 export const categoryImages = {
-  "Networking": "https://images.unsplash.com/photo-1511795409834-432f7b1dd2d9?w=800&h=400&fit=crop",
-  "Coworking": "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&h=400&fit=crop",
-  "Social": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&h=400&fit=crop",
-  "Sports": "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&h=400&fit=crop",
-  "Cultural": "https://images.unsplash.com/photo-1514533212735-5df27d970db9?w=800&h=400&fit=crop",
-  "Tech": "https://images.unsplash.com/photo-1504384764586-bb4cdc1707b0?w=800&h=400&fit=crop",
-  "Travel": "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&h=400&fit=crop",
+  "Networking": "https://images.unsplash.com/photo-1515169067868-5387ec356754?w=800&h=400&fit=crop&q=80",
+  "Coworking": "https://images.unsplash.com/photo-1517502884422-41eaead166d4?w=800&h=400&fit=crop&q=80",
+  "Social": "https://images.unsplash.com/photo-1511795409834-432f7b1dd2d9?w=800&h=400&fit=crop&q=80",
+  "Sports": "https://images.unsplash.com/photo-1444491741275-3747c53c99b4?w=800&h=400&fit=crop&q=80",
+  "Cultural": "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&h=400&fit=crop&q=80",
+  "Tech": "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&h=400&fit=crop&q=80",
+  "Travel": "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&h=400&fit=crop&q=80",
 };
 
-// Fallback image if category doesn't match
-export const defaultEventImage = "https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=800&h=400&fit=crop";
+// High-quality fallback image
+export const defaultEventImage = "https://images.unsplash.com/photo-1511795409834-432f7b1dd2d9?w=800&h=400&fit=crop&q=80";
 
-// Get image URL based on category
+// Get image URL based on category with error handling
 export function getEventImage(category: string): string {
-  return categoryImages[category as keyof typeof categoryImages] || defaultEventImage;
+  if (!category) return defaultEventImage;
+
+  const normalizedCategory = category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
+  return categoryImages[normalizedCategory as keyof typeof categoryImages] || defaultEventImage;
 }
