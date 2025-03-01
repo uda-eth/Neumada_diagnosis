@@ -44,6 +44,7 @@ export default function HomePage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { user } = useUser();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({
     title: "",
     description: "",
@@ -53,7 +54,6 @@ export default function HomePage() {
     image: "",
     capacity: 0,
   });
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const today = new Date();
   const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -85,7 +85,16 @@ export default function HomePage() {
         title: "Success",
         description: "Event created successfully",
       });
-      setIsDialogOpen(false); // Close the dialog after successful creation
+      setIsDialogOpen(false);
+      setNewEvent({
+        title: "",
+        description: "",
+        location: "",
+        date: "",
+        category: "",
+        image: "",
+        capacity: 0,
+      });
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -232,10 +241,7 @@ export default function HomePage() {
                       </div>
                     </div>
                     <Button
-                      onClick={() => {
-                        handleCreateEvent();
-                        setIsDialogOpen(false);
-                      }}
+                      onClick={handleCreateEvent}
                       className="w-full mt-6 bg-primary text-white hover:bg-primary/90"
                       disabled={
                         !newEvent.title ||
