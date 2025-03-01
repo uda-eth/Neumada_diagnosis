@@ -191,14 +191,14 @@ const newEvents = {
     },
     {
       id: 1003,
-      title: "Mexico City Street Food Festival",
-      description: "Immerse yourself in the flavors of Mexico City's renowned street food scene. Sample authentic tacos, tamales, and more from local vendors.",
-      date: new Date(tomorrow.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days after tomorrow
+      title: "Octo Sunglasses Boutique Grand Opening",
+      description: "Join us for the exclusive launch of Octo, Mexico City's newest luxury eyewear destination. Experience curated collections, personalized styling sessions, and celebratory champagne. Special opening day discounts and limited edition pieces available.",
+      date: new Date(tomorrow.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(),
       location: "Mexico City",
       category: "Social",
-      image: "https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?w=800&h=400&fit=crop&q=80",
-      capacity: 200,
-      price: 30,
+      image: "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=800&h=400&fit=crop&q=80",
+      capacity: 100,
+      price: 0,
       createdAt: new Date().toISOString(),
       interestedCount: 156
     },
@@ -206,7 +206,7 @@ const newEvents = {
       id: 1004,
       title: "Rooftop Farm-to-Table Dinner Experience",
       description: "Join us for an intimate farm-to-table dinner featuring seasonal ingredients and spectacular city views. Includes wine pairing and chef's introduction.",
-      date: new Date(tomorrow.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days after tomorrow
+      date: new Date(tomorrow.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(),
       location: "Mexico City",
       category: "Social",
       image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=400&fit=crop&q=80",
@@ -219,7 +219,7 @@ const newEvents = {
       id: 1005,
       title: "Desierto de los Leones Hiking Adventure",
       description: "Explore the historic Desierto de los Leones National Park on this guided hiking tour. Perfect for nature enthusiasts and photography lovers.",
-      date: new Date(tomorrow.getTime() + 4 * 24 * 60 * 60 * 1000).toISOString(), // 4 days after tomorrow
+      date: new Date(tomorrow.getTime() + 4 * 24 * 60 * 60 * 1000).toISOString(),
       location: "Mexico City",
       category: "Sports",
       image: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800&h=400&fit=crop&q=80",
@@ -232,7 +232,7 @@ const newEvents = {
       id: 1006,
       title: "Nocturnal Rhythms: Adam Ten & Carlita",
       description: "Experience an unforgettable night of melodic house and techno with internationally acclaimed artists Adam Ten and Carlita. Set in an exclusive venue with state-of-the-art sound system and immersive lighting design.",
-      date: new Date(tomorrow.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString(), // tomorrow night
+      date: new Date(tomorrow.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString(),
       location: "Mexico City",
       category: "Social",
       image: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&h=400&fit=crop&q=80",
