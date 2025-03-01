@@ -8,7 +8,8 @@ import { translateMessage } from "./services/translationService";
 import { db } from "@db";
 import { events, eventParticipants, users } from "@db/schema";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
-import { MOCK_EVENTS, DIGITAL_NOMAD_CITIES } from "../client/src/lib/constants";
+import { DIGITAL_NOMAD_CITIES } from "../client/src/lib/constants";
+import { getEventImage } from "../client/src/lib/eventImages";
 
 interface MockUser {
   id: number;
@@ -155,6 +156,50 @@ const MOCK_USERS: Record<string, MockUser[]> = DIGITAL_NOMAD_CITIES.reduce((acc,
   }));
   return acc;
 }, {} as Record<string, MockUser[]>);
+
+const today = new Date();
+const tomorrow = new Date(today);
+tomorrow.setDate(tomorrow.getDate() + 1);
+
+// City-specific events to be added
+const newEvents = {
+  "Mexico City": [
+    {
+      id: 1001,
+      title: "Sunrise Yoga in Chapultepec Park",
+      description: "Start your day with an energizing yoga session surrounded by nature in Mexico City's largest park. All levels welcome. Mats provided.",
+      date: tomorrow.toISOString(),
+      location: "Mexico City",
+      category: "Sports",
+      image: getEventImage("Sports"),
+      capacity: 20,
+      price: 15,
+      createdAt: new Date().toISOString(),
+      interestedCount: 12
+    },
+    {
+      id: 1002,
+      title: "Contemporary Mexican Art Exhibition",
+      description: "Explore the vibrant world of contemporary Mexican artists at this exclusive gallery exhibition. Features works from emerging local talents.",
+      date: tomorrow.toISOString(),
+      location: "Mexico City",
+      category: "Cultural",
+      image: getEventImage("Cultural"),
+      capacity: 50,
+      price: 10,
+      createdAt: new Date().toISOString(),
+      interestedCount: 25
+    }
+  ]
+};
+
+// Update the MOCK_EVENTS object to include the new events
+export const MOCK_EVENTS = DIGITAL_NOMAD_CITIES.reduce((acc, city) => {
+  acc[city] = city === "Mexico City"
+    ? [...(acc[city] || []), ...newEvents[city]]
+    : (acc[city] || []);
+  return acc;
+}, {} as Record<string, any[]>);
 
 export function registerRoutes(app: Express): Server {
   // Chat API
@@ -326,8 +371,8 @@ export function registerRoutes(app: Express): Server {
       const { text, targetLanguage } = req.body;
 
       if (!text || !targetLanguage) {
-        return res.status(400).json({ 
-          error: "Missing required fields: text and targetLanguage" 
+        return res.status(400).json({
+          error: "Missing required fields: text and targetLanguage"
         });
       }
 
@@ -335,8 +380,8 @@ export function registerRoutes(app: Express): Server {
       res.json({ translation });
     } catch (error) {
       console.error("Translation error:", error);
-      res.status(500).json({ 
-        error: "Failed to translate message" 
+      res.status(500).json({
+        error: "Failed to translate message"
       });
     }
   });
