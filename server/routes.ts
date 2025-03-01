@@ -227,6 +227,19 @@ const newEvents = {
       price: 45,
       createdAt: new Date().toISOString(),
       interestedCount: 19
+    },
+    {
+      id: 1006,
+      title: "Nocturnal Rhythms: Adam Ten & Carlita",
+      description: "Experience an unforgettable night of melodic house and techno with internationally acclaimed artists Adam Ten and Carlita. Set in an exclusive venue with state-of-the-art sound system and immersive lighting design.",
+      date: new Date(tomorrow.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString(), // tomorrow night
+      location: "Mexico City",
+      category: "Social",
+      image: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&h=400&fit=crop&q=80",
+      capacity: 400,
+      price: 75,
+      createdAt: new Date().toISOString(),
+      interestedCount: 289
     }
   ]
 };
