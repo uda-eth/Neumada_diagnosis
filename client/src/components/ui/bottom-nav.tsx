@@ -32,7 +32,7 @@ export function BottomNav() {
   const [location] = useLocation();
 
   return (
-    <nav className="fixed bottom-14 left-0 right-0 z-[100] bg-background/95 backdrop-blur-lg border-t shadow-lg">
+    <nav className="fixed bottom-0 left-0 right-0 z-[100] bg-background/95 backdrop-blur-lg border-t shadow-lg mb-[200px]">
       <div className="flex justify-around items-center h-14 max-w-md mx-auto px-1">
         {navItems.map(({ icon: Icon, label, href, badge }) => {
           const isActive = location === href;
