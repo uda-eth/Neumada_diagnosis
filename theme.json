@@ -6,11 +6,41 @@
   "themes": {
     "light": {
       "background": "#ffffff",
-      "foreground": "#020817"
+      "foreground": "#020817",
+      "card": "#ffffff",
+      "card-foreground": "#020817",
+      "popover": "#ffffff",
+      "popover-foreground": "#020817",
+      "primary": "#8b5cf6",
+      "primary-foreground": "#ffffff",
+      "muted": "#f1f5f9",
+      "muted-foreground": "#64748b",
+      "accent": "#f1f5f9",
+      "accent-foreground": "#020817",
+      "destructive": "#ef4444",
+      "destructive-foreground": "#ffffff",
+      "border": "#e2e8f0",
+      "input": "#e2e8f0",
+      "ring": "#8b5cf6"
     },
     "dark": {
       "background": "#121212",
-      "foreground": "#ffffff"
+      "foreground": "#ffffff",
+      "card": "#1a1a1a",
+      "card-foreground": "#ffffff",
+      "popover": "#1a1a1a",
+      "popover-foreground": "#ffffff",
+      "primary": "#8b5cf6",
+      "primary-foreground": "#ffffff",
+      "muted": "#262626",
+      "muted-foreground": "#a1a1aa",
+      "accent": "#262626",
+      "accent-foreground": "#ffffff",
+      "destructive": "#ef4444",
+      "destructive-foreground": "#ffffff",
+      "border": "#262626",
+      "input": "#262626",
+      "ring": "#8b5cf6"
     }
   }
 }
