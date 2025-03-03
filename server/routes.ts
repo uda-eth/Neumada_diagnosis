@@ -10,6 +10,8 @@ import { events, eventParticipants, users } from "@db/schema";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { DIGITAL_NOMAD_CITIES } from "../client/src/lib/constants";
 import { getEventImage } from "../client/src/lib/eventImages";
+import multer from 'multer';
+import path from 'path';
 
 interface MockUser {
   id: number;
@@ -239,6 +241,30 @@ export const MOCK_EVENTS = DIGITAL_NOMAD_CITIES.reduce((acc, city) => {
   return acc;
 }, {} as Record<string, any[]>);
 
+// Configure multer for handling file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/') // Make sure this directory exists
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname))
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Not an image! Please upload an image.'));
+    }
+  }
+});
+
 export function registerRoutes(app: Express): Server {
   // Set up authentication routes first
   setupAuth(app);
@@ -332,16 +358,19 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  app.post("/api/events", async (req, res) => {
+  // Update the event creation endpoint to handle file uploads
+  app.post("/api/events", upload.single('image'), async (req, res) => {
     try {
-      const mockEvent = {
-        id: Math.floor(Math.random() * 1000),
+      const eventData = {
         ...req.body,
+        image: req.file ? `/uploads/${req.file.filename}` : getEventImage(req.body.category),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
 
-      res.json(mockEvent);
+      // Add validation here as needed
+
+      res.json(eventData);
     } catch (error) {
       console.error("Error creating event:", error);
       res.status(500).json({ error: "Failed to create event" });
