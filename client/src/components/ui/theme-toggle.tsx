@@ -3,14 +3,14 @@ import { Button } from "@/components/ui/button";
 import { useTheme } from "@/lib/theme-provider";
 
 export function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
 
   return (
     <Button
       variant="outline"
       size="icon"
-      onClick={toggleTheme}
-      className="rounded-full border-white/10 bg-white/5"
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      className="rounded-full border-border bg-background hover:bg-accent"
     >
       <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
       <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />

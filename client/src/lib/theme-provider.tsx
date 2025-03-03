@@ -1,66 +1,65 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { generateColorPalette, generateThemeCSS } from "./color-utils";
 
-type Theme = "light" | "dark";
+type Theme = "light" | "dark" | "system";
 
-interface ThemeContextType {
-  theme: Theme;
-  toggleTheme: () => void;
-  setPrimaryColor: (color: string) => void;
+interface ThemeProviderProps {
+  children: React.ReactNode;
+  defaultTheme?: Theme;
+  storageKey?: string;
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+interface ThemeProviderState {
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+}
 
-const DEFAULT_PRIMARY_COLOR = "#1f2937"; // A neutral gray as default
+const ThemeProviderContext = createContext<ThemeProviderState | undefined>(undefined);
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
+export function ThemeProvider({
+  children,
+  defaultTheme = "system",
+  storageKey = "ui-theme",
+  ...props
+}: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem("theme") as Theme) || "light"
-  );
-  const [primaryColor, setPrimaryColor] = useState(
-    () => localStorage.getItem("primaryColor") || DEFAULT_PRIMARY_COLOR
+    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
   );
 
   useEffect(() => {
     const root = window.document.documentElement;
-    const palette = generateColorPalette(primaryColor, theme);
-    const css = generateThemeCSS(palette);
-
-    // Apply the generated CSS variables
-    root.style.cssText = css;
-
-    // Apply theme class
     root.classList.remove("light", "dark");
-    root.classList.add(theme);
 
-    // Save preferences
-    localStorage.setItem("theme", theme);
-    localStorage.setItem("primaryColor", primaryColor);
-  }, [theme, primaryColor]);
+    if (theme === "system") {
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
+        .matches
+        ? "dark"
+        : "light";
+      root.classList.add(systemTheme);
+    } else {
+      root.classList.add(theme);
+    }
+  }, [theme]);
 
-  const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === "light" ? "dark" : "light");
-  };
-
-  const updatePrimaryColor = (color: string) => {
-    setPrimaryColor(color);
+  const value = {
+    theme,
+    setTheme: (theme: Theme) => {
+      localStorage.setItem(storageKey, theme);
+      setTheme(theme);
+    },
   };
 
   return (
-    <ThemeContext.Provider value={{ 
-      theme, 
-      toggleTheme,
-      setPrimaryColor: updatePrimaryColor
-    }}>
+    <ThemeProviderContext.Provider {...props} value={value}>
       {children}
-    </ThemeContext.Provider>
+    </ThemeProviderContext.Provider>
   );
 }
 
-export function useTheme() {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
+export const useTheme = () => {
+  const context = useContext(ThemeProviderContext);
+
+  if (context === undefined)
     throw new Error("useTheme must be used within a ThemeProvider");
-  }
+
   return context;
-}
+};
