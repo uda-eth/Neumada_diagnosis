@@ -135,11 +135,11 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#121212] text-white">
+    <div className="min-h-screen bg-[#121212] text-white pb-24">
       <header className="border-b border-white/10 sticky top-0 z-10 bg-[#121212]/80 backdrop-blur-lg">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="flex items-center gap-4 w-full sm:w-auto">
               <h1 className="text-sm font-medium uppercase tracking-[.5em]">
                 Discover
               </h1>
@@ -156,26 +156,26 @@ export default function HomePage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={() => setLocation("/browse")}>
+            <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+              <Button variant="ghost" size="sm" onClick={() => setLocation("/browse")}>
                 Browse Members
               </Button>
               <ThemeToggle />
               {user ? (
-                <Button variant="ghost" onClick={() => setLocation(`/profile/${user.username}`)}>
+                <Button variant="ghost" size="sm" onClick={() => setLocation(`/profile/${user.username}`)}>
                   <UserCircle2 className="h-5 w-5 mr-2" />
                   {user.username}
                 </Button>
               ) : (
-                <Button variant="ghost" onClick={() => setLocation("/auth")}>
+                <Button variant="ghost" size="sm" onClick={() => setLocation("/auth")}>
                   Sign In
                 </Button>
               )}
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                   <Button className="bg-primary text-white hover:bg-primary/90">
-                    <Plus className="h-5 w-5 mr-2" />
-                    Create Event
+                    <Plus className="h-5 w-5 mr-2 sm:mr-0 md:mr-2" />
+                    <span className="hidden sm:hidden md:inline">Create Event</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="fixed left-[50%] top-[50%] z-[101] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-[#1a1a1a] p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg border-white/10">
@@ -305,7 +305,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      <ScrollArea className="h-[calc(100vh-4rem)]">
+      <ScrollArea className="h-[calc(100vh-8rem)]">
         <main className="container mx-auto px-4 py-8">
           <div className="mb-8 space-y-4">
             <div className="flex gap-4">
