@@ -176,7 +176,7 @@ const newEvents = {
       category: "Sports",
       image: "https://images.unsplash.com/photo-1599447421416-3414500d18a5?w=800&h=400&fit=crop&q=80",
       capacity: 20,
-      price: 2500,
+      price: 595,
       createdAt: new Date().toISOString(),
       interestedCount: 28
     },
