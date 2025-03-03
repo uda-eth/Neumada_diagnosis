@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useMessages, useMessageNotifications } from "@/hooks/use-messages";
 
 // Define supported languages directly since we can't access process.env in the browser
 const SUPPORTED_LANGUAGES = [
@@ -96,6 +97,12 @@ export default function MessagesPage() {
   const [messages, setMessages] = useState<Message[]>(mockChat.messages);
   const [selectedLanguage, setSelectedLanguage] = useState("en");
   const [isTranslating, setIsTranslating] = useState(false);
+  const messageStore = useMessages();
+  const { showNotification } = useMessageNotifications();
+
+  useEffect(() => {
+    messageStore.markAllAsRead();
+  }, []);
 
   const sendMessage = async () => {
     if (!newMessage.trim() || isTranslating) return;
@@ -128,6 +135,13 @@ export default function MessagesPage() {
 
       setMessages([...messages, message]);
       setNewMessage("");
+
+      messageStore.addMessage({
+        content: newMessage,
+        sender: "Me",
+        timestamp: message.timestamp
+      });
+
     } catch (error) {
       console.error('Translation error:', error);
       // Add the message without translation if the service fails

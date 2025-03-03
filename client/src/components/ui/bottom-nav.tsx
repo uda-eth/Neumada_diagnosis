@@ -9,12 +9,21 @@ import {
   MessageSquare,
   Inbox
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+
+// Mock unread count for demo - this would come from your actual message state
+const unreadCount = 3;
 
 const navItems = [
   { icon: Compass, label: "Discover", href: "/" },
   { icon: UsersRound, label: "Connect", href: "/connect" },
   { icon: PlusSquare, label: "Create", href: "/create" },
-  { icon: Inbox, label: "Inbox", href: "/messages" },
+  { 
+    icon: Inbox, 
+    label: "Inbox", 
+    href: "/messages",
+    badge: unreadCount
+  },
   { icon: User, label: "Profile", href: "/profile" },
   { icon: Settings, label: "Settings", href: "/settings" }
 ];
@@ -25,13 +34,13 @@ export function BottomNav() {
   return (
     <nav className="fixed bottom-14 left-0 right-0 z-[100] bg-background/95 backdrop-blur-lg border-t shadow-lg">
       <div className="flex justify-around items-center h-14 max-w-md mx-auto px-1">
-        {navItems.map(({ icon: Icon, label, href }) => {
+        {navItems.map(({ icon: Icon, label, href, badge }) => {
           const isActive = location === href;
           return (
             <Link key={href} href={href}>
               <a 
                 role="button"
-                className={`flex flex-col items-center justify-center gap-0.5 w-14 h-14 rounded-lg transition-colors ${
+                className={`relative flex flex-col items-center justify-center gap-0.5 w-14 h-14 rounded-lg transition-colors ${
                   isActive 
                     ? "text-primary" 
                     : "text-muted-foreground hover:text-foreground"
@@ -41,6 +50,14 @@ export function BottomNav() {
                 <span className="text-[9px] font-medium">
                   {label}
                 </span>
+                {badge && badge > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px]"
+                  >
+                    {badge > 99 ? '99+' : badge}
+                  </Badge>
+                )}
               </a>
             </Link>
           );
