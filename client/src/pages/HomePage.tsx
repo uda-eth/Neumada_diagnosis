@@ -133,7 +133,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#121212] text-white">
+    <div className="min-h-screen pb-[250px] bg-[#121212] text-white">
       <header className="border-b border-white/10 sticky top-0 z-10 bg-[#121212]/80 backdrop-blur-lg">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -303,7 +303,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 mb-[200px]">
         <div className="mb-8 space-y-4">
           <div className="flex gap-4">
             <div className="relative flex-1">
