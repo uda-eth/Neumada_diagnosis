@@ -17,6 +17,8 @@ import { getEventImage } from "@/lib/eventImages";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DIGITAL_NOMAD_CITIES } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
+import {ScrollArea} from "@/components/ui/scroll-area";
+
 
 const cities = [
   "Bali",
@@ -133,7 +135,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen pb-[250px] bg-[#121212] text-white">
+    <div className="min-h-screen bg-[#121212] text-white">
       <header className="border-b border-white/10 sticky top-0 z-10 bg-[#121212]/80 backdrop-blur-lg">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -303,212 +305,214 @@ export default function HomePage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 mb-[200px]">
-        <div className="mb-8 space-y-4">
-          <div className="flex gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 h-4 w-4" />
-              <Input
-                placeholder="Search events..."
-                className="pl-10 bg-white/5 border-white/10"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <Select value={selectedCategory} onValueChange={(value) => setSelectedCategory(value)}>
-              <SelectTrigger className="w-[180px] bg-white/5 border-white/10">
-                <SelectValue placeholder="All categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All categories</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {isLoading ? (
-          <div className="space-y-4">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="h-48 bg-white/5 rounded-lg mb-2"></div>
+      <ScrollArea className="h-[calc(100vh-4rem)]">
+        <main className="container mx-auto px-4 py-8">
+          <div className="mb-8 space-y-4">
+            <div className="flex gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 h-4 w-4" />
+                <Input
+                  placeholder="Search events..."
+                  className="pl-10 bg-white/5 border-white/10"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-8">
-            {groupedEvents?.thisWeekend.length > 0 && (
-              <section>
-                <h2 className="text-sm font-medium text-white/60 mb-4">
-                  THIS WEEKEND
-                </h2>
-                <div className="space-y-4">
-                  {groupedEvents.thisWeekend.map((event: any) => (
-                    <Card
-                      key={event.id}
-                      className="bg-black/40 border-white/10 hover:bg-white/5 transition-colors cursor-pointer backdrop-blur-sm"
-                      onClick={() => setLocation(`/event/${event.id}`)}
-                    >
-                      <CardContent className="p-0">
-                        <div className="flex h-[140px]">
-                          <div className="w-1/3">
-                            <img
-                              src={event.image}
-                              alt={event.title}
-                              className="h-full w-full object-cover"
-                            />
-                          </div>
-                          <div className="flex-1 p-4 flex flex-col justify-between">
-                            <div>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Badge variant="outline" className="text-xs">
-                                  {event.category}
-                                </Badge>
-                                {event.tags?.map((tag: string) => (
-                                  <Badge
-                                    key={tag}
-                                    variant="secondary"
-                                    className="text-xs bg-white/5"
-                                  >
-                                    {tag}
-                                  </Badge>
-                                ))}
-                              </div>
-                              <p className="text-sm text-white/60">
-                                {format(new Date(event.date), "EEE, MMM d, h:mm a")}
-                              </p>
-                              <h3 className="font-semibold text-white mt-1">
-                                {event.title}
-                              </h3>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <MapPin className="w-4 h-4 text-white/60" />
-                                <span className="text-sm text-white/60">
-                                  {event.location}
-                                </span>
-                                {event.price && (
-                                  <>
-                                    <span className="text-white/60">·</span>
-                                    <span className="text-sm font-medium text-white">
-                                      ${event.price}
-                                    </span>
-                                  </>
-                                )}
-                              </div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="ml-2"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toast({
-                                    title: "RSVP Successful",
-                                    description: "You're going to " + event.title
-                                  });
-                                }}
-                              >
-                                RSVP
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+              <Select value={selectedCategory} onValueChange={(value) => setSelectedCategory(value)}>
+                <SelectTrigger className="w-[180px] bg-white/5 border-white/10">
+                  <SelectValue placeholder="All categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All categories</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
                   ))}
-                </div>
-              </section>
-            )}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-            {groupedEvents?.nextWeek.length > 0 && (
-              <section>
-                <h2 className="text-sm font-medium text-white/60 mb-4">
-                  NEXT WEEK
-                </h2>
-                <div className="space-y-4">
-                  {groupedEvents.nextWeek.map((event: any) => (
-                    <Card
-                      key={event.id}
-                      className="bg-black/40 border-white/10 hover:bg-white/5 transition-colors cursor-pointer backdrop-blur-sm"
-                      onClick={() => setLocation(`/event/${event.id}`)}
-                    >
-                      <CardContent className="p-0">
-                        <div className="flex h-[140px]">
-                          <div className="w-1/3">
-                            <img
-                              src={event.image}
-                              alt={event.title}
-                              className="h-full w-full object-cover"
-                            />
-                          </div>
-                          <div className="flex-1 p-4 flex flex-col justify-between">
-                            <div>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Badge variant="outline" className="text-xs">
-                                  {event.category}
-                                </Badge>
-                                {event.tags?.map((tag: string) => (
-                                  <Badge
-                                    key={tag}
-                                    variant="secondary"
-                                    className="text-xs bg-white/5"
-                                  >
-                                    {tag}
-                                  </Badge>
-                                ))}
-                              </div>
-                              <p className="text-sm text-white/60">
-                                {format(new Date(event.date), "EEE, MMM d, h:mm a")}
-                              </p>
-                              <h3 className="font-semibold text-white mt-1">
-                                {event.title}
-                              </h3>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <MapPin className="w-4 h-4 text-white/60" />
-                                <span className="text-sm text-white/60">
-                                  {event.location}
-                                </span>
-                                {event.price && (
-                                  <>
-                                    <span className="text-white/60">·</span>
-                                    <span className="text-sm font-medium text-white">
-                                      ${event.price}
-                                    </span>
-                                  </>
-                                )}
-                              </div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="ml-2"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toast({
-                                    title: "RSVP Successful",
-                                    description: "You're going to " + event.title
-                                  });
-                                }}
-                              >
-                                RSVP
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+          {isLoading ? (
+            <div className="space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="h-48 bg-white/5 rounded-lg mb-2"></div>
                 </div>
-              </section>
-            )}
-          </div>
-        )}
-      </main>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {groupedEvents?.thisWeekend.length > 0 && (
+                <section>
+                  <h2 className="text-sm font-medium text-white/60 mb-4">
+                    THIS WEEKEND
+                  </h2>
+                  <div className="space-y-4">
+                    {groupedEvents.thisWeekend.map((event: any) => (
+                      <Card
+                        key={event.id}
+                        className="bg-black/40 border-white/10 hover:bg-white/5 transition-colors cursor-pointer backdrop-blur-sm"
+                        onClick={() => setLocation(`/event/${event.id}`)}
+                      >
+                        <CardContent className="p-0">
+                          <div className="flex h-[140px]">
+                            <div className="w-1/3">
+                              <img
+                                src={event.image}
+                                alt={event.title}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <div className="flex-1 p-4 flex flex-col justify-between">
+                              <div>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Badge variant="outline" className="text-xs">
+                                    {event.category}
+                                  </Badge>
+                                  {event.tags?.map((tag: string) => (
+                                    <Badge
+                                      key={tag}
+                                      variant="secondary"
+                                      className="text-xs bg-white/5"
+                                    >
+                                      {tag}
+                                    </Badge>
+                                  ))}
+                                </div>
+                                <p className="text-sm text-white/60">
+                                  {format(new Date(event.date), "EEE, MMM d, h:mm a")}
+                                </p>
+                                <h3 className="font-semibold text-white mt-1">
+                                  {event.title}
+                                </h3>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <MapPin className="w-4 h-4 text-white/60" />
+                                  <span className="text-sm text-white/60">
+                                    {event.location}
+                                  </span>
+                                  {event.price && (
+                                    <>
+                                      <span className="text-white/60">·</span>
+                                      <span className="text-sm font-medium text-white">
+                                        ${event.price}
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="ml-2"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toast({
+                                      title: "RSVP Successful",
+                                      description: "You're going to " + event.title
+                                    });
+                                  }}
+                                >
+                                  RSVP
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {groupedEvents?.nextWeek.length > 0 && (
+                <section>
+                  <h2 className="text-sm font-medium text-white/60 mb-4">
+                    NEXT WEEK
+                  </h2>
+                  <div className="space-y-4">
+                    {groupedEvents.nextWeek.map((event: any) => (
+                      <Card
+                        key={event.id}
+                        className="bg-black/40 border-white/10 hover:bg-white/5 transition-colors cursor-pointer backdrop-blur-sm"
+                        onClick={() => setLocation(`/event/${event.id}`)}
+                      >
+                        <CardContent className="p-0">
+                          <div className="flex h-[140px]">
+                            <div className="w-1/3">
+                              <img
+                                src={event.image}
+                                alt={event.title}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <div className="flex-1 p-4 flex flex-col justify-between">
+                              <div>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Badge variant="outline" className="text-xs">
+                                    {event.category}
+                                  </Badge>
+                                  {event.tags?.map((tag: string) => (
+                                    <Badge
+                                      key={tag}
+                                      variant="secondary"
+                                      className="text-xs bg-white/5"
+                                    >
+                                      {tag}
+                                    </Badge>
+                                  ))}
+                                </div>
+                                <p className="text-sm text-white/60">
+                                  {format(new Date(event.date), "EEE, MMM d, h:mm a")}
+                                </p>
+                                <h3 className="font-semibold text-white mt-1">
+                                  {event.title}
+                                </h3>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <MapPin className="w-4 h-4 text-white/60" />
+                                  <span className="text-sm text-white/60">
+                                    {event.location}
+                                  </span>
+                                  {event.price && (
+                                    <>
+                                      <span className="text-white/60">·</span>
+                                      <span className="text-sm font-medium text-white">
+                                        ${event.price}
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="ml-2"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toast({
+                                      title: "RSVP Successful",
+                                      description: "You're going to " + event.title
+                                    });
+                                  }}
+                                >
+                                  RSVP
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </section>
+              )}
+            </div>
+          )}
+        </main>
+      </ScrollArea>
     </div>
   );
 }
