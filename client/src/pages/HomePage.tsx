@@ -135,12 +135,12 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-24">
-      <header className="border-b border-border sticky top-0 z-10 bg-background/80 backdrop-blur-lg">
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="border-b border-border sticky top-0 z-50 bg-background/80 backdrop-blur-lg">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div className="flex items-center gap-4 w-full sm:w-auto">
-              <h1 className="text-sm font-medium uppercase tracking-[.5em] text-foreground">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <h1 className="text-sm font-medium uppercase tracking-[.5em] text-foreground hidden md:block">
                 Discover
               </h1>
               <Select value={selectedCity} onValueChange={setSelectedCity}>
@@ -156,26 +156,41 @@ export default function HomePage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-              <Button variant="ghost" size="sm" onClick={() => setLocation("/browse")} className="text-foreground">
+            <div className="flex items-center gap-2 md:gap-4">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setLocation("/browse")} 
+                className="text-foreground hidden md:flex"
+              >
                 Browse Members
               </Button>
               <ThemeToggle />
               {user ? (
-                <Button variant="ghost" size="sm" onClick={() => setLocation(`/profile/${user.username}`)} className="text-foreground">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setLocation(`/profile/${user.username}`)} 
+                  className="text-foreground hidden md:flex"
+                >
                   <UserCircle2 className="h-5 w-5 mr-2" />
                   {user.username}
                 </Button>
               ) : (
-                <Button variant="ghost" size="sm" onClick={() => setLocation("/auth")} className="text-foreground">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setLocation("/auth")} 
+                  className="text-foreground hidden md:flex"
+                >
                   Sign In
                 </Button>
               )}
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                   <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                    <Plus className="h-5 w-5 mr-2 sm:mr-0 md:mr-2" />
-                    <span className="hidden sm:hidden md:inline">Create Event</span>
+                    <Plus className="h-5 w-5 md:mr-2" />
+                    <span className="hidden md:inline">Create Event</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="fixed left-[50%] top-[50%] z-[101] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg border-border">
@@ -306,9 +321,9 @@ export default function HomePage() {
       </header>
 
       <ScrollArea className="h-[calc(100vh-8rem)]">
-        <main className="container mx-auto px-4 py-8">
+        <main className="container mx-auto px-4 py-8 pb-24 md:pb-8">
           <div className="mb-8 space-y-4">
-            <div className="flex gap-4">
+            <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
@@ -319,7 +334,7 @@ export default function HomePage() {
                 />
               </div>
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-[180px] bg-background/5 border-border">
+                <SelectTrigger className="w-full md:w-[180px] bg-background/5 border-border">
                   <SelectValue placeholder="All categories" />
                 </SelectTrigger>
                 <SelectContent>
@@ -353,12 +368,12 @@ export default function HomePage() {
                     {groupedEvents.thisWeekend.map((event: any) => (
                       <Card
                         key={event.id}
-                        className="bg-card border-border hover:bg-accent/50 transition-colors cursor-pointer"
+                        className="bg-card border-border hover:bg-accent/50 transition-colors cursor-pointer overflow-hidden"
                         onClick={() => setLocation(`/event/${event.id}`)}
                       >
                         <CardContent className="p-0">
-                          <div className="flex h-[140px]">
-                            <div className="w-1/3">
+                          <div className="flex flex-col md:flex-row h-auto md:h-[140px]">
+                            <div className="w-full md:w-1/3 h-48 md:h-full">
                               <img
                                 src={event.image}
                                 alt={event.title}
@@ -367,7 +382,7 @@ export default function HomePage() {
                             </div>
                             <div className="flex-1 p-4 flex flex-col justify-between">
                               <div>
-                                <div className="flex items-center gap-2 mb-2">
+                                <div className="flex flex-wrap items-center gap-2 mb-2">
                                   <Badge variant="outline" className="text-xs">
                                     {event.category}
                                   </Badge>
@@ -375,7 +390,7 @@ export default function HomePage() {
                                     <Badge
                                       key={tag}
                                       variant="secondary"
-                                      className="text-xs bg-white/5"
+                                      className="text-xs"
                                     >
                                       {tag}
                                     </Badge>
@@ -384,29 +399,31 @@ export default function HomePage() {
                                 <p className="text-sm text-muted-foreground">
                                   {format(new Date(event.date), "EEE, MMM d, h:mm a")}
                                 </p>
-                                <h3 className="font-semibold text-foreground mt-1">
+                                <h3 className="font-semibold text-foreground mt-1 line-clamp-2">
                                   {event.title}
                                 </h3>
                               </div>
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <MapPin className="w-4 h-4 text-muted-foreground" />
-                                  <span className="text-sm text-muted-foreground">
-                                    {event.location}
-                                  </span>
+                              <div className="flex items-center justify-between mt-4">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <div className="flex items-center gap-1">
+                                    <MapPin className="w-4 h-4 text-muted-foreground" />
+                                    <span className="text-sm text-muted-foreground">
+                                      {event.location}
+                                    </span>
+                                  </div>
                                   {event.price && (
-                                    <>
+                                    <div className="flex items-center gap-1">
                                       <span className="text-muted-foreground">·</span>
                                       <span className="text-sm font-medium text-foreground">
                                         ${event.price}
                                       </span>
-                                    </>
+                                    </div>
                                   )}
                                 </div>
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="ml-2"
+                                  className="ml-2 whitespace-nowrap"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     toast({
@@ -436,12 +453,12 @@ export default function HomePage() {
                     {groupedEvents.nextWeek.map((event: any) => (
                       <Card
                         key={event.id}
-                        className="bg-card border-border hover:bg-accent/50 transition-colors cursor-pointer"
+                        className="bg-card border-border hover:bg-accent/50 transition-colors cursor-pointer overflow-hidden"
                         onClick={() => setLocation(`/event/${event.id}`)}
                       >
                         <CardContent className="p-0">
-                          <div className="flex h-[140px]">
-                            <div className="w-1/3">
+                          <div className="flex flex-col md:flex-row h-auto md:h-[140px]">
+                            <div className="w-full md:w-1/3 h-48 md:h-full">
                               <img
                                 src={event.image}
                                 alt={event.title}
@@ -450,7 +467,7 @@ export default function HomePage() {
                             </div>
                             <div className="flex-1 p-4 flex flex-col justify-between">
                               <div>
-                                <div className="flex items-center gap-2 mb-2">
+                                <div className="flex flex-wrap items-center gap-2 mb-2">
                                   <Badge variant="outline" className="text-xs">
                                     {event.category}
                                   </Badge>
@@ -458,7 +475,7 @@ export default function HomePage() {
                                     <Badge
                                       key={tag}
                                       variant="secondary"
-                                      className="text-xs bg-white/5"
+                                      className="text-xs"
                                     >
                                       {tag}
                                     </Badge>
@@ -467,29 +484,31 @@ export default function HomePage() {
                                 <p className="text-sm text-muted-foreground">
                                   {format(new Date(event.date), "EEE, MMM d, h:mm a")}
                                 </p>
-                                <h3 className="font-semibold text-foreground mt-1">
+                                <h3 className="font-semibold text-foreground mt-1 line-clamp-2">
                                   {event.title}
                                 </h3>
                               </div>
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <MapPin className="w-4 h-4 text-muted-foreground" />
-                                  <span className="text-sm text-muted-foreground">
-                                    {event.location}
-                                  </span>
+                              <div className="flex items-center justify-between mt-4">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <div className="flex items-center gap-1">
+                                    <MapPin className="w-4 h-4 text-muted-foreground" />
+                                    <span className="text-sm text-muted-foreground">
+                                      {event.location}
+                                    </span>
+                                  </div>
                                   {event.price && (
-                                    <>
+                                    <div className="flex items-center gap-1">
                                       <span className="text-muted-foreground">·</span>
                                       <span className="text-sm font-medium text-foreground">
                                         ${event.price}
                                       </span>
-                                    </>
+                                    </div>
                                   )}
                                 </div>
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="ml-2"
+                                  className="ml-2 whitespace-nowrap"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     toast({
@@ -513,6 +532,19 @@ export default function HomePage() {
           )}
         </main>
       </ScrollArea>
+
+      <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4 md:hidden">
+        <div className="container mx-auto">
+          <div className="flex justify-around items-center">
+            <Button variant="ghost" size="sm" onClick={() => setLocation("/browse")}>
+              <Users className="h-5 w-5" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setLocation("/auth")}>
+              <UserCircle2 className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+      </nav>
     </div>
   );
 }
