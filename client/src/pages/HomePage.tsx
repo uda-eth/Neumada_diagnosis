@@ -10,12 +10,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Users, Plus, UserCircle2 } from "lucide-react";
+import { MapPin, Users, Plus, UserCircle2, Search } from "lucide-react";
 import { format } from "date-fns";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { getEventImage } from "@/lib/eventImages";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DIGITAL_NOMAD_CITIES } from "@/lib/constants";
+import { Badge } from "@/components/ui/badge";
 
 const cities = [
   "Bali",
@@ -44,6 +45,8 @@ const AvatarImage = ({ src, alt }: { src: string; alt: string }) => (
 
 export default function HomePage() {
   const [selectedCity, setSelectedCity] = useState("Mexico City");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { events, isLoading, createEvent } = useEvents(undefined, selectedCity);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -62,7 +65,14 @@ export default function HomePage() {
   const today = new Date();
   const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-  const groupedEvents = events?.reduce(
+  const filteredEvents = events?.filter(event => {
+    const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         event.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = !selectedCategory || event.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const groupedEvents = filteredEvents?.reduce(
     (acc: { thisWeekend: any[]; nextWeek: any[] }, event) => {
       const eventDate = new Date(event.date);
       if (eventDate <= nextWeek && eventDate >= today) {
@@ -266,6 +276,33 @@ export default function HomePage() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        <div className="mb-8 space-y-4">
+          <div className="flex gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 h-4 w-4" />
+              <Input
+                placeholder="Search events..."
+                className="pl-10 bg-white/5 border-white/10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <Select value={selectedCategory || ""} onValueChange={(value) => setSelectedCategory(value || null)}>
+              <SelectTrigger className="w-[180px] bg-white/5 border-white/10">
+                <SelectValue placeholder="All categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All categories</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
         {isLoading ? (
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
@@ -299,6 +336,20 @@ export default function HomePage() {
                           </div>
                           <div className="flex-1 p-4 flex flex-col justify-between">
                             <div>
+                              <div className="flex items-center gap-2 mb-2">
+                                <Badge variant="outline" className="text-xs">
+                                  {event.category}
+                                </Badge>
+                                {event.tags?.map((tag: string) => (
+                                  <Badge
+                                    key={tag}
+                                    variant="secondary"
+                                    className="text-xs bg-white/5"
+                                  >
+                                    {tag}
+                                  </Badge>
+                                ))}
+                              </div>
                               <p className="text-sm text-white/60">
                                 {format(new Date(event.date), "EEE, MMM d, h:mm a")}
                               </p>
@@ -321,31 +372,20 @@ export default function HomePage() {
                                   </>
                                 )}
                               </div>
-                              <div className="flex items-center gap-2">
-                                <div className="flex -space-x-2">
-                                  {[...Array(3)].map((_, i) => (
-                                    <Avatar
-                                      key={i}
-                                      className="w-6 h-6 border-2 border-[#121212]"
-                                    >
-                                      <AvatarImage
-                                        src={`https://images.unsplash.com/photo-${[
-                                          '1494790108377-be9c29b29330',
-                                          '1438761681033-6461ffad8d80',
-                                          '1472099645785-5658abf4ff4e'
-                                        ][i]}?w=32&h=32&fit=crop&q=80`}
-                                        alt={`Interested member ${i + 1}`}
-                                      />
-                                      <AvatarFallback className="bg-white/10 text-xs">
-                                        {String.fromCharCode(65 + i)}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                  ))}
-                                </div>
-                                <span className="text-sm text-white/60">
-                                  {event.interestedCount} interested
-                                </span>
-                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="ml-2"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toast({
+                                    title: "RSVP Successful",
+                                    description: "You're going to " + event.title
+                                  });
+                                }}
+                              >
+                                RSVP
+                              </Button>
                             </div>
                           </div>
                         </div>
@@ -379,6 +419,20 @@ export default function HomePage() {
                           </div>
                           <div className="flex-1 p-4 flex flex-col justify-between">
                             <div>
+                              <div className="flex items-center gap-2 mb-2">
+                                <Badge variant="outline" className="text-xs">
+                                  {event.category}
+                                </Badge>
+                                {event.tags?.map((tag: string) => (
+                                  <Badge
+                                    key={tag}
+                                    variant="secondary"
+                                    className="text-xs bg-white/5"
+                                  >
+                                    {tag}
+                                  </Badge>
+                                ))}
+                              </div>
                               <p className="text-sm text-white/60">
                                 {format(new Date(event.date), "EEE, MMM d, h:mm a")}
                               </p>
@@ -401,31 +455,20 @@ export default function HomePage() {
                                   </>
                                 )}
                               </div>
-                              <div className="flex items-center gap-2">
-                                <div className="flex -space-x-2">
-                                  {[...Array(3)].map((_, i) => (
-                                    <Avatar
-                                      key={i}
-                                      className="w-6 h-6 border-2 border-[#121212]"
-                                    >
-                                      <AvatarImage
-                                        src={`https://images.unsplash.com/photo-${[
-                                          '1494790108377-be9c29b29330',
-                                          '1438761681033-6461ffad8d80',
-                                          '1472099645785-5658abf4ff4e'
-                                        ][i]}?w=32&h=32&fit=crop&q=80`}
-                                        alt={`Interested member ${i + 1}`}
-                                      />
-                                      <AvatarFallback className="bg-white/10 text-xs">
-                                        {String.fromCharCode(65 + i)}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                  ))}
-                                </div>
-                                <span className="text-sm text-white/60">
-                                  {event.interestedCount} interested
-                                </span>
-                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="ml-2"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toast({
+                                    title: "RSVP Successful",
+                                    description: "You're going to " + event.title
+                                  });
+                                }}
+                              >
+                                RSVP
+                              </Button>
                             </div>
                           </div>
                         </div>
