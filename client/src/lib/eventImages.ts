@@ -11,6 +11,11 @@ export const categoryImages = {
   "Day Parties": "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&h=400&fit=crop&q=80",
   "Nightlife": "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&h=400&fit=crop&q=80",
   "VIP Events": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&h=400&fit=crop&q=80",
+  "Day Trips": "https://images.unsplash.com/photo-1533760881669-80db4d7b4c15?w=800&h=400&fit=crop&q=80",
+  "Retreats": "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&h=400&fit=crop&q=80",
+  "Getaways": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&h=400&fit=crop&q=80",
+  "Volunteer": "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=800&h=400&fit=crop&q=80",
+  "Excursions": "https://images.unsplash.com/photo-1533760881669-80db4d7b4c15?w=800&h=400&fit=crop&q=80",
 };
 
 // High-quality fallback image

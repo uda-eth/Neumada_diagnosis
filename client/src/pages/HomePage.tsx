@@ -34,13 +34,18 @@ const categories = [
   "Coworking",
   "Cultural",
   "Day Parties",
+  "Day Trips",
+  "Excursions",
+  "Getaways",
   "Networking",
   "Nightlife",
+  "Retreats",
   "Social",
   "Sports",
   "Tech",
   "Travel",
   "VIP Events",
+  "Volunteer",
 ];
 
 const AvatarImage = ({ src, alt }: { src: string; alt: string }) => (
