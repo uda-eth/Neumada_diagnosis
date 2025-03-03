@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Users, Plus, UserCircle2, Search } from "lucide-react";
+import { MapPin, Users, Plus, UserCircle2, Search, MessageSquare } from "lucide-react";
 import { format } from "date-fns";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { getEventImage } from "@/lib/eventImages";
@@ -161,9 +161,19 @@ export default function HomePage() {
                 variant="ghost" 
                 size="sm" 
                 onClick={() => setLocation("/browse")} 
-                className="text-foreground hidden md:flex"
+                className="text-foreground hidden md:inline-flex items-center"
               >
+                <Users className="h-5 w-5 mr-2" />
                 Browse Members
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setLocation("/messages")} 
+                className="text-foreground hidden md:inline-flex items-center"
+              >
+                <MessageSquare className="h-5 w-5 mr-2" />
+                Inbox
               </Button>
               <ThemeToggle />
               {user ? (
@@ -171,7 +181,7 @@ export default function HomePage() {
                   variant="ghost" 
                   size="sm" 
                   onClick={() => setLocation(`/profile/${user.username}`)} 
-                  className="text-foreground hidden md:flex"
+                  className="text-foreground hidden md:inline-flex items-center"
                 >
                   <UserCircle2 className="h-5 w-5 mr-2" />
                   {user.username}
@@ -181,8 +191,9 @@ export default function HomePage() {
                   variant="ghost" 
                   size="sm" 
                   onClick={() => setLocation("/auth")} 
-                  className="text-foreground hidden md:flex"
+                  className="text-foreground hidden md:inline-flex items-center"
                 >
+                  <UserCircle2 className="h-5 w-5 mr-2" />
                   Sign In
                 </Button>
               )}
@@ -538,6 +549,9 @@ export default function HomePage() {
           <div className="flex justify-around items-center">
             <Button variant="ghost" size="sm" onClick={() => setLocation("/browse")}>
               <Users className="h-5 w-5 text-foreground" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setLocation("/messages")}>
+              <MessageSquare className="h-5 w-5 text-foreground" />
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setLocation("/auth")}>
               <UserCircle2 className="h-5 w-5 text-foreground" />
