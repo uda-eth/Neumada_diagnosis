@@ -44,7 +44,7 @@ export function BottomNav() {
                   className={`relative flex flex-col items-center justify-center gap-0.5 w-16 h-16 rounded-lg transition-colors ${
                     isActive 
                       ? "text-primary" 
-                      : "text-white hover:text-primary"
+                      : "text-white dark:text-white hover:text-primary"
                   }`}
                 >
                   <Icon className="w-6 h-6" />
@@ -67,7 +67,7 @@ export function BottomNav() {
       </nav>
 
       {/* Desktop Side Navigation */}
-      <nav className="hidden md:flex fixed left-0 top-0 bottom-0 z-[100] w-16 bg-black/80 dark:bg-white/10 backdrop-blur-lg border-r border-white/10 shadow-lg flex-col items-center py-8">
+      <nav className="hidden md:flex fixed left-0 top-0 bottom-0 z-[100] w-16 bg-white dark:bg-black/80 backdrop-blur-lg border-r border-gray-200 dark:border-white/10 shadow-lg flex-col items-center py-8">
         {navItems.map(({ icon: Icon, label, href, badge }) => {
           const isActive = location === href;
           return (
@@ -77,11 +77,11 @@ export function BottomNav() {
                 className={`relative flex flex-col items-center justify-center gap-1 w-12 h-12 rounded-lg transition-colors mb-4 group ${
                   isActive 
                     ? "text-primary" 
-                    : "text-white hover:text-primary"
+                    : "text-gray-800 dark:text-white hover:text-primary"
                 }`}
               >
                 <Icon className="w-6 h-6" />
-                <span className="text-[10px] font-medium opacity-0 group-hover:opacity-100 absolute left-16 bg-black/90 px-2 py-1 rounded whitespace-nowrap">
+                <span className="text-[10px] font-medium opacity-0 group-hover:opacity-100 absolute left-16 bg-white dark:bg-black/90 text-gray-800 dark:text-white px-2 py-1 rounded whitespace-nowrap">
                   {label}
                 </span>
                 {badge && badge > 0 && (
