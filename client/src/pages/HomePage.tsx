@@ -537,10 +537,10 @@ export default function HomePage() {
         <div className="container mx-auto">
           <div className="flex justify-around items-center">
             <Button variant="ghost" size="sm" onClick={() => setLocation("/browse")}>
-              <Users className="h-5 w-5" />
+              <Users className="h-5 w-5 text-foreground" />
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setLocation("/auth")}>
-              <UserCircle2 className="h-5 w-5" />
+              <UserCircle2 className="h-5 w-5 text-foreground" />
             </Button>
           </div>
         </div>
