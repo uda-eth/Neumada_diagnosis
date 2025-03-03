@@ -46,7 +46,7 @@ const AvatarImage = ({ src, alt }: { src: string; alt: string }) => (
 export default function HomePage() {
   const [selectedCity, setSelectedCity] = useState("Mexico City");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const { events, isLoading, createEvent } = useEvents(undefined, selectedCity);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -68,7 +68,7 @@ export default function HomePage() {
   const filteredEvents = events?.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          event.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !selectedCategory || event.category === selectedCategory;
+    const matchesCategory = selectedCategory === "all" || event.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -287,12 +287,12 @@ export default function HomePage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <Select value={selectedCategory || ""} onValueChange={(value) => setSelectedCategory(value || null)}>
+            <Select value={selectedCategory} onValueChange={(value) => setSelectedCategory(value)}>
               <SelectTrigger className="w-[180px] bg-white/5 border-white/10">
                 <SelectValue placeholder="All categories" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All categories</SelectItem>
+                <SelectItem value="all">All categories</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category} value={category}>
                     {category}
