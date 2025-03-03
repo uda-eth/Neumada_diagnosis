@@ -185,7 +185,7 @@ const newEvents = {
       date: tomorrow.toISOString(),
       location: "Mexico City",
       category: "Cultural",
-      image: "https://images.unsplash.com/photo-1535086181678-5a5c4d23aa7d?w=800&h=400&fit=crop&q=80",
+      image: "/attached_assets/art-gallery-event-stockcake.jpg",
       capacity: 50,
       price: 10,
       createdAt: new Date().toISOString(),
