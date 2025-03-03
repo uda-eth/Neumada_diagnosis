@@ -135,8 +135,8 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#121212] text-white pb-24">
-      <header className="border-b border-white/10 sticky top-0 z-10 bg-[#121212]/80 backdrop-blur-lg">
+    <div className="min-h-screen bg-background text-foreground pb-24">
+      <header className="border-b border-border sticky top-0 z-10 bg-background/80 backdrop-blur-lg">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center gap-4 w-full sm:w-auto">
@@ -144,7 +144,7 @@ export default function HomePage() {
                 Discover
               </h1>
               <Select value={selectedCity} onValueChange={setSelectedCity}>
-                <SelectTrigger className="w-[180px] bg-transparent border-white/20">
+                <SelectTrigger className="w-[180px] bg-transparent border-border">
                   <SelectValue placeholder="Select city" />
                 </SelectTrigger>
                 <SelectContent>
@@ -178,59 +178,59 @@ export default function HomePage() {
                     <span className="hidden sm:hidden md:inline">Create Event</span>
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="fixed left-[50%] top-[50%] z-[101] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-[#1a1a1a] p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg border-white/10">
+                <DialogContent className="fixed left-[50%] top-[50%] z-[101] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg border-border">
                   <DialogHeader>
-                    <DialogTitle className="text-white">Create New Event</DialogTitle>
+                    <DialogTitle className="text-foreground">Create New Event</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                      <Label className="text-white">Title</Label>
+                      <Label className="text-foreground">Title</Label>
                       <Input
                         value={newEvent.title}
                         onChange={(e) =>
                           setNewEvent({ ...newEvent, title: e.target.value })
                         }
-                        className="bg-[#242424] border-white/10 text-white"
+                        className="bg-[#242424] border-border text-foreground"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-white">Event Image</Label>
+                      <Label className="text-foreground">Event Image</Label>
                       <Input
                         type="file"
                         accept="image/*"
                         onChange={(e) =>
                           setNewEvent({ ...newEvent, imageFile: e.target.files?.[0] || null })
                         }
-                        className="bg-[#242424] border-white/10 text-white"
+                        className="bg-[#242424] border-border text-foreground"
                       />
-                      <p className="text-sm text-white/60">
+                      <p className="text-sm text-foreground/60">
                         Upload an image to represent your event. If none provided, we'll use a category-based image.
                       </p>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-white">Description</Label>
+                      <Label className="text-foreground">Description</Label>
                       <Textarea
                         value={newEvent.description}
                         onChange={(e) =>
                           setNewEvent({ ...newEvent, description: e.target.value })
                         }
-                        className="bg-[#242424] border-white/10 text-white"
+                        className="bg-[#242424] border-border text-foreground"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-white">Location</Label>
+                        <Label className="text-foreground">Location</Label>
                         <Select
                           onValueChange={(value) =>
                             setNewEvent({ ...newEvent, location: value })
                           }
                         >
-                          <SelectTrigger className="bg-[#242424] border-white/10 text-white">
+                          <SelectTrigger className="bg-[#242424] border-border text-foreground">
                             <SelectValue placeholder="Select location" />
                           </SelectTrigger>
-                          <SelectContent className="bg-[#1a1a1a] border-white/10">
+                          <SelectContent className="bg-background border-border">
                             {cities.map((city) => (
-                              <SelectItem key={city} value={city} className="text-white">
+                              <SelectItem key={city} value={city} className="text-foreground">
                                 {city}
                               </SelectItem>
                             ))}
@@ -238,18 +238,18 @@ export default function HomePage() {
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-white">Category</Label>
+                        <Label className="text-foreground">Category</Label>
                         <Select
                           onValueChange={(value) =>
                             setNewEvent({ ...newEvent, category: value })
                           }
                         >
-                          <SelectTrigger className="bg-[#242424] border-white/10 text-white">
+                          <SelectTrigger className="bg-[#242424] border-border text-foreground">
                             <SelectValue placeholder="Select category" />
                           </SelectTrigger>
-                          <SelectContent className="bg-[#1a1a1a] border-white/10">
+                          <SelectContent className="bg-background border-border">
                             {categories.map((cat) => (
-                              <SelectItem key={cat} value={cat} className="text-white">
+                              <SelectItem key={cat} value={cat} className="text-foreground">
                                 {cat}
                               </SelectItem>
                             ))}
@@ -259,18 +259,18 @@ export default function HomePage() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-white">Date</Label>
+                        <Label className="text-foreground">Date</Label>
                         <Input
                           type="datetime-local"
                           value={newEvent.date}
                           onChange={(e) =>
                             setNewEvent({ ...newEvent, date: e.target.value })
                           }
-                          className="bg-[#242424] border-white/10 text-white"
+                          className="bg-[#242424] border-border text-foreground"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-white">Capacity</Label>
+                        <Label className="text-foreground">Capacity</Label>
                         <Input
                           type="number"
                           value={newEvent.capacity}
@@ -280,7 +280,7 @@ export default function HomePage() {
                               capacity: parseInt(e.target.value) || 0,
                             })
                           }
-                          className="bg-[#242424] border-white/10 text-white"
+                          className="bg-[#242424] border-border text-foreground"
                         />
                       </div>
                     </div>
@@ -310,16 +310,16 @@ export default function HomePage() {
           <div className="mb-8 space-y-4">
             <div className="flex gap-4">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground/60 h-4 w-4" />
                 <Input
                   placeholder="Search events..."
-                  className="pl-10 bg-white/5 border-white/10"
+                  className="pl-10 bg-white/5 border-border"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
               <Select value={selectedCategory} onValueChange={(value) => setSelectedCategory(value)}>
-                <SelectTrigger className="w-[180px] bg-white/5 border-white/10">
+                <SelectTrigger className="w-[180px] bg-white/5 border-border">
                   <SelectValue placeholder="All categories" />
                 </SelectTrigger>
                 <SelectContent>
@@ -346,14 +346,14 @@ export default function HomePage() {
             <div className="space-y-8">
               {groupedEvents?.thisWeekend.length > 0 && (
                 <section>
-                  <h2 className="text-sm font-medium text-white/60 mb-4">
+                  <h2 className="text-sm font-medium text-foreground/60 mb-4">
                     THIS WEEKEND
                   </h2>
                   <div className="space-y-4">
                     {groupedEvents.thisWeekend.map((event: any) => (
                       <Card
                         key={event.id}
-                        className="bg-black/40 border-white/10 hover:bg-white/5 transition-colors cursor-pointer backdrop-blur-sm"
+                        className="bg-background/40 border-border hover:bg-white/5 transition-colors cursor-pointer backdrop-blur-sm"
                         onClick={() => setLocation(`/event/${event.id}`)}
                       >
                         <CardContent className="p-0">
@@ -381,23 +381,23 @@ export default function HomePage() {
                                     </Badge>
                                   ))}
                                 </div>
-                                <p className="text-sm text-white/60">
+                                <p className="text-sm text-foreground/60">
                                   {format(new Date(event.date), "EEE, MMM d, h:mm a")}
                                 </p>
-                                <h3 className="font-semibold text-white mt-1">
+                                <h3 className="font-semibold text-foreground mt-1">
                                   {event.title}
                                 </h3>
                               </div>
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                  <MapPin className="w-4 h-4 text-white/60" />
-                                  <span className="text-sm text-white/60">
+                                  <MapPin className="w-4 h-4 text-foreground/60" />
+                                  <span className="text-sm text-foreground/60">
                                     {event.location}
                                   </span>
                                   {event.price && (
                                     <>
-                                      <span className="text-white/60">·</span>
-                                      <span className="text-sm font-medium text-white">
+                                      <span className="text-foreground/60">·</span>
+                                      <span className="text-sm font-medium text-foreground">
                                         ${event.price}
                                       </span>
                                     </>
@@ -429,14 +429,14 @@ export default function HomePage() {
 
               {groupedEvents?.nextWeek.length > 0 && (
                 <section>
-                  <h2 className="text-sm font-medium text-white/60 mb-4">
+                  <h2 className="text-sm font-medium text-foreground/60 mb-4">
                     NEXT WEEK
                   </h2>
                   <div className="space-y-4">
                     {groupedEvents.nextWeek.map((event: any) => (
                       <Card
                         key={event.id}
-                        className="bg-black/40 border-white/10 hover:bg-white/5 transition-colors cursor-pointer backdrop-blur-sm"
+                        className="bg-background/40 border-border hover:bg-white/5 transition-colors cursor-pointer backdrop-blur-sm"
                         onClick={() => setLocation(`/event/${event.id}`)}
                       >
                         <CardContent className="p-0">
@@ -464,23 +464,23 @@ export default function HomePage() {
                                     </Badge>
                                   ))}
                                 </div>
-                                <p className="text-sm text-white/60">
+                                <p className="text-sm text-foreground/60">
                                   {format(new Date(event.date), "EEE, MMM d, h:mm a")}
                                 </p>
-                                <h3 className="font-semibold text-white mt-1">
+                                <h3 className="font-semibold text-foreground mt-1">
                                   {event.title}
                                 </h3>
                               </div>
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                  <MapPin className="w-4 h-4 text-white/60" />
-                                  <span className="text-sm text-white/60">
+                                  <MapPin className="w-4 h-4 text-foreground/60" />
+                                  <span className="text-sm text-foreground/60">
                                     {event.location}
                                   </span>
                                   {event.price && (
                                     <>
-                                      <span className="text-white/60">·</span>
-                                      <span className="text-sm font-medium text-white">
+                                      <span className="text-foreground/60">·</span>
+                                      <span className="text-sm font-medium text-foreground">
                                         ${event.price}
                                       </span>
                                     </>
