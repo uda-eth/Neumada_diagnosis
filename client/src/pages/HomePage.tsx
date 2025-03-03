@@ -67,7 +67,7 @@ export default function HomePage() {
     location: "",
     date: "",
     category: "",
-    image: "",
+    imageFile: null as File | null,
     capacity: 0,
   });
 
@@ -96,14 +96,19 @@ export default function HomePage() {
 
   const handleCreateEvent = async () => {
     try {
-      const eventData = {
-        ...newEvent,
-        date: new Date(newEvent.date),
-        capacity: newEvent.capacity || null,
-        image: getEventImage(newEvent.category),
-      };
+      const formData = new FormData();
+      formData.append('title', newEvent.title);
+      formData.append('description', newEvent.description);
+      formData.append('location', newEvent.location);
+      formData.append('date', new Date(newEvent.date).toISOString());
+      formData.append('category', newEvent.category);
+      formData.append('capacity', String(newEvent.capacity));
 
-      await createEvent(eventData);
+      if (newEvent.imageFile) {
+        formData.append('image', newEvent.imageFile);
+      }
+
+      await createEvent(formData);
       toast({
         title: "Success",
         description: "Event created successfully",
@@ -115,7 +120,7 @@ export default function HomePage() {
         location: "",
         date: "",
         category: "",
-        image: "",
+        imageFile: null,
         capacity: 0,
       });
     } catch (error: any) {
@@ -185,6 +190,20 @@ export default function HomePage() {
                         }
                         className="bg-[#242424] border-white/10 text-white"
                       />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-white">Event Image</Label>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) =>
+                          setNewEvent({ ...newEvent, imageFile: e.target.files?.[0] || null })
+                        }
+                        className="bg-[#242424] border-white/10 text-white"
+                      />
+                      <p className="text-sm text-white/60">
+                        Upload an image to represent your event. If none provided, we'll use a category-based image.
+                      </p>
                     </div>
                     <div className="space-y-2">
                       <Label className="text-white">Description</Label>
