@@ -157,23 +157,23 @@ export default function HomePage() {
               </Select>
             </div>
             <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-              <Button variant="ghost" size="sm" onClick={() => setLocation("/browse")}>
+              <Button variant="ghost" size="sm" onClick={() => setLocation("/browse")} className="text-foreground">
                 Browse Members
               </Button>
               <ThemeToggle />
               {user ? (
-                <Button variant="ghost" size="sm" onClick={() => setLocation(`/profile/${user.username}`)}>
+                <Button variant="ghost" size="sm" onClick={() => setLocation(`/profile/${user.username}`)} className="text-foreground">
                   <UserCircle2 className="h-5 w-5 mr-2" />
                   {user.username}
                 </Button>
               ) : (
-                <Button variant="ghost" size="sm" onClick={() => setLocation("/auth")}>
+                <Button variant="ghost" size="sm" onClick={() => setLocation("/auth")} className="text-foreground">
                   Sign In
                 </Button>
               )}
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="bg-primary text-white hover:bg-primary/90">
+                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
                     <Plus className="h-5 w-5 mr-2 sm:mr-0 md:mr-2" />
                     <span className="hidden sm:hidden md:inline">Create Event</span>
                   </Button>

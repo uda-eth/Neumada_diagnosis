@@ -42,10 +42,10 @@ export function BottomNav() {
                 className={`relative flex flex-col items-center justify-center gap-0.5 w-16 h-16 rounded-lg transition-colors ${
                   isActive 
                     ? "text-primary" 
-                    : "text-muted-foreground hover:text-foreground"
+                    : "text-foreground hover:text-primary"
                 }`}
               >
-                <Icon className="w-6 h-6" />
+                <Icon className="w-6 h-6 current-color" />
                 <span className="text-[10px] font-medium">
                   {label}
                 </span>
