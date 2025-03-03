@@ -30,13 +30,17 @@ const cities = [
 ];
 
 const categories = [
-  "Networking",
+  "Concerts",
   "Coworking",
+  "Cultural",
+  "Day Parties",
+  "Networking",
+  "Nightlife",
   "Social",
   "Sports",
-  "Cultural",
   "Tech",
   "Travel",
+  "VIP Events",
 ];
 
 const AvatarImage = ({ src, alt }: { src: string; alt: string }) => (
