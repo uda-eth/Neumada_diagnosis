@@ -140,7 +140,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center gap-4 w-full sm:w-auto">
-              <h1 className="text-sm font-medium uppercase tracking-[.5em]">
+              <h1 className="text-sm font-medium uppercase tracking-[.5em] text-foreground">
                 Discover
               </h1>
               <Select value={selectedCity} onValueChange={setSelectedCity}>
@@ -190,7 +190,7 @@ export default function HomePage() {
                         onChange={(e) =>
                           setNewEvent({ ...newEvent, title: e.target.value })
                         }
-                        className="bg-[#242424] border-border text-foreground"
+                        className="bg-background border-border text-foreground"
                       />
                     </div>
                     <div className="space-y-2">
@@ -201,9 +201,9 @@ export default function HomePage() {
                         onChange={(e) =>
                           setNewEvent({ ...newEvent, imageFile: e.target.files?.[0] || null })
                         }
-                        className="bg-[#242424] border-border text-foreground"
+                        className="bg-background border-border text-foreground"
                       />
-                      <p className="text-sm text-foreground/60">
+                      <p className="text-sm text-muted-foreground">
                         Upload an image to represent your event. If none provided, we'll use a category-based image.
                       </p>
                     </div>
@@ -214,7 +214,7 @@ export default function HomePage() {
                         onChange={(e) =>
                           setNewEvent({ ...newEvent, description: e.target.value })
                         }
-                        className="bg-[#242424] border-border text-foreground"
+                        className="bg-background border-border text-foreground"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -225,7 +225,7 @@ export default function HomePage() {
                             setNewEvent({ ...newEvent, location: value })
                           }
                         >
-                          <SelectTrigger className="bg-[#242424] border-border text-foreground">
+                          <SelectTrigger className="bg-background border-border text-foreground">
                             <SelectValue placeholder="Select location" />
                           </SelectTrigger>
                           <SelectContent className="bg-background border-border">
@@ -244,7 +244,7 @@ export default function HomePage() {
                             setNewEvent({ ...newEvent, category: value })
                           }
                         >
-                          <SelectTrigger className="bg-[#242424] border-border text-foreground">
+                          <SelectTrigger className="bg-background border-border text-foreground">
                             <SelectValue placeholder="Select category" />
                           </SelectTrigger>
                           <SelectContent className="bg-background border-border">
@@ -266,7 +266,7 @@ export default function HomePage() {
                           onChange={(e) =>
                             setNewEvent({ ...newEvent, date: e.target.value })
                           }
-                          className="bg-[#242424] border-border text-foreground"
+                          className="bg-background border-border text-foreground"
                         />
                       </div>
                       <div className="space-y-2">
@@ -280,7 +280,7 @@ export default function HomePage() {
                               capacity: parseInt(e.target.value) || 0,
                             })
                           }
-                          className="bg-[#242424] border-border text-foreground"
+                          className="bg-background border-border text-foreground"
                         />
                       </div>
                     </div>
@@ -310,16 +310,16 @@ export default function HomePage() {
           <div className="mb-8 space-y-4">
             <div className="flex gap-4">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground/60 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   placeholder="Search events..."
-                  className="pl-10 bg-white/5 border-border"
+                  className="pl-10 bg-background/5 border-border text-foreground"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <Select value={selectedCategory} onValueChange={(value) => setSelectedCategory(value)}>
-                <SelectTrigger className="w-[180px] bg-white/5 border-border">
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-[180px] bg-background/5 border-border">
                   <SelectValue placeholder="All categories" />
                 </SelectTrigger>
                 <SelectContent>
@@ -338,7 +338,7 @@ export default function HomePage() {
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="animate-pulse">
-                  <div className="h-48 bg-white/5 rounded-lg mb-2"></div>
+                  <div className="h-48 bg-muted rounded-lg mb-2"></div>
                 </div>
               ))}
             </div>
@@ -346,14 +346,14 @@ export default function HomePage() {
             <div className="space-y-8">
               {groupedEvents?.thisWeekend.length > 0 && (
                 <section>
-                  <h2 className="text-sm font-medium text-foreground/60 mb-4">
+                  <h2 className="text-sm font-medium text-muted-foreground mb-4">
                     THIS WEEKEND
                   </h2>
                   <div className="space-y-4">
                     {groupedEvents.thisWeekend.map((event: any) => (
                       <Card
                         key={event.id}
-                        className="bg-background/40 border-border hover:bg-white/5 transition-colors cursor-pointer backdrop-blur-sm"
+                        className="bg-card border-border hover:bg-accent/50 transition-colors cursor-pointer"
                         onClick={() => setLocation(`/event/${event.id}`)}
                       >
                         <CardContent className="p-0">
@@ -381,7 +381,7 @@ export default function HomePage() {
                                     </Badge>
                                   ))}
                                 </div>
-                                <p className="text-sm text-foreground/60">
+                                <p className="text-sm text-muted-foreground">
                                   {format(new Date(event.date), "EEE, MMM d, h:mm a")}
                                 </p>
                                 <h3 className="font-semibold text-foreground mt-1">
@@ -390,13 +390,13 @@ export default function HomePage() {
                               </div>
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                  <MapPin className="w-4 h-4 text-foreground/60" />
-                                  <span className="text-sm text-foreground/60">
+                                  <MapPin className="w-4 h-4 text-muted-foreground" />
+                                  <span className="text-sm text-muted-foreground">
                                     {event.location}
                                   </span>
                                   {event.price && (
                                     <>
-                                      <span className="text-foreground/60">·</span>
+                                      <span className="text-muted-foreground">·</span>
                                       <span className="text-sm font-medium text-foreground">
                                         ${event.price}
                                       </span>
@@ -429,14 +429,14 @@ export default function HomePage() {
 
               {groupedEvents?.nextWeek.length > 0 && (
                 <section>
-                  <h2 className="text-sm font-medium text-foreground/60 mb-4">
+                  <h2 className="text-sm font-medium text-muted-foreground mb-4">
                     NEXT WEEK
                   </h2>
                   <div className="space-y-4">
                     {groupedEvents.nextWeek.map((event: any) => (
                       <Card
                         key={event.id}
-                        className="bg-background/40 border-border hover:bg-white/5 transition-colors cursor-pointer backdrop-blur-sm"
+                        className="bg-card border-border hover:bg-accent/50 transition-colors cursor-pointer"
                         onClick={() => setLocation(`/event/${event.id}`)}
                       >
                         <CardContent className="p-0">
@@ -464,7 +464,7 @@ export default function HomePage() {
                                     </Badge>
                                   ))}
                                 </div>
-                                <p className="text-sm text-foreground/60">
+                                <p className="text-sm text-muted-foreground">
                                   {format(new Date(event.date), "EEE, MMM d, h:mm a")}
                                 </p>
                                 <h3 className="font-semibold text-foreground mt-1">
@@ -473,13 +473,13 @@ export default function HomePage() {
                               </div>
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                  <MapPin className="w-4 h-4 text-foreground/60" />
-                                  <span className="text-sm text-foreground/60">
+                                  <MapPin className="w-4 h-4 text-muted-foreground" />
+                                  <span className="text-sm text-muted-foreground">
                                     {event.location}
                                   </span>
                                   {event.price && (
                                     <>
-                                      <span className="text-foreground/60">·</span>
+                                      <span className="text-muted-foreground">·</span>
                                       <span className="text-sm font-medium text-foreground">
                                         ${event.price}
                                       </span>
