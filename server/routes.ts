@@ -12,6 +12,8 @@ import { DIGITAL_NOMAD_CITIES } from "../client/src/lib/constants";
 import { getEventImage } from "../client/src/lib/eventImages";
 import multer from 'multer';
 import path from 'path';
+import express from "express";
+
 
 interface MockUser {
   id: number;
@@ -266,6 +268,9 @@ const upload = multer({
 });
 
 export function registerRoutes(app: Express): Server {
+  // Serve static files from attached_assets directory
+  app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
+
   // Set up authentication routes first
   setupAuth(app);
 
