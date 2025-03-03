@@ -2,5 +2,15 @@
   "variant": "professional",
   "primary": "#8b5cf6",
   "appearance": "system",
-  "radius": 0.75
+  "radius": 0.75,
+  "themes": {
+    "light": {
+      "background": "#ffffff",
+      "foreground": "#020817"
+    },
+    "dark": {
+      "background": "#121212",
+      "foreground": "#ffffff"
+    }
+  }
 }
