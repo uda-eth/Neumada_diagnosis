@@ -140,7 +140,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <h1 className="text-sm font-medium uppercase tracking-[.5em] text-foreground hidden md:block">
+              <h1 className="text-sm font-medium uppercase tracking-[.5em] text-foreground">
                 Discover
               </h1>
               <Select value={selectedCity} onValueChange={setSelectedCity}>
@@ -161,7 +161,7 @@ export default function HomePage() {
                 variant="ghost" 
                 size="sm" 
                 onClick={() => setLocation("/browse")} 
-                className="text-foreground hidden md:inline-flex items-center"
+                className="hidden md:inline-flex items-center text-foreground"
               >
                 <Users className="h-5 w-5 mr-2" />
                 Browse Members
@@ -170,7 +170,7 @@ export default function HomePage() {
                 variant="ghost" 
                 size="sm" 
                 onClick={() => setLocation("/messages")} 
-                className="text-foreground hidden md:inline-flex items-center"
+                className="hidden md:inline-flex items-center text-foreground"
               >
                 <MessageSquare className="h-5 w-5 mr-2" />
                 Inbox
@@ -181,7 +181,7 @@ export default function HomePage() {
                   variant="ghost" 
                   size="sm" 
                   onClick={() => setLocation(`/profile/${user.username}`)} 
-                  className="text-foreground hidden md:inline-flex items-center"
+                  className="hidden md:inline-flex items-center text-foreground"
                 >
                   <UserCircle2 className="h-5 w-5 mr-2" />
                   {user.username}
@@ -191,7 +191,7 @@ export default function HomePage() {
                   variant="ghost" 
                   size="sm" 
                   onClick={() => setLocation("/auth")} 
-                  className="text-foreground hidden md:inline-flex items-center"
+                  className="hidden md:inline-flex items-center text-foreground"
                 >
                   <UserCircle2 className="h-5 w-5 mr-2" />
                   Sign In
@@ -415,15 +415,15 @@ export default function HomePage() {
                                 </h3>
                               </div>
                               <div className="flex items-center justify-between mt-4">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <div className="flex items-center gap-1">
-                                    <MapPin className="w-4 h-4 text-muted-foreground" />
-                                    <span className="text-sm text-muted-foreground">
+                                <div className="flex flex-wrap items-center gap-2 min-w-0">
+                                  <div className="flex items-center gap-1 min-w-0">
+                                    <MapPin className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                                    <span className="text-sm text-muted-foreground truncate">
                                       {event.location}
                                     </span>
                                   </div>
                                   {event.price && (
-                                    <div className="flex items-center gap-1">
+                                    <div className="flex items-center gap-1 flex-shrink-0">
                                       <span className="text-muted-foreground">·</span>
                                       <span className="text-sm font-medium text-foreground">
                                         ${event.price}
@@ -434,7 +434,7 @@ export default function HomePage() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="ml-2 whitespace-nowrap"
+                                  className="ml-2 flex-shrink-0"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     toast({
@@ -500,15 +500,15 @@ export default function HomePage() {
                                 </h3>
                               </div>
                               <div className="flex items-center justify-between mt-4">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <div className="flex items-center gap-1">
-                                    <MapPin className="w-4 h-4 text-muted-foreground" />
-                                    <span className="text-sm text-muted-foreground">
+                                <div className="flex flex-wrap items-center gap-2 min-w-0">
+                                  <div className="flex items-center gap-1 min-w-0">
+                                    <MapPin className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                                    <span className="text-sm text-muted-foreground truncate">
                                       {event.location}
                                     </span>
                                   </div>
                                   {event.price && (
-                                    <div className="flex items-center gap-1">
+                                    <div className="flex items-center gap-1 flex-shrink-0">
                                       <span className="text-muted-foreground">·</span>
                                       <span className="text-sm font-medium text-foreground">
                                         ${event.price}
@@ -519,7 +519,7 @@ export default function HomePage() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="ml-2 whitespace-nowrap"
+                                  className="ml-2 flex-shrink-0"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     toast({
