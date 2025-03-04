@@ -112,7 +112,7 @@ MOCK_USERS["Mexico City"] = [
     bio: "Capturing the beauty of Mexico City through my lens. Love exploring hidden gems and sharing authentic travel stories.",
     interests: ["Travel", "Photography", "Writing", "Culture", "Food"],
     currentMoods: ["Exploring", "Creating", "Networking"],
-    profileImage: "/attached_assets/profile-image-1.jpg", 
+    profileImage: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&h=600&fit=crop&q=80", 
     createdAt: new Date().toISOString(), // Just created (newest)
     updatedAt: new Date().toISOString()
   },
@@ -127,7 +127,7 @@ MOCK_USERS["Mexico City"] = [
     bio: "Model based in Mexico City. Recently moved from Madrid for new creative opportunities. Looking to collaborate with photographers and designers.",
     interests: ["Fashion", "Photography", "Design", "Art", "Fitness"],
     currentMoods: ["Creating", "Networking", "Exploring"],
-    profileImage: "/attached_assets/profile-image-2.jpg", 
+    profileImage: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=600&h=600&fit=crop&q=80", 
     createdAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(), // Created 20 minutes ago
     updatedAt: new Date().toISOString()
   },
@@ -142,7 +142,7 @@ MOCK_USERS["Mexico City"] = [
     bio: "Film director seeking inspiration in the vibrant culture of Mexico City. Looking to connect with creative professionals for upcoming projects.",
     interests: ["Film", "Art", "Culture", "Music", "Photography"],
     currentMoods: ["Creating", "Networking", "Exploring"],
-    profileImage: "/attached_assets/profile-image-3.jpg", 
+    profileImage: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&h=600&fit=crop&q=80", 
     createdAt: new Date(Date.now() - 40 * 60 * 1000).toISOString(), // Created 40 minutes ago
     updatedAt: new Date().toISOString()
   },
@@ -157,7 +157,7 @@ MOCK_USERS["Mexico City"] = [
     bio: "Digital artist with a passion for blending traditional Mexican art with modern design. Looking to collaborate and find inspiration in this amazing city.",
     interests: ["Art", "Design", "Technology", "Culture", "Music"],
     currentMoods: ["Creating", "Learning", "Networking"],
-    profileImage: "/attached_assets/profile-image-4.jpg", 
+    profileImage: "https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?w=600&h=600&fit=crop&q=80", 
     createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(), // Created an hour ago
     updatedAt: new Date().toISOString()
   },
@@ -172,7 +172,7 @@ MOCK_USERS["Mexico City"] = [
     bio: "Creative soul with a passion for sustainable fashion. Recently moved to Mexico City to find inspiration for my new collection. Looking to connect with artists and designers.",
     interests: ["Fashion", "Design", "Sustainability", "Art", "Culture"],
     currentMoods: ["Creating", "Exploring", "Networking"],
-    profileImage: "/attached_assets/profile-1734541908-340b1aee98a06ca5acf7600d53e051ba.jpg", 
+    profileImage: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&h=600&fit=crop&q=80", 
     createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // Created 2 hours ago
     updatedAt: new Date().toISOString()
   },
