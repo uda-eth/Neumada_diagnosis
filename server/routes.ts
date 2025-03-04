@@ -174,7 +174,7 @@ const newEvents = {
       date: tomorrow.toISOString(),
       location: "Mexico City",
       category: "Sports",
-      image: "/attached_assets/images.jpg",
+      image: "/attached_assets/7358939e-2913-4b8f-a310-769736b37cba.jpg",
       capacity: 20,
       price: 595,
       createdAt: new Date().toISOString(),
