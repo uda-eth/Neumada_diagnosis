@@ -36,7 +36,7 @@ export function BottomNav() {
   return (
     <>
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-background/80 dark:bg-black/80 backdrop-blur-lg border-t border-border dark:border-white/10 shadow-lg pb-6">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[100] glass border-t border-border/10 shadow-lg pb-6">
         <div className="flex justify-around items-center h-16 max-w-md mx-auto px-1">
           {navItems.map(({ icon: Icon, label, href, badge }) => {
             const isActive = location === href;
@@ -44,20 +44,22 @@ export function BottomNav() {
               <Link key={href} href={href}>
                 <a 
                   role="button"
-                  className={`relative flex flex-col items-center justify-center gap-0.5 w-16 h-16 rounded-lg transition-colors ${
+                  className={`relative flex flex-col items-center justify-center gap-0.5 w-16 h-16 rounded-lg transition-all duration-300 ease-out touch-target interactive-hover ${
                     isActive 
-                      ? "text-primary" 
-                      : "text-foreground hover:text-primary"
+                      ? "text-primary scale-110" 
+                      : "text-foreground/60 hover:text-foreground"
                   }`}
                 >
-                  <Icon className="w-6 h-6" />
-                  <span className="text-[10px] font-medium">
+                  <Icon className={`w-6 h-6 transition-transform ${isActive ? 'scale-110' : ''}`} />
+                  <span className={`text-[10px] font-medium transition-opacity ${
+                    isActive ? 'opacity-100' : 'opacity-60'
+                  }`}>
                     {label}
                   </span>
                   {badge && badge > 0 && (
                     <Badge 
                       variant="destructive" 
-                      className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px]"
+                      className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px] animate-in fade-in duration-300"
                     >
                       {badge > 99 ? '99+' : badge}
                     </Badge>
@@ -74,27 +76,27 @@ export function BottomNav() {
       </nav>
 
       {/* Desktop Side Navigation */}
-      <nav className="hidden md:flex fixed left-0 top-0 bottom-0 z-[100] w-16 bg-background/80 dark:bg-black/80 backdrop-blur-lg border-r border-border dark:border-white/10 shadow-lg flex-col items-center py-8">
+      <nav className="hidden md:flex fixed left-0 top-0 bottom-0 z-[100] w-16 glass border-r border-border/10 shadow-lg flex-col items-center py-8">
         {navItems.map(({ icon: Icon, label, href, badge }) => {
           const isActive = location === href;
           return (
             <Link key={href} href={href}>
               <a 
                 role="button"
-                className={`relative flex flex-col items-center justify-center gap-1 w-12 h-12 rounded-lg transition-colors mb-4 group ${
+                className={`relative flex flex-col items-center justify-center gap-1 w-12 h-12 rounded-lg transition-all duration-300 ease-out mb-4 group interactive-hover ${
                   isActive 
-                    ? "text-primary" 
-                    : "text-foreground hover:text-primary"
+                    ? "text-primary scale-110" 
+                    : "text-foreground/60 hover:text-foreground"
                 }`}
               >
-                <Icon className="w-6 h-6" />
-                <span className="text-[10px] font-medium opacity-0 group-hover:opacity-100 absolute left-16 bg-background dark:bg-black/90 text-foreground dark:text-white px-2 py-1 rounded whitespace-nowrap border border-border dark:border-white/10">
+                <Icon className={`w-6 h-6 transition-transform ${isActive ? 'scale-110' : ''}`} />
+                <span className="text-[10px] font-medium opacity-0 group-hover:opacity-100 absolute left-16 glass text-foreground px-2 py-1 rounded whitespace-nowrap border border-border/10 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
                   {label}
                 </span>
                 {badge && badge > 0 && (
                   <Badge 
                     variant="destructive" 
-                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px]"
+                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px] animate-in fade-in duration-300"
                   >
                     {badge > 99 ? '99+' : badge}
                   </Badge>
@@ -103,6 +105,10 @@ export function BottomNav() {
             </Link>
           );
         })}
+        {/* Desktop Invite Button */}
+        <div className="mt-auto">
+          <InviteTrigger />
+        </div>
       </nav>
     </>
   );
