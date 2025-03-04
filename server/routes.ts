@@ -243,7 +243,8 @@ const newEvents = {
       capacity: 200,
       price: 150,
       createdAt: new Date().toISOString(),
-      interestedCount: 156
+      interestedCount: 156,
+      tags: ["Nightlife", "Music", "Cultural", "Excursion"]
     },
     {
       id: 1008,
@@ -256,7 +257,8 @@ const newEvents = {
       capacity: 150,
       price: 85,
       createdAt: new Date().toISOString(),
-      interestedCount: 92
+      interestedCount: 92,
+      tags: ["Nightlife", "Cultural", "Art", "Excursion"]
     },
     {
       id: 1009,
