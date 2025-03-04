@@ -285,6 +285,20 @@ const newEvents = {
       createdAt: new Date().toISOString(),
       interestedCount: 42,
       tags: ["Cooking", "Culture", "Food & Wine"]
+    },
+    {
+      id: 1011,
+      title: "Mexico City Paddle Meetup",
+      description: "Join fellow paddle enthusiasts for an exciting meetup at Xochimilco's ancient canals. Whether you're a beginner or experienced paddler, come enjoy a day of paddling, socializing, and exploring Mexico City's iconic waterways. Equipment rental available.",
+      date: new Date(tomorrow.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+      location: "Mexico City",
+      category: "Sports",
+      image: "/attached_assets/7358939e-2913-4b8f-a310-769736b37cba.jpg",
+      capacity: 25,
+      price: 35,
+      createdAt: new Date().toISOString(),
+      interestedCount: 18,
+      tags: ["Sports", "Outdoors", "Social"]
     }
   ]
 };
