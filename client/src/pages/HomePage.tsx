@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Users, Plus, UserCircle2, Search, MessageSquare } from "lucide-react";
+import { MapPin, Users, Plus, UserCircle2, Search, MessageSquare, Bot } from "lucide-react";
 import { format } from "date-fns";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { getEventImage } from "@/lib/eventImages";
@@ -552,6 +552,9 @@ export default function HomePage() {
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setLocation("/messages")}>
               <MessageSquare className="h-5 w-5 text-white" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setLocation("/companion")}>
+              <Bot className="h-5 w-5 text-white" />
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setLocation("/auth")}>
               <UserCircle2 className="h-5 w-5 text-white" />
