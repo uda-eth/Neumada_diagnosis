@@ -200,7 +200,7 @@ const newEvents = {
       date: new Date(tomorrow.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(),
       location: "Mexico City",
       category: "Social",
-      image: "/attached_assets/images-1.jpg",
+      image: "/attached_assets/images-2.jpg",
       capacity: 30,
       price: 55,
       createdAt: new Date().toISOString(),
@@ -234,7 +234,7 @@ const newEvents = {
     },
     {
       id: 1007,
-      title: "Zona Maco: Ancient Balloon Ride",
+      title: "Zona Maco: Ancient Balloon Ride + Downtiempo DJs",
       description: "Experience the magic of ancient Mexico with hot air balloon rides over the pyramids and hacienda decompression. A unique cultural fundraiser featuring performances by Anastascia, Britta Arnold, Jose Noventa, and more. Join us for this extraordinary blend of adventure and culture.",
       date: new Date(2025, 1, 9).toISOString(), // February 9, 2025
       location: "Mexico City",
