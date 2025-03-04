@@ -234,7 +234,7 @@ const newEvents = {
     },
     {
       id: 1007,
-      title: "Zona Maco: An Ancient Rebirth",
+      title: "Zona Maco: Ancient Balloon Ride",
       description: "Experience the magic of ancient Mexico with hot air balloon rides over the pyramids and hacienda decompression. A unique cultural fundraiser featuring performances by Anastascia, Britta Arnold, Jose Noventa, and more. Join us for this extraordinary blend of adventure and culture.",
       date: new Date(2025, 1, 9).toISOString(), // February 9, 2025
       location: "Mexico City",
