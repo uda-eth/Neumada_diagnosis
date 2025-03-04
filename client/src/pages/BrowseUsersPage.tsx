@@ -42,7 +42,9 @@ const container = {
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1
+      staggerChildren: 0.1,
+      duration: 0.3,
+      ease: "easeOut"
     }
   }
 };
@@ -56,6 +58,19 @@ const item = {
       type: "spring",
       stiffness: 200,
       damping: 20
+    }
+  }
+};
+
+// Loading card animation
+const loadingPulse = {
+  initial: { opacity: 0.5 },
+  animate: {
+    opacity: 1,
+    transition: {
+      duration: 1,
+      repeat: Infinity,
+      repeatType: "reverse"
     }
   }
 };
@@ -181,21 +196,27 @@ export default function BrowseUsersPage() {
 
   return (
     <div className="min-h-screen bg-[#121212] text-white">
-      <header className="sticky top-0 z-50 bg-[#121212]/95 backdrop-blur supports-[backdrop-filter]:bg-[#121212]/60 border-b border-white/10">
+      <header className="sticky top-0 z-50 bg-[#121212]/95 backdrop-blur-sm supports-[backdrop-filter]:bg-[#121212]/60 border-b border-white/10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">Connect in {selectedCity === 'all' ? 'All Cities' : selectedCity}</h1>
+            <h1 className="text-2xl font-bold gradient-text">Connect in {selectedCity === 'all' ? 'All Cities' : selectedCity}</h1>
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
                 onClick={() => setIsFiltersVisible(!isFiltersVisible)}
-                className="gap-2 text-white/80 hover:text-white"
+                className="gap-2 text-white/80 hover:text-white interactive-hover"
+                aria-expanded={isFiltersVisible}
+                aria-label="Toggle filters"
               >
                 <Search className="w-4 h-4" />
                 Filters
               </Button>
-              <Select value={selectedCity} onValueChange={setSelectedCity}>
-                <SelectTrigger className="w-[180px] bg-[#1a1a1a] border-white/10 text-white">
+              <Select 
+                value={selectedCity} 
+                onValueChange={setSelectedCity}
+                aria-label="Select city"
+              >
+                <SelectTrigger className="w-[180px] bg-[#1a1a1a] border-white/10 text-white focus-visible">
                   <SelectValue placeholder="Select City" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#1a1a1a] border-white/10">
@@ -220,7 +241,7 @@ export default function BrowseUsersPage() {
               transition={{ duration: 0.2 }}
               className="overflow-hidden mb-8"
             >
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-[#1a1a1a] p-6 rounded-lg border border-white/10">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-[#1a1a1a] p-6 rounded-lg border border-white/10 glass">
                 <div className="space-y-4">
                   <h3 className="font-semibold text-white">Search</h3>
                   <Input
@@ -228,12 +249,13 @@ export default function BrowseUsersPage() {
                     value={nameSearch}
                     onChange={(e) => setNameSearch(e.target.value)}
                     className="bg-[#242424] border-white/10 text-white placeholder:text-white/60"
+                    aria-label="Search users by name"
                   />
                 </div>
                 <div className="space-y-4">
                   <h3 className="font-semibold text-white">Demographics</h3>
                   <div className="space-y-4">
-                    <Select value={selectedGender} onValueChange={setSelectedGender}>
+                    <Select value={selectedGender} onValueChange={setSelectedGender} aria-label="Select gender">
                       <SelectTrigger className="bg-[#242424] border-white/10 text-white">
                         <SelectValue placeholder="Gender" />
                       </SelectTrigger>
@@ -251,6 +273,7 @@ export default function BrowseUsersPage() {
                         value={ageRange.min}
                         onChange={(e) => setAgeRange(prev => ({ ...prev, min: e.target.value }))}
                         className="bg-[#242424] border-white/10 text-white placeholder:text-white/60"
+                        aria-label="Minimum age"
                       />
                       <Input
                         type="number"
@@ -258,6 +281,7 @@ export default function BrowseUsersPage() {
                         value={ageRange.max}
                         onChange={(e) => setAgeRange(prev => ({ ...prev, max: e.target.value }))}
                         className="bg-[#242424] border-white/10 text-white placeholder:text-white/60"
+                        aria-label="Maximum age"
                       />
                     </div>
                   </div>
@@ -272,6 +296,8 @@ export default function BrowseUsersPage() {
                         variant={selectedInterests.includes(interest) ? "default" : "outline"}
                         className="cursor-pointer hover:opacity-80 transition-opacity text-white"
                         onClick={() => toggleFilter(interest, 'interests')}
+                        aria-pressed={selectedInterests.includes(interest)}
+                        aria-label={`Select/deselect ${interest} interest`}
                       >
                         {interest}
                       </Badge>
@@ -288,6 +314,8 @@ export default function BrowseUsersPage() {
                         variant={selectedMoods.includes(mood) ? "default" : "outline"}
                         className="cursor-pointer hover:opacity-80 transition-opacity text-white"
                         onClick={() => toggleFilter(mood, 'moods')}
+                        aria-pressed={selectedMoods.includes(mood)}
+                        aria-label={`Select/deselect ${mood} mood`}
                       >
                         {mood}
                       </Badge>
@@ -300,13 +328,20 @@ export default function BrowseUsersPage() {
         </AnimatePresence>
 
         {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <motion.div 
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+            initial="hidden"
+            animate="show"
+            variants={container}
+          >
             {[...Array(12)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="aspect-[3/4] bg-[#1a1a1a] rounded-lg"></div>
-              </div>
+              <motion.div 
+                key={i} 
+                variants={loadingPulse}
+                className="aspect-[3/4] bg-[#1a1a1a] rounded-lg glass"
+              />
             ))}
-          </div>
+          </motion.div>
         ) : (
           <motion.div
             className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
@@ -321,8 +356,12 @@ export default function BrowseUsersPage() {
                 layout
                 className="group cursor-pointer"
                 onClick={() => handleUserClick(user.username)}
+                role="button"
+                tabIndex={0}
+                aria-label={`View ${user.fullName || user.username}'s profile`}
+                onKeyDown={(e) => e.key === 'Enter' && handleUserClick(user.username)}
               >
-                <Card className="overflow-hidden border-0 bg-[#1a1a1a] shadow-lg transition-all duration-300 group-hover:shadow-xl">
+                <Card className="overflow-hidden border-0 bg-[#1a1a1a] shadow-card transition-all duration-300 group-hover:shadow-card-hover glass">
                   <CardContent className="p-0">
                     <div className="aspect-[3/4] relative">
                       {user.profileImage ? (
