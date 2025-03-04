@@ -14,6 +14,7 @@ import { ChevronLeft, ChevronRight, Calendar, MapPin, Globe, MessageSquare, User
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import type { User, Event } from "@db/schema";
+import { CREATOR_PROFILE } from "@/lib/constants";
 
 const container = {
   hidden: { opacity: 0 },
@@ -35,9 +36,15 @@ export default function ProfilePage() {
   const [, setLocation] = useLocation();
   const { user: currentUser } = useUser();
 
+  // If the username matches the creator's username, use the creator profile
+  const isCreator = username === CREATOR_PROFILE.username;
+
   const { data: profile, isLoading: isLoadingProfile } = useQuery<User>({
     queryKey: [`/api/users/${username}`],
     queryFn: async () => {
+      if (isCreator) {
+        return CREATOR_PROFILE;
+      }
       const response = await fetch(`/api/users/${username}`);
       if (!response.ok) throw new Error("Failed to fetch profile");
       return response.json();
@@ -108,28 +115,10 @@ export default function ProfilePage() {
             transition={{ duration: 0.5 }}
           >
             <img
-              src={profile.profileImage || profile.profileImages?.[currentImageIndex]}
-              alt={profile.fullName || profile.username}
-              className="w-full h-full object-cover rounded-lg"
+              src={profile?.profileImage}
+              alt={profile?.fullName}
+              className="w-full h-full object-cover object-center rounded-lg"
             />
-            {profile.profileImages && profile.profileImages.length > 1 && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white"
-                >
-                  <ChevronLeft className="w-6 h-6" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white"
-                >
-                  <ChevronRight className="w-6 h-6" />
-                </Button>
-              </>
-            )}
           </motion.div>
 
           {/* User Info */}
