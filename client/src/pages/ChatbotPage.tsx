@@ -13,6 +13,11 @@ interface ChatMessage {
   content: string;
 }
 
+const WELCOME_MESSAGE: ChatMessage = {
+  role: "assistant",
+  content: "Hello! I'm Maly your chat based concierge. I'll help you discover the best local spots while living or traveling abroad. What would you like to know about your city of interest?"
+};
+
 // Enhanced travel-focused quick prompts
 const quickPrompts = [
   {
@@ -42,9 +47,12 @@ const quickPrompts = [
 ];
 
 export default function ChatbotPage() {
-  const { messages, isLoading, sendMessage } = useChat();
+  const { messages: chatMessages, isLoading, sendMessage } = useChat();
   const [input, setInput] = useState("");
   const [selectedCity, setSelectedCity] = useState("Mexico City");
+
+  // Combine welcome message with chat messages
+  const messages = [WELCOME_MESSAGE, ...chatMessages];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
