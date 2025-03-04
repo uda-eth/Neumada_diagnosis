@@ -271,6 +271,20 @@ const newEvents = {
       createdAt: new Date().toISOString(),
       interestedCount: 324,
       tags: ["Music", "Art", "Nature"]
+    },
+    {
+      id: 1010,
+      title: "Oaxacan Cooking Class with Chef Colibri",
+      description: "Join Chef Colibri for an intimate Oaxacan cooking masterclass where you'll learn the secrets of traditional Mexican cuisine. Master the art of making authentic mole, handmade tortillas, and other regional specialties. This hands-on experience includes a shared dining experience of your creations paired with selected Mexican wines.",
+      date: new Date(tomorrow.getTime() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+      location: "Mexico City",
+      category: "Cultural",
+      image: "/attached_assets/1670001512622.webp",
+      capacity: 12,
+      price: 150,
+      createdAt: new Date().toISOString(),
+      interestedCount: 42,
+      tags: ["Cooking", "Culture", "Food & Wine"]
     }
   ]
 };
