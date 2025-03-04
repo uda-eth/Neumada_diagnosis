@@ -91,75 +91,81 @@ const PROFILE_IMAGES_BY_CITY: Record<string, string[]> = {
   ]
 };
 
-const MOCK_USERS: Record<string, MockUser[]> = DIGITAL_NOMAD_CITIES.reduce((acc, city) => {
-  // Get city-specific profile images or use default ones
-  const cityImages = PROFILE_IMAGES_BY_CITY[city] || PROFILE_IMAGES_BY_CITY["London"];
+// Create a simplified MOCK_USERS with just a few profiles that will clearly show at the top
+const MOCK_USERS: Record<string, MockUser[]> = {};
 
-  acc[city] = Array.from({ length: 10 }, (_, i) => ({
-    id: Math.floor(Math.random() * 1000),
-    username: `user${i}_${city.toLowerCase().replace(/\s+/g, '')}`,
-    fullName: [
-      "Sofia Rodriguez",
-      "Alex Chen",
-      "Maya Patel",
-      "Lucas Silva",
-      "Emma Thompson",
-      "Kai Nakamura",
-      "Isabella Santos",
-      "Omar Hassan",
-      "Nina Kowalski",
-      "Marcus Wong"
-    ][i],
-    age: 25 + Math.floor(Math.random() * 15),
-    gender: Math.random() > 0.5 ? 'male' : 'female',
-    profession: [
-      'Software Developer',
-      'Digital Marketer',
-      'Content Creator',
-      'UX Designer',
-      'Startup Founder',
-      'Travel Blogger',
-      'Freelance Writer',
-      'UI Designer',
-      'Data Scientist',
-      'Product Manager'
-    ][i],
-    location: city,
-    bio: `Digital nomad based in ${city}, passionate about technology and travel. ${[
-      "Love exploring local coffee shops and coworking spaces.",
-      "Always seeking new cultural experiences and connections.",
-      "Combining work and adventure while traveling the world.",
-      "Building the future of remote work one project at a time.",
-      "Creating content and sharing stories from around the globe."
-    ][Math.floor(Math.random() * 5)]}`,
-    interests: [
-      'Remote Work',
-      'Technology',
-      'Travel',
-      'Photography',
-      'Entrepreneurship',
-      'Yoga',
-      'Surfing',
-      'Cooking',
-      'Languages',
-      'Hiking'
-    ].sort(() => Math.random() - 0.5).slice(0, 3 + Math.floor(Math.random() * 3)),
-    currentMoods: [
-      'Working',
-      'Exploring',
-      'Networking',
-      'Learning',
-      'Creating',
-      'Adventuring',
-      'Collaborating',
-      'Relaxing'
-    ].sort(() => Math.random() - 0.5).slice(0, 2),
-    profileImage: cityImages[i % cityImages.length],
-    createdAt: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(), // Random date within last 90 days
+// Initialize empty arrays for each city
+DIGITAL_NOMAD_CITIES.forEach(city => {
+  MOCK_USERS[city] = [];
+});
+
+// Add a few new profiles to Mexico City
+MOCK_USERS["Mexico City"] = [
+  {
+    id: 1001,
+    username: "emma_nomad",
+    fullName: "Emma Thompson",
+    age: 28,
+    gender: "female",
+    profession: "UX Designer",
+    location: "Mexico City",
+    bio: "Just arrived in Mexico City! Looking to connect with other digital nomads and explore the local art scene.",
+    interests: ["Design", "Art", "Coffee", "Museums"],
+    currentMoods: ["Exploring", "Networking"],
+    profileImage: "https://images.unsplash.com/photo-1534751516642-a1af1ef26a56?w=600&h=600&fit=crop&q=80",
+    createdAt: new Date().toISOString(), // Just created
     updatedAt: new Date().toISOString()
-  }));
-  return acc;
-}, {} as Record<string, MockUser[]>);
+  },
+  {
+    id: 1002,
+    username: "alex_remote",
+    fullName: "Alex Chen",
+    age: 31,
+    gender: "male",
+    profession: "Software Developer",
+    location: "Mexico City",
+    bio: "Software developer working remotely while exploring Mexico City. Looking for good coffee shops and coworking spaces.",
+    interests: ["Coding", "Coffee", "Technology", "Remote Work"],
+    currentMoods: ["Working", "Networking"],
+    profileImage: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=600&h=600&fit=crop&q=80",
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // Created yesterday
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 1003,
+    username: "maria_travel",
+    fullName: "Maria Santos",
+    age: 26,
+    gender: "female",
+    profession: "Travel Blogger",
+    location: "Mexico City",
+    bio: "Documenting my journey through Latin America. Currently exploring Mexico City's vibrant neighborhoods and cuisine.",
+    interests: ["Travel", "Photography", "Food", "Writing"],
+    currentMoods: ["Creating", "Exploring"],
+    profileImage: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&h=600&fit=crop&q=80",
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // Created 2 days ago
+    updatedAt: new Date().toISOString()
+  }
+];
+
+// Add a couple of profiles to other cities
+MOCK_USERS["Bali"] = [
+  {
+    id: 2001,
+    username: "surf_nomad",
+    fullName: "Jake Wilson",
+    age: 29,
+    gender: "male",
+    profession: "Startup Founder",
+    location: "Bali",
+    bio: "Building my startup from paradise in Bali. Love surfing in the morning before work.",
+    interests: ["Surfing", "Entrepreneurship", "Wellness", "Technology"],
+    currentMoods: ["Working", "Adventuring"],
+    profileImage: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=600&fit=crop&q=80",
+    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // Created 5 days ago
+    updatedAt: new Date().toISOString()
+  }
+];
 
 const today = new Date();
 const tomorrow = new Date(today);
