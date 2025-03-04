@@ -10,7 +10,7 @@ export function useChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
-      content: "Hello! I'm your AI travel companion for exploring the digital nomad lifestyle. I can help you discover local spots, connect with fellow travelers, and make the most of your journey. What would you like to know about your current or next destination?",
+      content: "Hello! I'm your AI city guide concierge. I can help you discover local spots, understand the digital nomad lifestyle, and make the most of your chosen destination. What would you like to know about your city of interest?",
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
@@ -26,7 +26,18 @@ export function useChat() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           message,
-          context: "You are a knowledgeable AI travel companion specializing in digital nomad lifestyle, local experiences, and cultural insights. Focus on providing personalized recommendations and practical advice for travelers."
+          context: `You are a knowledgeable AI city guide concierge specializing in digital nomad lifestyle and local experiences. 
+          Focus on providing practical, up-to-date information about:
+          - Coworking spaces and cafes suitable for remote work
+          - Local neighborhoods and accommodation recommendations
+          - Cultural insights and community events
+          - Cost of living and practical tips
+          - Transportation and getting around
+          - Food and entertainment spots
+          - Safety and essential services
+
+          Always consider the specific city mentioned in the query and tailor your responses accordingly.
+          Keep responses concise but informative.`
         }),
       });
 
@@ -40,7 +51,7 @@ export function useChat() {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: error.message || 'Failed to get response from the travel companion',
+        description: error.message || 'Failed to get response from the city guide concierge',
       });
     } finally {
       setIsLoading(false);
