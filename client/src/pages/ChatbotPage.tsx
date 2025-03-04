@@ -52,14 +52,21 @@ export default function ChatbotPage() {
 
     const message = `[City: ${selectedCity}] ${input.trim()}`;
     setInput("");
-    await sendMessage(message);
+    try {
+      await sendMessage(message);
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
   };
 
   const handleQuickPrompt = async (prompt: string) => {
     if (isLoading) return;
     const message = `[City: ${selectedCity}] ${prompt}`;
-    setInput("");
-    await sendMessage(message);
+    try {
+      await sendMessage(message);
+    } catch (error) {
+      console.error("Error sending quick prompt:", error);
+    }
   };
 
   return (

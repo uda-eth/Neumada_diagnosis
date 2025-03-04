@@ -125,7 +125,7 @@ export default function BrowseUsersPage() {
           params.append('moods[]', mood)
         );
       }
-      if (nameSearch) params.append('name', nameSearch); // Add name search to params
+      if (nameSearch) params.append('name', nameSearch); 
 
       const response = await fetch(`/api/users/browse?${params}`);
       if (!response.ok) throw new Error("Failed to fetch users");
@@ -136,11 +136,21 @@ export default function BrowseUsersPage() {
   const users = (() => {
     const allUsers = [...(apiUsers || [])];
 
+    // Always add the creator profile if not present
     if (!allUsers.find(u => u.username === CREATOR_PROFILE.username)) {
       allUsers.push(CREATOR_PROFILE as User);
     }
 
-    return allUsers.filter(user => {
+    // Sort to ensure creator profile appears first
+    const sortedUsers = allUsers.sort((a, b) => {
+      // Creator profile always comes first
+      if (a.username === CREATOR_PROFILE.username) return -1;
+      if (b.username === CREATOR_PROFILE.username) return 1;
+      // For other users, maintain their original order
+      return 0;
+    });
+
+    return sortedUsers.filter(user => {
       const matchesName = nameSearch
         ? (user.fullName?.toLowerCase().includes(nameSearch.toLowerCase()) ||
            user.username.toLowerCase().includes(nameSearch.toLowerCase()))
