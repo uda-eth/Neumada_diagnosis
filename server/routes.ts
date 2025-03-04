@@ -169,8 +169,8 @@ const newEvents = {
   "Mexico City": [
     {
       id: 1001,
-      title: "Blanco Yoga Retreat: Mountain Serenity",
-      description: "Experience tranquility at our exclusive mountain yoga retreat in Blanco. Join us for a transformative session combining traditional yoga practices with panoramic Hill Country views. Perfect for all skill levels, this retreat offers a unique blend of mindfulness and natural beauty.",
+      title: "Blanco Yoga Beachside Retreat",
+      description: "Experience tranquility at our exclusive beachside yoga retreat in Blanco. Join us for a transformative session combining traditional yoga practices with panoramic ocean views. Perfect for all skill levels, this retreat offers a unique blend of mindfulness and natural beauty.",
       date: tomorrow.toISOString(),
       location: "Mexico City",
       category: "Sports",
