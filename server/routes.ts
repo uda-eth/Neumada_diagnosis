@@ -11,7 +11,7 @@ import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { DIGITAL_NOMAD_CITIES } from "../client/src/lib/constants";
 import { getEventImage } from "../client/src/lib/eventImages";
 import multer from 'multer';
-import path from 'path';
+import path from "path";
 import express from "express";
 
 
@@ -226,7 +226,7 @@ const newEvents = {
       date: new Date(tomorrow.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString(),
       location: "Mexico City",
       category: "Social",
-      image: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&h=400&fit=crop&q=80",
+      image: "/attached_assets/32440f72b6e2c1d310393fbfd13df870b2fffccb.webp",
       capacity: 400,
       price: 75,
       createdAt: new Date().toISOString(),
