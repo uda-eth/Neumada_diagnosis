@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Search, MapPin, CalendarDays } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { CREATOR_PROFILE } from "@/lib/constants";
 
 interface User {
   id: number;
@@ -104,9 +105,10 @@ export default function BrowseUsersPage() {
   const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
   const [ageRange, setAgeRange] = useState({ min: "", max: "" });
   const [isFiltersVisible, setIsFiltersVisible] = useState(false);
+  const [nameSearch, setNameSearch] = useState(""); 
 
-  const { data: users, isLoading } = useQuery<User[]>({
-    queryKey: ['/api/users/browse', selectedCity, selectedGender, selectedInterests, selectedMoods, ageRange],
+  const { data: apiUsers, isLoading } = useQuery<User[]>({
+    queryKey: ['/api/users/browse', selectedCity, selectedGender, selectedInterests, selectedMoods, ageRange, nameSearch],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedCity !== 'all') params.append('city', selectedCity);
@@ -123,12 +125,36 @@ export default function BrowseUsersPage() {
           params.append('moods[]', mood)
         );
       }
+      if (nameSearch) params.append('name', nameSearch); // Add name search to params
 
       const response = await fetch(`/api/users/browse?${params}`);
       if (!response.ok) throw new Error("Failed to fetch users");
       return response.json();
     },
   });
+
+  const users = (() => {
+    const allUsers = [...(apiUsers || [])];
+
+    if (!allUsers.find(u => u.username === CREATOR_PROFILE.username)) {
+      allUsers.push(CREATOR_PROFILE as User);
+    }
+
+    return allUsers.filter(user => {
+      const matchesName = nameSearch
+        ? (user.fullName?.toLowerCase().includes(nameSearch.toLowerCase()) ||
+           user.username.toLowerCase().includes(nameSearch.toLowerCase()))
+        : true;
+
+      const matchesCity = selectedCity === 'all' || user.location === selectedCity;
+      const matchesInterests = selectedInterests.length === 0 || 
+        selectedInterests.every(interest => user.interests?.includes(interest));
+      const matchesMoods = selectedMoods.length === 0 ||
+        selectedMoods.every(mood => user.currentMoods?.includes(mood));
+
+      return matchesName && matchesCity && matchesInterests && matchesMoods;
+    });
+  })();
 
   const handleUserClick = (username: string) => {
     setLocation(`/profile/${username}`);
@@ -185,6 +211,15 @@ export default function BrowseUsersPage() {
               className="overflow-hidden mb-8"
             >
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-[#1a1a1a] p-6 rounded-lg border border-white/10">
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-white">Search</h3>
+                  <Input
+                    placeholder="Search by name..."
+                    value={nameSearch}
+                    onChange={(e) => setNameSearch(e.target.value)}
+                    className="bg-[#242424] border-white/10 text-white placeholder:text-white/60"
+                  />
+                </div>
                 <div className="space-y-4">
                   <h3 className="font-semibold text-white">Demographics</h3>
                   <div className="space-y-4">

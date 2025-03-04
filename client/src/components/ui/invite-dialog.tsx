@@ -12,19 +12,20 @@ import { SiGmail, SiWhatsapp } from "react-icons/si";
 
 const INVITE_URL = "https://maly.repl.app/join";
 
+// Share message and links defined at module level so they're accessible to all components
+const shareMessage = encodeURIComponent(
+  "Join me on Maly - the digital nomad community platform! 🌎✨"
+);
+
+const shareLinks = {
+  gmail: `https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1&to=&su=${encodeURIComponent(
+    "Join me on Maly!"
+  )}&body=${shareMessage}%0A%0A${INVITE_URL}`,
+  whatsapp: `https://wa.me/?text=${shareMessage}%20${INVITE_URL}`,
+  sms: `sms:?&body=${shareMessage}%20${INVITE_URL}`,
+};
+
 export function InviteDialog() {
-  const shareMessage = encodeURIComponent(
-    "Join me on Maly - the digital nomad community platform! 🌎✨"
-  );
-
-  const shareLinks = {
-    gmail: `https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1&to=&su=${encodeURIComponent(
-      "Join me on Maly!"
-    )}&body=${shareMessage}%0A%0A${INVITE_URL}`,
-    whatsapp: `https://wa.me/?text=${shareMessage}%20${INVITE_URL}`,
-    sms: `sms:?&body=${shareMessage}%20${INVITE_URL}`,
-  };
-
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -89,7 +90,6 @@ export function InviteDialog() {
   );
 }
 
-// Export for mobile bottom nav usage
 export function InviteTrigger() {
   return (
     <Dialog>
