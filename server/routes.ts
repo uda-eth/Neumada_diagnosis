@@ -112,7 +112,7 @@ MOCK_USERS["Mexico City"] = [
     bio: "Creative photographer exploring Mexico City's vibrant culture. Looking to collaborate with artists and meet fellow nomads. Love street photography and local cuisine.",
     interests: ["Photography", "Fashion", "Art", "Food", "Nightlife"],
     currentMoods: ["Creating", "Networking", "Exploring"],
-    profileImage: "/attached_assets/marco_profile.jpg",
+    profileImage: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&h=600&fit=crop&q=80",
     createdAt: new Date().toISOString(), // Just created (newest)
     updatedAt: new Date().toISOString()
   },
@@ -430,7 +430,8 @@ export function registerRoutes(app: Express): Server {
       // Log sorted users for debugging
       console.log("Sorted users:", filteredUsers.map(u => ({ 
         name: u.fullName, 
-        createdAt: u.createdAt 
+        createdAt: u.createdAt,
+        profileImage: u.profileImage 
       })));
 
       res.json(filteredUsers);
