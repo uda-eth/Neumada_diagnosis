@@ -383,8 +383,8 @@ export default function HomePage() {
                         onClick={() => setLocation(`/event/${event.id}`)}
                       >
                         <CardContent className="p-0">
-                          <div className="flex flex-col md:flex-row h-auto md:h-[140px]">
-                            <div className="w-full md:w-1/3 h-48 md:h-full">
+                          <div className="flex flex-col md:flex-row h-auto md:h-[180px]">
+                            <div className="w-full md:w-[180px] h-[180px]">
                               <img
                                 src={event.image}
                                 alt={event.title}
@@ -468,8 +468,8 @@ export default function HomePage() {
                         onClick={() => setLocation(`/event/${event.id}`)}
                       >
                         <CardContent className="p-0">
-                          <div className="flex flex-col md:flex-row h-auto md:h-[140px]">
-                            <div className="w-full md:w-1/3 h-48 md:h-full">
+                          <div className="flex flex-col md:flex-row h-auto md:h-[180px]">
+                            <div className="w-full md:w-[180px] h-[180px]">
                               <img
                                 src={event.image}
                                 alt={event.title}
