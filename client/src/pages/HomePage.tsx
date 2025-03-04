@@ -136,11 +136,11 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border sticky top-0 z-50 bg-background/80 backdrop-blur-lg">
+      <header className="border-b border-border sticky top-0 z-50 bg-black text-white">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <h1 className="text-sm font-medium uppercase tracking-[.5em] text-foreground">
+              <h1 className="text-sm font-medium uppercase tracking-[.5em] text-white">
                 Discover
               </h1>
               <Select value={selectedCity} onValueChange={setSelectedCity}>
@@ -161,7 +161,7 @@ export default function HomePage() {
                 variant="ghost" 
                 size="sm" 
                 onClick={() => setLocation("/browse")} 
-                className="hidden md:inline-flex items-center text-foreground"
+                className="hidden md:inline-flex items-center text-white"
               >
                 <Users className="h-5 w-5 mr-2" />
                 Browse Members
@@ -170,7 +170,7 @@ export default function HomePage() {
                 variant="ghost" 
                 size="sm" 
                 onClick={() => setLocation("/messages")} 
-                className="hidden md:inline-flex items-center text-foreground"
+                className="hidden md:inline-flex items-center text-white"
               >
                 <MessageSquare className="h-5 w-5 mr-2" />
                 Inbox
@@ -181,7 +181,7 @@ export default function HomePage() {
                   variant="ghost" 
                   size="sm" 
                   onClick={() => setLocation(`/profile/${user.username}`)} 
-                  className="hidden md:inline-flex items-center text-foreground"
+                  className="hidden md:inline-flex items-center text-white"
                 >
                   <UserCircle2 className="h-5 w-5 mr-2" />
                   {user.username}
@@ -191,7 +191,7 @@ export default function HomePage() {
                   variant="ghost" 
                   size="sm" 
                   onClick={() => setLocation("/auth")} 
-                  className="hidden md:inline-flex items-center text-foreground"
+                  className="hidden md:inline-flex items-center text-white"
                 >
                   <UserCircle2 className="h-5 w-5 mr-2" />
                   Sign In
@@ -544,17 +544,17 @@ export default function HomePage() {
         </main>
       </ScrollArea>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4 md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 bg-black text-white border-t border-border p-4 md:hidden">
         <div className="container mx-auto">
           <div className="flex justify-around items-center">
             <Button variant="ghost" size="sm" onClick={() => setLocation("/browse")}>
-              <Users className="h-5 w-5 text-foreground" />
+              <Users className="h-5 w-5 text-white" />
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setLocation("/messages")}>
-              <MessageSquare className="h-5 w-5 text-foreground" />
+              <MessageSquare className="h-5 w-5 text-white" />
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setLocation("/auth")}>
-              <UserCircle2 className="h-5 w-5 text-foreground" />
+              <UserCircle2 className="h-5 w-5 text-white" />
             </Button>
           </div>
         </div>
