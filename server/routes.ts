@@ -351,11 +351,57 @@ export function registerRoutes(app: Express): Server {
   app.get("/api/users/browse", async (req, res) => {
     try {
       const city = req.query.city as string;
+      const gender = req.query.gender as string;
+      const minAge = req.query.minAge ? parseInt(req.query.minAge as string) : undefined;
+      const maxAge = req.query.maxAge ? parseInt(req.query.maxAge as string) : undefined;
+      const interests = req.query['interests[]'] as string[] | string;
+      const moods = req.query['moods[]'] as string[] | string;
+      const name = req.query.name as string;
 
       // Get users for specific city or all cities if none specified
       let filteredUsers = city && city !== 'all'
         ? MOCK_USERS[city] || []
         : Object.values(MOCK_USERS).flat();
+
+      // Apply additional filters
+      if (gender && gender !== 'all') {
+        filteredUsers = filteredUsers.filter(user => user.gender === gender);
+      }
+
+      if (minAge !== undefined) {
+        filteredUsers = filteredUsers.filter(user => user.age !== undefined && user.age >= minAge);
+      }
+
+      if (maxAge !== undefined) {
+        filteredUsers = filteredUsers.filter(user => user.age !== undefined && user.age <= maxAge);
+      }
+
+      if (interests) {
+        const interestArray = Array.isArray(interests) ? interests : [interests];
+        filteredUsers = filteredUsers.filter(user => 
+          user.interests && interestArray.some(interest => user.interests?.includes(interest))
+        );
+      }
+
+      if (moods) {
+        const moodArray = Array.isArray(moods) ? moods : [moods];
+        filteredUsers = filteredUsers.filter(user => 
+          user.currentMoods && moodArray.some(mood => user.currentMoods?.includes(mood))
+        );
+      }
+
+      if (name) {
+        const lowercaseName = name.toLowerCase();
+        filteredUsers = filteredUsers.filter(user => 
+          (user.fullName && user.fullName.toLowerCase().includes(lowercaseName)) ||
+          (user.username && user.username.toLowerCase().includes(lowercaseName))
+        );
+      }
+
+      // Sort by newest profiles first (based on createdAt date)
+      filteredUsers.sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
 
       res.json(filteredUsers);
     } catch (error) {
