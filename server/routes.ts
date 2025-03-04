@@ -195,8 +195,8 @@ const newEvents = {
     },
     {
       id: 1004,
-      title: "Rooftop Farm-to-Table Dinner Experience",
-      description: "Join us for an intimate farm-to-table dinner featuring seasonal ingredients and spectacular city views. Includes wine pairing and chef's introduction.",
+      title: "Rooftop Dinner Experience",
+      description: "Join us for an intimate dinner featuring seasonal ingredients and spectacular city views. Includes wine pairing and chef's introduction.",
       date: new Date(tomorrow.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(),
       location: "Mexico City",
       category: "Social",
