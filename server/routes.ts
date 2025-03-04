@@ -420,9 +420,18 @@ export function registerRoutes(app: Express): Server {
       }
 
       // Sort by newest profiles first (based on createdAt date)
-      filteredUsers.sort((a, b) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
+      filteredUsers.sort((a, b) => {
+        // Ensure createdAt dates are valid
+        const dateA = new Date(a.createdAt || 0).getTime();
+        const dateB = new Date(b.createdAt || 0).getTime();
+        return dateB - dateA;
+      });
+
+      // Log sorted users for debugging
+      console.log("Sorted users:", filteredUsers.map(u => ({ 
+        name: u.fullName, 
+        createdAt: u.createdAt 
+      })));
 
       res.json(filteredUsers);
     } catch (error) {
