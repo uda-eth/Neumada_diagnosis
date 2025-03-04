@@ -112,7 +112,7 @@ MOCK_USERS["Mexico City"] = [
     bio: "Creative soul with a passion for sustainable fashion. Recently moved to Mexico City to find inspiration for my new collection. Looking to connect with artists and designers.",
     interests: ["Fashion", "Design", "Sustainability", "Art", "Culture"],
     currentMoods: ["Creating", "Exploring", "Networking"],
-    profileImage: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=600&h=600&fit=crop&q=80", 
+    profileImage: "/attached_assets/profile-1734541908-340b1aee98a06ca5acf7600d53e051ba.jpg", 
     createdAt: new Date().toISOString(), // Just created (newest)
     updatedAt: new Date().toISOString()
   },
