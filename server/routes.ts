@@ -102,6 +102,21 @@ DIGITAL_NOMAD_CITIES.forEach(city => {
 // Add a few new profiles to Mexico City
 MOCK_USERS["Mexico City"] = [
   {
+    id: 1000,
+    username: "marco_nomad",
+    fullName: "Marco Rivera",
+    age: 27,
+    gender: "male",
+    profession: "Fashion Photographer",
+    location: "Mexico City",
+    bio: "Creative photographer exploring Mexico City's vibrant culture. Looking to collaborate with artists and meet fellow nomads. Love street photography and local cuisine.",
+    interests: ["Photography", "Fashion", "Art", "Food", "Nightlife"],
+    currentMoods: ["Creating", "Networking", "Exploring"],
+    profileImage: "/attached_assets/marco_profile.jpg",
+    createdAt: new Date().toISOString(), // Just created (newest)
+    updatedAt: new Date().toISOString()
+  },
+  {
     id: 1001,
     username: "emma_nomad",
     fullName: "Emma Thompson",
@@ -113,7 +128,7 @@ MOCK_USERS["Mexico City"] = [
     interests: ["Design", "Art", "Coffee", "Museums"],
     currentMoods: ["Exploring", "Networking"],
     profileImage: "https://images.unsplash.com/photo-1534751516642-a1af1ef26a56?w=600&h=600&fit=crop&q=80",
-    createdAt: new Date().toISOString(), // Just created
+    createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), // Created an hour ago
     updatedAt: new Date().toISOString()
   },
   {
