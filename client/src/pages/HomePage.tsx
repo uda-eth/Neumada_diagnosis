@@ -544,6 +544,7 @@ export default function HomePage() {
         </main>
       </ScrollArea>
 
+      {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-black text-white border-t border-border p-4 md:hidden">
         <div className="container mx-auto">
           <div className="flex justify-around items-center">

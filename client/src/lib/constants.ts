@@ -167,3 +167,16 @@ export const MOCK_USER_PROFILES = {
     currentMoods: ["Teaching", "Creating"]
   }
 };
+
+export const CREATOR_PROFILE = {
+  username: "lucahudek",
+  fullName: "Luca Hudek",
+  profession: "Digital Nomad Platform Creator",
+  profileImage: "/attached_assets/Screenshot 2025-02-24 at 2.22.24 PM.png",
+  location: "Mexico City",
+  nextLocation: "Berlin",
+  interests: ["Digital Marketing", "Software Development", "Remote Work", "Travel", "Photography"],
+  currentMoods: ["Creating", "Networking", "Teaching"],
+  birthLocation: "Vancouver",
+  bio: "Creator and digital nomad connecting professionals globally through intelligent communication tools and AI-powered city exploration."
+};
