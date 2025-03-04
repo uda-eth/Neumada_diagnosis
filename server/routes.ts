@@ -202,7 +202,7 @@ const newEvents = {
       category: "Social",
       image: "/attached_assets/images-1.jpg",
       capacity: 30,
-      price: 120,
+      price: 55,
       createdAt: new Date().toISOString(),
       interestedCount: 42
     },
@@ -281,7 +281,7 @@ const newEvents = {
       category: "Cultural",
       image: "/attached_assets/1670001512622.webp",
       capacity: 12,
-      price: 150,
+      price: 60,
       createdAt: new Date().toISOString(),
       interestedCount: 42,
       tags: ["Cooking", "Culture", "Food & Wine"]
