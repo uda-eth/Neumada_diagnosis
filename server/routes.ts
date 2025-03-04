@@ -102,6 +102,96 @@ DIGITAL_NOMAD_CITIES.forEach(city => {
 // Add a few new profiles to Mexico City
 MOCK_USERS["Mexico City"] = [
   {
+    id: 1008,
+    username: "sofia_traveler",
+    fullName: "Sofia Martinez",
+    age: 24,
+    gender: "female",
+    profession: "Travel Blogger",
+    location: "Mexico City",
+    bio: "Capturing the beauty of Mexico City through my lens. Love exploring hidden gems and sharing authentic travel stories.",
+    interests: ["Travel", "Photography", "Writing", "Culture", "Food"],
+    currentMoods: ["Exploring", "Creating", "Networking"],
+    profileImage: "/attached_assets/profile-image-1.jpg", 
+    createdAt: new Date().toISOString(), // Just created (newest)
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 1007,
+    username: "elena_model",
+    fullName: "Elena Rodriguez",
+    age: 26,
+    gender: "female",
+    profession: "Fashion Model",
+    location: "Mexico City",
+    bio: "Model based in Mexico City. Recently moved from Madrid for new creative opportunities. Looking to collaborate with photographers and designers.",
+    interests: ["Fashion", "Photography", "Design", "Art", "Fitness"],
+    currentMoods: ["Creating", "Networking", "Exploring"],
+    profileImage: "/attached_assets/profile-image-2.jpg", 
+    createdAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(), // Created 20 minutes ago
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 1006,
+    username: "david_director",
+    fullName: "David Miller",
+    age: 35,
+    gender: "male",
+    profession: "Film Director",
+    location: "Mexico City",
+    bio: "Film director seeking inspiration in the vibrant culture of Mexico City. Looking to connect with creative professionals for upcoming projects.",
+    interests: ["Film", "Art", "Culture", "Music", "Photography"],
+    currentMoods: ["Creating", "Networking", "Exploring"],
+    profileImage: "/attached_assets/profile-image-3.jpg", 
+    createdAt: new Date(Date.now() - 40 * 60 * 1000).toISOString(), // Created 40 minutes ago
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 1005,
+    username: "lucas_artist",
+    fullName: "Lucas Hernandez",
+    age: 23,
+    gender: "male",
+    profession: "Digital Artist",
+    location: "Mexico City",
+    bio: "Digital artist with a passion for blending traditional Mexican art with modern design. Looking to collaborate and find inspiration in this amazing city.",
+    interests: ["Art", "Design", "Technology", "Culture", "Music"],
+    currentMoods: ["Creating", "Learning", "Networking"],
+    profileImage: "/attached_assets/profile-image-4.jpg", 
+    createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(), // Created an hour ago
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 1004,
+    username: "jasmine_creative",
+    fullName: "Jasmine Carter",
+    age: 25,
+    gender: "female",
+    profession: "Fashion Designer",
+    location: "Mexico City",
+    bio: "Creative soul with a passion for sustainable fashion. Recently moved to Mexico City to find inspiration for my new collection. Looking to connect with artists and designers.",
+    interests: ["Fashion", "Design", "Sustainability", "Art", "Culture"],
+    currentMoods: ["Creating", "Exploring", "Networking"],
+    profileImage: "/attached_assets/profile-1734541908-340b1aee98a06ca5acf7600d53e051ba.jpg", 
+    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // Created 2 hours ago
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 1000,
+    username: "marco_nomad",
+    fullName: "Marco Rivera",
+    age: 27,
+    gender: "male",
+    profession: "Fashion Photographer",
+    location: "Mexico City",
+    bio: "Creative photographer exploring Mexico City's vibrant culture. Looking to collaborate with artists and meet fellow nomads. Love street photography and local cuisine.",
+    interests: ["Photography", "Fashion", "Art", "Food", "Nightlife"],
+    currentMoods: ["Creating", "Networking", "Exploring"],
+    profileImage: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&h=600&fit=crop&q=80",
+    createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), // Created an hour ago
+    updatedAt: new Date().toISOString()
+  },
+  {
     id: 1001,
     username: "emma_nomad",
     fullName: "Emma Thompson",
@@ -113,7 +203,7 @@ MOCK_USERS["Mexico City"] = [
     interests: ["Design", "Art", "Coffee", "Museums"],
     currentMoods: ["Exploring", "Networking"],
     profileImage: "https://images.unsplash.com/photo-1534751516642-a1af1ef26a56?w=600&h=600&fit=crop&q=80",
-    createdAt: new Date().toISOString(), // Just created
+    createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), // Created an hour ago
     updatedAt: new Date().toISOString()
   },
   {
@@ -405,9 +495,19 @@ export function registerRoutes(app: Express): Server {
       }
 
       // Sort by newest profiles first (based on createdAt date)
-      filteredUsers.sort((a, b) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
+      filteredUsers.sort((a, b) => {
+        // Ensure createdAt dates are valid
+        const dateA = new Date(a.createdAt || 0).getTime();
+        const dateB = new Date(b.createdAt || 0).getTime();
+        return dateB - dateA;
+      });
+
+      // Log sorted users for debugging
+      console.log("Sorted users:", filteredUsers.map(u => ({ 
+        name: u.fullName, 
+        createdAt: u.createdAt,
+        profileImage: u.profileImage 
+      })));
 
       res.json(filteredUsers);
     } catch (error) {
