@@ -244,6 +244,33 @@ const newEvents = {
       price: 150,
       createdAt: new Date().toISOString(),
       interestedCount: 156
+    },
+    {
+      id: 1008,
+      title: "Zona MACO: Giggling Artweek",
+      description: "Join us for a vibrant celebration of contemporary art in Mexico City. This exclusive artweek event brings together local and international artists for an unforgettable showcase of creativity and expression.",
+      date: new Date(2025, 1, 8).toISOString(), // February 8, 2025
+      location: "Mexico City",
+      category: "Cultural",
+      image: "/attached_assets/3a3e6886-307d-4eaf-b670-ad1662be61db.jpg",
+      capacity: 150,
+      price: 85,
+      createdAt: new Date().toISOString(),
+      interestedCount: 92
+    },
+    {
+      id: 1009,
+      title: "Surreal Festival",
+      description: "Experience a surreal journey in the breathtaking Valle de Bravo. A two-day immersive festival that blends art, music, and nature in a unique mountain setting. Get your full pass now and be part of this extraordinary event that pushes the boundaries of reality and imagination.",
+      date: new Date(2025, 4, 2).toISOString(), // May 2, 2025
+      location: "Mexico City",
+      category: "Festivals",
+      image: "/attached_assets/baac6810-cef8-4632-a20d-08ae3d08f3fc.jpg",
+      capacity: 500,
+      price: 200,
+      createdAt: new Date().toISOString(),
+      interestedCount: 324,
+      tags: ["Music", "Art", "Nature"]
     }
   ]
 };
