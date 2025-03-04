@@ -7,16 +7,19 @@ import {
   Settings,
   User,
   MessageSquare,
-  Inbox
+  Inbox,
+  Bot,
+  Share2
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { InviteTrigger } from "./invite-dialog";
 
 // Mock unread count for demo - this would come from your actual message state
 const unreadCount = 3;
 
 const navItems = [
   { icon: Compass, label: "Discover", href: "/" },
-  { icon: UsersRound, label: "Connect", href: "/connect" },
+  { icon: Bot, label: "Guide", href: "/companion" },
   { icon: PlusSquare, label: "Create", href: "/create" },
   { 
     icon: Inbox, 
@@ -63,6 +66,10 @@ export function BottomNav() {
               </Link>
             );
           })}
+          {/* Invite Dialog for Mobile */}
+          <div className="relative flex flex-col items-center justify-center gap-0.5 w-16 h-16">
+            <InviteTrigger />
+          </div>
         </div>
       </nav>
 

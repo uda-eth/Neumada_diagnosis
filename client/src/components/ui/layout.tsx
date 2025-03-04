@@ -4,6 +4,7 @@ import { Logo } from "./logo";
 import { Bot } from "lucide-react";
 import { Button } from "./button";
 import { useLocation } from "wouter";
+import { InviteDialog } from "./invite-dialog";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -35,6 +36,7 @@ export function Layout({ children }: LayoutProps) {
                   <Bot className="h-5 w-5 mr-2" />
                   City Guide
                 </Button>
+                <InviteDialog />
               </nav>
             </div>
             <ThemeToggle />
