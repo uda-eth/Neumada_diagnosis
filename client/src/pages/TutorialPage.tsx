@@ -110,16 +110,8 @@ export default function TutorialPage() {
                           Toggle between dark and light themes for comfortable viewing in any environment.
                         </p>
                         <div className="flex items-center gap-4">
-                          <Button 
-                            variant="outline" 
-                            size="icon"
-                            className="interactive-hover"
-                            aria-label="Toggle theme"
-                          >
-                            <Moon className="h-4 w-4" />
-                          </Button>
                           <span className="text-sm text-muted-foreground">
-                            Click the theme toggle in the top right
+                            Click the theme toggle in the top right corner of the page
                           </span>
                         </div>
                       </div>
