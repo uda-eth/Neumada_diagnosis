@@ -1,18 +1,14 @@
-import { useTheme } from "@/lib/theme-provider";
-
 interface LogoProps {
   className?: string;
 }
 
 export function Logo({ className = "" }: LogoProps) {
-  const { theme } = useTheme();
-
   return (
     <svg
       viewBox="0 0 400 120"
-      className={`${className} transition-colors duration-200`}
+      className={`${className}`}
       style={{
-        fill: theme === 'light' ? '#000000' : '#ffffff'
+        fill: '#ffffff' // Fixed white color for dark theme
       }}
     >
       <text
