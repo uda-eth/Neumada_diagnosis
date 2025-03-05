@@ -41,5 +41,15 @@ export const members: Member[] = [
     interests: ["Festivals", "Spirituality", "Art"],
     image: "/attached_assets/Screenshot 2023-11-12 at 12.56.16 PM.png",
     occupation: "Festival Artist"
+  },
+  {
+    id: 4,
+    name: "Isabella",
+    age: 26,
+    location: "Mexico City",
+    bio: "Creative content producer from Brazil, capturing stories through the lens of culture and art.",
+    interests: ["Content Creation", "Photography", "Cultural Exchange"],
+    image: "/attached_assets/Screenshot 2025-03-04 at 8.28.10 PM.png",
+    occupation: "Content Producer"
   }
 ];
