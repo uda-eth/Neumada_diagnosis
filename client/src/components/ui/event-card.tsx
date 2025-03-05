@@ -47,8 +47,14 @@ export function EventCard({
               <h3 className="text-lg font-semibold text-white mt-1">{title}</h3>
             </div>
             <div className="text-right">
-              <p className="text-white font-semibold">${price}</p>
-              <p className="text-sm text-white/60">per person</p>
+              {price > 0 ? (
+                <>
+                  <p className="text-white font-semibold">${price}</p>
+                  <p className="text-sm text-white/60">per person</p>
+                </>
+              ) : (
+                <p className="text-white font-semibold">Free</p>
+              )}
             </div>
           </div>
         </div>

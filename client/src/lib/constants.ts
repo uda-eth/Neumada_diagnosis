@@ -51,7 +51,7 @@ export const EVENT_TYPES = [
   { id: "rsvp", label: "RSVP Required" }
 ];
 
-// Create sample events for each city
+// Update the MOCK_EVENTS object in constants.ts to ensure all events have prices
 export const MOCK_EVENTS: Record<string, Event[]> = DIGITAL_NOMAD_CITIES.reduce((acc, city) => {
   acc[city] = [
     {
@@ -65,12 +65,15 @@ export const MOCK_EVENTS: Record<string, Event[]> = DIGITAL_NOMAD_CITIES.reduce(
       category: "Nightlife",
       creatorId: 1,
       capacity: 600,
-      ticketPrice: "250",
+      price: 250,
       ticketType: "paid",
       availableTickets: 586,
       isBusinessEvent: true,
       isPrivate: false,
-      createdAt: new Date()
+      createdAt: new Date(),
+      tags: ["Music", "Art", "Networking"],
+      attendingCount: 14,
+      interestedCount: 42
     },
     {
       id: Math.floor(Math.random() * 1000),
@@ -83,12 +86,15 @@ export const MOCK_EVENTS: Record<string, Event[]> = DIGITAL_NOMAD_CITIES.reduce(
       category: "Social",
       creatorId: 2,
       capacity: 30,
+      price: 75,
       ticketType: "rsvp",
-      ticketPrice: "0",
       availableTickets: 28,
       isBusinessEvent: false,
       isPrivate: true,
-      createdAt: new Date()
+      createdAt: new Date(),
+      tags: ["Food", "Social", "Networking"],
+      attendingCount: 2,
+      interestedCount: 8
     },
     {
       id: Math.floor(Math.random() * 1000),
@@ -101,12 +107,15 @@ export const MOCK_EVENTS: Record<string, Event[]> = DIGITAL_NOMAD_CITIES.reduce(
       category: "Adventure",
       creatorId: 3,
       capacity: 60,
-      ticketPrice: "50",
+      price: 50,
       ticketType: "paid",
       availableTickets: 56,
       isBusinessEvent: false,
       isPrivate: false,
-      createdAt: new Date()
+      createdAt: new Date(),
+      tags: ["Nature", "Adventure", "Photography"],
+      attendingCount: 4,
+      interestedCount: 12
     }
   ];
   return acc;
