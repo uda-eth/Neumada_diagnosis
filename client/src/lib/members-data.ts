@@ -71,5 +71,15 @@ export const members: Member[] = [
     interests: ["Networking", "Business", "Community"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.31.15 PM.png",
     occupation: "Entrepreneur"
+  },
+  {
+    id: 7,
+    name: "Carlo",
+    age: 35,
+    location: "Mexico City",
+    bio: "Performance artist and creative visionary exploring the intersection of art and technology.",
+    interests: ["Performance Art", "Digital Art", "Innovation"],
+    image: "/attached_assets/Screenshot 2025-03-04 at 8.32.34 PM.png",
+    occupation: "Performance Artist"
   }
 ];
