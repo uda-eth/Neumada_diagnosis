@@ -14,6 +14,17 @@ export interface Member {
 
 export const members: Member[] = [
   {
+    id: 16,
+    name: "Carlita",
+    age: 27,
+    location: "Istanbul",
+    bio: "International DJ & Producer bringing global rhythms to the electronic music scene. Blending Turkish beats with contemporary electronic sounds.",
+    interests: ["Music Production", "Electronic Music", "World Music", "Nightlife"],
+    image: "/attached_assets/Screenshot 2025-03-04 at 9.11.42 PM.png",
+    occupation: "DJ & Producer",
+    currentMood: "Parties"
+  },
+  {
     id: 1,
     name: "Luca Hudek",
     age: 44,
