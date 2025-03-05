@@ -13,6 +13,11 @@ interface EventCardProps {
     avatar?: string;
   }>;
   interestedCount: number;
+  interestedUsers?: Array<{
+    id: number;
+    name: string;
+    image: string;
+  }>;
 }
 
 export function EventCard({
@@ -23,6 +28,7 @@ export function EventCard({
   price,
   attendees,
   interestedCount,
+  interestedUsers = [],
 }: EventCardProps) {
   return (
     <Card className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm">
@@ -50,18 +56,22 @@ export function EventCard({
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex -space-x-2">
-            {attendees.slice(0, 4).map((attendee, i) => (
+            {(interestedUsers.length > 0 ? interestedUsers : attendees).slice(0, 4).map((attendee, i) => (
               <Avatar key={i} className="border-2 border-background w-8 h-8">
-                {attendee.avatar ? (
-                  <AvatarImage src={attendee.avatar} alt={attendee.name} />
+                {attendee.image || attendee.avatar ? (
+                  <AvatarImage 
+                    src={attendee.image || attendee.avatar} 
+                    alt={attendee.name} 
+                    className="object-cover object-center"
+                  />
                 ) : (
                   <AvatarFallback>{attendee.name[0]}</AvatarFallback>
                 )}
               </Avatar>
             ))}
-            {attendees.length > 4 && (
+            {interestedCount > 4 && (
               <div className="w-8 h-8 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center text-sm text-primary">
-                +{attendees.length - 4}
+                +{interestedCount - 4}
               </div>
             )}
           </div>
