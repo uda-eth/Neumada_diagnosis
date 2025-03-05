@@ -362,6 +362,26 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* Ad Space - Aman Premium Hotel Partner */}
+      <div className="container mx-auto px-4 py-4">
+        <div className="w-full max-w-3xl mx-auto relative">
+          <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+            Ad Space
+          </div>
+          <div className="rounded-lg overflow-hidden">
+            <img 
+              src="/attached_assets/download.jpg"
+              alt="Aman Premium Hotel Partner"
+              className="w-full object-cover h-[300px]"
+            />
+            <div className="bg-black/80 text-white p-4">
+              <h3 className="text-lg font-semibold">Aman Premium Hotel Partner</h3>
+              <p className="text-sm text-white/60">Future Partnership Opportunities Coming Soon</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <ScrollArea className="h-[calc(100vh-8rem)]">
         <main className="container mx-auto px-4 py-8 pb-24 md:pb-8">
           <div className="mb-8 space-y-4">
