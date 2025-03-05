@@ -83,7 +83,7 @@ export default function MessagesPage() {
               variant="ghost"
               size="icon"
               className="text-muted-foreground hover:text-foreground hover:bg-accent"
-              onClick={() => setLocation("/messages")}
+              onClick={() => setLocation("/")}
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
