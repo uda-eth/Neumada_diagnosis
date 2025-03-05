@@ -47,13 +47,13 @@ export function EventCard({
               <h3 className="text-lg font-semibold text-white mt-1">{title}</h3>
             </div>
             <div className="text-right text-white z-10">
-              {price && parseFloat(price) > 0 ? (
+              {price === "0" ? (
+                <p className="font-semibold text-white text-lg">Free</p>
+              ) : (
                 <>
-                  <p className="font-semibold text-white text-lg">${parseFloat(price).toFixed(2)}</p>
+                  <p className="font-semibold text-white text-lg">${price}</p>
                   <p className="text-sm text-white/60">per person</p>
                 </>
-              ) : (
-                <p className="font-semibold text-white text-lg">Free</p>
               )}
             </div>
           </div>
