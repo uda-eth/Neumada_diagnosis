@@ -3,7 +3,6 @@ import {
   Compass, 
   UsersRound,
   PlusSquare,
-  Settings,
   User,
   Inbox,
   Bot,
@@ -28,8 +27,7 @@ export const navItems = [
     badge: unreadCount
   },
   { icon: User, label: 'profile', href: "/profile/luca-hudek/edit" },
-  { icon: Bot, label: 'guide', href: "/companion" },
-  { icon: Crown, label: 'premium', href: "/premium" } // Added Premium nav item
+  { icon: Bot, label: 'guide', href: "/companion" }
 ];
 
 export function BottomNav() {
@@ -41,6 +39,14 @@ export function BottomNav() {
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[100] glass border-t border-border/10 shadow-lg pb-6">
         <div className="flex justify-around items-center h-16 max-w-md mx-auto px-3">
+          {/* Premium Button - Special Position */}
+          <PremiumDialog>
+            <button className="relative flex flex-col items-center justify-center gap-1 w-12 h-16 rounded-lg transition-all duration-300 ease-out touch-target interactive-hover text-amber-400">
+              <Crown className="w-6 h-6 transition-transform" />
+              <span className="text-[10px] font-medium">Premium</span>
+            </button>
+          </PremiumDialog>
+
           {navItems.map(({ icon: Icon, label, href, badge }) => {
             const isActive = location === href;
             return (
