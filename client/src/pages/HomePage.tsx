@@ -18,7 +18,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DIGITAL_NOMAD_CITIES } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
 import {ScrollArea} from "@/components/ui/scroll-area";
-
+import { useTranslation } from "@/lib/translations";
 
 const cities = [
   "Bali",
@@ -55,6 +55,7 @@ const AvatarImage = ({ src, alt }: { src: string; alt: string }) => (
 );
 
 export default function HomePage() {
+  const { t } = useTranslation();
   const [selectedCity, setSelectedCity] = useState("Mexico City");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -141,7 +142,7 @@ export default function HomePage() {
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <h1 className="text-sm font-medium uppercase tracking-[.5em] text-white">
-                Discover
+                {t('discover')}
               </h1>
               <Select value={selectedCity} onValueChange={setSelectedCity}>
                 <SelectTrigger className="w-[180px] bg-transparent border-border">
@@ -164,7 +165,7 @@ export default function HomePage() {
                 className="hidden md:inline-flex items-center text-white"
               >
                 <Users className="h-5 w-5 mr-2" />
-                Browse Members
+                {t('connect')}
               </Button>
               <Button 
                 variant="ghost" 
@@ -173,7 +174,7 @@ export default function HomePage() {
                 className="hidden md:inline-flex items-center text-white"
               >
                 <MessageSquare className="h-5 w-5 mr-2" />
-                Inbox
+                {t('inbox')}
               </Button>
               {user ? (
                 <Button 
@@ -193,23 +194,23 @@ export default function HomePage() {
                   className="hidden md:inline-flex items-center text-white"
                 >
                   <UserCircle2 className="h-5 w-5 mr-2" />
-                  Sign In
+                  {t('signIn')}
                 </Button>
               )}
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                   <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
                     <Plus className="h-5 w-5 mr-2" />
-                    <span className="inline">Publish Event</span>
+                    <span className="inline">{t('publishEvent')}</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="fixed left-[50%] top-[50%] z-[101] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg border-border">
                   <DialogHeader>
-                    <DialogTitle className="text-foreground">Create New Event</DialogTitle>
+                    <DialogTitle className="text-foreground">{t('createNewEvent')}</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                      <Label className="text-foreground">Title</Label>
+                      <Label className="text-foreground">{t('title')}</Label>
                       <Input
                         value={newEvent.title}
                         onChange={(e) =>
@@ -219,7 +220,7 @@ export default function HomePage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-foreground">Event Image</Label>
+                      <Label className="text-foreground">{t('eventImage')}</Label>
                       <Input
                         type="file"
                         accept="image/*"
@@ -229,11 +230,11 @@ export default function HomePage() {
                         className="bg-background border-border text-foreground"
                       />
                       <p className="text-sm text-muted-foreground">
-                        Upload an image to represent your event. If none provided, we'll use a category-based image.
+                        {t('uploadImageDescription')}
                       </p>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-foreground">Description</Label>
+                      <Label className="text-foreground">{t('description')}</Label>
                       <Textarea
                         value={newEvent.description}
                         onChange={(e) =>
@@ -244,7 +245,7 @@ export default function HomePage() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-foreground">Location</Label>
+                        <Label className="text-foreground">{t('location')}</Label>
                         <Select
                           onValueChange={(value) =>
                             setNewEvent({ ...newEvent, location: value })
@@ -263,7 +264,7 @@ export default function HomePage() {
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-foreground">Category</Label>
+                        <Label className="text-foreground">{t('category')}</Label>
                         <Select
                           onValueChange={(value) =>
                             setNewEvent({ ...newEvent, category: value })
@@ -284,7 +285,7 @@ export default function HomePage() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-foreground">Date</Label>
+                        <Label className="text-foreground">{t('date')}</Label>
                         <Input
                           type="datetime-local"
                           value={newEvent.date}
@@ -295,7 +296,7 @@ export default function HomePage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-foreground">Capacity</Label>
+                        <Label className="text-foreground">{t('capacity')}</Label>
                         <Input
                           type="number"
                           value={newEvent.capacity}
@@ -320,7 +321,7 @@ export default function HomePage() {
                         !newEvent.date
                       }
                     >
-                      Create Event
+                      {t('createEvent')}
                     </Button>
                   </div>
                 </DialogContent>
@@ -337,7 +338,7 @@ export default function HomePage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
-                  placeholder="Search events..."
+                  placeholder={t('searchEvents')}
                   className="pl-10 bg-background/5 border-border text-foreground"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -345,10 +346,10 @@ export default function HomePage() {
               </div>
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                 <SelectTrigger className="w-full md:w-[180px] bg-background/5 border-border">
-                  <SelectValue placeholder="All categories" />
+                  <SelectValue placeholder={t('allCategories')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All categories</SelectItem>
+                  <SelectItem value="all">{t('allCategories')}</SelectItem>
                   {categories.map((category) => (
                     <SelectItem key={category} value={category}>
                       {category}
@@ -372,7 +373,7 @@ export default function HomePage() {
               {groupedEvents?.thisWeekend.length > 0 && (
                 <section>
                   <h2 className="text-sm font-medium text-muted-foreground mb-4">
-                    THIS WEEKEND
+                    {t('thisWeekend')}
                   </h2>
                   <div className="space-y-4">
                     {groupedEvents.thisWeekend.map((event: any) => (
@@ -471,7 +472,7 @@ export default function HomePage() {
               {groupedEvents?.nextWeek.length > 0 && (
                 <section>
                   <h2 className="text-sm font-medium text-muted-foreground mb-4">
-                    NEXT WEEK
+                    {t('nextWeek')}
                   </h2>
                   <div className="space-y-4">
                     {groupedEvents.nextWeek.map((event: any) => (
