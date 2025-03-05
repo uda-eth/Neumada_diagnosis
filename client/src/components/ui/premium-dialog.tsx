@@ -49,17 +49,17 @@ export function PremiumDialog({ children }: PremiumDialogProps) {
         {children || (
           <Button 
             variant="outline"
-            className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white border-0"
+            className="bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white border-0"
           >
             <Crown className="w-4 h-4 mr-2" />
-            Get Premium
+            Premium
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] bg-black text-white">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-2xl">
-            <Crown className="w-6 h-6 text-amber-400" />
+            <Crown className="w-6 h-6 text-orange-400" />
             Unlock the World with Maly Premium
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
@@ -70,7 +70,7 @@ export function PremiumDialog({ children }: PremiumDialogProps) {
         <div className="grid gap-4 py-4">
           {features.map((feature, index) => (
             <div key={index} className="flex items-start gap-4 p-2 rounded-lg hover:bg-white/5">
-              <feature.icon className="w-5 h-5 text-amber-400 mt-1" />
+              <feature.icon className="w-5 h-5 text-orange-400 mt-1" />
               <div>
                 <h4 className="font-medium">{feature.title}</h4>
                 <p className="text-sm text-muted-foreground">{feature.description}</p>
@@ -85,7 +85,7 @@ export function PremiumDialog({ children }: PremiumDialogProps) {
             </div>
 
             <Button 
-              className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white border-0"
+              className="w-full bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white border-0"
               onClick={() => {
                 // TODO: Implement subscription flow
                 console.log("Subscribe clicked");
