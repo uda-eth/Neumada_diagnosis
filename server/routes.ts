@@ -19,21 +19,21 @@ const categories = [
   "Professional"
 ];
 
-// Add mock users with profile images
+// Update the MOCK_USERS object in routes.ts to use the new profile image
 const MOCK_USERS = {
   "Mexico City": [
     {
       id: 1009,
-      username: "alexander_brand",
-      fullName: "Alexander Reeves",
+      username: "lucahudek",
+      fullName: "Luca Hudek",
       age: 32,
       gender: "male",
-      profession: "Luxury Brand Strategist",
+      profession: "Digital Nomad Platform Creator",
       location: "Mexico City",
-      bio: "Leading brand strategist specializing in luxury fashion and lifestyle. Currently spearheading the launch of Octo's designer eyewear collection in Mexico City. Passionate about connecting innovative designers with discerning audiences. Looking to collaborate with fashion photographers and creative directors.",
-      interests: ["Luxury Fashion", "Brand Development", "Design", "Photography", "Art", "Networking"],
-      currentMoods: ["Launching", "Creating", "Connecting"],
-      profileImage: "/attached_assets/Screenshot 2024-03-06 at 12.19.10 PM.png",
+      bio: "Creator and digital nomad connecting professionals globally through intelligent communication tools and AI-powered city exploration.",
+      interests: ["Digital Marketing", "Software Development", "Remote Work", "Travel", "Photography"],
+      currentMoods: ["Creating", "Networking", "Teaching"],
+      profileImage: "/attached_assets/Screenshot 2025-03-04 at 11.21.13 PM.png",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       eventsHosting: [1013],
@@ -252,7 +252,6 @@ const newEvents = {
         { id: 1025, name: "William White", image: "/attached_assets/profile-image-16.jpg" },
         { id: 1026, name: "Amanda Black", image: "/attached_assets/profile-image-17.jpg" },
         { id: 1027, name: "Brian Brown", image: "/attached_assets/profile-image-18.jpg" }
-
       ],
       interestedUsers: [
         { id: 1028, name: "Sarah White", image: "/attached_assets/profile-image-19.jpg" }
@@ -592,7 +591,6 @@ const newEvents = {
         { id: 1078, name: "Jessica Black", image: "/attached_assets/profile-image-69.jpg" },
         { id: 1079, name: "Robert Green", image: "/attached_assets/profile-image-70.jpg" },
         { id: 1080, name: "Ashley Jones", image: "/attached_assets/profile-image-71.jpg" }
-
       ],
       interestedUsers: [
         { id: 1081, name: "Robert Brown", image: "/attached_assets/profile-image-72.jpg" }
