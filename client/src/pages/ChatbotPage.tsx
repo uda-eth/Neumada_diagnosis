@@ -246,6 +246,20 @@ export default function ChatbotPage() {
           </form>
         </CardContent>
       </Card>
+
+      {/* Premium Ad Partner Banner */}
+      <div className="max-w-2xl mx-auto mt-8 border-t border-white/10">
+        <div className="py-8">
+          <p className="text-center text-sm font-medium text-muted-foreground mb-4">
+            Premium Ad Partner
+          </p>
+          <img
+            src="/attached_assets/Screenshot 2025-03-05 at 8.12.59 AM.png"
+            alt="Premium Ad Partner"
+            className="w-full max-w-md mx-auto h-auto object-contain rounded-lg"
+          />
+        </div>
+      </div>
     </div>
   );
 }
