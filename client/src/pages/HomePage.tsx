@@ -475,14 +475,14 @@ export default function HomePage() {
                   <div className="rounded-lg overflow-hidden">
                     {/* Desktop version */}
                     <img 
-                      src="/attached_assets/Screenshot 2025-03-05 at 1.21.43 AM.png"
+                      src="/attached_assets/Screenshot 2025-03-05 at 1.30.57 AM.png"
                       alt="Thompson Mexico City - Where Culture Lives"
                       className="w-full object-cover h-[400px] hidden md:block"
                     />
                     {/* Mobile version - only green section */}
-                    <div className="md:hidden bg-[#1A382E] py-12 px-6 text-center">
+                    <div className="md:hidden bg-[#1D2D29] py-12 px-6 text-center">
                       <img 
-                        src="/attached_assets/Screenshot 2025-03-05 at 1.21.43 AM.png"
+                        src="/attached_assets/Screenshot 2025-03-05 at 1.30.57 AM.png"
                         alt="Thompson Mexico City Logo"
                         className="w-64 mx-auto mb-8"
                       />
