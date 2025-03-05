@@ -24,7 +24,7 @@ export const navItems = [
     href: "/messages",
     badge: unreadCount
   },
-  { icon: User, label: "Profile", href: "/profile/setup" }, //Minor change for clarity
+  { icon: User, label: "Profile", href: "/profile/luca-hudek/edit" },
   { icon: Settings, label: "Settings", href: "/settings" },
   { icon: Bot, label: "Guide", href: "/companion" }
 ];
