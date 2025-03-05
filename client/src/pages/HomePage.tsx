@@ -346,7 +346,6 @@ export default function HomePage() {
       </header>
 
 
-
       <ScrollArea className="h-[calc(100vh-8rem)]">
         <main className="container mx-auto px-4 py-8 pb-24 md:pb-8">
           <div className="mb-8 space-y-4">
@@ -468,26 +467,44 @@ export default function HomePage() {
                 </section>
               )}
 
-              {/* Ad Space - Thompson Mexico City */}
+              {/* Ad Space - MUSA Zihuatanejo */}
               <section className="py-4">
                 <div className="w-full relative">
                   <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
                     Premium Ad Partner
                   </div>
-                  <div className="rounded-lg overflow-hidden">
+                  <div className="rounded-lg overflow-hidden relative">
                     {/* Desktop version */}
-                    <img 
-                      src="/attached_assets/Screenshot 2025-03-05 at 1.30.57 AM.png"
-                      alt="Thompson Mexico City"
-                      className="w-full object-cover h-[400px] hidden md:block"
-                    />
-                    {/* Mobile version */}
-                    <div className="md:hidden py-6 px-4 text-center">
+                    <div className="relative hidden md:block">
                       <img 
-                        src="/attached_assets/Screenshot 2025-03-05 at 1.30.57 AM.png"
-                        alt="Thompson Mexico City Logo"
-                        className="w-full mx-auto"
+                        src="/attached_assets/Screenshot 2025-03-05 at 1.52.18 AM.png"
+                        alt="MUSA Zihuatanejo"
+                        className="w-full object-cover h-[400px]"
                       />
+                      <div className="absolute bottom-8 right-8 text-right">
+                        <h3 className="font-serif text-2xl text-white mb-2 drop-shadow-lg">
+                          MUSA
+                        </h3>
+                        <p className="font-serif text-white/90 text-lg tracking-wide drop-shadow-lg">
+                          A Holistic Hideaway On The Coast<br />Of Zihuatanejo
+                        </p>
+                      </div>
+                    </div>
+                    {/* Mobile version */}
+                    <div className="md:hidden relative">
+                      <img 
+                        src="/attached_assets/Screenshot 2025-03-05 at 1.52.18 AM.png"
+                        alt="MUSA Zihuatanejo"
+                        className="w-full aspect-[3/2] object-cover"
+                      />
+                      <div className="absolute bottom-4 right-4 text-right">
+                        <h3 className="font-serif text-xl text-white mb-1 drop-shadow-lg">
+                          MUSA
+                        </h3>
+                        <p className="font-serif text-white/90 text-sm tracking-wide drop-shadow-lg">
+                          A Holistic Hideaway On The Coast<br />Of Zihuatanejo
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
