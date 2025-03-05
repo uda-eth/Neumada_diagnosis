@@ -11,7 +11,9 @@ export function Logo({ className = "" }: LogoProps) {
     <svg
       viewBox="0 0 400 120"
       className={`${className} transition-colors duration-200`}
-      fill="currentColor"
+      style={{
+        fill: theme === 'light' ? 'black' : 'white'
+      }}
     >
       <text
         x="50%"

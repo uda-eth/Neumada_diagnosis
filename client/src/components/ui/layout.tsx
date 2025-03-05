@@ -34,7 +34,6 @@ export function Layout({ children }: LayoutProps) {
               City Guide
             </Button>
             <ThemeToggle />
-            <InviteDialog />
           </div>
         </div>
       </header>
