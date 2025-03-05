@@ -96,7 +96,7 @@ export function PremiumDialog({ children }: PremiumDialogProps) {
               console.log("Subscribe clicked");
             }}
           >
-            Subscribe Now
+            Apply Now
           </Button>
         </div>
       </DialogContent>
