@@ -60,7 +60,7 @@ app.use((req, res, next) => {
     // Small delay to ensure port is released
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    const server = await registerRoutes(app);
+    const { httpServer } = await registerRoutes(app);
 
     // Error handling middleware
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -78,7 +78,7 @@ app.use((req, res, next) => {
 
     // Setup Vite or static serving
     if (app.get("env") === "development") {
-      await setupVite(app, server);
+      await setupVite(app, httpServer);
     } else {
       serveStatic(app);
     }
@@ -88,7 +88,7 @@ app.use((req, res, next) => {
     const maxRetries = 3;
 
     const startServer = () => {
-      server.listen(PORT, "0.0.0.0")
+      httpServer.listen(PORT, "0.0.0.0")
         .on("error", (error: NodeJS.ErrnoException) => {
           if (error.code === 'EADDRINUSE' && retries < maxRetries) {
             retries++;
@@ -108,7 +108,7 @@ app.use((req, res, next) => {
 
     // Graceful shutdown handler
     const cleanup = () => {
-      server.close(() => {
+      httpServer.close(() => {
         log('Server closed');
         process.exit(0);
       });
