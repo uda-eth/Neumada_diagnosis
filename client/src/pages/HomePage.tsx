@@ -339,7 +339,6 @@ export default function HomePage() {
                   </div>
                 </DialogContent>
               </Dialog>
-              <Button className="bg-blue-500 text-white px-4 py-2 rounded-md" >Publish Event</Button> {/* Added button for mobile visibility */}
             </div>
           </div>
         </div>
@@ -475,8 +474,8 @@ export default function HomePage() {
                   </div>
                   <div className="rounded-lg overflow-hidden">
                     <img 
-                      src="/attached_assets/Screenshot 2025-03-05 at 12.31.08 AM.png"
-                      alt="Thompson Mexico City"
+                      src="/attached_assets/Screenshot 2025-03-05 at 1.21.43 AM.png"
+                      alt="Thompson Mexico City - Where Culture Lives"
                       className="w-full object-cover h-[400px]"
                     />
                   </div>

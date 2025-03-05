@@ -82,33 +82,23 @@ export default function CreateEventPage() {
     <div className="min-h-screen bg-black text-white">
       <header className="sticky top-0 z-10 bg-black/80 backdrop-blur-lg border-b border-white/10">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-white/60"
-                onClick={() => setLocation("/")}
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </Button>
-              <h1 className="text-sm font-medium uppercase tracking-wider">
-                Create Event
-              </h1>
-            </div>
+          <div className="flex items-center gap-4">
             <Button
-              type="submit"
-              form="event-form"
-              className="bg-gradient-to-r from-purple-700 to-purple-900 text-white hover:from-purple-800 hover:to-purple-950 transition-all duration-200"
-              disabled={!eventImage || !form.formState.isValid}
+              variant="ghost"
+              size="icon"
+              className="text-white/60"
+              onClick={() => setLocation("/")}
             >
-              Publish
+              <ChevronLeft className="w-5 h-5" />
             </Button>
+            <h1 className="text-sm font-medium uppercase tracking-wider">
+              Create Event
+            </h1>
           </div>
         </div>
       </header>
 
-      <form id="event-form" onSubmit={form.handleSubmit(onSubmit)} className="pb-24">
+      <form id="event-form" onSubmit={form.handleSubmit(onSubmit)} className="pb-32">
         <div className="container mx-auto px-4 py-8 space-y-8 max-w-2xl">
           <div className="space-y-4">
             <p className="text-sm text-white/60">Let's get started!</p>
@@ -263,20 +253,20 @@ export default function CreateEventPage() {
             </div>
           </div>
         </div>
-
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-black/80 backdrop-blur-lg border-t border-white/10 md:hidden">
-          <div className="container mx-auto max-w-2xl">
-            <Button
-              type="submit"
-              form="event-form"
-              className="w-full h-12 bg-gradient-to-r from-purple-700 to-purple-900 text-white hover:from-purple-800 hover:to-purple-950 transition-all duration-200"
-              disabled={!eventImage || !form.formState.isValid}
-            >
-              Publish Event
-            </Button>
-          </div>
-        </div>
       </form>
+
+      <div className="fixed bottom-16 left-0 right-0 p-4 bg-black/80 backdrop-blur-lg border-t border-white/10">
+        <div className="container mx-auto max-w-2xl">
+          <Button
+            type="submit"
+            form="event-form"
+            className="w-full h-12 bg-gradient-to-r from-purple-700 to-purple-900 text-white hover:from-purple-800 hover:to-purple-950 transition-all duration-200"
+            disabled={!eventImage || !form.formState.isValid}
+          >
+            Publish Event
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
