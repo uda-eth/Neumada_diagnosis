@@ -83,11 +83,11 @@ export default function EventPage() {
 
       {/* Event Image */}
       {event.image && (
-        <div className="aspect-[3/2] w-full">
+        <div className="w-full">
           <img
             src={event.image}
             alt={event.title}
-            className="w-full h-full object-cover"
+            className="w-full h-[50vh] md:h-[60vh] object-cover object-center"
           />
         </div>
       )}
@@ -110,13 +110,17 @@ export default function EventPage() {
           {/* Interested Users Avatars */}
           <div className="flex -space-x-2 overflow-hidden">
             {interestedUsers.map((user, index) => (
-              <Avatar key={user.id} className="inline-block ring-2 ring-background">
-                <AvatarImage src={user.image} alt={user.name} />
+              <Avatar key={user.id} className="inline-block ring-2 ring-background w-10 h-10">
+                <AvatarImage 
+                  src={user.image} 
+                  alt={user.name}
+                  className="object-cover object-center"
+                />
                 <AvatarFallback>{user.name[0]}</AvatarFallback>
               </Avatar>
             ))}
             {interestedCount > 5 && (
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 text-xs font-medium">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 text-xs font-medium">
                 +{interestedCount - 5}
               </div>
             )}
@@ -156,12 +160,17 @@ export default function EventPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Avatar className="h-12 w-12">
+                <AvatarImage 
+                  src={event.creatorImage}
+                  alt={event.creatorName || "Event Host"}
+                  className="object-cover object-center"
+                />
                 <AvatarFallback className="bg-white/10">
                   {event.creatorId?.toString()[0] || "H"}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <div className="font-medium">Host Name</div>
+                <div className="font-medium">{event.creatorName || "Host Name"}</div>
                 <div className="text-sm text-white/60">Event Organizer</div>
               </div>
             </div>
