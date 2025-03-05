@@ -61,6 +61,7 @@ export const MOCK_EVENTS: Record<string, Event[]> = DIGITAL_NOMAD_CITIES.reduce(
       date: new Date(2024, 8, 7, 18, 0), // Sept 7, 2024, 6pm
       location: `Downtown Festival Grounds, ${city}`,
       image: EVENT_IMAGES.musicFestival,
+      image_url: EVENT_IMAGES.musicFestival,
       category: "Nightlife",
       creatorId: 1,
       capacity: 600,
@@ -78,6 +79,7 @@ export const MOCK_EVENTS: Record<string, Event[]> = DIGITAL_NOMAD_CITIES.reduce(
       date: new Date(2024, 8, 7, 19, 0), // Sept 7, 2024, 7pm
       location: `Secret Garden Venue, ${city}`,
       image: EVENT_IMAGES.intimateDinner,
+      image_url: EVENT_IMAGES.intimateDinner,
       category: "Social",
       creatorId: 2,
       capacity: 30,
@@ -95,6 +97,7 @@ export const MOCK_EVENTS: Record<string, Event[]> = DIGITAL_NOMAD_CITIES.reduce(
       date: new Date(2024, 8, 7, 8, 0), // Sept 7, 2024, 8am
       location: `Mountain Trails, ${city}`,
       image: EVENT_IMAGES.hiking,
+      image_url: EVENT_IMAGES.hiking,
       category: "Adventure",
       creatorId: 3,
       capacity: 60,
