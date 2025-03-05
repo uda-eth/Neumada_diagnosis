@@ -81,5 +81,15 @@ export const members: Member[] = [
     interests: ["Performance Art", "Digital Art", "Innovation"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.32.34 PM.png",
     occupation: "Performance Artist"
+  },
+  {
+    id: 8,
+    name: "Hamish Fraser",
+    age: 38,
+    location: "Mexico City",
+    bio: "Executive operator with expertise in strategic growth and operational excellence.",
+    interests: ["Business Strategy", "Operations", "Leadership"],
+    image: "/attached_assets/Screenshot 2025-03-04 at 8.33.27 PM.png",
+    occupation: "Executive Operator"
   }
 ];
