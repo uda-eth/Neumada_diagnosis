@@ -3,13 +3,10 @@ import {
   Compass, 
   UsersRound,
   PlusSquare,
-  Globe,
   Settings,
   User,
-  MessageSquare,
   Inbox,
-  Bot,
-  Share2
+  Bot
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { InviteTrigger } from "./invite-dialog";
@@ -19,7 +16,7 @@ const unreadCount = 3;
 
 const navItems = [
   { icon: Compass, label: "Discover", href: "/" },
-  { icon: Bot, label: "Guide", href: "/companion" },
+  { icon: UsersRound, label: "Connect", href: "/connect" },
   { icon: PlusSquare, label: "Create", href: "/create" },
   { 
     icon: Inbox, 
@@ -27,7 +24,9 @@ const navItems = [
     href: "/messages",
     badge: unreadCount
   },
-  { icon: User, label: "Profile", href: "/profile" }
+  { icon: User, label: "Profile", href: "/profile" },
+  { icon: Settings, label: "Settings", href: "/settings" },
+  { icon: Bot, label: "Guide", href: "/companion" }
 ];
 
 export function BottomNav() {
@@ -44,13 +43,13 @@ export function BottomNav() {
               <Link key={href} href={href}>
                 <a 
                   role="button"
-                  className={`relative flex flex-col items-center justify-center gap-0.5 w-16 h-16 rounded-lg transition-all duration-300 ease-out touch-target interactive-hover ${
+                  className={`relative flex flex-col items-center justify-center gap-0.5 w-14 h-16 rounded-lg transition-all duration-300 ease-out touch-target interactive-hover ${
                     isActive 
                       ? "text-primary scale-110" 
                       : "text-foreground/60 hover:text-foreground"
                   }`}
                 >
-                  <Icon className={`w-6 h-6 transition-transform ${isActive ? 'scale-110' : ''}`} />
+                  <Icon className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : ''}`} />
                   <span className={`text-[10px] font-medium transition-opacity ${
                     isActive ? 'opacity-100' : 'opacity-60'
                   }`}>
@@ -68,10 +67,6 @@ export function BottomNav() {
               </Link>
             );
           })}
-          {/* Invite Dialog for Mobile */}
-          <div className="relative flex flex-col items-center justify-center gap-0.5 w-16 h-16">
-            <InviteTrigger />
-          </div>
         </div>
       </nav>
 
@@ -105,10 +100,6 @@ export function BottomNav() {
             </Link>
           );
         })}
-        {/* Desktop Invite Button */}
-        <div className="mt-auto">
-          <InviteTrigger />
-        </div>
       </nav>
     </>
   );
