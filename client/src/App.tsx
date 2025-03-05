@@ -5,7 +5,7 @@ import ProfilePage from "./pages/ProfilePage";
 import CreateEventPage from "./pages/CreateEventPage";
 import ChatbotPage from "./pages/ChatbotPage";
 import MatchesPage from "./pages/MatchesPage";
-import BrowseUsersPage from "./pages/BrowseUsersPage";
+import ConnectPage from "./pages/ConnectPage";
 import TutorialPage from "./pages/TutorialPage";
 import ProfileGeneratorPage from "./pages/ProfileGeneratorPage";
 import MessagesPage from "./pages/MessagesPage";
@@ -23,8 +23,8 @@ function App() {
           <Route path="/profile/edit" component={ProfileGeneratorPage} />
           <Route path="/create" component={CreateEventPage} />
           <Route path="/companion" component={ChatbotPage} />
-          <Route path="/connect" component={MatchesPage} />
-          <Route path="/browse" component={BrowseUsersPage} />
+          <Route path="/connect" component={ConnectPage} />
+          <Route path="/browse" component={ConnectPage} />
           <Route path="/tutorial" component={TutorialPage} />
           <Route path="/messages" component={MessagesPage} />
           <Route path="/:rest*">
