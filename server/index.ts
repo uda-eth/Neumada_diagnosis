@@ -52,13 +52,16 @@ app.use((req, res, next) => {
     // Kill any existing process on port 5000
     try {
       const { execSync } = require('child_process');
-      execSync('lsof -ti :5000 | xargs kill -9', { stdio: 'ignore' });
+      log('Attempting to kill any process using port 5000...');
+      execSync('lsof -ti :5000 | xargs kill -9', { stdio: 'pipe' });
+      log('Successfully killed processes on port 5000');
     } catch (err) {
-      // Ignore errors if no process was found or on Windows
+      log('No existing process found on port 5000 or system does not support lsof');
     }
 
-    // Small delay to ensure port is released
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Increased delay to ensure port is released
+    log('Waiting for port to be released...');
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     const { httpServer } = await registerRoutes(app);
 
@@ -85,7 +88,7 @@ app.use((req, res, next) => {
 
     const PORT = 5000;
     let retries = 0;
-    const maxRetries = 3;
+    const maxRetries = 5; // Increased max retries
 
     const startServer = () => {
       httpServer.listen(PORT, "0.0.0.0")
@@ -93,7 +96,7 @@ app.use((req, res, next) => {
           if (error.code === 'EADDRINUSE' && retries < maxRetries) {
             retries++;
             log(`Port ${PORT} is in use, attempting to close existing connection... (attempt ${retries}/${maxRetries})`);
-            setTimeout(startServer, 1000);
+            setTimeout(startServer, 2000); // Increased delay between retries
           } else {
             log(`Failed to start server: ${error}`);
             process.exit(1);
@@ -108,6 +111,7 @@ app.use((req, res, next) => {
 
     // Graceful shutdown handler
     const cleanup = () => {
+      log('Initiating graceful shutdown...');
       httpServer.close(() => {
         log('Server closed');
         process.exit(0);

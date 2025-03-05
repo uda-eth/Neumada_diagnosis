@@ -56,7 +56,7 @@ export const MOCK_EVENTS: Record<string, Event[]> = DIGITAL_NOMAD_CITIES.reduce(
   acc[city] = [
     {
       id: Math.floor(Math.random() * 1000),
-      title: "Bravo Music & Art Festival",
+      title: "Giegling Music & Art Festival",
       description: "An unforgettable night of electronic music, art installations, and networking with fellow digital nomads. Experience the city's vibrant creative scene while connecting with like-minded individuals.",
       date: new Date(2024, 8, 7, 18, 0), // Sept 7, 2024, 6pm
       location: `Downtown Festival Grounds, ${city}`,
