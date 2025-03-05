@@ -411,6 +411,11 @@ export default function HomePage() {
                                   <Badge variant="outline" className="text-xs">
                                     {event.category}
                                   </Badge>
+                                  {event.title.toLowerCase().includes('pargot') && (
+                                    <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
+                                      Maly Members Only
+                                    </Badge>
+                                  )}
                                   {event.tags?.map((tag: string) => (
                                     <Badge
                                       key={tag}
