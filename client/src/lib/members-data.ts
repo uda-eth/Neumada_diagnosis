@@ -141,5 +141,15 @@ export const members: Member[] = [
     interests: ["Digital Marketing", "Content Strategy", "Brand Development"],
     image: "/attached_assets/Screenshot 2023-11-14 at 9.27.40 AM.png",
     occupation: "Digital Marketing Strategist"
+  },
+  {
+    id: 14,
+    name: "Dr. Marco Ruiz",
+    age: 49,
+    location: "Mexico City",
+    bio: "Research scientist specializing in sustainable technologies and environmental innovation, bridging academic research with practical applications.",
+    interests: ["Sustainability", "Research", "Innovation"],
+    image: "/attached_assets/Screenshot 2025-03-04 at 8.40.31 PM.png",
+    occupation: "Research Scientist"
   }
 ];
