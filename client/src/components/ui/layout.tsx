@@ -38,7 +38,7 @@ export function Layout({ children }: LayoutProps) {
                 className="hidden md:inline-flex items-center text-foreground interactive-hover"
               >
                 <Bot className="w-6 h-6 mr-2" />
-                Guide
+                AI City Guide
               </Button>
 
               <LanguageToggle />
