@@ -490,7 +490,7 @@ export default function HomePage() {
               )}
 
               {/* Ad Space - Thompson Mexico City */}
-              <section className="py-8">
+              <section className="py-4">
                 <div className="w-full relative">
                   <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
                     Premium Ad Partner
@@ -501,10 +501,6 @@ export default function HomePage() {
                       alt="Thompson Mexico City"
                       className="w-full object-cover h-[400px]"
                     />
-                    <div className="bg-black/80 text-white p-6">
-                      <h3 className="text-2xl font-semibold mb-2">Introducing Thompson Mexico City</h3>
-                      <p className="text-lg text-white/60">Hotel & Residences - Mexico City Reforma</p>
-                    </div>
                   </div>
                 </div>
               </section>
