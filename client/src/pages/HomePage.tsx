@@ -435,48 +435,59 @@ export default function HomePage() {
                               </div>
                               <div className="flex items-center justify-between mt-2 md:mt-3">
                                 <div className="flex items-center gap-2">
-                                  <div className="flex -space-x-2">
-                                    {(event.attendingUsers || []).slice(0, 2).map((user: any, i: number) => (
-                                      <Avatar 
-                                        key={`attending-${user.id}`} 
-                                        className="border-2 border-background w-6 h-6"
-                                        onClick={() => setLocation(`/profile/${user.id}`)}
-                                      >
-                                        <AvatarImage 
-                                          src={user.image || `/attached_assets/profile-image-${(user.id % 10) + 1}.jpg`} 
-                                          alt={getFirstName(user.name)}
-                                        />
-                                        <AvatarFallback>{getFirstName(user.name)[0]}</AvatarFallback>
-                                      </Avatar>
-                                    ))}
-                                    {(event.interestedUsers || []).slice(0, 1).map((user: any, i: number) => (
-                                      <Avatar 
-                                        key={`interested-${user.id}`} 
-                                        className="border-2 border-background w-6 h-6"
-                                        onClick={() => setLocation(`/profile/${user.id}`)}
-                                      >
-                                        <AvatarImage 
-                                          src={user.image || `/attached_assets/profile-image-${(user.id % 10) + 1}.jpg`} 
-                                          alt={getFirstName(user.name)}
-                                        />
-                                        <AvatarFallback>{getFirstName(user.name)[0]}</AvatarFallback>
-                                      </Avatar>
-                                    ))}
-                                    {(event.attendingCount + (event.interestedCount || 0)) > 3 && (
-                                      <div 
-                                        className="w-6 h-6 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center text-xs text-primary cursor-pointer"
+                                  {((event.attendingUsers?.length || 0) + (event.interestedUsers?.length || 0)) >= 3 ? (
+                                    <>
+                                      <div className="flex -space-x-2">
+                                        {(event.attendingUsers || []).slice(0, 2).map((user: any, i: number) => (
+                                          <Avatar 
+                                            key={`attending-${user.id}`} 
+                                            className="border-2 border-background w-6 h-6"
+                                            onClick={() => setLocation(`/profile/${user.id}`)}
+                                          >
+                                            <AvatarImage 
+                                              src={user.image || `/attached_assets/profile-image-${(user.id % 10) + 1}.jpg`} 
+                                              alt={getFirstName(user.name)}
+                                            />
+                                            <AvatarFallback>{getFirstName(user.name)[0]}</AvatarFallback>
+                                          </Avatar>
+                                        ))}
+                                        {(event.interestedUsers || []).slice(0, 1).map((user: any, i: number) => (
+                                          <Avatar 
+                                            key={`interested-${user.id}`} 
+                                            className="border-2 border-background w-6 h-6"
+                                            onClick={() => setLocation(`/profile/${user.id}`)}
+                                          >
+                                            <AvatarImage 
+                                              src={user.image || `/attached_assets/profile-image-${(user.id % 10) + 1}.jpg`} 
+                                              alt={getFirstName(user.name)}
+                                            />
+                                            <AvatarFallback>{getFirstName(user.name)[0]}</AvatarFallback>
+                                          </Avatar>
+                                        ))}
+                                        {(event.attendingCount + (event.interestedCount || 0)) > 3 && (
+                                          <div 
+                                            className="w-6 h-6 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center text-xs text-primary cursor-pointer"
+                                            onClick={() => setLocation(`/event/${event.id}`)}
+                                          >
+                                            +{(event.attendingCount + (event.interestedCount || 0)) - 3}
+                                          </div>
+                                        )}
+                                      </div>
+                                      <span 
+                                        className="text-xs text-muted-foreground cursor-pointer"
                                         onClick={() => setLocation(`/event/${event.id}`)}
                                       >
-                                        +{(event.attendingCount + (event.interestedCount || 0)) - 3}
-                                      </div>
-                                    )}
-                                  </div>
-                                  <span 
-                                    className="text-xs text-muted-foreground cursor-pointer"
-                                    onClick={() => setLocation(`/event/${event.id}`)}
-                                  >
-                                    {event.attendingCount} attending • {event.interestedCount} interested
-                                  </span>
+                                        {event.attendingCount} attending • {event.interestedCount} interested
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <span 
+                                      className="text-xs text-muted-foreground cursor-pointer"
+                                      onClick={() => setLocation(`/event/${event.id}`)}
+                                    >
+                                      {event.attendingCount} attending • {event.interestedCount} interested
+                                    </span>
+                                  )}
                                 </div>
                                 <div className="flex items-center gap-3">
                                   <div className="flex items-center gap-1 min-w-0">
@@ -574,48 +585,59 @@ export default function HomePage() {
                               </div>
                               <div className="flex items-center justify-between mt-2 md:mt-3">
                                 <div className="flex items-center gap-2">
-                                  <div className="flex -space-x-2">
-                                    {(event.attendingUsers || []).slice(0, 2).map((user: any, i: number) => (
-                                      <Avatar 
-                                        key={`attending-${user.id}`} 
-                                        className="border-2 border-background w-6 h-6"
-                                        onClick={() => setLocation(`/profile/${user.id}`)}
-                                      >
-                                        <AvatarImage 
-                                          src={user.image || `/attached_assets/profile-image-${(user.id % 10) + 1}.jpg`} 
-                                          alt={getFirstName(user.name)}
-                                        />
-                                        <AvatarFallback>{getFirstName(user.name)[0]}</AvatarFallback>
-                                      </Avatar>
-                                    ))}
-                                    {(event.interestedUsers || []).slice(0, 1).map((user: any, i: number) => (
-                                      <Avatar 
-                                        key={`interested-${user.id}`} 
-                                        className="border-2 border-background w-6 h-6"
-                                        onClick={() => setLocation(`/profile/${user.id}`)}
-                                      >
-                                        <AvatarImage 
-                                          src={user.image || `/attached_assets/profile-image-${(user.id % 10) + 1}.jpg`} 
-                                          alt={getFirstName(user.name)}
-                                        />
-                                        <AvatarFallback>{getFirstName(user.name)[0]}</AvatarFallback>
-                                      </Avatar>
-                                    ))}
-                                    {(event.attendingCount + (event.interestedCount || 0)) > 3 && (
-                                      <div 
-                                        className="w-6 h-6 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center text-xs text-primary cursor-pointer"
+                                  {((event.attendingUsers?.length || 0) + (event.interestedUsers?.length || 0)) >= 3 ? (
+                                    <>
+                                      <div className="flex -space-x-2">
+                                        {(event.attendingUsers || []).slice(0, 2).map((user: any, i: number) => (
+                                          <Avatar 
+                                            key={`attending-${user.id}`} 
+                                            className="border-2 border-background w-6 h-6"
+                                            onClick={() => setLocation(`/profile/${user.id}`)}
+                                          >
+                                            <AvatarImage 
+                                              src={user.image || `/attached_assets/profile-image-${(user.id % 10) + 1}.jpg`} 
+                                              alt={getFirstName(user.name)}
+                                            />
+                                            <AvatarFallback>{getFirstName(user.name)[0]}</AvatarFallback>
+                                          </Avatar>
+                                        ))}
+                                        {(event.interestedUsers || []).slice(0, 1).map((user: any, i: number) => (
+                                          <Avatar 
+                                            key={`interested-${user.id}`} 
+                                            className="border-2 border-background w-6 h-6"
+                                            onClick={() => setLocation(`/profile/${user.id}`)}
+                                          >
+                                            <AvatarImage 
+                                              src={user.image || `/attached_assets/profile-image-${(user.id % 10) + 1}.jpg`} 
+                                              alt={getFirstName(user.name)}
+                                            />
+                                            <AvatarFallback>{getFirstName(user.name)[0]}</AvatarFallback>
+                                          </Avatar>
+                                        ))}
+                                        {(event.attendingCount + (event.interestedCount || 0)) > 3 && (
+                                          <div 
+                                            className="w-6 h-6 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center text-xs text-primary cursor-pointer"
+                                            onClick={() => setLocation(`/event/${event.id}`)}
+                                          >
+                                            +{(event.attendingCount + (event.interestedCount || 0)) - 3}
+                                          </div>
+                                        )}
+                                      </div>
+                                      <span 
+                                        className="text-xs text-muted-foreground cursor-pointer"
                                         onClick={() => setLocation(`/event/${event.id}`)}
                                       >
-                                        +{(event.attendingCount + (event.interestedCount || 0)) - 3}
-                                      </div>
-                                    )}
-                                  </div>
-                                  <span 
-                                    className="text-xs text-muted-foreground cursor-pointer"
-                                    onClick={() => setLocation(`/event/${event.id}`)}
-                                  >
-                                    {event.attendingCount} attending • {event.interestedCount} interested
-                                  </span>
+                                        {event.attendingCount} attending • {event.interestedCount} interested
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <span 
+                                      className="text-xs text-muted-foreground cursor-pointer"
+                                      onClick={() => setLocation(`/event/${event.id}`)}
+                                    >
+                                      {event.attendingCount} attending • {event.interestedCount} interested
+                                    </span>
+                                  )}
                                 </div>
                                 <div className="flex items-center gap-3">
                                   <div className="flex items-center gap-1 min-w-0">
