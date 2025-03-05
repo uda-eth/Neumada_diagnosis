@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ChevronLeft, Plus } from "lucide-react";
 import type { Event } from "@db/schema";
 import { insertEventSchema } from "@db/schema";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const interestTags = [
   "Digital Nomads",
@@ -98,162 +99,177 @@ export default function CreateEventPage() {
         </div>
       </header>
 
-      <form id="event-form" onSubmit={form.handleSubmit(onSubmit)} className="pb-32">
-        <div className="container mx-auto px-4 py-8 space-y-8 max-w-2xl">
-          <div className="space-y-4">
-            <p className="text-sm text-white/60">Let's get started!</p>
-            <div className="relative aspect-[3/2] bg-white/5 rounded-lg overflow-hidden">
-              {eventImage ? (
-                <img
-                  src={eventImage}
-                  alt="Event preview"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-white/10 transition-colors">
-                  <div className="flex flex-col items-center gap-2">
-                    <Plus className="w-8 h-8 text-white/60" />
-                    <span className="text-sm text-white/60">
-                      Add photos or flyer for your event
-                    </span>
-                  </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
+      <ScrollArea className="flex-1" style={{ height: 'calc(100vh - 140px)' }}>
+        <form id="event-form" onSubmit={form.handleSubmit(onSubmit)}>
+          <div className="container mx-auto px-4 py-8 space-y-8 max-w-2xl">
+            <div className="space-y-4">
+              <p className="text-sm text-white/60">Let's get started!</p>
+              <div className="relative aspect-[3/2] bg-white/5 rounded-lg overflow-hidden">
+                {eventImage ? (
+                  <img
+                    src={eventImage}
+                    alt="Event preview"
+                    className="w-full h-full object-cover"
                   />
-                </label>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <Input
-                {...form.register("title")}
-                className="bg-white/5 border-0 h-12 text-lg"
-                placeholder="Event title"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Textarea
-                {...form.register("description")}
-                className="bg-white/5 border-0 h-32 resize-none"
-                placeholder="Fill in event details"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium">Target audience is</h3>
-            <div className="grid grid-cols-3 gap-2">
-              {interestTags.map((tag) => (
-                <Button
-                  key={tag}
-                  type="button"
-                  variant={selectedTags.includes(tag) ? "default" : "outline"}
-                  className={`h-8 text-sm ${
-                    selectedTags.includes(tag)
-                      ? ""
-                      : "bg-white/5 border-white/10 hover:bg-white/10"
-                  }`}
-                  onClick={() => {
-                    setSelectedTags((prev) =>
-                      prev.includes(tag)
-                        ? prev.filter((t) => t !== tag)
-                        : [...prev, tag]
-                    );
-                  }}
-                >
-                  {tag}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Input
-                  type="time"
-                  {...form.register("startTime")}
-                  className="bg-white/5 border-0 h-12"
-                />
-              </div>
-              <div>
-                <Input
-                  type="time"
-                  {...form.register("endTime")}
-                  className="bg-white/5 border-0 h-12"
-                />
+                ) : (
+                  <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-white/10 transition-colors">
+                    <div className="flex flex-col items-center gap-2">
+                      <Plus className="w-8 h-8 text-white/60" />
+                      <span className="text-sm text-white/60">
+                        Add photos or flyer for your event
+                      </span>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                  </label>
+                )}
               </div>
             </div>
-          </div>
 
-          <div className="space-y-4">
-            <Input
-              {...form.register("location")}
-              className="bg-white/5 border-0 h-12"
-              placeholder="Tell me system location"
-            />
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex gap-4">
-              <Button
-                type="button"
-                variant={form.watch("price") === 0 ? "default" : "outline"}
-                className="flex-1 h-12"
-                onClick={() => form.setValue("price", 0)}
-              >
-                Free
-              </Button>
-              <Button
-                type="button"
-                variant={form.watch("price") !== 0 ? "default" : "outline"}
-                className="flex-1 h-12"
-                onClick={() => form.setValue("price", undefined)}
-              >
-                Paid
-              </Button>
-            </div>
-
-            {form.watch("price") !== 0 && (
+            <div className="space-y-6">
               <div className="space-y-2">
                 <Input
-                  type="number"
-                  {...form.register("price")}
-                  className="bg-white/5 border-0 h-12"
-                  placeholder="0.00"
+                  {...form.register("title")}
+                  className="bg-white/5 border-0 h-12 text-lg"
+                  placeholder="Event title"
                 />
               </div>
-            )}
-          </div>
 
-          <div className="space-y-4">
-            <div className="flex gap-4">
-              <Button
-                type="button"
-                variant={!form.watch("isPrivate") ? "default" : "outline"}
-                className="flex-1 h-12"
-                onClick={() => form.setValue("isPrivate", false)}
-              >
-                Public
-              </Button>
-              <Button
-                type="button"
-                variant={form.watch("isPrivate") ? "default" : "outline"}
-                className="flex-1 h-12"
-                onClick={() => form.setValue("isPrivate", true)}
-              >
-                Private
-              </Button>
+              <div className="space-y-2">
+                <Textarea
+                  {...form.register("description")}
+                  className="bg-white/5 border-0 h-32 resize-none"
+                  placeholder="Fill in event details"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium">Target audience is</h3>
+              <div className="grid grid-cols-3 gap-2">
+                {interestTags.map((tag) => (
+                  <Button
+                    key={tag}
+                    type="button"
+                    variant={selectedTags.includes(tag) ? "default" : "outline"}
+                    className={`h-8 text-sm ${
+                      selectedTags.includes(tag)
+                        ? ""
+                        : "bg-white/5 border-white/10 hover:bg-white/10"
+                    }`}
+                    onClick={() => {
+                      setSelectedTags((prev) =>
+                        prev.includes(tag)
+                          ? prev.filter((t) => t !== tag)
+                          : [...prev, tag]
+                      );
+                    }}
+                  >
+                    {tag}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Input
+                    type="time"
+                    {...form.register("startTime")}
+                    className="bg-white/5 border-0 h-12"
+                  />
+                </div>
+                <div>
+                  <Input
+                    type="time"
+                    {...form.register("endTime")}
+                    className="bg-white/5 border-0 h-12"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <Input
+                {...form.register("location")}
+                className="bg-white/5 border-0 h-12"
+                placeholder="Tell me system location"
+              />
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex gap-4">
+                <Button
+                  type="button"
+                  variant={form.watch("price") === 0 ? "default" : "outline"}
+                  className="flex-1 h-12"
+                  onClick={() => form.setValue("price", 0)}
+                >
+                  Free
+                </Button>
+                <Button
+                  type="button"
+                  variant={form.watch("price") !== 0 ? "default" : "outline"}
+                  className="flex-1 h-12"
+                  onClick={() => form.setValue("price", undefined)}
+                >
+                  Paid
+                </Button>
+              </div>
+
+              {form.watch("price") !== 0 && (
+                <div className="space-y-2">
+                  <Input
+                    type="number"
+                    {...form.register("price")}
+                    className="bg-white/5 border-0 h-12"
+                    placeholder="0.00"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex gap-4">
+                <Button
+                  type="button"
+                  variant={!form.watch("isPrivate") ? "default" : "outline"}
+                  className="flex-1 h-12"
+                  onClick={() => form.setValue("isPrivate", false)}
+                >
+                  Public
+                </Button>
+                <Button
+                  type="button"
+                  variant={form.watch("isPrivate") ? "default" : "outline"}
+                  className="flex-1 h-12"
+                  onClick={() => form.setValue("isPrivate", true)}
+                >
+                  Private
+                </Button>
+              </div>
             </div>
           </div>
+        </form>
+
+        <div className="container mx-auto max-w-2xl px-4 pb-32">
+          <div className="rounded-lg overflow-hidden relative">
+            <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded z-10">
+              Premium Ad Partner
+            </div>
+            <img
+              src="/attached_assets/Screenshot 2025-03-05 at 1.56.31 AM.png"
+              alt="American Express Platinum - The world is yours with Platinum"
+              className="w-full object-cover"
+            />
+          </div>
         </div>
-      </form>
+      </ScrollArea>
 
       <div className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-lg border-t border-white/10">
         <div className="container mx-auto max-w-2xl p-4">
@@ -266,19 +282,6 @@ export default function CreateEventPage() {
             <Plus className="h-5 w-5 mr-2" />
             <span>Create Event</span>
           </Button>
-        </div>
-
-        <div className="container mx-auto max-w-2xl px-4 pb-4">
-          <div className="rounded-lg overflow-hidden relative">
-            <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded z-10">
-              Premium Ad Partner
-            </div>
-            <img
-              src="/attached_assets/Screenshot 2025-03-05 at 1.56.31 AM.png"
-              alt="American Express Platinum - The world is yours with Platinum"
-              className="w-full object-cover"
-            />
-          </div>
         </div>
       </div>
     </div>
