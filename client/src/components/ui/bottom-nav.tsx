@@ -6,11 +6,13 @@ import {
   Settings,
   User,
   Inbox,
-  Bot
+  Bot,
+  Crown
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { InviteTrigger } from "./invite-dialog";
 import { useTranslation } from "@/lib/translations";
+import { PremiumDialog } from "./premium-dialog";
 
 // Mock unread count for demo - this would come from your actual message state
 const unreadCount = 3;
@@ -26,8 +28,8 @@ export const navItems = [
     badge: unreadCount
   },
   { icon: User, label: 'profile', href: "/profile/luca-hudek/edit" },
-  { icon: Settings, label: 'settings', href: "/settings" },
-  { icon: Bot, label: 'guide', href: "/companion" }
+  { icon: Bot, label: 'guide', href: "/companion" },
+  { icon: Crown, label: 'premium', href: "/premium" } // Added Premium nav item
 ];
 
 export function BottomNav() {

@@ -86,10 +86,6 @@ export function Layout({ children }: LayoutProps) {
       </main>
 
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50">
-        {/* Premium Button - Mobile */}
-        <div className="px-4 py-2 bg-background border-t border-border">
-          <PremiumDialog />
-        </div>
         <BottomNav />
       </div>
     </div>
