@@ -18,7 +18,7 @@ export function ConnectPage() {
               <div className="flex flex-col h-full">
                 <div className="relative h-64 md:h-72">
                   <img
-                    src={`/attached_assets${member.image}`}
+                    src={member.image}
                     alt={member.name}
                     className="w-full h-full object-cover"
                   />
