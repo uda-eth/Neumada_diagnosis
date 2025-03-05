@@ -345,7 +345,7 @@ export default function HomePage() {
       </header>
 
 
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4">
         <div className="w-full max-w-3xl mx-auto relative">
           <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
             Ad Space
@@ -354,7 +354,7 @@ export default function HomePage() {
             <img 
               src="/attached_assets/download.jpg"
               alt="Aman Premium Hotel Partner"
-              className="w-full object-cover h-[400px]"
+              className="w-full object-contain h-[400px]"
             />
             <div className="bg-black/80 text-white p-6">
               <h3 className="text-2xl font-semibold mb-2">Aman Premium Hotel Partner</h3>
