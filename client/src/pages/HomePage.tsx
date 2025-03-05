@@ -470,7 +470,7 @@ export default function HomePage() {
               {/* Ad Space - MUSA Zihuatanejo */}
               <section className="py-4">
                 <div className="w-full relative">
-                  <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                  <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded z-10">
                     Premium Ad Partner
                   </div>
                   <div className="rounded-lg overflow-hidden relative">

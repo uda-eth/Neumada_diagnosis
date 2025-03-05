@@ -256,7 +256,7 @@ export default function CreateEventPage() {
       </form>
 
       <div className="fixed bottom-16 left-0 right-0 p-4 bg-black/80 backdrop-blur-lg border-t border-white/10">
-        <div className="container mx-auto max-w-2xl">
+        <div className="container mx-auto max-w-2xl space-y-4">
           <Button
             type="submit"
             form="event-form"
@@ -265,6 +265,18 @@ export default function CreateEventPage() {
           >
             Publish Event
           </Button>
+
+          {/* American Express Ad */}
+          <div className="rounded-lg overflow-hidden mt-4 relative">
+            <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded z-10">
+              Premium Ad Partner
+            </div>
+            <img 
+              src="/attached_assets/Screenshot 2025-03-05 at 1.56.31 AM.png"
+              alt="American Express Platinum - The world is yours with Platinum"
+              className="w-full object-cover"
+            />
+          </div>
         </div>
       </div>
     </div>
