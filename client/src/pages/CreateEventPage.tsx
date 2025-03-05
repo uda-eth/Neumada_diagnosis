@@ -263,15 +263,14 @@ export default function CreateEventPage() {
             className="w-full h-12 bg-gradient-to-r from-purple-700 to-purple-900 text-white hover:from-purple-800 hover:to-purple-950 transition-all duration-200"
             disabled={!eventImage || !form.formState.isValid}
           >
-            Publish Event
+            {form.formState.isSubmitting ? "Publishing..." : "Publish Event"}
           </Button>
 
-          {/* American Express Ad */}
           <div className="rounded-lg overflow-hidden mt-4 relative">
             <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded z-10">
               Premium Ad Partner
             </div>
-            <img 
+            <img
               src="/attached_assets/Screenshot 2025-03-05 at 1.56.31 AM.png"
               alt="American Express Platinum - The world is yours with Platinum"
               className="w-full object-cover"
