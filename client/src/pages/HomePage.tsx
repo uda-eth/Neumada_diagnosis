@@ -175,7 +175,6 @@ export default function HomePage() {
                 <MessageSquare className="h-5 w-5 mr-2" />
                 Inbox
               </Button>
-              <ThemeToggle />
               {user ? (
                 <Button 
                   variant="ghost" 

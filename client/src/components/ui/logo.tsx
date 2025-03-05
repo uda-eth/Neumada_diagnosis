@@ -12,7 +12,7 @@ export function Logo({ className = "" }: LogoProps) {
       viewBox="0 0 400 120"
       className={`${className} transition-colors duration-200`}
       style={{
-        fill: theme === 'light' ? 'black' : 'white'
+        fill: theme === 'light' ? '#000000' : '#ffffff'
       }}
     >
       <text
