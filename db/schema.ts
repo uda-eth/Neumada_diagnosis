@@ -36,7 +36,7 @@ export const events = pgTable("events", {
   category: text("category").notNull(),
   creatorId: integer("creator_id").references(() => users.id),
   capacity: integer("capacity"),
-  ticketPrice: numeric("ticket_price"),
+  price: numeric("price"), 
   ticketType: text("ticket_type").notNull(),
   availableTickets: integer("available_tickets"),
   createdAt: timestamp("created_at").defaultNow(),
