@@ -10,7 +10,7 @@ export function ConnectPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">Connect</h1>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {members.map((member) => (
           <Card key={member.id} className="overflow-hidden hover:bg-accent/5 transition-colors cursor-pointer">
@@ -18,7 +18,7 @@ export function ConnectPage() {
               <div className="flex flex-col h-full">
                 <div className="relative h-64 md:h-72">
                   <img
-                    src={member.image}
+                    src={`/attached_assets${member.image}`}
                     alt={member.name}
                     className="w-full h-full object-cover"
                   />
@@ -44,11 +44,11 @@ export function ConnectPage() {
                       <MessageSquare className="h-4 w-4" />
                     </Button>
                   </div>
-                  
+
                   <p className="text-sm text-muted-foreground line-clamp-2">
                     {member.bio}
                   </p>
-                  
+
                   <div className="flex flex-wrap gap-2 mt-2">
                     {member.interests.map((interest, idx) => (
                       <Badge key={idx} variant="secondary" className="text-xs">
@@ -56,7 +56,7 @@ export function ConnectPage() {
                       </Badge>
                     ))}
                   </div>
-                  
+
                   <div className="text-sm text-muted-foreground mt-2">
                     {member.occupation}
                   </div>
