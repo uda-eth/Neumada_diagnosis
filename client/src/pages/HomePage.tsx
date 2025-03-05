@@ -339,6 +339,7 @@ export default function HomePage() {
                   </div>
                 </DialogContent>
               </Dialog>
+              <Button className="bg-blue-500 text-white px-4 py-2 rounded-md" >Publish Event</Button> {/* Added button for mobile visibility */}
             </div>
           </div>
         </div>
