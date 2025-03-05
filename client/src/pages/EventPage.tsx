@@ -54,14 +54,12 @@ export default function EventPage() {
     );
   }
 
-  const isPrivateEvent = event.price === undefined || event.price === null;
-  const interestedCount = Math.floor(Math.random() * 50 + 10); // Placeholder for demo
-
-  // Mock interested users for demo
-  const interestedUsers = Array.from({ length: Math.min(interestedCount, 5) }, (_, i) => ({
+  const isPrivateEvent = !event.price;
+  const interestedCount = event.interestedCount || Math.floor(Math.random() * 50 + 10);
+  const interestedUsers = event.interestedUsers || Array.from({ length: Math.min(interestedCount, 5) }, (_, i) => ({
     id: i,
     name: `User ${i + 1}`,
-    image: `https://images.unsplash.com/photo-${1500000000000 + i}?w=100&h=100&fit=crop&q=80`
+    image: `/attached_assets/profile-image-${i + 1}.jpg`
   }));
 
   return (
@@ -83,18 +81,20 @@ export default function EventPage() {
 
       {/* Event Image */}
       {event.image && (
-        <div className="w-full">
-          <img
-            src={event.image}
-            alt={event.title}
-            className="w-full h-[50vh] md:h-[60vh] object-cover object-center"
-          />
+        <div className="container mx-auto px-4 mb-6">
+          <div className="rounded-lg overflow-hidden">
+            <img
+              src={event.image}
+              alt={event.title}
+              className="w-full object-contain max-h-[70vh]"
+            />
+          </div>
         </div>
       )}
 
       {/* Event Details */}
       <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Tags and Interested Users */}
+        {/* Interested Users Section */}
         <div className="flex flex-col gap-4">
           <div className="flex gap-2 flex-wrap">
             {event.category && (
@@ -107,22 +107,27 @@ export default function EventPage() {
             </div>
           </div>
 
-          {/* Interested Users Avatars */}
-          <div className="flex -space-x-2 overflow-hidden">
-            {interestedUsers.map((user, index) => (
-              <Avatar key={user.id} className="inline-block ring-2 ring-background w-10 h-10">
-                <AvatarImage 
-                  src={user.image} 
-                  alt={user.name}
-                  className="object-cover object-center"
-                />
-                <AvatarFallback>{user.name[0]}</AvatarFallback>
-              </Avatar>
-            ))}
+          {/* Interested Users Avatars - Prominently displayed */}
+          <div className="flex items-center gap-4">
+            <div className="flex -space-x-3">
+              {interestedUsers.slice(0, 5).map((user, index) => (
+                <Avatar 
+                  key={user.id} 
+                  className="ring-2 ring-background w-12 h-12 border-2 border-black/40"
+                >
+                  <AvatarImage 
+                    src={user.image} 
+                    alt={user.name}
+                    className="object-cover"
+                  />
+                  <AvatarFallback>{user.name[0]}</AvatarFallback>
+                </Avatar>
+              ))}
+            </div>
             {interestedCount > 5 && (
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 text-xs font-medium">
-                +{interestedCount - 5}
-              </div>
+              <span className="text-sm text-white/60">
+                +{interestedCount - 5} more interested
+              </span>
             )}
           </div>
         </div>
@@ -140,45 +145,38 @@ export default function EventPage() {
           </div>
         </div>
 
-        {/* Price */}
-        <div className="py-4 border-t border-white/10">
-          <div className="text-xl font-semibold">
-            {isPrivateEvent ? t('rsvpRequired') : `$${event.price} USD`}
-          </div>
-        </div>
-
         {/* Description */}
         <div className="space-y-2">
-          <h2 className="text-lg font-semibold">{t('details')}</h2>
+          <h2 className="text-lg font-semibold">About this event</h2>
           <p className="text-white/80 whitespace-pre-wrap">
             {event.description}
           </p>
         </div>
 
-        {/* Created By */}
-        <div className="py-4 border-t border-white/10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-12 w-12">
-                <AvatarImage 
-                  src={event.creatorImage}
-                  alt={event.creatorName || "Event Host"}
-                  className="object-cover object-center"
-                />
-                <AvatarFallback className="bg-white/10">
-                  {event.creatorId?.toString()[0] || "H"}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <div className="font-medium">{event.creatorName || "Host Name"}</div>
-                <div className="text-sm text-white/60">Event Organizer</div>
+        {/* Event Host */}
+        {event.creatorId && (
+          <div className="py-4 border-t border-white/10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-12 w-12">
+                  <AvatarImage 
+                    src={event.creatorImage} 
+                    alt={event.creatorName || "Event Host"}
+                    className="object-cover"
+                  />
+                  <AvatarFallback>{(event.creatorName || "H")[0]}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <div className="font-medium">{event.creatorName || "Event Host"}</div>
+                  <div className="text-sm text-white/60">Event Organizer</div>
+                </div>
               </div>
+              <Button variant="outline" className="h-9">
+                Follow
+              </Button>
             </div>
-            <Button variant="outline" className="h-9">
-              Follow
-            </Button>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Bottom Actions */}
@@ -190,7 +188,7 @@ export default function EventPage() {
               onClick={() => participateMutation.mutate("attending")}
               disabled={participateMutation.isPending}
             >
-              {isPrivateEvent ? t('requestAccess') : t('buyTickets') + ` $${event.price}`}
+              {isPrivateEvent ? "Request Access" : `Buy Tickets • $${event.price}`}
             </Button>
           </div>
         </div>
