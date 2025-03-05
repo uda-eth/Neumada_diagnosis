@@ -36,12 +36,15 @@ export const events = pgTable("events", {
   category: text("category").notNull(),
   creatorId: integer("creator_id").references(() => users.id),
   capacity: integer("capacity"),
-  ticketPrice: numeric("ticket_price"), // Changed from price to ticketPrice
-  ticketType: text("ticket_type").notNull(), // free, paid, rsvp
+  ticketPrice: numeric("ticket_price"),
+  ticketType: text("ticket_type").notNull(),
   availableTickets: integer("available_tickets"),
   createdAt: timestamp("created_at").defaultNow(),
   isPrivate: boolean("is_private").default(false),
   isBusinessEvent: boolean("is_business_event").default(false),
+  tags: jsonb("tags").$type<string[]>().default([]),
+  attendingCount: integer("attending_count").default(0),
+  interestedCount: integer("interested_count").default(0),
 });
 
 export const eventParticipants = pgTable("event_participants", {
