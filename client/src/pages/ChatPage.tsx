@@ -4,9 +4,50 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChevronLeft, Send } from "lucide-react";
+import { ChevronLeft, Send, Bot, User } from "lucide-react";
 import { members } from "@/lib/members-data";
 import { useMessages } from "@/hooks/use-messages";
+import { motion, AnimatePresence } from "framer-motion";
+
+// Enhanced loading animation variants
+const loadingVariants = {
+  initial: { opacity: 0, scale: 0.8 },
+  animate: { 
+    opacity: 1, 
+    scale: 1,
+    transition: {
+      duration: 0.3,
+      ease: "easeOut"
+    }
+  },
+  exit: { 
+    opacity: 0, 
+    scale: 0.8,
+    transition: {
+      duration: 0.2
+    }
+  }
+};
+
+// Message animation variants
+const messageVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: {
+      duration: 0.3,
+      ease: "easeOut"
+    }
+  },
+  exit: {
+    opacity: 0,
+    y: -10,
+    transition: {
+      duration: 0.2
+    }
+  }
+};
 
 // Generate a mock conversation based on the member's mood
 const generateMockConversation = (memberMood: string) => {
@@ -38,7 +79,7 @@ const generateMockConversation = (memberMood: string) => {
     ]
   };
 
-  return moodBasedMessages[memberMood] || moodBasedMessages["Networking"];
+  return moodBasedMessages[memberMood as keyof typeof moodBasedMessages] || moodBasedMessages["Networking"];
 };
 
 export default function ChatPage() {
@@ -60,7 +101,7 @@ export default function ChatPage() {
     }
   }, [member]);
 
-  const handleSend = (e) => {
+  const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
 
@@ -112,8 +153,12 @@ export default function ChatPage() {
       <ScrollArea className="h-[calc(100vh-8rem)] py-4">
         <div className="container mx-auto px-4 space-y-4">
           {messages.map((message, index) => (
-            <div
+            <motion.div
               key={index}
+              variants={messageVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
               className={`flex ${message.sent ? "justify-end" : "justify-start"}`}
             >
               <div className="flex items-end gap-2 max-w-[80%] group">
@@ -136,7 +181,7 @@ export default function ChatPage() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </ScrollArea>
