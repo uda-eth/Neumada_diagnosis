@@ -112,7 +112,7 @@ MOCK_USERS["Mexico City"] = [
     bio: "Capturing the beauty of Mexico City through my lens. Love exploring hidden gems and sharing authentic travel stories.",
     interests: ["Travel", "Photography", "Writing", "Culture", "Food"],
     currentMoods: ["Exploring", "Creating", "Networking"],
-    profileImage: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&h=600&fit=crop&q=80", 
+    profileImage: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&h=600&fit=crop&q=80",
     createdAt: new Date().toISOString(), // Just created (newest)
     updatedAt: new Date().toISOString()
   },
@@ -127,7 +127,7 @@ MOCK_USERS["Mexico City"] = [
     bio: "Model based in Mexico City. Recently moved from Madrid for new creative opportunities. Looking to collaborate with photographers and designers.",
     interests: ["Fashion", "Photography", "Design", "Art", "Fitness"],
     currentMoods: ["Creating", "Networking", "Exploring"],
-    profileImage: "/attached_assets/profile-elena.jpg", 
+    profileImage: "/attached_assets/profile-elena.jpg",
     createdAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(), // Created 20 minutes ago
     updatedAt: new Date().toISOString()
   },
@@ -142,7 +142,7 @@ MOCK_USERS["Mexico City"] = [
     bio: "Film director seeking inspiration in the vibrant culture of Mexico City. Looking to connect with creative professionals for upcoming projects.",
     interests: ["Film", "Art", "Culture", "Music", "Photography"],
     currentMoods: ["Creating", "Networking", "Exploring"],
-    profileImage: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&h=600&fit=crop&q=80", 
+    profileImage: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&h=600&fit=crop&q=80",
     createdAt: new Date(Date.now() - 40 * 60 * 1000).toISOString(), // Created 40 minutes ago
     updatedAt: new Date().toISOString()
   },
@@ -157,7 +157,7 @@ MOCK_USERS["Mexico City"] = [
     bio: "Digital artist with a passion for blending traditional Mexican art with modern design. Looking to collaborate and find inspiration in this amazing city.",
     interests: ["Art", "Design", "Technology", "Culture", "Music"],
     currentMoods: ["Creating", "Learning", "Networking"],
-    profileImage: "https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?w=600&h=600&fit=crop&q=80", 
+    profileImage: "https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?w=600&h=600&fit=crop&q=80",
     createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(), // Created an hour ago
     updatedAt: new Date().toISOString()
   },
@@ -172,7 +172,7 @@ MOCK_USERS["Mexico City"] = [
     bio: "Creative soul with a passion for sustainable fashion. Recently moved to Mexico City to find inspiration for my new collection. Looking to connect with artists and designers.",
     interests: ["Fashion", "Design", "Sustainability", "Art", "Culture"],
     currentMoods: ["Creating", "Exploring", "Networking"],
-    profileImage: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&h=600&fit=crop&q=80", 
+    profileImage: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&h=600&fit=crop&q=80",
     createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // Created 2 hours ago
     updatedAt: new Date().toISOString()
   },
@@ -263,6 +263,20 @@ tomorrow.setDate(tomorrow.getDate() + 1);
 
 const newEvents = {
   "Mexico City": [
+    {
+      id: 1012,
+      title: "Pargot Restaurant Couples Food & Wine Pairing",
+      description: "Experience an intimate evening of culinary excellence at Pargot Restaurant. This exclusive couples' event features a meticulously crafted six-course tasting menu paired with premium wines from around the world. Each dish is artfully prepared with locally-sourced ingredients and edible flowers, creating a feast for both the eyes and palate. Our expert sommelier will guide you through each pairing, explaining the unique characteristics that make each combination extraordinary.\n\nPerfect for date night or special celebrations, this intimate dining experience is limited to 12 couples to ensure personalized attention and an unforgettable evening.",
+      date: new Date(2025, 2, 15, 19, 30).toISOString(), // March 15, 2025, 7:30 PM
+      location: "Mexico City",
+      category: "Dining",
+      image: "/attached_assets/Screenshot 2025-03-04 at 10.35.46 PM.png",
+      capacity: 24,
+      price: 195,
+      createdAt: new Date().toISOString(),
+      interestedCount: 18,
+      tags: ["Food & Wine", "Date Night", "Fine Dining", "Couples"]
+    },
     {
       id: 1001,
       title: "Blanco Yoga Beachside Retreat",
@@ -474,21 +488,21 @@ export function registerRoutes(app: Express): Server {
 
       if (interests) {
         const interestArray = Array.isArray(interests) ? interests : [interests];
-        filteredUsers = filteredUsers.filter(user => 
+        filteredUsers = filteredUsers.filter(user =>
           user.interests && interestArray.some(interest => user.interests?.includes(interest))
         );
       }
 
       if (moods) {
         const moodArray = Array.isArray(moods) ? moods : [moods];
-        filteredUsers = filteredUsers.filter(user => 
+        filteredUsers = filteredUsers.filter(user =>
           user.currentMoods && moodArray.some(mood => user.currentMoods?.includes(mood))
         );
       }
 
       if (name) {
         const lowercaseName = name.toLowerCase();
-        filteredUsers = filteredUsers.filter(user => 
+        filteredUsers = filteredUsers.filter(user =>
           (user.fullName && user.fullName.toLowerCase().includes(lowercaseName)) ||
           (user.username && user.username.toLowerCase().includes(lowercaseName))
         );
@@ -503,10 +517,10 @@ export function registerRoutes(app: Express): Server {
       });
 
       // Log sorted users for debugging
-      console.log("Sorted users:", filteredUsers.map(u => ({ 
-        name: u.fullName, 
+      console.log("Sorted users:", filteredUsers.map(u => ({
+        name: u.fullName,
         createdAt: u.createdAt,
-        profileImage: u.profileImage 
+        profileImage: u.profileImage
       })));
 
       res.json(filteredUsers);
