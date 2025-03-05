@@ -91,5 +91,15 @@ export const members: Member[] = [
     interests: ["Business Strategy", "Operations", "Leadership"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.33.27 PM.png",
     occupation: "Executive Operator"
+  },
+  {
+    id: 9,
+    name: "German Anaya",
+    age: 50,
+    location: "Mexico City",
+    bio: "DJ and fitness instructor bringing rhythm and wellness together in unique ways.",
+    interests: ["Music", "Fitness", "Wellness"],
+    image: "/attached_assets/Screenshot 2025-03-04 at 8.34.30 PM.png",
+    occupation: "DJ & Fitness Instructor"
   }
 ];
