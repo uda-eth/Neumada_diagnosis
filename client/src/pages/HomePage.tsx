@@ -4,7 +4,6 @@ import { useEvents } from "@/hooks/use-events";
 import { useUser } from "@/hooks/use-user";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -210,136 +209,14 @@ export default function HomePage() {
                   {t('signIn')}
                 </Button>
               )}
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white">
-                    <Plus className="h-5 w-5 md:mr-2" />
-                    <span className="hidden md:inline">{t('createEvent')}</span>
-                    <span className="inline md:hidden">{t('create')}</span>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="fixed left-[50%] top-[50%] z-[101] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg border-border">
-                  <DialogHeader>
-                    <DialogTitle className="text-foreground">{t('createNewEvent')}</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label className="text-foreground">{t('title')}</Label>
-                      <Input
-                        value={newEvent.title}
-                        onChange={(e) =>
-                          setNewEvent({ ...newEvent, title: e.target.value })
-                        }
-                        className="bg-background border-border text-foreground"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-foreground">{t('eventImage')}</Label>
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) =>
-                          setNewEvent({ ...newEvent, imageFile: e.target.files?.[0] || null })
-                        }
-                        className="bg-background border-border text-foreground"
-                      />
-                      <p className="text-sm text-muted-foreground">
-                        {t('uploadImageDescription')}
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-foreground">{t('description')}</Label>
-                      <Textarea
-                        value={newEvent.description}
-                        onChange={(e) =>
-                          setNewEvent({ ...newEvent, description: e.target.value })
-                        }
-                        className="bg-background border-border text-foreground"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-foreground">{t('location')}</Label>
-                        <Select
-                          onValueChange={(value) =>
-                            setNewEvent({ ...newEvent, location: value })
-                          }
-                        >
-                          <SelectTrigger className="bg-background border-border text-foreground">
-                            <SelectValue placeholder="Select location" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-background border-border">
-                            {cities.map((city) => (
-                              <SelectItem key={city} value={city} className="text-foreground">
-                                {city}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-foreground">{t('category')}</Label>
-                        <Select
-                          onValueChange={(value) =>
-                            setNewEvent({ ...newEvent, category: value })
-                          }
-                        >
-                          <SelectTrigger className="bg-background border-border text-foreground">
-                            <SelectValue placeholder="Select category" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-background border-border">
-                            {categories.map((cat) => (
-                              <SelectItem key={cat} value={cat} className="text-foreground">
-                                {cat}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-foreground">{t('date')}</Label>
-                        <Input
-                          type="datetime-local"
-                          value={newEvent.date}
-                          onChange={(e) =>
-                            setNewEvent({ ...newEvent, date: e.target.value })
-                          }
-                          className="bg-background border-border text-foreground"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-foreground">{t('capacity')}</Label>
-                        <Input
-                          type="number"
-                          value={newEvent.capacity}
-                          onChange={(e) =>
-                            setNewEvent({
-                              ...newEvent,
-                              capacity: parseInt(e.target.value) || 0,
-                            })
-                          }
-                          className="bg-background border-border text-foreground"
-                        />
-                      </div>
-                    </div>
-                    <Button
-                      onClick={handleCreateEvent}
-                      className="w-full mt-6 bg-primary text-white hover:bg-primary/90"
-                      disabled={
-                        !newEvent.title ||
-                        !newEvent.description ||
-                        !newEvent.location ||
-                        !newEvent.category ||
-                        !newEvent.date
-                      }
-                    >
-                      {t('createEvent')}
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button 
+                className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white flex items-center justify-center"
+                onClick={() => setLocation("/create")}
+              >
+                <Plus className="h-5 w-5 md:mr-2" />
+                <span className="hidden md:inline">{t('createEvent')}</span>
+                <span className="inline md:hidden">{t('create')}</span>
+              </Button>
             </div>
           </div>
         </div>
