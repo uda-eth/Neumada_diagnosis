@@ -43,6 +43,7 @@ const categories = [
   "Getaways",
   "Networking",
   "Nightlife",
+  "Retail",
   "Retreats",
   "Social",
   "Sports",
@@ -343,6 +344,7 @@ export default function HomePage() {
           </div>
         </div>
       </header>
+
 
 
       <ScrollArea className="h-[calc(100vh-8rem)]">
