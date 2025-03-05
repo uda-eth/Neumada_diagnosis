@@ -172,7 +172,7 @@ export const CREATOR_PROFILE = {
   username: "lucahudek",
   fullName: "Luca Hudek",
   profession: "Digital Nomad Platform Creator",
-  profileImage: "/attached_assets/Screenshot 2025-02-24 at 2.22.24 PM.png",
+  profileImage: "/attached_assets/Screenshot 2025-03-04 at 11.21.13 PM.png",
   location: "Mexico City",
   nextLocation: "Berlin",
   interests: ["Digital Marketing", "Software Development", "Remote Work", "Travel", "Photography"],
