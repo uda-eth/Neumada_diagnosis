@@ -214,7 +214,7 @@ export default function HomePage() {
                 <DialogTrigger asChild>
                   <Button className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white">
                     <Plus className="h-5 w-5 md:mr-2" />
-                    <span className="hidden md:inline">{t('publishEvent')}</span>
+                    <span className="hidden md:inline">{t('createEvent')}</span>
                     <span className="inline md:hidden">{t('create')}</span>
                   </Button>
                 </DialogTrigger>
