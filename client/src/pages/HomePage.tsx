@@ -323,17 +323,20 @@ export default function HomePage() {
                                     {event.location}
                                   </span>
                                 </div>
-                                <Button 
-                                  variant="secondary" 
-                                  size="sm"
-                                  className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setLocation(`/event/${event.id}/register`);
-                                  }}
-                                >
-                                  Buy
-                                </Button>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-medium">${event.price}</span>
+                                  <Button 
+                                    variant="secondary" 
+                                    size="sm"
+                                    className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setLocation(`/event/${event.id}/register`);
+                                    }}
+                                  >
+                                    Buy
+                                  </Button>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -448,17 +451,20 @@ export default function HomePage() {
                                     {event.location}
                                   </span>
                                 </div>
-                                <Button 
-                                  variant="secondary" 
-                                  size="sm"
-                                  className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setLocation(`/event/${event.id}/register`);
-                                  }}
-                                >
-                                  Buy
-                                </Button>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-medium">${event.price}</span>
+                                  <Button 
+                                    variant="secondary" 
+                                    size="sm"
+                                    className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setLocation(`/event/${event.id}/register`);
+                                    }}
+                                  >
+                                    Buy
+                                  </Button>
+                                </div>
                               </div>
                             </div>
                           </div>
