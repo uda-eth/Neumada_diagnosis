@@ -383,12 +383,12 @@ export default function HomePage() {
                         onClick={() => setLocation(`/event/${event.id}`)}
                       >
                         <CardContent className="p-0">
-                          <div className="flex flex-col md:flex-row h-auto md:h-[180px]">
-                            <div className="w-full md:w-[180px] h-[180px]">
+                          <div className="flex flex-col md:flex-row h-auto">
+                            <div className="w-full md:w-[180px] h-[140px] md:h-[180px]">
                               <img
                                 src={event.image}
                                 alt={event.title}
-                                className="h-full w-full object-cover"
+                                className="h-full w-full object-contain md:object-cover"
                               />
                             </div>
                             <div className="flex-1 p-4 flex flex-col justify-between">
@@ -468,12 +468,12 @@ export default function HomePage() {
                         onClick={() => setLocation(`/event/${event.id}`)}
                       >
                         <CardContent className="p-0">
-                          <div className="flex flex-col md:flex-row h-auto md:h-[180px]">
-                            <div className="w-full md:w-[180px] h-[180px]">
+                          <div className="flex flex-col md:flex-row h-auto">
+                            <div className="w-full md:w-[180px] h-[140px] md:h-[180px]">
                               <img
                                 src={event.image}
                                 alt={event.title}
-                                className="h-full w-full object-cover"
+                                className="h-full w-full object-contain md:object-cover"
                               />
                             </div>
                             <div className="flex-1 p-4 flex flex-col justify-between">
