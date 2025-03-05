@@ -476,19 +476,16 @@ export default function HomePage() {
                     {/* Desktop version */}
                     <img 
                       src="/attached_assets/Screenshot 2025-03-05 at 1.30.57 AM.png"
-                      alt="Thompson Mexico City - Where Culture Lives"
+                      alt="Thompson Mexico City"
                       className="w-full object-cover h-[400px] hidden md:block"
                     />
                     {/* Mobile version - only green section */}
-                    <div className="md:hidden bg-[#1D2D29] py-12 px-6 text-center">
+                    <div className="md:hidden bg-[#1D2D29] py-8 px-6 text-center">
                       <img 
                         src="/attached_assets/Screenshot 2025-03-05 at 1.30.57 AM.png"
                         alt="Thompson Mexico City Logo"
-                        className="w-64 mx-auto mb-8"
+                        className="w-64 mx-auto"
                       />
-                      <p className="text-[#D4D5C7] text-base tracking-[0.2em] font-medium">
-                        WHERE CULTURE LIVES IN MEXICO CITY
-                      </p>
                     </div>
                   </div>
                 </div>
