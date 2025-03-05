@@ -14,6 +14,28 @@ export interface Member {
 
 export const members: Member[] = [
   {
+    id: 18,
+    name: "Alexander Grey",
+    age: 32,
+    location: "Barcelona",
+    bio: "Luxury fashion consultant and brand strategist. Specializing in sustainable fashion and premium market trends.",
+    interests: ["Fashion", "Luxury Brands", "Sustainability", "Design"],
+    image: "/attached_assets/Screenshot 2024-03-06 at 12.19.10 PM.png",
+    occupation: "Fashion Consultant",
+    currentMood: "Networking"
+  },
+  {
+    id: 17,
+    name: "Sofia Chen",
+    age: 28,
+    location: "Mexico City",
+    bio: "Fashion editor and creative consultant specializing in sustainable luxury. Bridging the gap between high fashion and conscious consumption.",
+    interests: ["Fashion", "Sustainability", "Art Direction", "Photography"],
+    image: "/attached_assets/Screenshot 2024-03-06 at 10.23.10 AM.png",
+    occupation: "Fashion Editor",
+    currentMood: "Networking"
+  },
+  {
     id: 17,
     name: "Sofia Chen",
     age: 28,
