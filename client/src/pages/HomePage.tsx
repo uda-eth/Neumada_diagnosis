@@ -489,21 +489,21 @@ export default function HomePage() {
                 </section>
               )}
 
-              {/* Ad Space - Sheybarah Island */}
+              {/* Ad Space - Thompson Mexico City */}
               <section className="py-8">
                 <div className="w-full relative">
                   <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-                    Ad Space
+                    Premium Ad Partner
                   </div>
                   <div className="rounded-lg overflow-hidden">
                     <img 
-                      src="/attached_assets/Screenshot 2025-03-05 at 12.28.47 AM.png"
-                      alt="Sheybarah Island"
+                      src="/attached_assets/Screenshot 2025-03-05 at 12.31.08 AM.png"
+                      alt="Thompson Mexico City"
                       className="w-full object-cover h-[400px]"
                     />
                     <div className="bg-black/80 text-white p-6">
-                      <h3 className="text-2xl font-semibold mb-2">SAUDI ARABIA</h3>
-                      <p className="text-lg text-white/60">Shebara Island</p>
+                      <h3 className="text-2xl font-semibold mb-2">Introducing Thompson Mexico City</h3>
+                      <p className="text-lg text-white/60">Hotel & Residences - Mexico City Reforma</p>
                     </div>
                   </div>
                 </div>
