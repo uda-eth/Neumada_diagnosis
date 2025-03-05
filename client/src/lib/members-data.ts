@@ -101,5 +101,25 @@ export const members: Member[] = [
     interests: ["Music", "Fitness", "Wellness"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.34.30 PM.png",
     occupation: "DJ & Fitness Instructor"
+  },
+  {
+    id: 10,
+    name: "Elena Chen",
+    age: 32,
+    location: "Mexico City",
+    bio: "International art director and curator specializing in contemporary Asian and Latin American art movements.",
+    interests: ["Contemporary Art", "Cultural Fusion", "Exhibition Design"],
+    image: "/attached_assets/Screenshot 2024-03-06 at 11.24.17 AM.png",
+    occupation: "Art Director & Curator"
+  },
+  {
+    id: 11,
+    name: "Amara Diallo",
+    age: 28,
+    location: "Mexico City",
+    bio: "Fashion business strategist and sustainability advocate revolutionizing luxury retail in Latin America.",
+    interests: ["Sustainable Fashion", "Luxury Retail", "Business Strategy"],
+    image: "/attached_assets/Screenshot 2024-03-06 at 10.22.46 AM.png",
+    occupation: "Fashion Business Strategist"
   }
 ];
