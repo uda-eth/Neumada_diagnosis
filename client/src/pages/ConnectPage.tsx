@@ -21,7 +21,7 @@ const moodStyles = {
 
 export function ConnectPage() {
   return (
-    <div className="container py-6 space-y-6">
+    <div className="container py-6 space-y-6 relative pb-24">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">Connect</h1>
       </div>
@@ -110,6 +110,17 @@ export function ConnectPage() {
             </Card>
           </Link>
         ))}
+      </div>
+
+      {/* Premium Ad Partner - Fixed at bottom */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-t border-border">
+        <div className="container py-4">
+          <img 
+            src="/attached_assets/Screenshot 2025-03-05 at 8.09.43 AM.png"
+            alt="Premium Ad Partner"
+            className="w-full max-w-md mx-auto h-auto object-contain"
+          />
+        </div>
       </div>
     </div>
   );
