@@ -52,9 +52,19 @@ const categories = [
   "Volunteer",
 ];
 
-const AvatarImage = ({ src, alt }: { src: string; alt: string }) => (
-  <img src={src} alt={alt} className="w-6 h-6 rounded-full object-cover" />
-);
+const AvatarImage = ({ src, alt }: { src: string; alt: string }) => {
+  const [error, setError] = useState(false);
+  const fallbackImage = "/attached_assets/profile-image-1.jpg"; // Default fallback image
+
+  return (
+    <img 
+      src={error ? fallbackImage : src} 
+      alt={alt} 
+      className="w-6 h-6 rounded-full object-cover"
+      onError={() => setError(true)}
+    />
+  );
+};
 
 export default function HomePage() {
   const { t } = useTranslation();
@@ -334,6 +344,23 @@ export default function HomePage() {
         </div>
       </header>
 
+      {/* Add Spotify Player */}
+      <div className="container mx-auto px-4 py-4">
+        <div className="w-full max-w-3xl mx-auto">
+          <iframe 
+            style={{borderRadius: "12px"}} 
+            src="https://open.spotify.com/embed/track/03jQHo0HFj5onzoexiaMPI?utm_source=generator&theme=0" 
+            width="100%" 
+            height="152" 
+            frameBorder="0" 
+            allowFullScreen 
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+            loading="lazy"
+            className="w-full"
+          />
+        </div>
+      </div>
+
       <ScrollArea className="h-[calc(100vh-8rem)]">
         <main className="container mx-auto px-4 py-8 pb-24 md:pb-8">
           <div className="mb-8 space-y-4">
@@ -425,12 +452,10 @@ export default function HomePage() {
                                         key={`attending-${user.id}`} 
                                         className="border-2 border-background w-6 h-6"
                                         onClick={() => setLocation(`/profile/${user.id}`)}
-                                        style={{cursor: 'pointer'}}
                                       >
                                         <AvatarImage 
-                                          src={user.image} 
+                                          src={user.image || `/attached_assets/profile-image-${(user.id % 10) + 1}.jpg`} 
                                           alt={getFirstName(user.name)}
-                                          className="object-cover"
                                         />
                                         <AvatarFallback>{getFirstName(user.name)[0]}</AvatarFallback>
                                       </Avatar>
@@ -440,12 +465,10 @@ export default function HomePage() {
                                         key={`interested-${user.id}`} 
                                         className="border-2 border-background w-6 h-6"
                                         onClick={() => setLocation(`/profile/${user.id}`)}
-                                        style={{cursor: 'pointer'}}
                                       >
                                         <AvatarImage 
-                                          src={user.image} 
+                                          src={user.image || `/attached_assets/profile-image-${(user.id % 10) + 1}.jpg`} 
                                           alt={getFirstName(user.name)}
-                                          className="object-cover"
                                         />
                                         <AvatarFallback>{getFirstName(user.name)[0]}</AvatarFallback>
                                       </Avatar>
@@ -534,12 +557,10 @@ export default function HomePage() {
                                         key={`attending-${user.id}`} 
                                         className="border-2 border-background w-6 h-6"
                                         onClick={() => setLocation(`/profile/${user.id}`)}
-                                        style={{cursor: 'pointer'}}
                                       >
                                         <AvatarImage 
-                                          src={user.image} 
+                                          src={user.image || `/attached_assets/profile-image-${(user.id % 10) + 1}.jpg`} 
                                           alt={getFirstName(user.name)}
-                                          className="object-cover"
                                         />
                                         <AvatarFallback>{getFirstName(user.name)[0]}</AvatarFallback>
                                       </Avatar>
@@ -549,12 +570,10 @@ export default function HomePage() {
                                         key={`interested-${user.id}`} 
                                         className="border-2 border-background w-6 h-6"
                                         onClick={() => setLocation(`/profile/${user.id}`)}
-                                        style={{cursor: 'pointer'}}
                                       >
                                         <AvatarImage 
-                                          src={user.image} 
+                                          src={user.image || `/attached_assets/profile-image-${(user.id % 10) + 1}.jpg`} 
                                           alt={getFirstName(user.name)}
-                                          className="object-cover"
                                         />
                                         <AvatarFallback>{getFirstName(user.name)[0]}</AvatarFallback>
                                       </Avatar>
