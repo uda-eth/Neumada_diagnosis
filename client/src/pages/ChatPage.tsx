@@ -9,6 +9,12 @@ import { members } from "@/lib/members-data";
 import { useMessages } from "@/hooks/use-messages";
 import { motion, AnimatePresence } from "framer-motion";
 
+interface Message {
+  sent: boolean;
+  content: string;
+  timestamp?: string;
+}
+
 // Enhanced loading animation variants
 const loadingVariants = {
   initial: { opacity: 0, scale: 0.8 },
@@ -50,7 +56,7 @@ const messageVariants = {
 };
 
 // Generate a mock conversation based on the member's mood
-const generateMockConversation = (memberMood: string) => {
+const generateMockConversation = (memberMood: string): Message[] => {
   const moodBasedMessages = {
     "Networking": [
       { sent: false, content: "Hi! I saw you're also in tech. Would love to connect!" },
@@ -85,7 +91,7 @@ const generateMockConversation = (memberMood: string) => {
 export default function ChatPage() {
   const { username } = useParams();
   const [, setLocation] = useLocation();
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const messageStore = useMessages();
 
