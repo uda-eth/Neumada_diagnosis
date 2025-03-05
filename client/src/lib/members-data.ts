@@ -151,5 +151,15 @@ export const members: Member[] = [
     interests: ["Sustainability", "Research", "Innovation"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.40.31 PM.png",
     occupation: "Research Scientist"
+  },
+  {
+    id: 15,
+    name: "Paty Yrys",
+    age: 39,
+    location: "Mexico City",
+    bio: "Creative entrepreneur and digital nomad exploring the intersection of lifestyle and technology in Mexico City's dynamic environment.",
+    interests: ["Digital Nomad", "Creative Direction", "Entrepreneurship"],
+    image: "/attached_assets/Screenshot 2025-03-04 at 8.41.36 PM.png",
+    occupation: "Creative Entrepreneur"
   }
 ];
