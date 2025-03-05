@@ -344,26 +344,8 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Add Spotify Player */}
-      <div className="container mx-auto px-4 py-4">
-        <div className="w-full max-w-3xl mx-auto">
-          <h2 className="text-xl font-semibold mb-4 text-white">Maly Music Coming Soon</h2>
-          <iframe 
-            style={{borderRadius: "12px"}} 
-            src="https://open.spotify.com/embed/track/03jQHo0HFj5onzoexiaMPI?utm_source=generator&theme=0" 
-            width="100%" 
-            height="352" 
-            frameBorder="0" 
-            allowFullScreen 
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-            loading="lazy"
-            className="w-full"
-          />
-        </div>
-      </div>
 
-      {/* Ad Space - Aman Premium Hotel Partner */}
-      <div className="container mx-auto px-4 py-4">
+      <div className="container mx-auto px-4 py-6">
         <div className="w-full max-w-3xl mx-auto relative">
           <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
             Ad Space
@@ -372,11 +354,11 @@ export default function HomePage() {
             <img 
               src="/attached_assets/download.jpg"
               alt="Aman Premium Hotel Partner"
-              className="w-full object-cover h-[300px]"
+              className="w-full object-cover h-[400px]"
             />
-            <div className="bg-black/80 text-white p-4">
-              <h3 className="text-lg font-semibold">Aman Premium Hotel Partner</h3>
-              <p className="text-sm text-white/60">Future Partnership Opportunities Coming Soon</p>
+            <div className="bg-black/80 text-white p-6">
+              <h3 className="text-2xl font-semibold mb-2">Aman Premium Hotel Partner</h3>
+              <p className="text-lg text-white/60">Future Partnership Opportunities Coming Soon</p>
             </div>
           </div>
         </div>
