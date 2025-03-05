@@ -9,13 +9,50 @@ import { useLocation } from "wouter";
 import { useMessages, useMessageNotifications } from "@/hooks/use-messages";
 import { members } from "@/lib/members-data";
 
-// Mock conversations for demo
+// Generate relevant messages based on mood
+const getMoodMessage = (mood: string) => {
+  const messages = {
+    "Networking": [
+      "Would love to discuss potential collaboration opportunities! ☕️",
+      "Your recent project caught my attention. Let's connect!",
+      "Looking to expand my professional network here in the city.",
+    ],
+    "Dating": [
+      "Hey! Want to grab coffee at that new place downtown? 😊",
+      "Loved your travel photos! Where was that taken?",
+      "I know this amazing rooftop bar with great views...",
+    ],
+    "Parties": [
+      "Don't forget about tonight's event at Condesa! 🎉",
+      "Are you going to the art gallery opening this weekend?",
+      "Just got VIP passes for the new club opening! Interested?",
+    ],
+    "Adventure": [
+      "Planning a hike this weekend, want to join? 🏔️",
+      "Found this amazing hidden spot in the city!",
+      "Up for some urban exploration tomorrow?",
+    ],
+    "Dining Out": [
+      "Have you tried that new fusion place in Roma? 🍜",
+      "Know any good spots for authentic Mexican food?",
+      "Found an amazing hidden gem restaurant yesterday!",
+    ]
+  };
+
+  return messages[mood][Math.floor(Math.random() * messages[mood].length)];
+};
+
+// Mock conversations for demo with mood-based messages
 const mockConversations = members.slice(0, 5).map(member => ({
   id: member.id,
   user: member,
   lastMessage: {
-    content: "Hey, would you like to meet up for coffee?",
-    timestamp: "10:30",
+    content: getMoodMessage(member.currentMood),
+    timestamp: new Date().toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute:'2-digit',
+      hour12: false 
+    }),
     unread: Math.random() > 0.5,
   }
 }));
