@@ -44,7 +44,7 @@ export const members: Member[] = [
     interests: ["Festivals", "Spirituality", "Art"],
     image: "/attached_assets/Screenshot 2023-11-12 at 12.56.16 PM.png",
     occupation: "Festival Artist",
-    currentMood: "Parties"
+    currentMood: "Adventure"
   },
   {
     id: 4,
@@ -55,7 +55,7 @@ export const members: Member[] = [
     interests: ["Content Creation", "Photography", "Cultural Exchange"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.28.10 PM.png",
     occupation: "Content Producer",
-    currentMood: "Dating"
+    currentMood: "Parties"
   },
   {
     id: 5,
