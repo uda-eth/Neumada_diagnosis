@@ -479,12 +479,12 @@ export default function HomePage() {
                       alt="Thompson Mexico City"
                       className="w-full object-cover h-[400px] hidden md:block"
                     />
-                    {/* Mobile version - only green section */}
-                    <div className="md:hidden bg-[#1D2D29] py-8 px-6 text-center">
+                    {/* Mobile version */}
+                    <div className="md:hidden py-6 px-4 text-center">
                       <img 
                         src="/attached_assets/Screenshot 2025-03-05 at 1.30.57 AM.png"
                         alt="Thompson Mexico City Logo"
-                        className="w-64 mx-auto"
+                        className="w-full mx-auto"
                       />
                     </div>
                   </div>
