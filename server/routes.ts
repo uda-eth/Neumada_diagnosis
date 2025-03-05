@@ -127,7 +127,7 @@ MOCK_USERS["Mexico City"] = [
     bio: "Model based in Mexico City. Recently moved from Madrid for new creative opportunities. Looking to collaborate with photographers and designers.",
     interests: ["Fashion", "Photography", "Design", "Art", "Fitness"],
     currentMoods: ["Creating", "Networking", "Exploring"],
-    profileImage: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=600&h=600&fit=crop&q=80", 
+    profileImage: "/attached_assets/profile-elena.jpg", 
     createdAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(), // Created 20 minutes ago
     updatedAt: new Date().toISOString()
   },
@@ -208,16 +208,16 @@ MOCK_USERS["Mexico City"] = [
   },
   {
     id: 1002,
-    username: "alex_remote",
-    fullName: "Alex Chen",
-    age: 31,
+    username: "miguel_designer",
+    fullName: "Miguel Ortiz",
+    age: 29,
     gender: "male",
-    profession: "Software Developer",
+    profession: "Fashion Designer",
     location: "Mexico City",
-    bio: "Software developer working remotely while exploring Mexico City. Looking for good coffee shops and coworking spaces.",
-    interests: ["Coding", "Coffee", "Technology", "Remote Work"],
-    currentMoods: ["Working", "Networking"],
-    profileImage: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=600&h=600&fit=crop&q=80",
+    bio: "Avant-garde fashion designer exploring cultural fusion in my work. Looking to connect with models and photographers in Mexico City.",
+    interests: ["Fashion", "Design", "Art", "Culture", "Photography"],
+    currentMoods: ["Creating", "Networking", "Exploring"],
+    profileImage: "/attached_assets/profile-miguel.jpg",
     createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // Created yesterday
     updatedAt: new Date().toISOString()
   },
