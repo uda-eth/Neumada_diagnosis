@@ -6,6 +6,7 @@ import { ChevronLeft } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useTranslation } from "@/lib/translations";
 import type { Event } from "@db/schema";
 
 export default function EventPage() {
@@ -13,6 +14,7 @@ export default function EventPage() {
   const [, setLocation] = useLocation();
   const { user } = useUser();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const { data: event, isLoading } = useQuery<Event>({
     queryKey: [`/api/events/${id}`],
@@ -55,6 +57,13 @@ export default function EventPage() {
   const isPrivateEvent = event.price === undefined || event.price === null;
   const interestedCount = Math.floor(Math.random() * 50 + 10); // Placeholder for demo
 
+  // Mock interested users for demo
+  const interestedUsers = Array.from({ length: Math.min(interestedCount, 5) }, (_, i) => ({
+    id: i,
+    name: `User ${i + 1}`,
+    image: `https://images.unsplash.com/photo-${1500000000000 + i}?w=100&h=100&fit=crop&q=80`
+  }));
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
@@ -85,15 +94,32 @@ export default function EventPage() {
 
       {/* Event Details */}
       <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Tags */}
-        <div className="flex gap-2 flex-wrap">
-          {event.category && (
+        {/* Tags and Interested Users */}
+        <div className="flex flex-col gap-4">
+          <div className="flex gap-2 flex-wrap">
+            {event.category && (
+              <div className="px-3 py-1 rounded-full bg-white/10 text-sm">
+                {event.category}
+              </div>
+            )}
             <div className="px-3 py-1 rounded-full bg-white/10 text-sm">
-              {event.category}
+              {interestedCount} interested
             </div>
-          )}
-          <div className="px-3 py-1 rounded-full bg-white/10 text-sm">
-            {interestedCount} interested
+          </div>
+
+          {/* Interested Users Avatars */}
+          <div className="flex -space-x-2 overflow-hidden">
+            {interestedUsers.map((user, index) => (
+              <Avatar key={user.id} className="inline-block ring-2 ring-background">
+                <AvatarImage src={user.image} alt={user.name} />
+                <AvatarFallback>{user.name[0]}</AvatarFallback>
+              </Avatar>
+            ))}
+            {interestedCount > 5 && (
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 text-xs font-medium">
+                +{interestedCount - 5}
+              </div>
+            )}
           </div>
         </div>
 
@@ -113,13 +139,13 @@ export default function EventPage() {
         {/* Price */}
         <div className="py-4 border-t border-white/10">
           <div className="text-xl font-semibold">
-            {isPrivateEvent ? "RSVP required" : `$${event.price} USD`}
+            {isPrivateEvent ? t('rsvpRequired') : `$${event.price} USD`}
           </div>
         </div>
 
         {/* Description */}
         <div className="space-y-2">
-          <h2 className="text-lg font-semibold">Details</h2>
+          <h2 className="text-lg font-semibold">{t('details')}</h2>
           <p className="text-white/80 whitespace-pre-wrap">
             {event.description}
           </p>
@@ -155,7 +181,7 @@ export default function EventPage() {
               onClick={() => participateMutation.mutate("attending")}
               disabled={participateMutation.isPending}
             >
-              {isPrivateEvent ? "Request Access" : `Buy ticket $${event.price}`}
+              {isPrivateEvent ? t('requestAccess') : t('buyTickets') + ` $${event.price}`}
             </Button>
           </div>
         </div>
