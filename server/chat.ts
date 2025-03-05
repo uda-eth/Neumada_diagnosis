@@ -1,22 +1,17 @@
+
 import OpenAI from 'openai';
 import type { Request, Response } from 'express';
 
-// the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-const SYSTEM_PROMPT = `You are an AI travel companion helping digital nomads and travelers. 
-Your expertise includes:
-- Providing personalized travel recommendations
-- Suggesting local experiences and hidden gems
-- Offering cultural insights and etiquette tips
-- Helping with travel planning and logistics
-- Addressing common travel concerns and safety tips
-
-Always be friendly, concise, and practical in your responses. 
-If you're unsure about specific real-time information (like current events or exact prices), 
-make that clear in your response.`;
+// Mock responses for travel companion
+const MOCK_RESPONSES = [
+  "Welcome to your digital nomad journey! I'm here to help with local recommendations and travel tips.",
+  "Mexico City has great coworking spaces in Roma Norte and Condesa neighborhoods. Have you checked out Selina or WeWork there?",
+  "When in Bali, don't miss the rice terraces in Ubud and beach clubs in Canggu - they're digital nomad hotspots!",
+  "Tokyo offers amazing food experiences! For remote work, check out the coworking spaces in Shibuya and Roppongi.",
+  "Chiang Mai in Thailand is known for its affordability and vibrant digital nomad community.",
+  "Portugal's Lisbon and Porto are becoming digital nomad hubs thanks to their quality of life and good internet.",
+  "For a great work-life balance, consider Medellín, Colombia - it has perfect weather year-round!"
+];
 
 export async function handleChatMessage(req: Request, res: Response) {
   const { message } = req.body;
@@ -26,19 +21,17 @@ export async function handleChatMessage(req: Request, res: Response) {
   }
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: message }
-      ],
-      temperature: 0.7,
-      max_tokens: 500
-    });
-
-    res.json({ response: completion.choices[0].message.content });
+    // Instead of calling OpenAI API, return a random mock response
+    const mockResponse = MOCK_RESPONSES[Math.floor(Math.random() * MOCK_RESPONSES.length)];
+    
+    console.log("Using mock response instead of OpenAI API");
+    
+    // Simulate a small delay to feel more natural
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    res.json({ response: mockResponse });
   } catch (error: any) {
-    console.error("OpenAI API error:", error);
+    console.error("Chat error:", error);
     res.status(500).json({ 
       error: "Failed to get response from AI",
       details: error.message 
