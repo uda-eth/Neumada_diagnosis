@@ -1,8 +1,16 @@
 import { BottomNav } from "./bottom-nav";
 import { Logo } from "./logo";
-import { Bot } from "lucide-react";
+import { Bot, Menu } from "lucide-react";
 import { Button } from "./button";
 import { useLocation } from "wouter";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { navItems } from "./bottom-nav";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -31,6 +39,35 @@ export function Layout({ children }: LayoutProps) {
               <Bot className="h-5 w-5 mr-2" />
               City Guide
             </Button>
+
+            {/* Desktop Navigation Menu */}
+            <div className="hidden md:block">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Menu className="h-5 w-5" />
+                    <span className="sr-only">Toggle navigation menu</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  {navItems.map((item) => (
+                    <DropdownMenuItem 
+                      key={item.href}
+                      className="cursor-pointer"
+                      onClick={() => setLocation(item.href)}
+                    >
+                      <item.icon className="mr-2 h-4 w-4" />
+                      <span>{item.label}</span>
+                      {item.badge && (
+                        <span className="ml-auto bg-destructive text-destructive-foreground text-xs px-1.5 py-0.5 rounded">
+                          {item.badge}
+                        </span>
+                      )}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
       </header>
