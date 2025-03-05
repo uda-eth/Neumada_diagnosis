@@ -421,20 +421,44 @@ export default function HomePage() {
                                     {event.location}
                                   </span>
                                 </div>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="ml-2 flex-shrink-0 text-xs h-7 px-2 md:h-8 md:px-3"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toast({
-                                      title: "RSVP Successful",
-                                      description: "You're going to " + event.title
-                                    });
-                                  }}
-                                >
-                                  RSVP
-                                </Button>
+                                <div className="flex items-center gap-2">
+                                  {event.price ? (
+                                    <>
+                                      <span className="text-xs md:text-sm font-medium">
+                                        ${event.price}
+                                      </span>
+                                      <Button
+                                        variant="default"
+                                        size="sm"
+                                        className="text-xs h-7 px-2 md:h-8 md:px-3"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          toast({
+                                            title: "Processing",
+                                            description: "Redirecting to ticket purchase..."
+                                          });
+                                        }}
+                                      >
+                                        Buy Ticket
+                                      </Button>
+                                    </>
+                                  ) : (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="text-xs h-7 px-2 md:h-8 md:px-3"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        toast({
+                                          title: "Event Saved",
+                                          description: "You can find this in your saved events"
+                                        });
+                                      }}
+                                    >
+                                      Save Event
+                                    </Button>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -496,20 +520,44 @@ export default function HomePage() {
                                     {event.location}
                                   </span>
                                 </div>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="ml-2 flex-shrink-0 text-xs h-7 px-2 md:h-8 md:px-3"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toast({
-                                      title: "RSVP Successful",
-                                      description: "You're going to " + event.title
-                                    });
-                                  }}
-                                >
-                                  RSVP
-                                </Button>
+                                <div className="flex items-center gap-2">
+                                  {event.price ? (
+                                    <>
+                                      <span className="text-xs md:text-sm font-medium">
+                                        ${event.price}
+                                      </span>
+                                      <Button
+                                        variant="default"
+                                        size="sm"
+                                        className="text-xs h-7 px-2 md:h-8 md:px-3"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          toast({
+                                            title: "Processing",
+                                            description: "Redirecting to ticket purchase..."
+                                          });
+                                        }}
+                                      >
+                                        Buy Ticket
+                                      </Button>
+                                    </>
+                                  ) : (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="text-xs h-7 px-2 md:h-8 md:px-3"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        toast({
+                                          title: "Event Saved",
+                                          description: "You can find this in your saved events"
+                                        });
+                                      }}
+                                    >
+                                      Save Event
+                                    </Button>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
