@@ -254,6 +254,30 @@ export default function CreateEventPage() {
                 </Button>
               </div>
             </div>
+
+            {/* Publication Status Toggle */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium">Publication Status</h3>
+              <div className="flex gap-4">
+                <Button
+                  type="submit"
+                  form="event-form"
+                  variant="outline"
+                  className="flex-1 h-12 bg-white/5 border-white/10 hover:bg-white/10"
+                  disabled={!eventImage || !form.formState.isValid}
+                >
+                  Save as Draft
+                </Button>
+                <Button
+                  type="submit"
+                  form="event-form"
+                  className="flex-1 h-12 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
+                  disabled={!eventImage || !form.formState.isValid}
+                >
+                  Publish Event
+                </Button>
+              </div>
+            </div>
           </div>
         </form>
 
@@ -273,28 +297,15 @@ export default function CreateEventPage() {
 
       <div className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-lg border-t border-white/10">
         <div className="container mx-auto max-w-2xl p-4">
-          <div className="flex gap-2">
-            <Button
-              type="submit"
-              form="event-form"
-              className="flex-1 h-12 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white transition-all duration-200"
-              disabled={!eventImage || !form.formState.isValid}
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              <span className="hidden md:inline">Create Event</span>
-              <span className="inline md:hidden">Create</span>
-            </Button>
-            <Button
-              type="submit"
-              form="event-form"
-              className="flex-1 h-12 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white transition-all duration-200"
-              disabled={!eventImage || !form.formState.isValid}
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              <span className="hidden md:inline">Publish Event</span>
-              <span className="inline md:hidden">Publish</span>
-            </Button>
-          </div>
+          <Button
+            type="submit"
+            form="event-form"
+            className="w-full h-12 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white transition-all duration-200"
+            disabled={!eventImage || !form.formState.isValid}
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            <span>Create Event</span>
+          </Button>
         </div>
       </div>
     </div>
