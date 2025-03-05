@@ -383,17 +383,17 @@ export default function HomePage() {
                         onClick={() => setLocation(`/event/${event.id}`)}
                       >
                         <CardContent className="p-0">
-                          <div className="flex flex-col md:flex-row h-auto">
-                            <div className="w-full md:w-[180px] h-[140px] md:h-[180px]">
+                          <div className="flex flex-row h-auto">
+                            <div className="w-24 h-24 md:w-32 md:h-32 flex-shrink-0">
                               <img
                                 src={event.image}
                                 alt={event.title}
-                                className="h-full w-full object-contain md:object-cover"
+                                className="h-full w-full object-cover rounded-l"
                               />
                             </div>
-                            <div className="flex-1 p-4 flex flex-col justify-between">
+                            <div className="flex-1 p-3 md:p-4 flex flex-col justify-between min-w-0">
                               <div>
-                                <div className="flex flex-wrap items-center gap-2 mb-2">
+                                <div className="flex flex-wrap items-center gap-2 mb-1.5">
                                   <Badge variant="outline" className="text-xs">
                                     {event.category}
                                   </Badge>
@@ -407,34 +407,24 @@ export default function HomePage() {
                                     </Badge>
                                   ))}
                                 </div>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-xs text-muted-foreground">
                                   {format(new Date(event.date), "EEE, MMM d, h:mm a")}
                                 </p>
-                                <h3 className="font-semibold text-foreground mt-1 line-clamp-2">
+                                <h3 className="font-semibold text-foreground mt-1 text-sm md:text-base line-clamp-2">
                                   {event.title}
                                 </h3>
                               </div>
-                              <div className="flex items-center justify-between mt-4">
-                                <div className="flex flex-wrap items-center gap-2 min-w-0">
-                                  <div className="flex items-center gap-1 min-w-0">
-                                    <MapPin className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                                    <span className="text-sm text-muted-foreground truncate">
-                                      {event.location}
-                                    </span>
-                                  </div>
-                                  {event.price && (
-                                    <div className="flex items-center gap-1 flex-shrink-0">
-                                      <span className="text-muted-foreground">·</span>
-                                      <span className="text-sm font-medium text-foreground">
-                                        ${event.price}
-                                      </span>
-                                    </div>
-                                  )}
+                              <div className="flex items-center justify-between mt-2 md:mt-3">
+                                <div className="flex items-center gap-1 min-w-0">
+                                  <MapPin className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0 text-muted-foreground" />
+                                  <span className="text-xs md:text-sm text-muted-foreground truncate">
+                                    {event.location}
+                                  </span>
                                 </div>
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="ml-2 flex-shrink-0"
+                                  className="ml-2 flex-shrink-0 text-xs h-7 px-2 md:h-8 md:px-3"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     toast({
@@ -468,17 +458,17 @@ export default function HomePage() {
                         onClick={() => setLocation(`/event/${event.id}`)}
                       >
                         <CardContent className="p-0">
-                          <div className="flex flex-col md:flex-row h-auto">
-                            <div className="w-full md:w-[180px] h-[140px] md:h-[180px]">
+                          <div className="flex flex-row h-auto">
+                            <div className="w-24 h-24 md:w-32 md:h-32 flex-shrink-0">
                               <img
                                 src={event.image}
                                 alt={event.title}
-                                className="h-full w-full object-contain md:object-cover"
+                                className="h-full w-full object-cover rounded-l"
                               />
                             </div>
-                            <div className="flex-1 p-4 flex flex-col justify-between">
+                            <div className="flex-1 p-3 md:p-4 flex flex-col justify-between min-w-0">
                               <div>
-                                <div className="flex flex-wrap items-center gap-2 mb-2">
+                                <div className="flex flex-wrap items-center gap-2 mb-1.5">
                                   <Badge variant="outline" className="text-xs">
                                     {event.category}
                                   </Badge>
@@ -492,34 +482,24 @@ export default function HomePage() {
                                     </Badge>
                                   ))}
                                 </div>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-xs text-muted-foreground">
                                   {format(new Date(event.date), "EEE, MMM d, h:mm a")}
                                 </p>
-                                <h3 className="font-semibold text-foreground mt-1 line-clamp-2">
+                                <h3 className="font-semibold text-foreground mt-1 text-sm md:text-base line-clamp-2">
                                   {event.title}
                                 </h3>
                               </div>
-                              <div className="flex items-center justify-between mt-4">
-                                <div className="flex flex-wrap items-center gap-2 min-w-0">
-                                  <div className="flex items-center gap-1 min-w-0">
-                                    <MapPin className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                                    <span className="text-sm text-muted-foreground truncate">
-                                      {event.location}
-                                    </span>
-                                  </div>
-                                  {event.price && (
-                                    <div className="flex items-center gap-1 flex-shrink-0">
-                                      <span className="text-muted-foreground">·</span>
-                                      <span className="text-sm font-medium text-foreground">
-                                        ${event.price}
-                                      </span>
-                                    </div>
-                                  )}
+                              <div className="flex items-center justify-between mt-2 md:mt-3">
+                                <div className="flex items-center gap-1 min-w-0">
+                                  <MapPin className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0 text-muted-foreground" />
+                                  <span className="text-xs md:text-sm text-muted-foreground truncate">
+                                    {event.location}
+                                  </span>
                                 </div>
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="ml-2 flex-shrink-0"
+                                  className="ml-2 flex-shrink-0 text-xs h-7 px-2 md:h-8 md:px-3"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     toast({
