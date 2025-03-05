@@ -3,8 +3,8 @@ import { type Event } from "@db/schema";
 export const DIGITAL_NOMAD_CITIES = [
   "Amsterdam", "Athens", "Austin", "Bali", "Bangkok", "Barcelona", "Berlin",
   "Boston", "Buenos Aires", "Cape Town", "Chicago", "Copenhagen", "Dubai",
-  "Dublin", "Edinburgh", "Ho Chi Minh City", "Hong Kong", "Istanbul", "Kuala Lumpur", 
-  "Lisbon", "London", "Los Angeles", "Madrid", "Melbourne", "Mexico City", 
+  "Dublin", "Edinburgh", "Ho Chi Minh City", "Hong Kong", "Istanbul", "Kuala Lumpur",
+  "Lisbon", "London", "Los Angeles", "Madrid", "Melbourne", "Mexico City",
   "Miami", "Milan", "Montreal", "Mumbai", "Munich", "New York", "Oslo", "Paris",
   "Porto", "Prague", "Rome", "San Francisco", "Seoul", "Shanghai", "Singapore",
   "Stockholm", "Sydney", "Taipei", "Tel Aviv", "Tokyo", "Toronto", "Vancouver",
@@ -59,7 +59,7 @@ export const MOCK_EVENTS: Record<string, Event[]> = DIGITAL_NOMAD_CITIES.reduce(
     {
       id: Math.floor(Math.random() * 1000),
       title: "Giegling Music & Art Festival",
-      description: "An unforgettable night of electronic music, art installations, and networking with fellow digital nomads. Experience the city's vibrant creative scene while connecting with like-minded individuals.",
+      description: "An unforgettable night of electronic music, art installations, and networking with fellow digital nomads.",
       date: new Date(2024, 8, 7, 18, 0), // Sept 7, 2024, 6pm
       location: `Downtown Festival Grounds, ${city}`,
       image: EVENT_IMAGES.musicFestival,
@@ -67,7 +67,7 @@ export const MOCK_EVENTS: Record<string, Event[]> = DIGITAL_NOMAD_CITIES.reduce(
       category: "Nightlife",
       creatorId: 1,
       capacity: 600,
-      price: 250,
+      price: "250",
       ticketType: "paid",
       availableTickets: 586,
       isBusinessEvent: true,
@@ -80,7 +80,7 @@ export const MOCK_EVENTS: Record<string, Event[]> = DIGITAL_NOMAD_CITIES.reduce(
     {
       id: Math.floor(Math.random() * 1000),
       title: "Intimate Dinner Party",
-      description: "Join us for an exclusive culinary experience featuring local chefs and fellow nomads. Share stories, make connections, and enjoy exceptional cuisine.",
+      description: "Join us for an exclusive culinary experience featuring local chefs and fellow nomads.",
       date: new Date(2024, 8, 7, 19, 0), // Sept 7, 2024, 7pm
       location: `Secret Garden Venue, ${city}`,
       image: EVENT_IMAGES.intimateDinner,
@@ -88,7 +88,7 @@ export const MOCK_EVENTS: Record<string, Event[]> = DIGITAL_NOMAD_CITIES.reduce(
       category: "Social",
       creatorId: 2,
       capacity: 30,
-      price: 75,
+      price: "75",
       ticketType: "rsvp",
       availableTickets: 28,
       isBusinessEvent: false,
@@ -101,7 +101,7 @@ export const MOCK_EVENTS: Record<string, Event[]> = DIGITAL_NOMAD_CITIES.reduce(
     {
       id: Math.floor(Math.random() * 1000),
       title: "Hiking + Waterfall Daytrip",
-      description: "Escape the city for a day of adventure, photography, and natural beauty. Perfect for nature enthusiasts and adventure seekers.",
+      description: "Escape the city for a day of adventure, photography, and natural beauty.",
       date: new Date(2024, 8, 7, 8, 0), // Sept 7, 2024, 8am
       location: `Mountain Trails, ${city}`,
       image: EVENT_IMAGES.hiking,
@@ -109,7 +109,7 @@ export const MOCK_EVENTS: Record<string, Event[]> = DIGITAL_NOMAD_CITIES.reduce(
       category: "Adventure",
       creatorId: 3,
       capacity: 60,
-      price: 50,
+      price: "50",
       ticketType: "paid",
       availableTickets: 56,
       isBusinessEvent: false,
