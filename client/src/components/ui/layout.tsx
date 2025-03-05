@@ -4,6 +4,7 @@ import { Bot, Menu } from "lucide-react";
 import { Button } from "./button";
 import { useLocation } from "wouter";
 import { LanguageToggle } from "./language-toggle";
+import { PremiumDialog } from "./premium-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,6 +43,11 @@ export function Layout({ children }: LayoutProps) {
 
               <LanguageToggle />
 
+              {/* Premium Button - Desktop Only */}
+              <div className="hidden md:block">
+                <PremiumDialog />
+              </div>
+
               {/* Desktop Navigation Menu */}
               <div className="hidden md:block">
                 <DropdownMenu>
@@ -79,7 +85,11 @@ export function Layout({ children }: LayoutProps) {
         {children}
       </main>
 
-      <div className="md:hidden">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50">
+        {/* Premium Button - Mobile */}
+        <div className="px-4 py-2 bg-background border-t border-border">
+          <PremiumDialog />
+        </div>
         <BottomNav />
       </div>
     </div>
