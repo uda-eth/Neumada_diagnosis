@@ -61,7 +61,7 @@ export function BottomNav() {
                 >
                   <Icon className="w-6 h-6 transition-transform" />
                   <span className="text-[10px] font-medium">
-                    {t(label)}
+                    {label === 'guide' ? 'Guide' : t(label)}
                   </span>
                   {badge && badge > 0 && (
                     <Badge 
