@@ -20,6 +20,8 @@ import { Badge } from "@/components/ui/badge";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import { useTranslation } from "@/lib/translations";
 
+const getFirstName = (fullName: string) => fullName.split(' ')[0];
+
 const cities = [
   "Bali",
   "Bangkok",
@@ -418,24 +420,50 @@ export default function HomePage() {
                               <div className="flex items-center justify-between mt-2 md:mt-3">
                                 <div className="flex items-center gap-2">
                                   <div className="flex -space-x-2">
-                                    {(event.interestedUsers || []).slice(0, 3).map((user: any, i: number) => (
-                                      <Avatar key={i} className="border-2 border-background w-6 h-6">
+                                    {(event.attendingUsers || []).slice(0, 2).map((user: any, i: number) => (
+                                      <Avatar 
+                                        key={`attending-${user.id}`} 
+                                        className="border-2 border-background w-6 h-6"
+                                        onClick={() => setLocation(`/profile/${user.id}`)}
+                                        style={{cursor: 'pointer'}}
+                                      >
                                         <AvatarImage 
                                           src={user.image} 
-                                          alt={user.name}
+                                          alt={getFirstName(user.name)}
                                           className="object-cover"
                                         />
-                                        <AvatarFallback>{user.name[0]}</AvatarFallback>
+                                        <AvatarFallback>{getFirstName(user.name)[0]}</AvatarFallback>
                                       </Avatar>
                                     ))}
-                                    {event.interestedCount > 3 && (
-                                      <div className="w-6 h-6 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center text-xs text-primary">
-                                        +{event.interestedCount - 3}
+                                    {(event.interestedUsers || []).slice(0, 1).map((user: any, i: number) => (
+                                      <Avatar 
+                                        key={`interested-${user.id}`} 
+                                        className="border-2 border-background w-6 h-6"
+                                        onClick={() => setLocation(`/profile/${user.id}`)}
+                                        style={{cursor: 'pointer'}}
+                                      >
+                                        <AvatarImage 
+                                          src={user.image} 
+                                          alt={getFirstName(user.name)}
+                                          className="object-cover"
+                                        />
+                                        <AvatarFallback>{getFirstName(user.name)[0]}</AvatarFallback>
+                                      </Avatar>
+                                    ))}
+                                    {(event.attendingCount + (event.interestedCount || 0)) > 3 && (
+                                      <div 
+                                        className="w-6 h-6 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center text-xs text-primary cursor-pointer"
+                                        onClick={() => setLocation(`/event/${event.id}`)}
+                                      >
+                                        +{(event.attendingCount + (event.interestedCount || 0)) - 3}
                                       </div>
                                     )}
                                   </div>
-                                  <span className="text-xs text-muted-foreground">
-                                    {event.interestedCount} interested
+                                  <span 
+                                    className="text-xs text-muted-foreground cursor-pointer"
+                                    onClick={() => setLocation(`/event/${event.id}`)}
+                                  >
+                                    {event.attendingCount} attending • {event.interestedCount} interested
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-1 min-w-0">
@@ -501,24 +529,50 @@ export default function HomePage() {
                               <div className="flex items-center justify-between mt-2 md:mt-3">
                                 <div className="flex items-center gap-2">
                                   <div className="flex -space-x-2">
-                                    {(event.interestedUsers || []).slice(0, 3).map((user: any, i: number) => (
-                                      <Avatar key={i} className="border-2 border-background w-6 h-6">
+                                    {(event.attendingUsers || []).slice(0, 2).map((user: any, i: number) => (
+                                      <Avatar 
+                                        key={`attending-${user.id}`} 
+                                        className="border-2 border-background w-6 h-6"
+                                        onClick={() => setLocation(`/profile/${user.id}`)}
+                                        style={{cursor: 'pointer'}}
+                                      >
                                         <AvatarImage 
                                           src={user.image} 
-                                          alt={user.name}
+                                          alt={getFirstName(user.name)}
                                           className="object-cover"
                                         />
-                                        <AvatarFallback>{user.name[0]}</AvatarFallback>
+                                        <AvatarFallback>{getFirstName(user.name)[0]}</AvatarFallback>
                                       </Avatar>
                                     ))}
-                                    {event.interestedCount > 3 && (
-                                      <div className="w-6 h-6 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center text-xs text-primary">
-                                        +{event.interestedCount - 3}
+                                    {(event.interestedUsers || []).slice(0, 1).map((user: any, i: number) => (
+                                      <Avatar 
+                                        key={`interested-${user.id}`} 
+                                        className="border-2 border-background w-6 h-6"
+                                        onClick={() => setLocation(`/profile/${user.id}`)}
+                                        style={{cursor: 'pointer'}}
+                                      >
+                                        <AvatarImage 
+                                          src={user.image} 
+                                          alt={getFirstName(user.name)}
+                                          className="object-cover"
+                                        />
+                                        <AvatarFallback>{getFirstName(user.name)[0]}</AvatarFallback>
+                                      </Avatar>
+                                    ))}
+                                    {(event.attendingCount + (event.interestedCount || 0)) > 3 && (
+                                      <div 
+                                        className="w-6 h-6 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center text-xs text-primary cursor-pointer"
+                                        onClick={() => setLocation(`/event/${event.id}`)}
+                                      >
+                                        +{(event.attendingCount + (event.interestedCount || 0)) - 3}
                                       </div>
                                     )}
                                   </div>
-                                  <span className="text-xs text-muted-foreground">
-                                    {event.interestedCount} interested
+                                  <span 
+                                    className="text-xs text-muted-foreground cursor-pointer"
+                                    onClick={() => setLocation(`/event/${event.id}`)}
+                                  >
+                                    {event.attendingCount} attending • {event.interestedCount} interested
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-1 min-w-0">
