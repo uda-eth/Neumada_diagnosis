@@ -14,6 +14,17 @@ export interface Member {
 
 export const members: Member[] = [
   {
+    id: 17,
+    name: "Sofia Chen",
+    age: 28,
+    location: "Mexico City",
+    bio: "Fashion editor and creative consultant specializing in sustainable luxury. Bridging the gap between high fashion and conscious consumption.",
+    interests: ["Fashion", "Sustainability", "Art Direction", "Photography"],
+    image: "/attached_assets/Screenshot 2024-03-06 at 10.23.10 AM.png",
+    occupation: "Fashion Editor",
+    currentMood: "Networking"
+  },
+  {
     id: 16,
     name: "Carlita",
     age: 27,
