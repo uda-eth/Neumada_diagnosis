@@ -89,7 +89,7 @@ export default function CreateEventPage() {
               className="text-white/60"
               onClick={() => setLocation("/")}
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="h-5 w-5" />
             </Button>
             <h1 className="text-sm font-medium uppercase tracking-wider">
               Create Event
@@ -255,18 +255,21 @@ export default function CreateEventPage() {
         </div>
       </form>
 
-      <div className="fixed bottom-16 left-0 right-0 p-4 bg-black/80 backdrop-blur-lg border-t border-white/10">
-        <div className="container mx-auto max-w-2xl space-y-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-lg border-t border-white/10">
+        <div className="container mx-auto max-w-2xl p-4">
           <Button
             type="submit"
             form="event-form"
-            className="w-full h-12 bg-gradient-to-r from-purple-700 to-purple-900 text-white hover:from-purple-800 hover:to-purple-950 transition-all duration-200"
+            className="w-full h-12 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white transition-all duration-200"
             disabled={!eventImage || !form.formState.isValid}
           >
-            {form.formState.isSubmitting ? "Publishing..." : "Publish Event"}
+            <Plus className="h-5 w-5 mr-2" />
+            <span>Create Event</span>
           </Button>
+        </div>
 
-          <div className="rounded-lg overflow-hidden mt-4 relative">
+        <div className="container mx-auto max-w-2xl px-4 pb-4">
+          <div className="rounded-lg overflow-hidden relative">
             <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded z-10">
               Premium Ad Partner
             </div>
