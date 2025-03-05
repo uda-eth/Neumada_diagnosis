@@ -160,7 +160,7 @@ export default function HomePage() {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={() => setLocation("/browse")} 
+                onClick={() => setLocation("/connect")} 
                 className="hidden md:inline-flex items-center text-white"
               >
                 <Users className="h-5 w-5 mr-2" />
@@ -575,7 +575,7 @@ export default function HomePage() {
       <nav className="fixed bottom-0 left-0 right-0 bg-black text-white border-t border-border p-4 md:hidden">
         <div className="container mx-auto">
           <div className="flex justify-around items-center">
-            <Button variant="ghost" size="sm" onClick={() => setLocation("/browse")}>
+            <Button variant="ghost" size="sm" onClick={() => setLocation("/connect")}>
               <Users className="h-5 w-5 text-white" />
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setLocation("/messages")}>
