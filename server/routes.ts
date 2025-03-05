@@ -1,12 +1,13 @@
 import multer from 'multer';
 import path from 'path';
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { createServer } from 'http';
 import { setupAuth } from './auth';
 import { handleChatMessage } from './chat';
 import { findMatches } from './services/matchingService';
 import { translateMessage } from './services/translationService';
 import { getEventImage } from './services/eventsService';
+import { WebSocketServer } from 'ws';
 
 const categories = [
   "Retail",
@@ -415,7 +416,7 @@ const newEvents = {
         { id: 1051, name: "Robert White", image: "/attached_assets/profile-image-42.jpg" },
         { id: 1052, name: "Ashley Black", image: "/attached_assets/profile-image-43.jpg" },
         { id: 1053, name: "William Jones", image: "/attached_assets/profile-image-44.jpg" },
-        { id: 1054, name: "Amanda White", image: "/attached_assets/profile-image-45.jpg" },
+        { id: 1054, name: "Amanda White", image: "/attached_assets/profile-image-45jpg" },
         { id: 1055, name: "Brian Lee", image: "/attached_assets/profile-image-46.jpg" },
         { id: 1056, name: "Sarah Jones", image: "/attached_assets/profile-image-47.jpg" },
         { id: 1057, name: "Christopher Brown", image: "/attached_assets/profile-image-48.jpg" },
@@ -729,7 +730,78 @@ const upload = multer({
   }
 });
 
-export function registerRoutes(app: express.Application): Server {
+// Type definitions
+interface User {
+  id: number;
+  username: string;
+  fullName: string;
+  age?: number;
+  gender?: string;
+  profession?: string;
+  location?: string;
+  bio?: string;
+  interests?: string[];
+  currentMoods?: string[];
+  profileImage: string;
+  createdAt?: string;
+  updatedAt?: string;
+  eventsHosting?: number[];
+  featuredEvent?: {
+    id: number;
+    title: string;
+    role: string;
+  };
+}
+
+interface Event {
+  id: number;
+  title: string;
+  description: string;
+  date: Date;
+  location: string;
+  category: string;
+  image: string;
+  image_url?: string | null;
+  capacity: number;
+  price: number;
+  createdAt: Date;
+  interestedCount: number;
+  attendingCount: number;
+  tags: string[];
+  creatorId: number;
+  creatorName: string;
+  creatorImage: string;
+  attendingUsers: Array<{
+    id: number;
+    name: string;
+    image: string;
+  }>;
+  interestedUsers: Array<{
+    id: number;
+    name: string;
+    image: string;
+  }>;
+}
+
+// Express app setup
+const app = express();
+app.use(express.json());
+
+// Add your routes here
+app.get('/api/events/:city', (req: Request, res: Response) => {
+  const city = req.params.city;
+  const cityEvents = newEvents[city as keyof typeof newEvents] || [];
+  res.json(cityEvents);
+});
+
+app.get('/api/users/:city', (req: Request, res: Response) => {
+  const city = req.params.city;
+  const cityUsers = MOCK_USERS[city as keyof typeof MOCK_USERS] || [];
+  res.json(cityUsers);
+});
+
+
+export function registerRoutes(app: express.Application): { app: express.Application; httpServer: Server } {
   app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
 
   setupAuth(app);
@@ -868,7 +940,7 @@ export function registerRoutes(app: express.Application): Server {
     }
   });
 
-  app.post("/api/events", upload.single('image'), async (req, res)) => {
+  app.post("/api/events", upload.single('image'), async (req, res) => {
     try {
       const eventData = {
         ...req.body,
@@ -926,6 +998,14 @@ export function registerRoutes(app: express.Application): Server {
     }
   });
 
+  // Create HTTP server
   const httpServer = createServer(app);
-  return httpServer;
+
+  // Create WebSocket server
+  const wss = new WebSocketServer({
+    server: httpServer,
+    path: '/ws'
+  });
+
+  return { app, httpServer };
 }
