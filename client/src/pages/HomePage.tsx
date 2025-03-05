@@ -412,7 +412,7 @@ export default function HomePage() {
                                     {event.category}
                                   </Badge>
                                   {event.title.toLowerCase().includes('pargot') && (
-                                    <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
+                                    <Badge variant="secondary" className="text-xs bg-primary/20 text-primary border border-primary/20">
                                       Maly Members Only
                                     </Badge>
                                   )}
@@ -478,11 +478,24 @@ export default function HomePage() {
                                     {event.attendingCount} attending • {event.interestedCount} interested
                                   </span>
                                 </div>
-                                <div className="flex items-center gap-1 min-w-0">
-                                  <MapPin className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0 text-muted-foreground" />
-                                  <span className="text-xs md:text-sm text-muted-foreground truncate">
-                                    {event.location}
-                                  </span>
+                                <div className="flex items-center gap-3">
+                                  <div className="flex items-center gap-1 min-w-0">
+                                    <MapPin className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0 text-muted-foreground" />
+                                    <span className="text-xs md:text-sm text-muted-foreground truncate">
+                                      {event.location}
+                                    </span>
+                                  </div>
+                                  <Button 
+                                    variant="secondary" 
+                                    size="sm"
+                                    className="bg-primary text-white hover:bg-primary/90"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setLocation(`/event/${event.id}/register`);
+                                    }}
+                                  >
+                                    Buy
+                                  </Button>
                                 </div>
                               </div>
                             </div>
@@ -537,6 +550,11 @@ export default function HomePage() {
                                   <Badge variant="outline" className="text-xs">
                                     {event.category}
                                   </Badge>
+                                  {event.title.toLowerCase().includes('pargot') && (
+                                    <Badge variant="secondary" className="text-xs bg-primary/20 text-primary border border-primary/20">
+                                      Maly Members Only
+                                    </Badge>
+                                  )}
                                   {event.tags?.map((tag: string) => (
                                     <Badge
                                       key={tag}
@@ -599,11 +617,24 @@ export default function HomePage() {
                                     {event.attendingCount} attending • {event.interestedCount} interested
                                   </span>
                                 </div>
-                                <div className="flex items-center gap-1 min-w-0">
-                                  <MapPin className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0 text-muted-foreground" />
-                                  <span className="text-xs md:text-sm text-muted-foreground truncate">
-                                    {event.location}
-                                  </span>
+                                <div className="flex items-center gap-3">
+                                  <div className="flex items-center gap-1 min-w-0">
+                                    <MapPin className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0 text-muted-foreground" />
+                                    <span className="text-xs md:text-sm text-muted-foreground truncate">
+                                      {event.location}
+                                    </span>
+                                  </div>
+                                  <Button 
+                                    variant="secondary" 
+                                    size="sm"
+                                    className="bg-primary text-white hover:bg-primary/90"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setLocation(`/event/${event.id}/register`);
+                                    }}
+                                  >
+                                    Buy
+                                  </Button>
                                 </div>
                               </div>
                             </div>
