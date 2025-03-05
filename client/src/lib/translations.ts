@@ -14,7 +14,11 @@ type TranslationKey =
   | 'nextWeek'
   | 'buyTickets'
   | 'saveEvent'
-  | 'publishEvent';
+  | 'publishEvent'
+  | 'processingPurchase'
+  | 'redirectingToCheckout'
+  | 'eventSaved'
+  | 'findInSavedEvents';
 
 const translations: Record<string, Record<TranslationKey, string>> = {
   en: {
@@ -29,9 +33,13 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     allCategories: 'All categories',
     thisWeekend: 'THIS WEEKEND',
     nextWeek: 'NEXT WEEK',
-    buyTickets: 'Buy',
+    buyTickets: 'Buy Tickets',
     saveEvent: 'Save Event',
-    publishEvent: 'Publish Event'
+    publishEvent: 'Publish Event',
+    processingPurchase: 'Processing Purchase',
+    redirectingToCheckout: 'Redirecting to secure checkout...',
+    eventSaved: 'Event Saved',
+    findInSavedEvents: 'You can find this in your saved events'
   },
   es: {
     discover: 'Descubrir',
@@ -45,9 +53,13 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     allCategories: 'Todas las categorías',
     thisWeekend: 'ESTE FIN DE SEMANA',
     nextWeek: 'PRÓXIMA SEMANA',
-    buyTickets: 'Comprar',
+    buyTickets: 'Comprar Entradas',
     saveEvent: 'Guardar',
-    publishEvent: 'Publicar Evento'
+    publishEvent: 'Publicar Evento',
+    processingPurchase: 'Procesando Compra',
+    redirectingToCheckout: 'Redirigiendo al pago seguro...',
+    eventSaved: 'Evento Guardado',
+    findInSavedEvents: 'Puedes encontrarlo en tus eventos guardados'
   }
 };
 
