@@ -3,7 +3,6 @@ import { db } from '@db';
 import { users } from '@db/schema';
 import { eq, ne } from 'drizzle-orm';
 
-// the newest Anthropic model is "claude-3-5-sonnet-20241022" which was released October 22, 2024
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
@@ -17,35 +16,30 @@ export interface MatchScore {
 export async function findMatches(currentUser: any, limit: number = 5): Promise<MatchScore[]> {
   // Get all other users
   const potentialMatches = await db.select().from(users).where(ne(users.id, currentUser.id));
-  
-  // Prepare current user profile for AI analysis
-  const userProfile = {
-    interests: currentUser.interests || [],
-    location: currentUser.location,
-    nextLocation: currentUser.nextLocation,
-    profession: currentUser.profession,
-    currentMoods: currentUser.currentMoods || [],
-    bio: currentUser.bio,
-  };
 
   const matches: MatchScore[] = [];
 
   for (const potentialMatch of potentialMatches) {
+    const userProfile = {
+      interests: currentUser.interests || [],
+      location: currentUser.location,
+      profession: currentUser.profession,
+      bio: currentUser.bio
+    };
+
     const matchProfile = {
       interests: potentialMatch.interests || [],
       location: potentialMatch.location,
-      nextLocation: potentialMatch.nextLocation,
       profession: potentialMatch.profession,
-      currentMoods: potentialMatch.currentMoods || [],
-      bio: potentialMatch.bio,
+      bio: potentialMatch.bio
     };
 
     try {
       const response = await anthropic.messages.create({
-        model: "claude-3-5-sonnet-20241022",
+        model: "claude-3-sonnet-20240229",
         max_tokens: 1024,
         messages: [{
-          role: "user",
+          role: "user", 
           content: `Analyze these two digital nomad profiles and provide a compatibility score (0-100) and reason:
 
 User 1: ${JSON.stringify(userProfile)}
@@ -53,9 +47,9 @@ User 2: ${JSON.stringify(matchProfile)}
 
 Consider factors like:
 - Shared interests
-- Location alignment (current and next destinations)
-- Professional background
-- Travel style and preferences
+- Location alignment
+- Professional synergy
+- Potential collaboration opportunities
 
 Return the response as valid JSON with format:
 {
@@ -65,13 +59,14 @@ Return the response as valid JSON with format:
         }]
       });
 
-      const result = JSON.parse(response.content[0].text);
-      
-      matches.push({
-        userId: potentialMatch.id,
-        score: result.score,
-        compatibility_reason: result.reason
-      });
+      if (response.content[0].type === 'text') {
+        const result = JSON.parse(response.content[0].text);
+        matches.push({
+          userId: potentialMatch.id,
+          score: result.score,
+          compatibility_reason: result.reason
+        });
+      }
     } catch (error) {
       console.error(`Error matching with user ${potentialMatch.id}:`, error);
     }
