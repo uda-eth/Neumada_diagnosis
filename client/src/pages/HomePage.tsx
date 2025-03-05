@@ -473,11 +473,23 @@ export default function HomePage() {
                     Premium Ad Partner
                   </div>
                   <div className="rounded-lg overflow-hidden">
+                    {/* Desktop version */}
                     <img 
                       src="/attached_assets/Screenshot 2025-03-05 at 1.21.43 AM.png"
                       alt="Thompson Mexico City - Where Culture Lives"
-                      className="w-full object-cover h-[400px]"
+                      className="w-full object-cover h-[400px] hidden md:block"
                     />
+                    {/* Mobile version - only green section */}
+                    <div className="md:hidden bg-[#1A382E] p-8 text-center">
+                      <img 
+                        src="/attached_assets/Screenshot 2025-03-05 at 1.21.43 AM.png"
+                        alt="Thompson Mexico City Logo"
+                        className="w-48 mx-auto mb-6"
+                      />
+                      <p className="text-[#D4D5C7] text-sm tracking-wider">
+                        WHERE CULTURE LIVES IN MEXICO CITY
+                      </p>
+                    </div>
                   </div>
                 </div>
               </section>
