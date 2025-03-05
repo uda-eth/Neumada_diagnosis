@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Crown, Star, Sparkles, Gift, Shield, Zap } from "lucide-react";
+import { Crown, MessageSquare, Star, Shield, Gift, Zap } from "lucide-react";
 import { useState } from "react";
 
 interface PremiumDialogProps {
@@ -12,34 +12,34 @@ export function PremiumDialog({ children }: PremiumDialogProps) {
 
   const features = [
     {
-      icon: Star,
-      title: "Custom Brand Ads",
-      description: "See personalized ads from brands you love"
-    },
-    {
-      icon: Crown,
-      title: "Profile Upgrades",
-      description: "Stand out with enhanced profile features"
-    },
-    {
       icon: Gift,
-      title: "Premium Events",
-      description: "Exclusive access to premium events"
+      title: "Access to Exclusive Events",
+      description: "Gain insider details on afterparties, VIP gatherings, and premium happenings"
+    },
+    {
+      icon: Star,
+      title: "Profile Enhancements",
+      description: "Upload more photos, utilize advanced dating filters, and enjoy personalized profile customization"
     },
     {
       icon: Shield,
-      title: "Priority Support",
-      description: "Get help when you need it most"
-    },
-    {
-      icon: Sparkles,
-      title: "Enhanced Discovery",
-      description: "Better visibility in search and recommendations"
+      title: "Dedicated Customer Support",
+      description: "Experience priority assistance from our specialized support team"
     },
     {
       icon: Zap,
-      title: "Advanced Features",
-      description: "Early access to new features"
+      title: "Ad Customization",
+      description: "Choose to see tailored ads from brands you love or opt for an ad-free experience"
+    },
+    {
+      icon: Gift,
+      title: "Event Creation & Monetization",
+      description: "Organize events and earn directly from ticket sales"
+    },
+    {
+      icon: MessageSquare,
+      title: "Premium Networking",
+      description: "Connect and message exclusively with other Premium Members, talents, artists, and influencers worldwide"
     }
   ];
 
@@ -60,10 +60,10 @@ export function PremiumDialog({ children }: PremiumDialogProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-2xl">
             <Crown className="w-6 h-6 text-amber-400" />
-            Upgrade to Premium
+            Unlock the World with Maly Premium
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            Unlock exclusive features and enhance your experience
+            Maximize your Maly experience for less than $1/day
           </DialogDescription>
         </DialogHeader>
 
