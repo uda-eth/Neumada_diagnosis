@@ -9,6 +9,7 @@ export interface Member {
   interests: string[];
   image: string;
   occupation: string;
+  currentMood: "Dating" | "Networking" | "Parties" | "Adventure" | "Dining Out";
 }
 
 export const members: Member[] = [
@@ -20,7 +21,8 @@ export const members: Member[] = [
     bio: "Founder of Māly. Building the future of digital nomad communities.",
     interests: ["Innovation", "Community Building", "Digital Nomads"],
     image: "/attached_assets/Screenshot 2025-02-24 at 2.22.24 PM.png",
-    occupation: "Founder & CEO"
+    occupation: "Founder & CEO",
+    currentMood: "Networking"
   },
   {
     id: 2,
@@ -30,7 +32,8 @@ export const members: Member[] = [
     bio: "Digital nomad & creative director, bringing art to life through visual storytelling and innovative design.",
     interests: ["Photography", "Art Direction", "Travel"],
     image: "/attached_assets/Screenshot 2023-11-12 at 1.04.38 PM.png",
-    occupation: "Creative Director"
+    occupation: "Creative Director",
+    currentMood: "Adventure"
   },
   {
     id: 3,
@@ -40,7 +43,8 @@ export const members: Member[] = [
     bio: "Festival artist and spiritual guide. Creating immersive experiences in sacred spaces.",
     interests: ["Festivals", "Spirituality", "Art"],
     image: "/attached_assets/Screenshot 2023-11-12 at 12.56.16 PM.png",
-    occupation: "Festival Artist"
+    occupation: "Festival Artist",
+    currentMood: "Parties"
   },
   {
     id: 4,
@@ -50,7 +54,8 @@ export const members: Member[] = [
     bio: "Creative content producer from Brazil, capturing stories through the lens of culture and art.",
     interests: ["Content Creation", "Photography", "Cultural Exchange"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.28.10 PM.png",
-    occupation: "Content Producer"
+    occupation: "Content Producer",
+    currentMood: "Dating"
   },
   {
     id: 5,
@@ -60,7 +65,8 @@ export const members: Member[] = [
     bio: "LA-born yogi now based in Austin, sharing wellness and mindful living practices.",
     interests: ["Yoga", "Wellness", "Mindfulness"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.30.13 PM.png",
-    occupation: "Yoga Instructor"
+    occupation: "Yoga Instructor",
+    currentMood: "Adventure"
   },
   {
     id: 6,
@@ -70,7 +76,8 @@ export const members: Member[] = [
     bio: "Entrepreneur and community leader fostering connections in Mexico City's vibrant scene.",
     interests: ["Networking", "Business", "Community"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.31.15 PM.png",
-    occupation: "Entrepreneur"
+    occupation: "Entrepreneur",
+    currentMood: "Networking"
   },
   {
     id: 7,
@@ -80,7 +87,8 @@ export const members: Member[] = [
     bio: "Performance artist and creative visionary exploring the intersection of art and technology.",
     interests: ["Performance Art", "Digital Art", "Innovation"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.32.34 PM.png",
-    occupation: "Performance Artist"
+    occupation: "Performance Artist",
+    currentMood: "Parties"
   },
   {
     id: 8,
@@ -90,7 +98,8 @@ export const members: Member[] = [
     bio: "Executive operator with expertise in strategic growth and operational excellence.",
     interests: ["Business Strategy", "Operations", "Leadership"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.33.27 PM.png",
-    occupation: "Executive Operator"
+    occupation: "Executive Operator",
+    currentMood: "Networking"
   },
   {
     id: 9,
@@ -100,7 +109,8 @@ export const members: Member[] = [
     bio: "DJ and fitness instructor bringing rhythm and wellness together in unique ways.",
     interests: ["Music", "Fitness", "Wellness"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.34.30 PM.png",
-    occupation: "DJ & Fitness Instructor"
+    occupation: "DJ & Fitness Instructor",
+    currentMood: "Parties"
   },
   {
     id: 10,
@@ -110,7 +120,8 @@ export const members: Member[] = [
     bio: "International art director and curator specializing in contemporary Asian and Latin American art movements.",
     interests: ["Contemporary Art", "Cultural Fusion", "Exhibition Design"],
     image: "/attached_assets/Screenshot 2024-03-06 at 11.24.17 AM.png",
-    occupation: "Art Director & Curator"
+    occupation: "Art Director & Curator",
+    currentMood: "Networking"
   },
   {
     id: 11,
@@ -120,7 +131,8 @@ export const members: Member[] = [
     bio: "Fashion business strategist and sustainability advocate revolutionizing luxury retail in Latin America.",
     interests: ["Sustainable Fashion", "Luxury Retail", "Business Strategy"],
     image: "/attached_assets/Screenshot 2024-03-06 at 10.22.46 AM.png",
-    occupation: "Fashion Business Strategist"
+    occupation: "Fashion Business Strategist",
+    currentMood: "Dating"
   },
   {
     id: 12,
@@ -130,7 +142,8 @@ export const members: Member[] = [
     bio: "Contemporary artist exploring the intersection of traditional and digital mediums in modern storytelling.",
     interests: ["Contemporary Art", "Mixed Media", "Digital Expression"],
     image: "/attached_assets/Screenshot 2023-11-12 at 1.06.14 PM.png",
-    occupation: "Artist"
+    occupation: "Artist",
+    currentMood: "Adventure"
   },
   {
     id: 13,
@@ -140,7 +153,8 @@ export const members: Member[] = [
     bio: "Digital marketing strategist and content creator specializing in authentic brand storytelling and community engagement.",
     interests: ["Digital Marketing", "Content Strategy", "Brand Development"],
     image: "/attached_assets/Screenshot 2023-11-14 at 9.27.40 AM.png",
-    occupation: "Digital Marketing Strategist"
+    occupation: "Digital Marketing Strategist",
+    currentMood: "Dining Out"
   },
   {
     id: 14,
@@ -150,7 +164,8 @@ export const members: Member[] = [
     bio: "Research scientist specializing in sustainable technologies and environmental innovation, bridging academic research with practical applications.",
     interests: ["Sustainability", "Research", "Innovation"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.40.31 PM.png",
-    occupation: "Research Scientist"
+    occupation: "Research Scientist",
+    currentMood: "Networking"
   },
   {
     id: 15,
@@ -160,6 +175,7 @@ export const members: Member[] = [
     bio: "Creative entrepreneur and digital nomad exploring the intersection of lifestyle and technology in Mexico City's dynamic environment.",
     interests: ["Digital Nomad", "Creative Direction", "Entrepreneurship"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.41.36 PM.png",
-    occupation: "Creative Entrepreneur"
+    occupation: "Creative Entrepreneur",
+    currentMood: "Adventure"
   }
 ];

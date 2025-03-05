@@ -10,6 +10,15 @@ import {
 } from "@/components/ui/hover-card";
 import { Link } from "wouter";
 
+// Mood badge styles configuration
+const moodStyles = {
+  "Dating": "bg-pink-500/20 text-pink-500 hover:bg-pink-500/30",
+  "Networking": "bg-blue-500/20 text-blue-500 hover:bg-blue-500/30",
+  "Parties": "bg-purple-500/20 text-purple-500 hover:bg-purple-500/30",
+  "Adventure": "bg-orange-500/20 text-orange-500 hover:bg-orange-500/30",
+  "Dining Out": "bg-green-500/20 text-green-500 hover:bg-green-500/30"
+} as const;
+
 export function ConnectPage() {
   return (
     <div className="container py-6 space-y-6">
@@ -36,7 +45,15 @@ export function ConnectPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start md:items-center justify-between gap-2">
                       <div>
-                        <h3 className="font-semibold text-base md:text-lg truncate">{member.name}, {member.age}</h3>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-semibold text-base md:text-lg truncate">{member.name}, {member.age}</h3>
+                          <Badge 
+                            variant="secondary" 
+                            className={`${moodStyles[member.currentMood]} text-xs px-2 py-0.5 transition-colors`}
+                          >
+                            {member.currentMood}
+                          </Badge>
+                        </div>
                         <div className="flex items-center text-sm text-muted-foreground mt-1">
                           <MapPin className="h-3 w-3 md:h-4 md:w-4 mr-1" />
                           <span className="truncate">{member.location}</span>
