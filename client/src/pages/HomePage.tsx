@@ -488,7 +488,7 @@ export default function HomePage() {
                                   <Button 
                                     variant="secondary" 
                                     size="sm"
-                                    className="bg-primary text-white hover:bg-primary/90"
+                                    className="bg-gradient-to-r from-purple-700 to-purple-900 text-white hover:from-purple-800 hover:to-purple-950 transition-all duration-200"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setLocation(`/event/${event.id}/register`);
@@ -627,7 +627,7 @@ export default function HomePage() {
                                   <Button 
                                     variant="secondary" 
                                     size="sm"
-                                    className="bg-primary text-white hover:bg-primary/90"
+                                    className="bg-gradient-to-r from-purple-700 to-purple-900 text-white hover:from-purple-800 hover:to-purple-950 transition-all duration-200"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setLocation(`/event/${event.id}/register`);
