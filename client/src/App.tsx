@@ -21,8 +21,8 @@ function App() {
         <Switch>
           <Route path="/" component={HomePage} />
           <Route path="/event/:id" component={EventPage} />
+          <Route path="/profile/:username/edit" component={EditProfilePage} />
           <Route path="/profile/:username" component={ProfilePage} />
-          <Route path="/profile/edit" component={EditProfilePage} />
           <Route path="/profile/setup" component={ProfileSetupPage} />
           <Route path="/create" component={CreateEventPage} />
           <Route path="/companion" component={ChatbotPage} />
