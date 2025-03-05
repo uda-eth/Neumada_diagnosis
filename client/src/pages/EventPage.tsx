@@ -2,12 +2,15 @@ import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useUser } from "@/hooks/use-user";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, MessageSquare, UserPlus2 } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTranslation } from "@/lib/translations";
 import type { Event } from "@db/schema";
+
+// Helper function to get first name
+const getFirstName = (fullName: string) => fullName.split(' ')[0];
 
 export default function EventPage() {
   const { id } = useParams();
@@ -55,17 +58,33 @@ export default function EventPage() {
   }
 
   const isPrivateEvent = !event.price;
+  const attendingCount = event.attendingCount || Math.floor(Math.random() * 30 + 5);
   const interestedCount = event.interestedCount || Math.floor(Math.random() * 50 + 10);
-  const interestedUsers = event.interestedUsers || Array.from({ length: Math.min(interestedCount, 5) }, (_, i) => ({
+
+  const attendingUsers = event.attendingUsers || Array.from({ length: Math.min(attendingCount, 5) }, (_, i) => ({
     id: i,
     name: `User ${i + 1}`,
     image: `/attached_assets/profile-image-${i + 1}.jpg`
   }));
 
+  const interestedUsers = event.interestedUsers || Array.from({ length: Math.min(interestedCount, 5) }, (_, i) => ({
+    id: i + 10,
+    name: `User ${i + 6}`,
+    image: `/attached_assets/profile-image-${i + 6}.jpg`
+  }));
+
+  const handleUserClick = (userId: number) => {
+    setLocation(`/profile/${userId}`);
+  };
+
+  const handleViewAllUsers = (type: 'attending' | 'interested') => {
+    setLocation(`/event/${id}/users?type=${type}`);
+  };
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-black/80 backdrop-blur-sm">
+      <header className="sticky top-0 z-10 bg-black/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center gap-4">
           <Button
             variant="ghost"
@@ -77,7 +96,7 @@ export default function EventPage() {
           </Button>
           <h1 className="text-sm font-medium">Back</h1>
         </div>
-      </div>
+      </header>
 
       {/* Event Image */}
       {event.image && (
@@ -94,45 +113,84 @@ export default function EventPage() {
 
       {/* Event Details */}
       <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Interested Users Section */}
-        <div className="flex flex-col gap-4">
-          <div className="flex gap-2 flex-wrap">
-            {event.category && (
-              <div className="px-3 py-1 rounded-full bg-white/10 text-sm">
-                {event.category}
+        {/* Attendees Section */}
+        <div className="flex flex-col gap-6">
+          {/* Attending Users */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium text-white/60">
+              Attending
+            </h3>
+            <div className="flex items-center gap-4">
+              <div className="flex -space-x-3" onClick={() => handleViewAllUsers('attending')} style={{cursor: 'pointer'}}>
+                {attendingUsers.slice(0, 5).map((user) => (
+                  <Avatar 
+                    key={user.id} 
+                    className="ring-2 ring-background w-12 h-12 border-2 border-black/40"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleUserClick(user.id);
+                    }}
+                  >
+                    <AvatarImage 
+                      src={user.image} 
+                      alt={getFirstName(user.name)}
+                      className="object-cover"
+                    />
+                    <AvatarFallback>{getFirstName(user.name)[0]}</AvatarFallback>
+                  </Avatar>
+                ))}
               </div>
-            )}
-            <div className="px-3 py-1 rounded-full bg-white/10 text-sm">
-              {interestedCount} interested
+              {attendingCount > 5 && (
+                <Button 
+                  variant="ghost" 
+                  className="text-sm text-white/60 hover:text-white"
+                  onClick={() => handleViewAllUsers('attending')}
+                >
+                  +{attendingCount - 5} more attending
+                </Button>
+              )}
             </div>
           </div>
 
-          {/* Interested Users Avatars - Prominently displayed */}
-          <div className="flex items-center gap-4">
-            <div className="flex -space-x-3">
-              {interestedUsers.slice(0, 5).map((user, index) => (
-                <Avatar 
-                  key={user.id} 
-                  className="ring-2 ring-background w-12 h-12 border-2 border-black/40"
+          {/* Interested Users */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium text-white/60">
+              Interested
+            </h3>
+            <div className="flex items-center gap-4">
+              <div className="flex -space-x-3" onClick={() => handleViewAllUsers('interested')} style={{cursor: 'pointer'}}>
+                {interestedUsers.slice(0, 5).map((user) => (
+                  <Avatar 
+                    key={user.id} 
+                    className="ring-2 ring-background w-12 h-12 border-2 border-black/40"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleUserClick(user.id);
+                    }}
+                  >
+                    <AvatarImage 
+                      src={user.image} 
+                      alt={getFirstName(user.name)}
+                      className="object-cover"
+                    />
+                    <AvatarFallback>{getFirstName(user.name)[0]}</AvatarFallback>
+                  </Avatar>
+                ))}
+              </div>
+              {interestedCount > 5 && (
+                <Button 
+                  variant="ghost" 
+                  className="text-sm text-white/60 hover:text-white"
+                  onClick={() => handleViewAllUsers('interested')}
                 >
-                  <AvatarImage 
-                    src={user.image} 
-                    alt={user.name}
-                    className="object-cover"
-                  />
-                  <AvatarFallback>{user.name[0]}</AvatarFallback>
-                </Avatar>
-              ))}
+                  +{interestedCount - 5} more interested
+                </Button>
+              )}
             </div>
-            {interestedCount > 5 && (
-              <span className="text-sm text-white/60">
-                +{interestedCount - 5} more interested
-              </span>
-            )}
           </div>
         </div>
 
-        {/* Title and Meta */}
+        {/* Event Title and Meta */}
         <div>
           <h1 className="text-2xl font-bold">{event.title}</h1>
           <div className="mt-2 text-white/60">
@@ -158,22 +216,38 @@ export default function EventPage() {
           <div className="py-4 border-t border-white/10">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Avatar className="h-12 w-12">
+                <Avatar 
+                  className="h-12 w-12"
+                  onClick={() => handleUserClick(event.creatorId as number)}
+                  style={{cursor: 'pointer'}}
+                >
                   <AvatarImage 
                     src={event.creatorImage} 
                     alt={event.creatorName || "Event Host"}
                     className="object-cover"
                   />
-                  <AvatarFallback>{(event.creatorName || "H")[0]}</AvatarFallback>
+                  <AvatarFallback>{(event.creatorName && getFirstName(event.creatorName)[0]) || "H"}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <div className="font-medium">{event.creatorName || "Event Host"}</div>
+                  <div 
+                    className="font-medium hover:underline cursor-pointer"
+                    onClick={() => handleUserClick(event.creatorId as number)}
+                  >
+                    {event.creatorName ? getFirstName(event.creatorName) : "Event Host"}
+                  </div>
                   <div className="text-sm text-white/60">Event Organizer</div>
                 </div>
               </div>
-              <Button variant="outline" className="h-9">
-                Follow
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="h-9">
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Message
+                </Button>
+                <Button variant="outline" size="sm" className="h-9">
+                  <UserPlus2 className="h-4 w-4 mr-2" />
+                  Follow
+                </Button>
+              </div>
             </div>
           </div>
         )}
