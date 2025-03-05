@@ -416,49 +416,33 @@ export default function HomePage() {
                                 </h3>
                               </div>
                               <div className="flex items-center justify-between mt-2 md:mt-3">
+                                <div className="flex items-center gap-2">
+                                  <div className="flex -space-x-2">
+                                    {(event.interestedUsers || []).slice(0, 3).map((user: any, i: number) => (
+                                      <Avatar key={i} className="border-2 border-background w-6 h-6">
+                                        <AvatarImage 
+                                          src={user.image} 
+                                          alt={user.name}
+                                          className="object-cover"
+                                        />
+                                        <AvatarFallback>{user.name[0]}</AvatarFallback>
+                                      </Avatar>
+                                    ))}
+                                    {event.interestedCount > 3 && (
+                                      <div className="w-6 h-6 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center text-xs text-primary">
+                                        +{event.interestedCount - 3}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <span className="text-xs text-muted-foreground">
+                                    {event.interestedCount} interested
+                                  </span>
+                                </div>
                                 <div className="flex items-center gap-1 min-w-0">
                                   <MapPin className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0 text-muted-foreground" />
                                   <span className="text-xs md:text-sm text-muted-foreground truncate">
                                     {event.location}
                                   </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  {event.price ? (
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-xs md:text-sm font-medium">
-                                        ${event.price}
-                                      </span>
-                                      <Button
-                                        variant="default"
-                                        size="sm"
-                                        className="text-xs h-7 px-3 md:h-8 md:px-4 bg-primary hover:bg-primary/90"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          toast({
-                                            title: t('processingPurchase'),
-                                            description: t('redirectingToCheckout')
-                                          });
-                                        }}
-                                      >
-                                        {t('buyTickets')}
-                                      </Button>
-                                    </div>
-                                  ) : (
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="text-xs h-7 px-2 md:h-8 md:px-3"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        toast({
-                                          title: t('eventSaved'),
-                                          description: t('findInSavedEvents')
-                                        });
-                                      }}
-                                    >
-                                      {t('saveEvent')}
-                                    </Button>
-                                  )}
                                 </div>
                               </div>
                             </div>
@@ -515,49 +499,33 @@ export default function HomePage() {
                                 </h3>
                               </div>
                               <div className="flex items-center justify-between mt-2 md:mt-3">
+                                <div className="flex items-center gap-2">
+                                  <div className="flex -space-x-2">
+                                    {(event.interestedUsers || []).slice(0, 3).map((user: any, i: number) => (
+                                      <Avatar key={i} className="border-2 border-background w-6 h-6">
+                                        <AvatarImage 
+                                          src={user.image} 
+                                          alt={user.name}
+                                          className="object-cover"
+                                        />
+                                        <AvatarFallback>{user.name[0]}</AvatarFallback>
+                                      </Avatar>
+                                    ))}
+                                    {event.interestedCount > 3 && (
+                                      <div className="w-6 h-6 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center text-xs text-primary">
+                                        +{event.interestedCount - 3}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <span className="text-xs text-muted-foreground">
+                                    {event.interestedCount} interested
+                                  </span>
+                                </div>
                                 <div className="flex items-center gap-1 min-w-0">
                                   <MapPin className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0 text-muted-foreground" />
                                   <span className="text-xs md:text-sm text-muted-foreground truncate">
                                     {event.location}
                                   </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  {event.price ? (
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-xs md:text-sm font-medium">
-                                        ${event.price}
-                                      </span>
-                                      <Button
-                                        variant="default"
-                                        size="sm"
-                                        className="text-xs h-7 px-3 md:h-8 md:px-4 bg-primary hover:bg-primary/90"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          toast({
-                                            title: t('processingPurchase'),
-                                            description: t('redirectingToCheckout')
-                                          });
-                                        }}
-                                      >
-                                        {t('buyTickets')}
-                                      </Button>
-                                    </div>
-                                  ) : (
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="text-xs h-7 px-2 md:h-8 md:px-3"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        toast({
-                                          title: t('eventSaved'),
-                                          description: t('findInSavedEvents')
-                                        });
-                                      }}
-                                    >
-                                      {t('saveEvent')}
-                                    </Button>
-                                  )}
                                 </div>
                               </div>
                             </div>
