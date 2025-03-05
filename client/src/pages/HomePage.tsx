@@ -347,11 +347,12 @@ export default function HomePage() {
       {/* Add Spotify Player */}
       <div className="container mx-auto px-4 py-4">
         <div className="w-full max-w-3xl mx-auto">
+          <h2 className="text-xl font-semibold mb-4 text-white">Maly Music Coming Soon</h2>
           <iframe 
             style={{borderRadius: "12px"}} 
             src="https://open.spotify.com/embed/track/03jQHo0HFj5onzoexiaMPI?utm_source=generator&theme=0" 
             width="100%" 
-            height="152" 
+            height="352" 
             frameBorder="0" 
             allowFullScreen 
             allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
