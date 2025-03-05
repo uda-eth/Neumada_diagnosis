@@ -24,8 +24,8 @@ export const members: Member[] = [
   },
   {
     id: 2,
-    name: "Alexander",
-    age: 32,
+    name: "Adrian",
+    age: 28,
     location: "Barcelona",
     bio: "Digital nomad & creative director. Living between Barcelona and Berlin.",
     interests: ["Photography", "Art Direction", "Travel"],
@@ -34,52 +34,62 @@ export const members: Member[] = [
   },
   {
     id: 3,
-    name: "Marco",
-    age: 34,
+    name: "Ravi",
+    age: 32,
     location: "Mexico City",
-    bio: "Exploring the intersection of culture and design. Always on the move.",
-    interests: ["Fashion", "Street Art", "Music"],
+    bio: "Fashion designer exploring cultural fusion in modern streetwear.",
+    interests: ["Fashion Design", "Street Culture", "Art"],
     image: "/Screenshot 2023-11-12 at 12.51.50 PM.png",
     occupation: "Fashion Designer"
   },
   {
     id: 4,
-    name: "Maya",
+    name: "Sofia",
     age: 29,
-    location: "Los Angeles",
-    bio: "Photographer and visual artist. Finding beauty in unexpected places.",
-    interests: ["Visual Arts", "Festivals", "Spirituality"],
+    location: "Tulum",
+    bio: "Festival artist and spiritual guide. Creating immersive experiences.",
+    interests: ["Festivals", "Spirituality", "Art"],
     image: "/Screenshot 2023-11-12 at 12.56.16 PM.png",
-    occupation: "Photographer"
+    occupation: "Festival Artist"
   },
   {
     id: 5,
-    name: "Elena",
+    name: "Isabella",
     age: 31,
     location: "New York",
-    bio: "Tech entrepreneur with a passion for sustainable fashion.",
+    bio: "Tech entrepreneur with a passion for sustainable fashion and community.",
     interests: ["Tech", "Sustainability", "Fashion"],
     image: "/Screenshot 2023-11-14 at 9.24.34 AM.png",
     occupation: "Tech Entrepreneur"
   },
   {
     id: 6,
-    name: "Sarah",
-    age: 28,
-    location: "Miami",
-    bio: "Wellness coach and festival enthusiast. Living life in full color.",
-    interests: ["Wellness", "Dance", "Events"],
-    image: "/Screenshot 2024-03-06 at 12.19.10 PM.png",
-    occupation: "Wellness Coach"
+    name: "Kai",
+    age: 33,
+    location: "Tokyo",
+    bio: "Digital artist and design consultant. Bridging cultures through creativity.",
+    interests: ["Digital Art", "Design", "Culture"],
+    image: "/Screenshot 2023-11-14 at 9.27.40 AM.png",
+    occupation: "Digital Artist"
   },
   {
     id: 7,
-    name: "Isabella",
+    name: "Nina",
     age: 26,
-    location: "London",
-    bio: "Art curator and cultural connector. Always seeking new perspectives.",
-    interests: ["Art", "Culture", "Fashion"],
+    location: "Berlin",
+    bio: "Visual storyteller and art curator. Finding beauty in urban spaces.",
+    interests: ["Photography", "Art Curation", "Urban Culture"],
     image: "/Screenshot 2024-03-06 at 11.24.17 AM.png",
     occupation: "Art Curator"
+  },
+  {
+    id: 8,
+    name: "Maya",
+    age: 28,
+    location: "Miami",
+    bio: "Wellness entrepreneur and yoga instructor. Living mindfully.",
+    interests: ["Wellness", "Yoga", "Community"],
+    image: "/Screenshot 2024-03-06 at 12.19.10 PM.png",
+    occupation: "Wellness Coach"
   }
 ];
