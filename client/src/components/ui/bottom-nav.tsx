@@ -14,7 +14,7 @@ import { InviteTrigger } from "./invite-dialog";
 // Mock unread count for demo - this would come from your actual message state
 const unreadCount = 3;
 
-const navItems = [
+export const navItems = [
   { icon: Compass, label: "Discover", href: "/" },
   { icon: UsersRound, label: "Connect", href: "/connect" },
   { icon: PlusSquare, label: "Create", href: "/create" },
@@ -24,7 +24,7 @@ const navItems = [
     href: "/messages",
     badge: unreadCount
   },
-  { icon: User, label: "Profile", href: "/profile" },
+  { icon: User, label: "Profile", href: "/profile/setup" }, //Minor change for clarity
   { icon: Settings, label: "Settings", href: "/settings" },
   { icon: Bot, label: "Guide", href: "/companion" }
 ];
