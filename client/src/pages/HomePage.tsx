@@ -439,7 +439,7 @@ export default function HomePage() {
                                           });
                                         }}
                                       >
-                                        Buy Ticket
+                                        Buy
                                       </Button>
                                     </>
                                   ) : (
@@ -538,7 +538,7 @@ export default function HomePage() {
                                           });
                                         }}
                                       >
-                                        Buy Ticket
+                                        Buy
                                       </Button>
                                     </>
                                   ) : (
