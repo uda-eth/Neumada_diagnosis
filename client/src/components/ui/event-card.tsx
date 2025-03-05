@@ -46,14 +46,14 @@ export function EventCard({
               </p>
               <h3 className="text-lg font-semibold text-white mt-1">{title}</h3>
             </div>
-            <div className="text-right">
+            <div className="text-right text-white z-10">
               {price && parseFloat(price) > 0 ? (
                 <>
-                  <p className="text-white font-semibold">${price}</p>
+                  <p className="font-semibold text-white text-lg">${parseFloat(price).toFixed(2)}</p>
                   <p className="text-sm text-white/60">per person</p>
                 </>
               ) : (
-                <p className="text-white font-semibold">Free</p>
+                <p className="font-semibold text-white text-lg">Free</p>
               )}
             </div>
           </div>
@@ -64,15 +64,12 @@ export function EventCard({
           <div className="flex -space-x-2">
             {(interestedUsers.length > 0 ? interestedUsers : attendees).slice(0, 4).map((attendee, i) => (
               <Avatar key={i} className="border-2 border-background w-8 h-8">
-                {attendee.image || attendee.avatar ? (
-                  <AvatarImage 
-                    src={attendee.image || attendee.avatar} 
-                    alt={attendee.name} 
-                    className="object-cover object-center"
-                  />
-                ) : (
-                  <AvatarFallback>{attendee.name[0]}</AvatarFallback>
-                )}
+                <AvatarImage 
+                  src={attendee.image || attendee.avatar} 
+                  alt={attendee.name} 
+                  className="object-cover object-center"
+                />
+                <AvatarFallback>{attendee.name[0]}</AvatarFallback>
               </Avatar>
             ))}
             {interestedCount > 4 && (
