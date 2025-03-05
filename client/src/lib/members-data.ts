@@ -131,5 +131,15 @@ export const members: Member[] = [
     interests: ["Contemporary Art", "Mixed Media", "Digital Expression"],
     image: "/attached_assets/Screenshot 2023-11-12 at 1.06.14 PM.png",
     occupation: "Artist"
+  },
+  {
+    id: 13,
+    name: "Maya Santos",
+    age: 29,
+    location: "Mexico City",
+    bio: "Digital marketing strategist and content creator specializing in authentic brand storytelling and community engagement.",
+    interests: ["Digital Marketing", "Content Strategy", "Brand Development"],
+    image: "/attached_assets/Screenshot 2023-11-14 at 9.27.40 AM.png",
+    occupation: "Digital Marketing Strategist"
   }
 ];
