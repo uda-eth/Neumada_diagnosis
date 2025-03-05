@@ -41,7 +41,7 @@ export function BottomNav() {
         <div className="flex justify-around items-center h-16 max-w-md mx-auto px-3">
           {/* Premium Button - Special Position */}
           <PremiumDialog>
-            <button className="relative flex flex-col items-center justify-center gap-1 w-12 h-16 rounded-lg transition-all duration-300 ease-out touch-target interactive-hover text-amber-400">
+            <button className="relative flex flex-col items-center justify-center gap-1 w-12 h-16 rounded-lg transition-all duration-300 ease-out touch-target interactive-hover text-purple-400">
               <Crown className="w-6 h-6 transition-transform" />
               <span className="text-[10px] font-medium">Premium</span>
             </button>
