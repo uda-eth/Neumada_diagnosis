@@ -58,14 +58,12 @@ export default function CreateEventPage() {
 
   const onSubmit = async (data: Event) => {
     try {
-      // Combine date and time
       const eventData = {
         ...data,
         image: eventImage,
         tags: selectedTags,
       };
 
-      // TODO: Implement event creation API
       toast({
         title: "Success",
         description: "Event created successfully",
@@ -81,9 +79,8 @@ export default function CreateEventPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#121212] text-white">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-[#121212]/80 backdrop-blur-lg border-b border-white/10">
+    <div className="min-h-screen bg-black text-white">
+      <header className="sticky top-0 z-10 bg-black/80 backdrop-blur-lg border-b border-white/10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Button
@@ -95,7 +92,7 @@ export default function CreateEventPage() {
               <ChevronLeft className="w-5 h-5" />
             </Button>
             <h1 className="text-sm font-medium uppercase tracking-wider">
-              Create YOUR event
+              Create Event
             </h1>
           </div>
         </div>
@@ -103,7 +100,6 @@ export default function CreateEventPage() {
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="pb-24">
         <div className="container mx-auto px-4 py-8 space-y-8 max-w-2xl">
-          {/* Image Upload */}
           <div className="space-y-4">
             <p className="text-sm text-white/60">Let's get started!</p>
             <div className="relative aspect-[3/2] bg-white/5 rounded-lg overflow-hidden">
@@ -132,7 +128,6 @@ export default function CreateEventPage() {
             </div>
           </div>
 
-          {/* Event Details */}
           <div className="space-y-6">
             <div className="space-y-2">
               <Input
@@ -151,7 +146,6 @@ export default function CreateEventPage() {
             </div>
           </div>
 
-          {/* Target Audience */}
           <div className="space-y-4">
             <h3 className="text-sm font-medium">Target audience is</h3>
             <div className="grid grid-cols-3 gap-2">
@@ -179,7 +173,6 @@ export default function CreateEventPage() {
             </div>
           </div>
 
-          {/* Date and Time */}
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -199,7 +192,6 @@ export default function CreateEventPage() {
             </div>
           </div>
 
-          {/* Location */}
           <div className="space-y-4">
             <Input
               {...form.register("location")}
@@ -208,7 +200,6 @@ export default function CreateEventPage() {
             />
           </div>
 
-          {/* Price */}
           <div className="space-y-4">
             <div className="flex gap-4">
               <Button
@@ -241,7 +232,6 @@ export default function CreateEventPage() {
             )}
           </div>
 
-          {/* Privacy */}
           <div className="space-y-4">
             <div className="flex gap-4">
               <Button
@@ -264,11 +254,14 @@ export default function CreateEventPage() {
           </div>
         </div>
 
-        {/* Submit */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-[#121212]/80 backdrop-blur-lg border-t border-white/10">
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-black/80 backdrop-blur-lg border-t border-white/10">
           <div className="container mx-auto max-w-2xl">
-            <Button type="submit" className="w-full h-12">
-              publish
+            <Button
+              type="submit"
+              className="w-full h-12 bg-gradient-to-r from-purple-700 to-purple-900 text-white hover:from-purple-800 hover:to-purple-950 transition-all duration-200"
+              disabled={!eventImage || !form.formState.isValid}
+            >
+              Publish Event
             </Button>
           </div>
         </div>
