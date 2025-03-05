@@ -61,5 +61,15 @@ export const members: Member[] = [
     interests: ["Yoga", "Wellness", "Mindfulness"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.30.13 PM.png",
     occupation: "Yoga Instructor"
+  },
+  {
+    id: 6,
+    name: "Samuel Garcia",
+    age: 50,
+    location: "Mexico City",
+    bio: "Entrepreneur and community leader fostering connections in Mexico City's vibrant scene.",
+    interests: ["Networking", "Business", "Community"],
+    image: "/attached_assets/Screenshot 2025-03-04 at 8.31.15 PM.png",
+    occupation: "Entrepreneur"
   }
 ];
