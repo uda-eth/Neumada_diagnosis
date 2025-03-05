@@ -1,3 +1,13 @@
+import multer from 'multer';
+import path from 'path';
+import express from 'express';
+import { createServer } from 'http';
+import { setupAuth } from './auth';
+import { handleChatMessage } from './chat';
+import { findMatches } from './services/matchingService';
+import { translateMessage } from './services/translationService';
+import { getEventImage } from './services/eventsService';
+
 const categories = [
   "Retail",
   "Fashion",
@@ -23,7 +33,8 @@ const newEvents = {
       price: 75,
       createdAt: new Date(),
       interestedCount: 42,
-      tags: ["Retail", "Fashion", "Launch Party", "Luxury"]
+      tags: ["Retail", "Fashion", "Launch Party", "Luxury"],
+      interestedUsers: [] // Added interestedUsers array
     },
     {
       id: 1012,
@@ -37,7 +48,8 @@ const newEvents = {
       price: 195,
       createdAt: new Date(),
       interestedCount: 18,
-      tags: ["Food & Wine", "Date Night", "Fine Dining", "Couples"]
+      tags: ["Food & Wine", "Date Night", "Fine Dining", "Couples"],
+      interestedUsers: [] // Added interestedUsers array
     },
     {
       id: 1001,
@@ -50,7 +62,8 @@ const newEvents = {
       capacity: 20,
       price: 595,
       createdAt: new Date(),
-      interestedCount: 28
+      interestedCount: 28,
+      interestedUsers: [] // Added interestedUsers array
     },
     {
       id: 1002,
@@ -63,7 +76,8 @@ const newEvents = {
       capacity: 50,
       price: 10,
       createdAt: new Date(),
-      interestedCount: 25
+      interestedCount: 25,
+      interestedUsers: [] // Added interestedUsers array
     },
     {
       id: 1004,
@@ -76,7 +90,8 @@ const newEvents = {
       capacity: 30,
       price: 55,
       createdAt: new Date(),
-      interestedCount: 42
+      interestedCount: 42,
+      interestedUsers: [] // Added interestedUsers array
     },
     {
       id: 1005,
@@ -89,7 +104,8 @@ const newEvents = {
       capacity: 15,
       price: 45,
       createdAt: new Date(),
-      interestedCount: 19
+      interestedCount: 19,
+      interestedUsers: [] // Added interestedUsers array
     },
     {
       id: 1006,
@@ -102,7 +118,8 @@ const newEvents = {
       capacity: 400,
       price: 75,
       createdAt: new Date(),
-      interestedCount: 289
+      interestedCount: 289,
+      interestedUsers: [] // Added interestedUsers array
     },
     {
       id: 1007,
@@ -116,7 +133,8 @@ const newEvents = {
       price: 150,
       createdAt: new Date(),
       interestedCount: 156,
-      tags: ["Nightlife", "Music", "Cultural", "Excursion"]
+      tags: ["Nightlife", "Music", "Cultural", "Excursion"],
+      interestedUsers: [] // Added interestedUsers array
     },
     {
       id: 1008,
@@ -130,7 +148,8 @@ const newEvents = {
       price: 85,
       createdAt: new Date(),
       interestedCount: 92,
-      tags: ["Nightlife", "Cultural", "Art", "Excursion"]
+      tags: ["Nightlife", "Cultural", "Art", "Excursion"],
+      interestedUsers: [] // Added interestedUsers array
     },
     {
       id: 1009,
@@ -144,7 +163,8 @@ const newEvents = {
       price: 200,
       createdAt: new Date(),
       interestedCount: 324,
-      tags: ["Music", "Art", "Nature"]
+      tags: ["Music", "Art", "Nature"],
+      interestedUsers: [] // Added interestedUsers array
     },
     {
       id: 1010,
@@ -158,7 +178,8 @@ const newEvents = {
       price: 60,
       createdAt: new Date(),
       interestedCount: 42,
-      tags: ["Cooking", "Culture", "Food & Wine"]
+      tags: ["Cooking", "Culture", "Food & Wine"],
+      interestedUsers: [] // Added interestedUsers array
     },
     {
       id: 1011,
@@ -172,10 +193,53 @@ const newEvents = {
       price: 35,
       createdAt: new Date(),
       interestedCount: 18,
-      tags: ["Sports", "Outdoors", "Social"]
+      tags: ["Sports", "Outdoors", "Social"],
+      interestedUsers: [] // Added interestedUsers array
     }
   ]
 };
+
+const MOCK_USERS = {
+  "Mexico City": [
+    {
+      id: 1009,
+      username: "alexander_brand",
+      fullName: "Alexander Reeves",
+      age: 32,
+      gender: "male",
+      profession: "Luxury Brand Strategist",
+      location: "Mexico City",
+      bio: "Leading brand strategist specializing in luxury fashion and lifestyle. Currently spearheading the launch of Octo's designer eyewear collection in Mexico City. Passionate about connecting innovative designers with discerning audiences. Looking to collaborate with fashion photographers and creative directors.",
+      interests: ["Luxury Fashion", "Brand Development", "Design", "Photography", "Art", "Networking"],
+      currentMoods: ["Launching", "Creating", "Connecting"],
+      profileImage: "/attached_assets/Screenshot 2024-03-06 at 12.19.10 PM.png",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      eventsHosting: [1013], // ID of the Octo Designer Sunglasses event
+      featuredEvent: {
+        id: 1013,
+        title: "Octo Designer Sunglasses Pop-Up Launch Party",
+        role: "Host & Brand Strategist"
+      }
+    }
+  ]
+};
+
+// Add Alexander as an interested attendee to relevant events
+Object.values(newEvents).forEach(cityEvents => {
+  cityEvents.forEach(event => {
+    if (event.category === "Fashion" || event.category === "Retail") {
+      event.interestedUsers = event.interestedUsers || [];
+      event.interestedUsers.push({
+        id: 1009,
+        name: "Alexander Reeves",
+        image: "/attached_assets/Screenshot 2024-03-06 at 12.19.10 PM.png"
+      });
+    }
+  });
+});
+
+const DIGITAL_NOMAD_CITIES = ["Mexico City"]; // Assuming this is defined elsewhere
 
 // Update the MOCK_EVENTS object to include the new events
 export const MOCK_EVENTS = DIGITAL_NOMAD_CITIES.reduce((acc, city) => {
@@ -185,7 +249,6 @@ export const MOCK_EVENTS = DIGITAL_NOMAD_CITIES.reduce((acc, city) => {
   return acc;
 }, {} as Record<string, any[]>);
 
-// Configure multer for handling file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/') // Make sure this directory exists
@@ -209,7 +272,7 @@ const upload = multer({
   }
 });
 
-export function registerRoutes(app: Express): Server {
+export function registerRoutes(app: express.Application): Server {
   // Serve static files from attached_assets directory
   app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
 
@@ -314,7 +377,7 @@ export function registerRoutes(app: Express): Server {
   // Find matches API
   app.get("/api/matches", async (req, res) => {
     try {
-      const matches = await findMatches(req.user);
+      const matches = await findMatches(req.user as any); //Type assertion added here.
       res.json(matches);
     } catch (error) {
       console.error("Error finding matches:", error);
