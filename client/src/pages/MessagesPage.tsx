@@ -1,102 +1,29 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChevronLeft, Globe, Languages } from "lucide-react";
+import { ChevronLeft, Search, MessageCircle } from "lucide-react";
 import { useLocation } from "wouter";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useMessages, useMessageNotifications } from "@/hooks/use-messages";
+import { members } from "@/lib/members-data";
 
-// Define supported languages directly since we can't access process.env in the browser
-const SUPPORTED_LANGUAGES = [
-  { code: "en", name: "English" },
-  { code: "es", name: "Spanish" },
-  { code: "fr", name: "French" },
-  { code: "de", name: "German" },
-  { code: "it", name: "Italian" },
-  { code: "pt", name: "Portuguese" },
-  { code: "ru", name: "Russian" },
-  { code: "zh", name: "Chinese" },
-  { code: "ja", name: "Japanese" },
-  { code: "ko", name: "Korean" }
-];
-
-interface Message {
-  id: number;
-  content: string;
-  timestamp: string;
-  sender: string;
-  isMe: boolean;
-  originalLanguage?: string;
-  translatedContent?: string;
-}
-
-interface Chat {
-  id: number;
-  user: {
-    name: string;
-    title?: string;
-    avatar?: string;
-    isOnline: boolean;
-    language?: string;
-  };
-  messages: Message[];
-}
-
-// Mock data for demo
-const mockChat: Chat = {
-  id: 1,
-  user: {
-    name: "Claire",
-    title: "Digital Marketing Manager",
-    isOnline: true,
-    language: "fr", // French
-  },
-  messages: [
-    {
-      id: 1,
-      content: "Salut, ravi de t'avoir rencontré hier soir!",
-      translatedContent: "Hey, great to meet you last night!",
-      originalLanguage: "fr",
-      timestamp: "16:55",
-      sender: "Claire",
-      isMe: false,
-    },
-    {
-      id: 2,
-      content: "Hey, let's do brunch?",
-      originalLanguage: "en",
-      timestamp: "16:55",
-      sender: "Me",
-      isMe: true,
-    },
-  ],
-};
-
-const quickReplies = [
-  "Nice to meet you!",
-  "Let's meet for coffee",
-  "Are you free today?",
-  "Thanks for the invite",
-  "See you soon!",
-  "What's your favorite spot here?",
-  "Any recommendations?"
-];
+// Mock conversations for demo
+const mockConversations = members.slice(0, 5).map(member => ({
+  id: member.id,
+  user: member,
+  lastMessage: {
+    content: "Hey, would you like to meet up for coffee?",
+    timestamp: "10:30",
+    unread: Math.random() > 0.5,
+  }
+}));
 
 export default function MessagesPage() {
   const [, setLocation] = useLocation();
-  const [newMessage, setNewMessage] = useState("");
-  const [messages, setMessages] = useState<Message[]>(mockChat.messages);
-  const [selectedLanguage, setSelectedLanguage] = useState("en");
-  const [isTranslating, setIsTranslating] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [conversations, setConversations] = useState(mockConversations);
   const messageStore = useMessages();
   const { showNotification } = useMessageNotifications();
 
@@ -104,65 +31,10 @@ export default function MessagesPage() {
     messageStore.markAllAsRead();
   }, []);
 
-  const sendMessage = async () => {
-    if (!newMessage.trim() || isTranslating) return;
-
-    setIsTranslating(true);
-    try {
-      // In a real app, this would call the translation service
-      const translatedContent = await fetch('/api/translate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: newMessage,
-          targetLanguage: mockChat.user.language || 'en'
-        })
-      }).then(res => res.json());
-
-      const message: Message = {
-        id: messages.length + 1,
-        content: newMessage,
-        translatedContent: translatedContent.translation,
-        timestamp: new Date().toLocaleTimeString([], { 
-          hour: '2-digit', 
-          minute: '2-digit',
-          hour12: false 
-        }),
-        sender: "Me",
-        isMe: true,
-        originalLanguage: selectedLanguage,
-      };
-
-      setMessages([...messages, message]);
-      setNewMessage("");
-
-      messageStore.addMessage({
-        content: newMessage,
-        sender: "Me",
-        timestamp: message.timestamp
-      });
-
-    } catch (error) {
-      console.error('Translation error:', error);
-      // Add the message without translation if the service fails
-      const message: Message = {
-        id: messages.length + 1,
-        content: newMessage,
-        timestamp: new Date().toLocaleTimeString([], { 
-          hour: '2-digit', 
-          minute: '2-digit',
-          hour12: false 
-        }),
-        sender: "Me",
-        isMe: true,
-        originalLanguage: selectedLanguage,
-      };
-      setMessages([...messages, message]);
-      setNewMessage("");
-    } finally {
-      setIsTranslating(false);
-    }
-  };
+  const filteredConversations = conversations.filter(conv =>
+    conv.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    conv.lastMessage.content.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -179,125 +51,68 @@ export default function MessagesPage() {
               <ChevronLeft className="w-5 h-5" />
             </Button>
             <div className="flex-1">
-              <h1 className="text-xl font-semibold">{mockChat.user.name}</h1>
-              {mockChat.user.title && (
-                <p className="text-sm text-muted-foreground">{mockChat.user.title}</p>
-              )}
+              <h1 className="text-xl font-semibold">Messages</h1>
             </div>
-            <Select
-              value={selectedLanguage}
-              onValueChange={setSelectedLanguage}
-            >
-              <SelectTrigger className="w-[180px] bg-accent border-accent">
-                <Globe className="w-4 h-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {SUPPORTED_LANGUAGES.map((lang) => (
-                  <SelectItem key={lang.code} value={lang.code}>
-                    {lang.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Avatar className="h-10 w-10 ring-2 ring-primary/10">
-              <AvatarImage src={mockChat.user.avatar} />
-              <AvatarFallback className="bg-primary/20">{mockChat.user.name[0]}</AvatarFallback>
-            </Avatar>
           </div>
         </div>
       </div>
 
-      {/* Messages */}
-      <ScrollArea className="h-[calc(100vh-8rem)] py-4">
-        <div className="container mx-auto px-4 space-y-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.isMe ? "justify-end" : "justify-start"}`}
-            >
-              <div className="flex items-end gap-2 max-w-[80%] group">
-                {!message.isMe && (
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={mockChat.user.avatar} />
-                    <AvatarFallback className="bg-primary/20">{message.sender[0]}</AvatarFallback>
+      {/* Search Bar */}
+      <div className="sticky top-16 z-10 bg-background/80 backdrop-blur-sm border-b border-accent">
+        <div className="container mx-auto px-4 py-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search messages"
+              className="pl-9 bg-accent/50"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Conversations List */}
+      <ScrollArea className="flex-1">
+        <div className="container mx-auto px-4 py-4 space-y-2">
+          {filteredConversations.length > 0 ? (
+            filteredConversations.map((conv) => (
+              <Card
+                key={conv.id}
+                className="hover:bg-accent/5 transition-colors cursor-pointer"
+                onClick={() => setLocation(`/chat/${conv.user.name.toLowerCase().replace(/\s+/g, '-')}`)}
+              >
+                <div className="p-4 flex items-center gap-4">
+                  <Avatar className="h-12 w-12 ring-2 ring-primary/10">
+                    <AvatarImage src={conv.user.image} />
+                    <AvatarFallback>{conv.user.name[0]}</AvatarFallback>
                   </Avatar>
-                )}
-                <div
-                  className={`rounded-2xl px-4 py-2.5 ${
-                    message.isMe
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-accent text-accent-foreground"
-                  }`}
-                >
-                  <p className="text-[15px] leading-relaxed">{message.content}</p>
-                  {message.translatedContent && (
-                    <p className="text-[13px] mt-1.5 opacity-80 leading-relaxed">
-                      {message.translatedContent}
-                    </p>
-                  )}
-                  <div className="flex items-center gap-2 text-xs opacity-60 mt-2">
-                    <span>{message.timestamp}</span>
-                    {message.originalLanguage && (
-                      <span className="flex items-center gap-1">
-                        <Globe className="w-3 h-3" />
-                        {message.originalLanguage.toUpperCase()}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-center">
+                      <h3 className="font-semibold truncate">{conv.user.name}</h3>
+                      <span className="text-xs text-muted-foreground">
+                        {conv.lastMessage.timestamp}
                       </span>
-                    )}
+                    </div>
+                    <p className={`text-sm truncate ${
+                      conv.lastMessage.unread 
+                        ? "text-foreground font-medium" 
+                        : "text-muted-foreground"
+                    }`}>
+                      {conv.lastMessage.content}
+                    </p>
                   </div>
                 </div>
-              </div>
+              </Card>
+            ))
+          ) : (
+            <div className="text-center py-8">
+              <MessageCircle className="mx-auto h-12 w-12 text-muted-foreground opacity-50" />
+              <p className="mt-4 text-muted-foreground">No messages found</p>
             </div>
-          ))}
+          )}
         </div>
       </ScrollArea>
-
-      {/* Input Area */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t">
-        <div className="container mx-auto px-4 py-4">
-          {/* Quick Replies */}
-          <div className="pb-4 mb-4 border-b">
-            <ScrollArea>
-              <div className="flex gap-2 pb-2">
-                {quickReplies.map((reply) => (
-                  <Button
-                    key={reply}
-                    variant="outline"
-                    className="whitespace-nowrap"
-                    onClick={() => setNewMessage(reply)}
-                  >
-                    {reply}
-                  </Button>
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
-
-          {/* Message Input */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              sendMessage();
-            }}
-            className="flex gap-2"
-          >
-            <Input
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder={`Type a message in ${SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage)?.name}...`}
-              className="flex-1"
-              disabled={isTranslating}
-            />
-            <Button 
-              type="submit" 
-              disabled={isTranslating || !newMessage.trim()}
-              className="px-6"
-            >
-              Send
-            </Button>
-          </form>
-        </div>
-      </div>
     </div>
   );
 }
