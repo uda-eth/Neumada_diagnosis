@@ -8,7 +8,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { navItems } from "./bottom-nav";
@@ -35,9 +34,9 @@ export function Layout({ children }: LayoutProps) {
                 variant="ghost"
                 size="sm"
                 onClick={() => setLocation("/companion")}
-                className="hidden md:inline-flex items-center text-foreground"
+                className="hidden md:inline-flex items-center text-foreground interactive-hover"
               >
-                <Bot className="h-5 w-5 mr-2" />
+                <Bot className="w-6 h-6 mr-2" />
                 City Guide
               </Button>
 
@@ -47,8 +46,8 @@ export function Layout({ children }: LayoutProps) {
               <div className="hidden md:block">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <Menu className="h-5 w-5" />
+                    <Button variant="ghost" size="icon" className="interactive-hover">
+                      <Menu className="w-6 h-6" />
                       <span className="sr-only">Toggle navigation menu</span>
                     </Button>
                   </DropdownMenuTrigger>
@@ -56,10 +55,10 @@ export function Layout({ children }: LayoutProps) {
                     {navItems.map((item) => (
                       <DropdownMenuItem 
                         key={item.href}
-                        className="cursor-pointer"
+                        className="cursor-pointer interactive-hover"
                         onClick={() => setLocation(item.href)}
                       >
-                        <item.icon className="mr-2 h-4 w-4" />
+                        <item.icon className="w-5 h-5 mr-2" />
                         <span>{item.label}</span>
                         {item.badge && (
                           <span className="ml-auto bg-destructive text-destructive-foreground text-xs px-1.5 py-0.5 rounded">

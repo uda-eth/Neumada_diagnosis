@@ -45,16 +45,14 @@ export function BottomNav() {
               <Link key={href} href={href}>
                 <a 
                   role="button"
-                  className={`relative flex flex-col items-center justify-center gap-0.5 w-14 h-16 rounded-lg transition-all duration-300 ease-out touch-target interactive-hover ${
+                  className={`relative flex flex-col items-center justify-center gap-1 w-14 h-16 rounded-lg transition-all duration-300 ease-out touch-target interactive-hover ${
                     isActive 
-                      ? "text-primary scale-110" 
+                      ? "text-primary scale-105" 
                       : "text-foreground/60 hover:text-foreground"
                   }`}
                 >
-                  <Icon className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : ''}`} />
-                  <span className={`text-[10px] font-medium transition-opacity ${
-                    isActive ? 'opacity-100' : 'opacity-60'
-                  }`}>
+                  <Icon className="w-6 h-6 transition-transform" />
+                  <span className="text-[10px] font-medium">
                     {t(label)}
                   </span>
                   {badge && badge > 0 && (
@@ -82,11 +80,11 @@ export function BottomNav() {
                 role="button"
                 className={`relative flex flex-col items-center justify-center gap-1 w-12 h-12 rounded-lg transition-all duration-300 ease-out mb-4 group interactive-hover ${
                   isActive 
-                    ? "text-primary scale-110" 
+                    ? "text-primary scale-105" 
                     : "text-foreground/60 hover:text-foreground"
                 }`}
               >
-                <Icon className={`w-6 h-6 transition-transform ${isActive ? 'scale-110' : ''}`} />
+                <Icon className="w-6 h-6 transition-transform" />
                 <span className="text-[10px] font-medium opacity-0 group-hover:opacity-100 absolute left-16 glass text-foreground px-2 py-1 rounded whitespace-nowrap border border-border/10 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
                   {t(label)}
                 </span>
