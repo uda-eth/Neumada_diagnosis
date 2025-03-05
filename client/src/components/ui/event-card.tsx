@@ -7,7 +7,7 @@ interface EventCardProps {
   date: Date;
   location: string;
   imageUrl: string;
-  price: number;
+  price: string;
   attendees: Array<{
     name: string;
     avatar?: string;
@@ -47,7 +47,7 @@ export function EventCard({
               <h3 className="text-lg font-semibold text-white mt-1">{title}</h3>
             </div>
             <div className="text-right">
-              {price > 0 ? (
+              {price && parseFloat(price) > 0 ? (
                 <>
                   <p className="text-white font-semibold">${price}</p>
                   <p className="text-sm text-white/60">per person</p>

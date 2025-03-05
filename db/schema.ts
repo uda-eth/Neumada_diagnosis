@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp, jsonb, numeric, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, jsonb, boolean, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 
@@ -36,7 +36,7 @@ export const events = pgTable("events", {
   category: text("category").notNull(),
   creatorId: integer("creator_id").references(() => users.id),
   capacity: integer("capacity"),
-  price: numeric("price"), 
+  price: varchar("price"), 
   ticketType: text("ticket_type").notNull(),
   availableTickets: integer("available_tickets"),
   createdAt: timestamp("created_at").defaultNow(),
