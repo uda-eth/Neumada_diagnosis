@@ -51,5 +51,15 @@ export const members: Member[] = [
     interests: ["Content Creation", "Photography", "Cultural Exchange"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.28.10 PM.png",
     occupation: "Content Producer"
+  },
+  {
+    id: 5,
+    name: "Gabe Tavera",
+    age: 44,
+    location: "Austin",
+    bio: "LA-born yogi now based in Austin, sharing wellness and mindful living practices.",
+    interests: ["Yoga", "Wellness", "Mindfulness"],
+    image: "/attached_assets/Screenshot 2025-03-04 at 8.30.13 PM.png",
+    occupation: "Yoga Instructor"
   }
 ];
