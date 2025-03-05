@@ -71,7 +71,7 @@ const MOCK_USERS = {
   ]
 };
 
-// Update events to include attending and interested users
+// Update events to include prices
 const newEvents = {
   "Mexico City": [
     {
@@ -416,7 +416,7 @@ const newEvents = {
         { id: 1051, name: "Robert White", image: "/attached_assets/profile-image-42.jpg" },
         { id: 1052, name: "Ashley Black", image: "/attached_assets/profile-image-43.jpg" },
         { id: 1053, name: "William Jones", image: "/attached_assets/profile-image-44.jpg" },
-        { id: 1054, name: "Amanda White", image: "/attached_assets/profile-image-45jpg" },
+        { id: 1054, name: "Amanda White", image: "/attached_assets/profile-image-45.jpg" },
         { id: 1055, name: "Brian Lee", image: "/attached_assets/profile-image-46.jpg" },
         { id: 1056, name: "Sarah Jones", image: "/attached_assets/profile-image-47.jpg" },
         { id: 1057, name: "Christopher Brown", image: "/attached_assets/profile-image-48.jpg" },
