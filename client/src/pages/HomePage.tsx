@@ -424,25 +424,25 @@ export default function HomePage() {
                                 </div>
                                 <div className="flex items-center gap-2">
                                   {event.price ? (
-                                    <>
+                                    <div className="flex items-center gap-2">
                                       <span className="text-xs md:text-sm font-medium">
                                         ${event.price}
                                       </span>
                                       <Button
                                         variant="default"
                                         size="sm"
-                                        className="text-xs h-7 px-2 md:h-8 md:px-3"
+                                        className="text-xs h-7 px-3 md:h-8 md:px-4 bg-primary hover:bg-primary/90"
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           toast({
-                                            title: "Processing",
-                                            description: "Redirecting to ticket purchase..."
+                                            title: t('processingPurchase'),
+                                            description: t('redirectingToCheckout')
                                           });
                                         }}
                                       >
-                                        Buy
+                                        {t('buyTickets')}
                                       </Button>
-                                    </>
+                                    </div>
                                   ) : (
                                     <Button
                                       variant="outline"
@@ -451,12 +451,12 @@ export default function HomePage() {
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         toast({
-                                          title: "Event Saved",
-                                          description: "You can find this in your saved events"
+                                          title: t('eventSaved'),
+                                          description: t('findInSavedEvents')
                                         });
                                       }}
                                     >
-                                      Save Event
+                                      {t('saveEvent')}
                                     </Button>
                                   )}
                                 </div>
@@ -523,25 +523,25 @@ export default function HomePage() {
                                 </div>
                                 <div className="flex items-center gap-2">
                                   {event.price ? (
-                                    <>
+                                    <div className="flex items-center gap-2">
                                       <span className="text-xs md:text-sm font-medium">
                                         ${event.price}
                                       </span>
                                       <Button
                                         variant="default"
                                         size="sm"
-                                        className="text-xs h-7 px-2 md:h-8 md:px-3"
+                                        className="text-xs h-7 px-3 md:h-8 md:px-4 bg-primary hover:bg-primary/90"
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           toast({
-                                            title: "Processing",
-                                            description: "Redirecting to ticket purchase..."
+                                            title: t('processingPurchase'),
+                                            description: t('redirectingToCheckout')
                                           });
                                         }}
                                       >
-                                        Buy
+                                        {t('buyTickets')}
                                       </Button>
-                                    </>
+                                    </div>
                                   ) : (
                                     <Button
                                       variant="outline"
@@ -550,12 +550,12 @@ export default function HomePage() {
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         toast({
-                                          title: "Event Saved",
-                                          description: "You can find this in your saved events"
+                                          title: t('eventSaved'),
+                                          description: t('findInSavedEvents')
                                         });
                                       }}
                                     >
-                                      Save Event
+                                      {t('saveEvent')}
                                     </Button>
                                   )}
                                 </div>
