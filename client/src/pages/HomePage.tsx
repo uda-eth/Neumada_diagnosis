@@ -416,7 +416,7 @@ export default function HomePage() {
                                       Maly Members Only
                                     </Badge>
                                   )}
-                                  {event.tags?.map((tag: string) => (
+                                  {event.tags?.slice(0, 2).map((tag: string) => (
                                     <Badge
                                       key={tag}
                                       variant="secondary"
@@ -425,6 +425,11 @@ export default function HomePage() {
                                       {tag}
                                     </Badge>
                                   ))}
+                                  {((event.attendingCount || 0) + (event.interestedCount || 0)) > 10 && (
+                                    <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
+                                      Trending
+                                    </Badge>
+                                  )}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                   {format(new Date(event.date), "EEE, MMM d, h:mm a")}
@@ -434,80 +439,23 @@ export default function HomePage() {
                                 </h3>
                               </div>
                               <div className="flex items-center justify-between mt-2 md:mt-3">
-                                <div className="flex items-center gap-2">
-                                  {((event.attendingUsers?.length || 0) + (event.interestedUsers?.length || 0)) >= 3 ? (
-                                    <>
-                                      <div className="flex -space-x-2">
-                                        {(event.attendingUsers || []).slice(0, 2).map((user: any, i: number) => (
-                                          <Avatar 
-                                            key={`attending-${user.id}`} 
-                                            className="border-2 border-background w-6 h-6"
-                                            onClick={() => setLocation(`/profile/${user.id}`)}
-                                          >
-                                            <AvatarImage 
-                                              src={user.image || `/attached_assets/profile-image-${(user.id % 10) + 1}.jpg`} 
-                                              alt={getFirstName(user.name)}
-                                            />
-                                            <AvatarFallback>{getFirstName(user.name)[0]}</AvatarFallback>
-                                          </Avatar>
-                                        ))}
-                                        {(event.interestedUsers || []).slice(0, 1).map((user: any, i: number) => (
-                                          <Avatar 
-                                            key={`interested-${user.id}`} 
-                                            className="border-2 border-background w-6 h-6"
-                                            onClick={() => setLocation(`/profile/${user.id}`)}
-                                          >
-                                            <AvatarImage 
-                                              src={user.image || `/attached_assets/profile-image-${(user.id % 10) + 1}.jpg`} 
-                                              alt={getFirstName(user.name)}
-                                            />
-                                            <AvatarFallback>{getFirstName(user.name)[0]}</AvatarFallback>
-                                          </Avatar>
-                                        ))}
-                                        {(event.attendingCount + (event.interestedCount || 0)) > 3 && (
-                                          <div 
-                                            className="w-6 h-6 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center text-xs text-primary cursor-pointer"
-                                            onClick={() => setLocation(`/event/${event.id}`)}
-                                          >
-                                            +{(event.attendingCount + (event.interestedCount || 0)) - 3}
-                                          </div>
-                                        )}
-                                      </div>
-                                      <span 
-                                        className="text-xs text-muted-foreground cursor-pointer"
-                                        onClick={() => setLocation(`/event/${event.id}`)}
-                                      >
-                                        {event.attendingCount} attending • {event.interestedCount} interested
-                                      </span>
-                                    </>
-                                  ) : (
-                                    <span 
-                                      className="text-xs text-muted-foreground cursor-pointer"
-                                      onClick={() => setLocation(`/event/${event.id}`)}
-                                    >
-                                      {event.attendingCount} attending • {event.interestedCount} interested
-                                    </span>
-                                  )}
+                                <div className="flex items-center gap-1 min-w-0">
+                                  <MapPin className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0 text-muted-foreground" />
+                                  <span className="text-xs md:text-sm text-muted-foreground truncate">
+                                    {event.location}
+                                  </span>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                  <div className="flex items-center gap-1 min-w-0">
-                                    <MapPin className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0 text-muted-foreground" />
-                                    <span className="text-xs md:text-sm text-muted-foreground truncate">
-                                      {event.location}
-                                    </span>
-                                  </div>
-                                  <Button 
-                                    variant="secondary" 
-                                    size="sm"
-                                    className="bg-gradient-to-r from-purple-700 to-purple-900 text-white hover:from-purple-800 hover:to-purple-950 transition-all duration-200"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setLocation(`/event/${event.id}/register`);
-                                    }}
-                                  >
-                                    Buy
-                                  </Button>
-                                </div>
+                                <Button 
+                                  variant="secondary" 
+                                  size="sm"
+                                  className="bg-gradient-to-r from-purple-700 to-purple-900 text-white hover:from-purple-800 hover:to-purple-950 transition-all duration-200"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setLocation(`/event/${event.id}/register`);
+                                  }}
+                                >
+                                  Buy
+                                </Button>
                               </div>
                             </div>
                           </div>
@@ -566,7 +514,7 @@ export default function HomePage() {
                                       Maly Members Only
                                     </Badge>
                                   )}
-                                  {event.tags?.map((tag: string) => (
+                                  {event.tags?.slice(0, 2).map((tag: string) => (
                                     <Badge
                                       key={tag}
                                       variant="secondary"
@@ -575,6 +523,11 @@ export default function HomePage() {
                                       {tag}
                                     </Badge>
                                   ))}
+                                  {((event.attendingCount || 0) + (event.interestedCount || 0)) > 10 && (
+                                    <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
+                                      Trending
+                                    </Badge>
+                                  )}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                   {format(new Date(event.date), "EEE, MMM d, h:mm a")}
@@ -584,80 +537,23 @@ export default function HomePage() {
                                 </h3>
                               </div>
                               <div className="flex items-center justify-between mt-2 md:mt-3">
-                                <div className="flex items-center gap-2">
-                                  {((event.attendingUsers?.length || 0) + (event.interestedUsers?.length || 0)) >= 3 ? (
-                                    <>
-                                      <div className="flex -space-x-2">
-                                        {(event.attendingUsers || []).slice(0, 2).map((user: any, i: number) => (
-                                          <Avatar 
-                                            key={`attending-${user.id}`} 
-                                            className="border-2 border-background w-6 h-6"
-                                            onClick={() => setLocation(`/profile/${user.id}`)}
-                                          >
-                                            <AvatarImage 
-                                              src={user.image || `/attached_assets/profile-image-${(user.id % 10) + 1}.jpg`} 
-                                              alt={getFirstName(user.name)}
-                                            />
-                                            <AvatarFallback>{getFirstName(user.name)[0]}</AvatarFallback>
-                                          </Avatar>
-                                        ))}
-                                        {(event.interestedUsers || []).slice(0, 1).map((user: any, i: number) => (
-                                          <Avatar 
-                                            key={`interested-${user.id}`} 
-                                            className="border-2 border-background w-6 h-6"
-                                            onClick={() => setLocation(`/profile/${user.id}`)}
-                                          >
-                                            <AvatarImage 
-                                              src={user.image || `/attached_assets/profile-image-${(user.id % 10) + 1}.jpg`} 
-                                              alt={getFirstName(user.name)}
-                                            />
-                                            <AvatarFallback>{getFirstName(user.name)[0]}</AvatarFallback>
-                                          </Avatar>
-                                        ))}
-                                        {(event.attendingCount + (event.interestedCount || 0)) > 3 && (
-                                          <div 
-                                            className="w-6 h-6 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center text-xs text-primary cursor-pointer"
-                                            onClick={() => setLocation(`/event/${event.id}`)}
-                                          >
-                                            +{(event.attendingCount + (event.interestedCount || 0)) - 3}
-                                          </div>
-                                        )}
-                                      </div>
-                                      <span 
-                                        className="text-xs text-muted-foreground cursor-pointer"
-                                        onClick={() => setLocation(`/event/${event.id}`)}
-                                      >
-                                        {event.attendingCount} attending • {event.interestedCount} interested
-                                      </span>
-                                    </>
-                                  ) : (
-                                    <span 
-                                      className="text-xs text-muted-foreground cursor-pointer"
-                                      onClick={() => setLocation(`/event/${event.id}`)}
-                                    >
-                                      {event.attendingCount} attending • {event.interestedCount} interested
-                                    </span>
-                                  )}
+                                <div className="flex items-center gap-1 min-w-0">
+                                  <MapPin className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0 text-muted-foreground" />
+                                  <span className="text-xs md:text-sm text-muted-foreground truncate">
+                                    {event.location}
+                                  </span>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                  <div className="flex items-center gap-1 min-w-0">
-                                    <MapPin className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0 text-muted-foreground" />
-                                    <span className="text-xs md:text-sm text-muted-foreground truncate">
-                                      {event.location}
-                                    </span>
-                                  </div>
-                                  <Button 
-                                    variant="secondary" 
-                                    size="sm"
-                                    className="bg-gradient-to-r from-purple-700 to-purple-900 text-white hover:from-purple-800 hover:to-purple-950 transition-all duration-200"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setLocation(`/event/${event.id}/register`);
-                                    }}
-                                  >
-                                    Buy
-                                  </Button>
-                                </div>
+                                <Button 
+                                  variant="secondary" 
+                                  size="sm"
+                                  className="bg-gradient-to-r from-purple-700 to-purple-900 text-white hover:from-purple-800 hover:to-purple-950 transition-all duration-200"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setLocation(`/event/${event.id}/register`);
+                                  }}
+                                >
+                                  Buy
+                                </Button>
                               </div>
                             </div>
                           </div>
