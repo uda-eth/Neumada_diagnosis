@@ -10,27 +10,29 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { InviteTrigger } from "./invite-dialog";
+import { useTranslation } from "@/lib/translations";
 
 // Mock unread count for demo - this would come from your actual message state
 const unreadCount = 3;
 
 export const navItems = [
-  { icon: Compass, label: "Discover", href: "/" },
-  { icon: UsersRound, label: "Connect", href: "/connect" },
-  { icon: PlusSquare, label: "Create", href: "/create" },
+  { icon: Compass, label: 'discover', href: "/" },
+  { icon: UsersRound, label: 'connect', href: "/connect" },
+  { icon: PlusSquare, label: 'create', href: "/create" },
   { 
     icon: Inbox, 
-    label: "Inbox", 
+    label: 'inbox', 
     href: "/messages",
     badge: unreadCount
   },
-  { icon: User, label: "Profile", href: "/profile/luca-hudek/edit" },
-  { icon: Settings, label: "Settings", href: "/settings" },
-  { icon: Bot, label: "Guide", href: "/companion" }
+  { icon: User, label: 'profile', href: "/profile/luca-hudek/edit" },
+  { icon: Settings, label: 'settings', href: "/settings" },
+  { icon: Bot, label: 'guide', href: "/companion" }
 ];
 
 export function BottomNav() {
   const [location] = useLocation();
+  const { t } = useTranslation();
 
   return (
     <>
@@ -53,7 +55,7 @@ export function BottomNav() {
                   <span className={`text-[10px] font-medium transition-opacity ${
                     isActive ? 'opacity-100' : 'opacity-60'
                   }`}>
-                    {label}
+                    {t(label)}
                   </span>
                   {badge && badge > 0 && (
                     <Badge 
@@ -86,7 +88,7 @@ export function BottomNav() {
               >
                 <Icon className={`w-6 h-6 transition-transform ${isActive ? 'scale-110' : ''}`} />
                 <span className="text-[10px] font-medium opacity-0 group-hover:opacity-100 absolute left-16 glass text-foreground px-2 py-1 rounded whitespace-nowrap border border-border/10 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
-                  {label}
+                  {t(label)}
                 </span>
                 {badge && badge > 0 && (
                   <Badge 
