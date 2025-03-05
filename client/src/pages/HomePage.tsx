@@ -489,7 +489,7 @@ export default function HomePage() {
                 </section>
               )}
 
-              {/* Ad Space - ALULA */}
+              {/* Ad Space - Sheybarah Island */}
               <section className="py-8">
                 <div className="w-full relative">
                   <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
@@ -497,13 +497,13 @@ export default function HomePage() {
                   </div>
                   <div className="rounded-lg overflow-hidden">
                     <img 
-                      src="/attached_assets/elephantrock-560.jpg"
-                      alt="ALULA"
+                      src="/attached_assets/Screenshot 2025-03-05 at 12.28.47 AM.png"
+                      alt="Sheybarah Island"
                       className="w-full object-cover h-[400px]"
                     />
                     <div className="bg-black/80 text-white p-6">
-                      <h3 className="text-2xl font-semibold mb-2">THE WORLD'S MASTERPIECE</h3>
-                      <p className="text-lg text-white/60">Experience ALULA</p>
+                      <h3 className="text-2xl font-semibold mb-2">SAUDI ARABIA</h3>
+                      <p className="text-lg text-white/60">Shebara Island</p>
                     </div>
                   </div>
                 </div>
