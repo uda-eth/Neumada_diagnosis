@@ -489,6 +489,26 @@ export default function HomePage() {
                 </section>
               )}
 
+              {/* Ad Space - ALULA */}
+              <section className="py-8">
+                <div className="w-full relative">
+                  <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                    Ad Space
+                  </div>
+                  <div className="rounded-lg overflow-hidden">
+                    <img 
+                      src="/attached_assets/elephantrock-560.jpg"
+                      alt="ALULA"
+                      className="w-full object-cover h-[400px]"
+                    />
+                    <div className="bg-black/80 text-white p-6">
+                      <h3 className="text-2xl font-semibold mb-2">THE WORLD'S MASTERPIECE</h3>
+                      <p className="text-lg text-white/60">Experience ALULA</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
               {groupedEvents?.nextWeek.length > 0 && (
                 <section>
                   <h2 className="text-sm font-medium text-muted-foreground mb-4">
