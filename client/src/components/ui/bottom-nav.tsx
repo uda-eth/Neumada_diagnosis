@@ -38,14 +38,14 @@ export function BottomNav() {
     <>
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[100] glass border-t border-border/10 shadow-lg pb-6">
-        <div className="flex justify-around items-center h-16 max-w-md mx-auto px-1">
+        <div className="flex justify-around items-center h-16 max-w-md mx-auto px-3">
           {navItems.map(({ icon: Icon, label, href, badge }) => {
             const isActive = location === href;
             return (
               <Link key={href} href={href}>
                 <a 
                   role="button"
-                  className={`relative flex flex-col items-center justify-center gap-1 w-14 h-16 rounded-lg transition-all duration-300 ease-out touch-target interactive-hover ${
+                  className={`relative flex flex-col items-center justify-center gap-1 w-12 h-16 rounded-lg transition-all duration-300 ease-out touch-target interactive-hover ${
                     isActive 
                       ? "text-primary scale-105" 
                       : "text-foreground/60 hover:text-foreground"
