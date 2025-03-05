@@ -55,7 +55,7 @@ export function BottomNav() {
                   role="button"
                   className={`relative flex flex-col items-center justify-center gap-1 w-12 h-16 rounded-lg transition-all duration-300 ease-out touch-target interactive-hover ${
                     isActive 
-                      ? "text-teal-400 scale-105" 
+                      ? "text-white scale-105" 
                       : "text-foreground/60 hover:text-foreground"
                   }`}
                 >
@@ -88,7 +88,7 @@ export function BottomNav() {
                 role="button"
                 className={`relative flex flex-col items-center justify-center gap-1 w-12 h-12 rounded-lg transition-all duration-300 ease-out mb-4 group interactive-hover ${
                   isActive 
-                    ? "text-teal-400 scale-105" 
+                    ? "text-white scale-105" 
                     : "text-foreground/60 hover:text-foreground"
                 }`}
               >
