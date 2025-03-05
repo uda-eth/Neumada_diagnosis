@@ -121,5 +121,15 @@ export const members: Member[] = [
     interests: ["Sustainable Fashion", "Luxury Retail", "Business Strategy"],
     image: "/attached_assets/Screenshot 2024-03-06 at 10.22.46 AM.png",
     occupation: "Fashion Business Strategist"
+  },
+  {
+    id: 12,
+    name: "Svetlana",
+    age: 31,
+    location: "Mexico City",
+    bio: "Contemporary artist exploring the intersection of traditional and digital mediums in modern storytelling.",
+    interests: ["Contemporary Art", "Mixed Media", "Digital Expression"],
+    image: "/attached_assets/Screenshot 2023-11-12 at 1.06.14 PM.png",
+    occupation: "Artist"
   }
 ];
