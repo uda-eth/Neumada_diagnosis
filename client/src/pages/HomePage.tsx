@@ -21,6 +21,21 @@ import { useTranslation } from "@/lib/translations";
 
 const getFirstName = (fullName: string) => fullName.split(' ')[0];
 
+// Hardcoded featured event for demo
+const featuredEventData = {
+  id: 1001,
+  title: "SURREAL: Welcome to the New Era",
+  description: "Experience the next evolution of electronic music and art in the mystical Valle de Bravo. A night where reality blends with the extraordinary, featuring world-class DJs and immersive installations.",
+  location: "Valle de Bravo",
+  date: new Date("2025-03-15T21:00:00"),
+  category: "Nightlife",
+  tags: ["Electronic Music", "Art", "Festival"],
+  price: 85,
+  image: "/attached_assets/Screenshot 2025-03-05 at 10.14.53 PM.png",
+  attendingCount: 156,
+  interestedCount: 342
+};
+
 const cities = [
   "Bali",
   "Bangkok",
@@ -74,14 +89,10 @@ export default function HomePage() {
   const { events, isLoading } = useEvents(undefined, selectedCity);
   const [, setLocation] = useLocation();
 
-  // Get featured event (first event with most attendees/interested)
-  const featuredEvent = events?.reduce((featured, current) => {
-    const featuredTotal = (featured?.attendingCount || 0) + (featured?.interestedCount || 0);
-    const currentTotal = (current.attendingCount || 0) + (current.interestedCount || 0);
-    return currentTotal > featuredTotal ? current : featured;
-  }, events[0]);
+  // Mock the featured event with our hardcoded data
+  const featuredEvent = featuredEventData;
 
-  // Filter remaining events
+  // Filter remaining events to exclude the featured event
   const remainingEvents = events?.filter(event => event.id !== featuredEvent?.id);
 
   const filteredEvents = remainingEvents?.filter(event => {
