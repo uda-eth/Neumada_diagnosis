@@ -49,33 +49,30 @@ app.use((req, res, next) => {
 
 (async () => {
   try {
-    // Kill any existing process on port 5000
-    try {
-      const { execSync } = require('child_process');
-      log('Attempting to kill any process using port 5000...');
-      execSync('lsof -ti :5000 | xargs kill -9', { stdio: 'pipe' });
-      log('Successfully killed processes on port 5000');
-    } catch (err) {
-      log('No existing process found on port 5000 or system does not support lsof');
-    }
+    const PORT = 5000;
+    let maxRetries = 3;
+    let currentTry = 0;
 
-    // Increased delay to ensure port is released
-    log('Waiting for port to be released...');
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    const cleanupPort = async () => {
+      try {
+        const { execSync } = await import('child_process');
+        log('Checking for processes on port 5000...');
+        execSync('lsof -ti :5000 | xargs kill -9', { stdio: 'pipe' });
+        log('Successfully cleaned up port 5000');
+        await new Promise(resolve => setTimeout(resolve, 500)); // Reduced delay
+      } catch (err) {
+        log('No existing process found on port 5000');
+      }
+    };
 
+    await cleanupPort();
     const { httpServer } = await registerRoutes(app);
 
     // Error handling middleware
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
-
-      // Log the error but don't fail on missing API keys
-      if (message.includes("API key")) {
-        console.warn("API key warning:", message);
-        return res.status(200).json({ message: "Using fallback mode without API keys" });
-      }
-
+      log(`Error: ${message}`);
       res.status(status).json({ message });
     });
 
@@ -86,28 +83,40 @@ app.use((req, res, next) => {
       serveStatic(app);
     }
 
-    const PORT = 5000;
-    let retries = 0;
-    const maxRetries = 5; // Increased max retries
+    const startServer = async () => {
+      try {
+        currentTry++;
+        log(`Attempting to start server (attempt ${currentTry}/${maxRetries})`);
 
-    const startServer = () => {
-      httpServer.listen(PORT, "0.0.0.0")
-        .on("error", (error: NodeJS.ErrnoException) => {
-          if (error.code === 'EADDRINUSE' && retries < maxRetries) {
-            retries++;
-            log(`Port ${PORT} is in use, attempting to close existing connection... (attempt ${retries}/${maxRetries})`);
-            setTimeout(startServer, 2000); // Increased delay between retries
-          } else {
-            log(`Failed to start server: ${error}`);
-            process.exit(1);
-          }
-        })
-        .on("listening", () => {
-          log(`Server started on port ${PORT}`);
+        await new Promise<void>((resolve, reject) => {
+          httpServer.listen(PORT, "0.0.0.0")
+            .once('error', (error: NodeJS.ErrnoException) => {
+              if (error.code === 'EADDRINUSE') {
+                log(`Port ${PORT} is still in use`);
+                reject(error);
+              } else {
+                log(`Error starting server: ${error.message}`);
+                reject(error);
+              }
+            })
+            .once('listening', () => {
+              log(`Server started successfully on port ${PORT}`);
+              resolve();
+            });
         });
+      } catch (error) {
+        if (currentTry < maxRetries) {
+          log('Retrying after cleanup...');
+          await cleanupPort();
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Reduced delay
+          return startServer();
+        } else {
+          throw new Error(`Failed to start server after ${maxRetries} attempts`);
+        }
+      }
     };
 
-    startServer();
+    await startServer();
 
     // Graceful shutdown handler
     const cleanup = () => {
@@ -122,7 +131,7 @@ app.use((req, res, next) => {
     process.on('SIGINT', cleanup);
 
   } catch (error) {
-    log(`Error setting up server: ${error}`);
+    log(`Fatal error: ${error}`);
     process.exit(1);
   }
 })();
