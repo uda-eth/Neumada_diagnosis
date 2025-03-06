@@ -31,7 +31,7 @@ const featuredEventData = {
   category: "Nightlife",
   tags: ["Electronic Music", "Art", "Festival"],
   price: 85,
-  image: "/attached_assets/Screenshot 2025-03-05 at 10.29.46 PM.png",
+  image: "", // Removed problematic image
   attendingCount: 156,
   interestedCount: 342
 };
@@ -274,6 +274,7 @@ export default function HomePage() {
                     <CardContent className="p-0">
                       <div className="relative">
                         <div className="aspect-[16/9] relative">
+                          {/* Image will not render because src is an empty string */}
                           <img
                             src={featuredEvent.image}
                             alt={featuredEvent.title}
