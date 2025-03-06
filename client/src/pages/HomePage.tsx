@@ -519,6 +519,48 @@ export default function HomePage() {
           </div>
         </main>
       </ScrollArea>
+      <nav className="fixed bottom-0 left-0 right-0 bg-black text-white border-t border-border p-4 md:hidden">
+        <div className="container mx-auto">
+          <div className="flex justify-around items-center">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setLocation("/")}
+              className="text-white"
+            >
+              <Search className="h-5 w-5" />
+              <span className="text-xs mt-1">Discover</span>
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setLocation("/connect")}
+              className="text-white"
+            >
+              <Users className="h-5 w-5" />
+              <span className="text-xs mt-1">Connect</span>
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setLocation("/create")}
+              className="text-white"
+            >
+              <Plus className="h-5 w-5" />
+              <span className="text-xs mt-1">Create</span>
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setLocation("/concierge")}
+              className="text-white"
+            >
+              <Bot className="h-5 w-5" />
+              <span className="text-xs mt-1">Concierge</span>
+            </Button>
+          </div>
+        </div>
+      </nav>
     </div>
   );
 }
