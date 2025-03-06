@@ -6,56 +6,27 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronLeft, Search, MessageCircle } from "lucide-react";
 import { useLocation } from "wouter";
-import { useMessages, useMessageNotifications } from "@/hooks/use-messages";
-import { useUser } from "@/hooks/use-user";
+import { useMessages } from "@/hooks/use-messages";
 
 export default function MessagesPage() {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
-  const { user } = useUser();
   const {
     conversations,
-    unreadCount,
     loading,
     error,
     fetchConversations,
-    markAllAsRead,
-    connectSocket,
-    disconnectSocket,
   } = useMessages();
 
   useEffect(() => {
-    if (user?.id) {
-      fetchConversations(user.id);
-      connectSocket(user.id);
-      return () => disconnectSocket();
-    }
-  }, [user?.id]);
-
-  useEffect(() => {
-    if (user?.id) {
-      markAllAsRead(user.id);
-    }
+    // Load conversations without requiring authentication
+    fetchConversations();
   }, []);
 
   const filteredConversations = conversations.filter(conv =>
     conv.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    conv.lastMessage.content.toLowerCase().includes(searchQuery.toLowerCase())
+    conv.lastMessage?.content.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <MessageCircle className="mx-auto h-12 w-12 text-muted-foreground opacity-50" />
-          <p className="mt-4 text-muted-foreground">Please sign in to view messages</p>
-          <Button className="mt-4" onClick={() => setLocation("/auth")}>
-            Sign In
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -73,11 +44,6 @@ export default function MessagesPage() {
             </Button>
             <div className="flex-1">
               <h1 className="text-xl font-semibold">Messages</h1>
-              {unreadCount > 0 && (
-                <p className="text-sm text-muted-foreground">
-                  {unreadCount} unread message{unreadCount === 1 ? '' : 's'}
-                </p>
-              )}
             </div>
           </div>
         </div>
@@ -121,7 +87,7 @@ export default function MessagesPage() {
               <Button 
                 variant="outline" 
                 className="mt-4"
-                onClick={() => user?.id && fetchConversations(user.id)}
+                onClick={() => fetchConversations()}
               >
                 Retry
               </Button>
@@ -141,21 +107,21 @@ export default function MessagesPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center">
                       <h3 className="font-semibold truncate">{conv.user.name}</h3>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(conv.lastMessage.createdAt).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          hour12: false
-                        })}
-                      </span>
+                      {conv.lastMessage && (
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(conv.lastMessage.createdAt).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
+                          })}
+                        </span>
+                      )}
                     </div>
-                    <p className={`text-sm truncate ${
-                      !conv.lastMessage.isRead
-                        ? "text-foreground font-medium"
-                        : "text-muted-foreground"
-                    }`}>
-                      {conv.lastMessage.content}
-                    </p>
+                    {conv.lastMessage && (
+                      <p className="text-sm truncate text-muted-foreground">
+                        {conv.lastMessage.content}
+                      </p>
+                    )}
                   </div>
                 </div>
               </Card>
@@ -163,7 +129,10 @@ export default function MessagesPage() {
           ) : (
             <div className="text-center py-8">
               <MessageCircle className="mx-auto h-12 w-12 text-muted-foreground opacity-50" />
-              <p className="mt-4 text-muted-foreground">No messages found</p>
+              <p className="mt-4 text-muted-foreground">Start a conversation by visiting someone's profile</p>
+              <Button className="mt-4" onClick={() => setLocation("/")}>
+                Browse Members
+              </Button>
             </div>
           )}
         </div>
