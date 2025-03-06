@@ -6,13 +6,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Users, Plus, Search, Globe2, Bot, Share2, X } from "lucide-react";
+import { MapPin, Users, Plus, Search, Globe2, Bot, Share2, X, Check } from "lucide-react";
 import { format } from "date-fns";
 import { DIGITAL_NOMAD_CITIES } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTranslation } from "@/lib/translations";
 import { ShareDialog } from "@/components/ui/share-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
 
 // Event types for filtering
 const EVENT_TYPES = [
@@ -193,70 +202,100 @@ export default function HomePage() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              {/* Categories dropdown only shown on mobile */}
+
+              {/* Mobile Filter Dropdown */}
               <div className="md:hidden">
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-full bg-background/5 border-border">
-                    <SelectValue placeholder={t('allCategories')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t('allCategories')}</SelectItem>
-                    {categories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between">
+                      <span>Filter Events</span>
+                      <Badge variant="secondary" className="ml-2">
+                        {selectedEventTypes.length}
+                      </Badge>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-72">
+                    <DropdownMenuLabel>Event Types</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {EVENT_TYPES.map((type) => (
+                      <DropdownMenuCheckboxItem
+                        key={type}
+                        checked={selectedEventTypes.includes(type)}
+                        onCheckedChange={(checked) => {
+                          setSelectedEventTypes(prev =>
+                            checked
+                              ? [...prev, type]
+                              : prev.filter(t => t !== type)
+                          );
+                        }}
+                      >
+                        {type}
+                      </DropdownMenuCheckboxItem>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Event Type Filters - Enhanced */}
-            <ScrollArea className="w-full" orientation="horizontal">
-              <div className="flex gap-2 py-4">
-                {EVENT_TYPES.map((type) => (
-                  <Button
-                    key={type}
-                    variant={selectedEventTypes.includes(type) ? "default" : "outline"}
-                    size="sm"
-                    className={`whitespace-nowrap transition-all ${
-                      selectedEventTypes.includes(type)
-                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                        : "hover:bg-accent"
-                    }`}
-                    onClick={() => {
-                      setSelectedEventTypes(prev =>
-                        prev.includes(type)
-                          ? prev.filter(t => t !== type)
-                          : [...prev, type]
-                      );
-                    }}
-                  >
-                    {type}
-                    {selectedEventTypes.includes(type) && (
-                      <X className="ml-2 h-4 w-4" />
+                    {selectedEventTypes.length > 0 && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="justify-center text-muted-foreground"
+                          onClick={() => setSelectedEventTypes([])}
+                        >
+                          Clear all filters
+                        </DropdownMenuItem>
+                      </>
                     )}
-                  </Button>
-                ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
-            </ScrollArea>
-
-            {selectedEventTypes.length > 0 && (
-              <div className="flex justify-between items-center py-2 border-t border-border">
-                <div className="text-sm text-muted-foreground">
-                  {selectedEventTypes.length} filter{selectedEventTypes.length !== 1 ? 's' : ''} selected
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedEventTypes([])}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  Clear all
-                </Button>
-              </div>
-            )}
             </div>
+
+            {/* Desktop Event Type Filters */}
+            <div className="hidden md:block">
+              <ScrollArea className="w-full" orientation="horizontal">
+                <div className="flex gap-2 py-4">
+                  {EVENT_TYPES.map((type) => (
+                    <Button
+                      key={type}
+                      variant={selectedEventTypes.includes(type) ? "default" : "outline"}
+                      size="sm"
+                      className={`whitespace-nowrap transition-all ${
+                        selectedEventTypes.includes(type)
+                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                          : "hover:bg-accent"
+                      }`}
+                      onClick={() => {
+                        setSelectedEventTypes(prev =>
+                          prev.includes(type)
+                            ? prev.filter(t => t !== type)
+                            : [...prev, type]
+                        );
+                      }}
+                    >
+                      {type}
+                      {selectedEventTypes.includes(type) && (
+                        <X className="ml-2 h-4 w-4" />
+                      )}
+                    </Button>
+                  ))}
+                </div>
+              </ScrollArea>
+
+              {selectedEventTypes.length > 0 && (
+                <div className="flex justify-between items-center py-2 border-t border-border">
+                  <div className="text-sm text-muted-foreground">
+                    {selectedEventTypes.length} filter{selectedEventTypes.length !== 1 ? 's' : ''} selected
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedEventTypes([])}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    Clear all
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
 
           <div className="space-y-8">
             {featuredEvent && (
