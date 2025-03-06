@@ -15,7 +15,7 @@ import { useTranslation } from "@/lib/translations";
 import { ShareDialog } from "@/components/ui/share-dialog";
 
 const featuredEventData = {
-  id: 1008,
+  id: "onda-linda-festival",
   title: "Onda Linda Festival",
   description: "Experience Mexico's premier beach festival, featuring live music, art installations, and seaside performances under the stars.",
   location: "Mexico City",
@@ -199,7 +199,7 @@ export default function HomePage() {
                 </h2>
                 <Card
                   className="bg-card border-border hover:bg-accent/50 transition-colors cursor-pointer overflow-hidden"
-                  onClick={() => setLocation(`/event/${featuredEvent.id}`)}
+                  onClick={() => setLocation(`/event/onda-linda-festival`)}
                 >
                   <CardContent className="p-0">
                     <div className="relative">

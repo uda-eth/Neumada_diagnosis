@@ -9,7 +9,7 @@ export interface Member {
   interests: string[];
   image: string;
   occupation: string;
-  currentMood: "Dating" | "Networking" | "Parties" | "Adventure" | "Dining Out";
+  currentMoods: ("Dating" | "Networking" | "Parties" | "Adventure" | "Dining Out")[];
 }
 
 export const members: Member[] = [
@@ -22,7 +22,7 @@ export const members: Member[] = [
     interests: ["Fashion", "Luxury Brands", "Sustainability", "Design"],
     image: "/attached_assets/Screenshot 2024-03-06 at 12.19.10 PM.png",
     occupation: "Fashion Consultant",
-    currentMood: "Networking"
+    currentMoods: ["Networking", "Dating"]
   },
   {
     id: 17,
@@ -33,7 +33,7 @@ export const members: Member[] = [
     interests: ["Fashion", "Sustainability", "Art Direction", "Photography"],
     image: "/attached_assets/Screenshot 2024-03-06 at 10.23.10 AM.png",
     occupation: "Fashion Editor",
-    currentMood: "Networking"
+    currentMoods: ["Networking", "Dating"]
   },
   {
     id: 16,
@@ -44,7 +44,7 @@ export const members: Member[] = [
     interests: ["Music Production", "Electronic Music", "World Music", "Nightlife"],
     image: "/attached_assets/Screenshot 2025-03-04 at 9.11.42 PM.png",
     occupation: "DJ & Producer",
-    currentMood: "Parties"
+    currentMoods: ["Parties"]
   },
   {
     id: 1,
@@ -55,7 +55,7 @@ export const members: Member[] = [
     interests: ["Innovation", "Community Building", "Digital Nomads"],
     image: "/attached_assets/Screenshot 2025-02-24 at 2.22.24 PM.png",
     occupation: "Founder & CEO",
-    currentMood: "Networking"
+    currentMoods: ["Networking"]
   },
   {
     id: 2,
@@ -66,7 +66,7 @@ export const members: Member[] = [
     interests: ["Photography", "Art Direction", "Travel"],
     image: "/attached_assets/Screenshot 2023-11-12 at 1.04.38 PM.png",
     occupation: "Creative Director",
-    currentMood: "Adventure"
+    currentMoods: ["Adventure", "Dating"]
   },
   {
     id: 3,
@@ -77,7 +77,7 @@ export const members: Member[] = [
     interests: ["Festivals", "Spirituality", "Art"],
     image: "/attached_assets/Screenshot 2023-11-12 at 12.56.16 PM.png",
     occupation: "Festival Artist",
-    currentMood: "Adventure"
+    currentMoods: ["Adventure", "Dating"]
   },
   {
     id: 4,
@@ -88,7 +88,7 @@ export const members: Member[] = [
     interests: ["Content Creation", "Photography", "Cultural Exchange"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.28.10 PM.png",
     occupation: "Content Producer",
-    currentMood: "Parties"
+    currentMoods: ["Parties", "Dating"]
   },
   {
     id: 5,
@@ -99,7 +99,7 @@ export const members: Member[] = [
     interests: ["Yoga", "Wellness", "Mindfulness"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.30.13 PM.png",
     occupation: "Yoga Instructor",
-    currentMood: "Adventure"
+    currentMoods: ["Adventure"]
   },
   {
     id: 6,
@@ -110,7 +110,7 @@ export const members: Member[] = [
     interests: ["Networking", "Business", "Community"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.31.15 PM.png",
     occupation: "Entrepreneur",
-    currentMood: "Networking"
+    currentMoods: ["Networking"]
   },
   {
     id: 7,
@@ -121,7 +121,7 @@ export const members: Member[] = [
     interests: ["Performance Art", "Digital Art", "Innovation"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.32.34 PM.png",
     occupation: "Performance Artist",
-    currentMood: "Parties"
+    currentMoods: ["Parties", "Dating"]
   },
   {
     id: 8,
@@ -132,7 +132,7 @@ export const members: Member[] = [
     interests: ["Business Strategy", "Operations", "Leadership"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.33.27 PM.png",
     occupation: "Executive Operator",
-    currentMood: "Networking"
+    currentMoods: ["Networking", "Dating"]
   },
   {
     id: 9,
@@ -143,7 +143,7 @@ export const members: Member[] = [
     interests: ["Music", "Fitness", "Wellness"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.34.30 PM.png",
     occupation: "DJ & Fitness Instructor",
-    currentMood: "Parties"
+    currentMoods: ["Parties"]
   },
   {
     id: 10,
@@ -154,7 +154,7 @@ export const members: Member[] = [
     interests: ["Contemporary Art", "Cultural Fusion", "Exhibition Design"],
     image: "/attached_assets/Screenshot 2024-03-06 at 11.24.17 AM.png",
     occupation: "Art Director & Curator",
-    currentMood: "Networking"
+    currentMoods: ["Networking"]
   },
   {
     id: 11,
@@ -165,7 +165,7 @@ export const members: Member[] = [
     interests: ["Sustainable Fashion", "Luxury Retail", "Business Strategy"],
     image: "/attached_assets/Screenshot 2024-03-06 at 10.22.46 AM.png",
     occupation: "Fashion Business Strategist",
-    currentMood: "Dating"
+    currentMoods: ["Dating", "Networking"]
   },
   {
     id: 12,
@@ -176,7 +176,7 @@ export const members: Member[] = [
     interests: ["Contemporary Art", "Mixed Media", "Digital Expression"],
     image: "/attached_assets/Screenshot 2023-11-12 at 1.06.14 PM.png",
     occupation: "Artist",
-    currentMood: "Adventure"
+    currentMoods: ["Adventure", "Dating"]
   },
   {
     id: 13,
@@ -187,7 +187,7 @@ export const members: Member[] = [
     interests: ["Digital Marketing", "Content Strategy", "Brand Development"],
     image: "/attached_assets/Screenshot 2023-11-14 at 9.27.40 AM.png",
     occupation: "Digital Marketing Strategist",
-    currentMood: "Dining Out"
+    currentMoods: ["Dining Out"]
   },
   {
     id: 14,
@@ -198,7 +198,7 @@ export const members: Member[] = [
     interests: ["Sustainability", "Research", "Innovation"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.40.31 PM.png",
     occupation: "Research Scientist",
-    currentMood: "Networking"
+    currentMoods: ["Networking"]
   },
   {
     id: 15,
@@ -209,6 +209,6 @@ export const members: Member[] = [
     interests: ["Digital Nomad", "Creative Direction", "Entrepreneurship"],
     image: "/attached_assets/Screenshot 2025-03-04 at 8.41.36 PM.png",
     occupation: "Creative Entrepreneur",
-    currentMood: "Adventure"
+    currentMoods: ["Adventure", "Dating"]
   }
 ];
