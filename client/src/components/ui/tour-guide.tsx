@@ -10,7 +10,7 @@ export function TourGuide() {
   useEffect(() => {
     // Initialize with default steps
     setSteps(defaultTourSteps);
-    
+
     // Check if this is the user's first visit
     const hasSeenTour = localStorage.getItem('hasSeenTour');
     if (!hasSeenTour) {
@@ -25,7 +25,7 @@ export function TourGuide() {
     if (finishedStatuses.includes(status)) {
       reset();
       localStorage.setItem('hasSeenTour', 'true');
-      
+
       if (status === STATUS.FINISHED) {
         toast({
           title: "Tour Completed! 🎉",
@@ -44,17 +44,34 @@ export function TourGuide() {
       showSkipButton
       styles={{
         options: {
-          primaryColor: '#0EA5E9',
+          primaryColor: '#15B79E', // Teal base color
           zIndex: 1000,
+          overlayColor: 'rgba(0, 0, 0, 0.85)',
+          backgroundColor: '#18181b',
+          arrowColor: '#18181b',
+          textColor: '#ffffff',
+        },
+        spotlight: {
+          backgroundColor: 'transparent',
         },
         tooltip: {
           fontSize: '14px',
+          backgroundColor: '#18181b',
+          color: '#ffffff',
         },
         buttonNext: {
-          backgroundColor: '#0EA5E9',
+          backgroundColor: 'transparent',
+          backgroundImage: 'linear-gradient(to right, #15B79E, #0EA5E9, #A855F7)',
+          border: 'none',
+          padding: '8px 16px',
+          fontSize: '14px',
         },
         buttonBack: {
+          color: '#ffffff',
           marginRight: 10,
+        },
+        buttonSkip: {
+          color: '#71717a',
         },
       }}
       callback={handleJoyrideCallback}
