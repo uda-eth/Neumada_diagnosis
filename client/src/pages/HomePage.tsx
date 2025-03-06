@@ -180,36 +180,6 @@ export default function HomePage() {
                 {t('connect')}
               </Button>
               <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setLocation("/messages")} 
-                className="hidden md:inline-flex items-center text-white"
-              >
-                <MessageSquare className="h-5 w-5 mr-2" />
-                {t('inbox')}
-              </Button>
-              {user ? (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => setLocation(`/profile/${user.username}`)} 
-                  className="hidden md:inline-flex items-center text-white"
-                >
-                  <UserCircle2 className="h-5 w-5 mr-2" />
-                  {user.username}
-                </Button>
-              ) : (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => setLocation("/auth")} 
-                  className="hidden md:inline-flex items-center text-white"
-                >
-                  <UserCircle2 className="h-5 w-5 mr-2" />
-                  {t('signIn')}
-                </Button>
-              )}
-              <Button 
                 className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white flex items-center justify-center whitespace-nowrap px-3 md:px-4"
                 onClick={() => setLocation("/create")}
               >
