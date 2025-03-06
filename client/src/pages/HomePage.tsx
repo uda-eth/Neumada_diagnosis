@@ -16,12 +16,12 @@ import { ShareDialog } from "@/components/ui/share-dialog";
 
 const featuredEventData = {
   id: 1008,
-  title: "Zona MACO: Art Festival Week",
-  description: "Experience Mexico City's premier art fair, featuring contemporary artwork from leading galleries worldwide.",
+  title: "Onda Linda Festival",
+  description: "Experience Mexico's premier beach festival, featuring live music, art installations, and seaside performances under the stars.",
   location: "Mexico City",
   date: new Date("2025-03-08T15:00:00").toISOString(),
   category: "Cultural",
-  tags: ["Art", "Exhibition", "Culture"],
+  tags: ["Music", "Art", "Festival"],
   price: 45,
   image: "/attached_assets/Screenshot 2025-03-06 at 9.50.03 AM.png",
   attendingCount: 89,
