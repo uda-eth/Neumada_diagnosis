@@ -7,10 +7,38 @@ import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTranslation } from "@/lib/translations";
-import type { Event } from "@db/schema";
+import { z } from "zod";
+
+// Define the Event type with all fields
+const EventSchema = z.object({
+  id: z.number(),
+  title: z.string(),
+  description: z.string(),
+  location: z.string(),
+  date: z.string().or(z.date()),
+  category: z.string(),
+  price: z.number().nullable(),
+  image: z.string().nullable(),
+  image_url: z.string().nullable(),
+  attendingCount: z.number().nullable().default(0),
+  interestedCount: z.number().nullable().default(0),
+  creatorId: z.number().nullable(),
+  creatorName: z.string().nullable(),
+  creatorImage: z.string().nullable(),
+  tags: z.array(z.string()).nullable(),
+});
+
+type Event = z.infer<typeof EventSchema>;
+
+// Type for attendee/interested user
+interface EventUser {
+  id: number;
+  name: string;
+  image: string;
+}
 
 // Helper function to get first name
-const getFirstName = (fullName: string) => fullName.split(' ')[0];
+const getFirstName = (fullName: string) => fullName?.split(' ')[0] || '';
 
 export default function EventPage() {
   const { id } = useParams();
@@ -61,13 +89,13 @@ export default function EventPage() {
   const attendingCount = event.attendingCount || Math.floor(Math.random() * 30 + 5);
   const interestedCount = event.interestedCount || Math.floor(Math.random() * 50 + 10);
 
-  const attendingUsers = event.attendingUsers || Array.from({ length: Math.min(attendingCount, 5) }, (_, i) => ({
+  const attendingUsers: EventUser[] = Array.from({ length: Math.min(attendingCount, 5) }, (_, i) => ({
     id: i,
     name: `User ${i + 1}`,
     image: `/attached_assets/profile-image-${i + 1}.jpg`
   }));
 
-  const interestedUsers = event.interestedUsers || Array.from({ length: Math.min(interestedCount, 5) }, (_, i) => ({
+  const interestedUsers: EventUser[] = Array.from({ length: Math.min(interestedCount, 5) }, (_, i) => ({
     id: i + 10,
     name: `User ${i + 6}`,
     image: `/attached_assets/profile-image-${i + 6}.jpg`
@@ -122,7 +150,7 @@ export default function EventPage() {
             </h3>
             <div className="flex items-center gap-4">
               <div className="flex -space-x-3" onClick={() => handleViewAllUsers('attending')} style={{cursor: 'pointer'}}>
-                {attendingUsers.slice(0, 5).map((user) => (
+                {attendingUsers.map((user) => (
                   <Avatar 
                     key={user.id} 
                     className="ring-2 ring-background w-12 h-12 border-2 border-black/40"
@@ -159,7 +187,7 @@ export default function EventPage() {
             </h3>
             <div className="flex items-center gap-4">
               <div className="flex -space-x-3" onClick={() => handleViewAllUsers('interested')} style={{cursor: 'pointer'}}>
-                {interestedUsers.slice(0, 5).map((user) => (
+                {interestedUsers.map((user) => (
                   <Avatar 
                     key={user.id} 
                     className="ring-2 ring-background w-12 h-12 border-2 border-black/40"
@@ -222,7 +250,7 @@ export default function EventPage() {
                   style={{cursor: 'pointer'}}
                 >
                   <AvatarImage 
-                    src={event.creatorImage} 
+                    src={event.creatorImage || ''} 
                     alt={event.creatorName || "Event Host"}
                     className="object-cover"
                   />
