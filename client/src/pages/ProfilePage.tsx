@@ -21,17 +21,14 @@ const item = {
   show: { opacity: 1, y: 0 }
 };
 
-const getMoodColor = (mood: string) => {
-  switch (mood) {
-    case 'Creative': return 'from-purple-600 to-pink-600';
-    case 'Adventurous': return 'from-blue-600 to-green-600';
-    case 'Relaxed': return 'from-green-600 to-teal-600';
-    case 'Energetic': return 'from-orange-600 to-red-600';
-    case 'Social': return 'from-yellow-600 to-orange-600';
-    case 'Focused': return 'from-indigo-600 to-purple-600';
-    default: return 'from-purple-600 to-pink-600'; // Default colorful gradient
-  }
-};
+// Mood badge styles configuration
+const moodStyles = {
+  "Dating": "bg-pink-500/20 text-pink-500 hover:bg-pink-500/30",
+  "Networking": "bg-blue-500/20 text-blue-500 hover:bg-blue-500/30",
+  "Parties": "bg-purple-500/20 text-purple-500 hover:bg-purple-500/30",
+  "Adventure": "bg-orange-500/20 text-orange-500 hover:bg-orange-500/30",
+  "Dining Out": "bg-green-500/20 text-green-500 hover:bg-green-500/30"
+} as const;
 
 export default function ProfilePage() {
   const { username } = useParams();
@@ -117,7 +114,8 @@ export default function ProfilePage() {
                 {profile.currentMoods.map((mood, idx) => (
                   <Badge 
                     key={idx} 
-                    className={`bg-gradient-to-r ${getMoodColor(mood)} text-white border-0 flex items-center gap-1 px-3 py-1`}
+                    variant="secondary"
+                    className={`${moodStyles[mood]} flex items-center gap-1`}
                   >
                     <Smile className="w-3 h-3" />
                     {mood}
