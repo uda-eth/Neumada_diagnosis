@@ -20,6 +20,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
 // Mock unread count for demo
@@ -43,7 +44,6 @@ export const secondaryNavItems = [
   },
   { icon: User, label: 'profile', href: "/profile/luca-hudek/edit" },
   { icon: Settings, label: 'settings', href: "/settings" },
-  { icon: Crown, label: 'premium', href: "/premium" },
   { icon: Share2, label: 'invite', href: "#", isInviteTrigger: true },
 ];
 
@@ -84,7 +84,16 @@ export function BottomNav() {
                 <span className="text-[10px] font-medium">Menu</span>
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-56">
+              {/* Premium Button at the top */}
+              <PremiumDialog>
+                <DropdownMenuItem className="cursor-pointer text-purple-500 font-medium">
+                  <Crown className="w-4 h-4 mr-2" />
+                  Get Premium
+                </DropdownMenuItem>
+              </PremiumDialog>
+              <DropdownMenuSeparator />
+              {/* Other menu items */}
               {secondaryNavItems.map(({ icon: Icon, label, href, badge, isInviteTrigger }) => (
                 <DropdownMenuItem key={href}>
                   {isInviteTrigger ? (
@@ -119,6 +128,16 @@ export function BottomNav() {
 
       {/* Desktop Side Navigation */}
       <nav className="hidden md:flex fixed left-0 top-0 bottom-0 z-[100] w-16 glass border-r border-border/10 shadow-lg flex-col items-center py-8">
+        {/* Premium Button at the top for desktop */}
+        <PremiumDialog>
+          <button className="mb-8 relative flex flex-col items-center justify-center gap-1 w-12 h-12 rounded-lg transition-all duration-300 ease-out interactive-hover text-purple-500">
+            <Crown className="w-6 h-6 transition-transform" />
+            <span className="text-[10px] font-medium opacity-0 group-hover:opacity-100 absolute left-16 glass text-foreground px-2 py-1 rounded whitespace-nowrap border border-border/10 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+              Get Premium
+            </span>
+          </button>
+        </PremiumDialog>
+
         {mainNavItems.map(({ icon: Icon, label, href }) => {
           const isActive = location === href;
           return (
