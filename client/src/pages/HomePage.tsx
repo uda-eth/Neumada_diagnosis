@@ -526,7 +526,7 @@ export default function HomePage() {
               variant="ghost" 
               size="sm" 
               onClick={() => setLocation("/")}
-              className="text-white"
+              className="text-white flex flex-col items-center"
             >
               <Search className="h-5 w-5" />
               <span className="text-xs mt-1">Discover</span>
@@ -535,7 +535,7 @@ export default function HomePage() {
               variant="ghost" 
               size="sm" 
               onClick={() => setLocation("/connect")}
-              className="text-white"
+              className="text-white flex flex-col items-center"
             >
               <Users className="h-5 w-5" />
               <span className="text-xs mt-1">Connect</span>
@@ -544,7 +544,7 @@ export default function HomePage() {
               variant="ghost" 
               size="sm" 
               onClick={() => setLocation("/create")}
-              className="text-white"
+              className="text-white flex flex-col items-center"
             >
               <Plus className="h-5 w-5" />
               <span className="text-xs mt-1">Create</span>
@@ -553,7 +553,7 @@ export default function HomePage() {
               variant="ghost" 
               size="sm" 
               onClick={() => setLocation("/concierge")}
-              className="text-white"
+              className="text-white flex flex-col items-center"
             >
               <Bot className="h-5 w-5" />
               <span className="text-xs mt-1">Concierge</span>
