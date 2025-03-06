@@ -9,7 +9,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { secondaryNavItems } from "./bottom-nav";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -17,6 +16,12 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const [, setLocation] = useLocation();
+
+  const menuItems = [
+    { href: "/profile", label: "Profile" },
+    { href: "/settings", label: "Settings" },
+    { href: "/help", label: "Help" }
+  ];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -29,27 +34,28 @@ export function Layout({ children }: LayoutProps) {
               </a>
             </div>
             <div className="flex items-center gap-4">
-              {/* Hamburger Menu */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="interactive-hover">
-                    <Menu className="w-6 h-6" />
-                    <span className="sr-only">Toggle navigation menu</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  {secondaryNavItems.map((item) => (
-                    <DropdownMenuItem 
-                      key={item.href}
-                      className="cursor-pointer interactive-hover"
-                      onClick={() => setLocation(item.href)}
-                    >
-                      <item.icon className="w-5 h-5 mr-2" />
-                      <span>{item.label}</span>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {/* Hamburger Menu - only show on desktop */}
+              <div className="hidden md:block">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="interactive-hover">
+                      <Menu className="w-6 h-6" />
+                      <span className="sr-only">Toggle navigation menu</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    {menuItems.map((item) => (
+                      <DropdownMenuItem 
+                        key={item.href}
+                        className="cursor-pointer interactive-hover"
+                        onClick={() => setLocation(item.href)}
+                      >
+                        <span>{item.label}</span>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
           </div>
         </div>
