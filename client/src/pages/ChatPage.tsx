@@ -115,7 +115,7 @@ export default function ChatPage() {
               <ChevronLeft className="w-5 h-5" />
             </Button>
             <Avatar className="h-10 w-10 ring-2 ring-primary/10">
-              <AvatarImage src={otherUser.avatar} />
+              <AvatarImage src={otherUser.profileImage} />
               <AvatarFallback>{otherUser.name[0]}</AvatarFallback>
             </Avatar>
             <div className="flex-1">
@@ -129,68 +129,44 @@ export default function ChatPage() {
       {/* Messages */}
       <ScrollArea className="h-[calc(100vh-8rem)] py-4" ref={scrollAreaRef}>
         <div className="container mx-auto px-4 space-y-4">
-          {loading ? (
-            <div className="space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="animate-pulse flex justify-end">
-                  <div className="bg-accent rounded-2xl p-4 max-w-[80%]">
-                    <div className="h-4 bg-accent-foreground/20 rounded w-3/4 mb-2" />
-                    <div className="h-4 bg-accent-foreground/20 rounded w-1/2" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : error ? (
-            <div className="text-center py-8 text-destructive">
-              <p>{error}</p>
-              <Button 
-                variant="outline" 
-                className="mt-4"
-                onClick={() => user?.id && otherUser?.id && fetchMessages(user.id, otherUser.id)}
+          <AnimatePresence initial={false}>
+            {messages.map((message, index) => (
+              <motion.div
+                key={message.id}
+                variants={messageVariants}
+                initial="hidden"
+                animate="visible"
+                className={`flex ${message.senderId === user.id ? "justify-end" : "justify-start"}`}
               >
-                Retry
-              </Button>
-            </div>
-          ) : (
-            <AnimatePresence initial={false}>
-              {messages.map((message, index) => (
-                <motion.div
-                  key={message.id}
-                  variants={messageVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className={`flex ${message.senderId === user.id ? "justify-end" : "justify-start"}`}
-                >
-                  <div className="flex items-end gap-2 max-w-[80%] group">
-                    {message.senderId !== user.id && (
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={otherUser.avatar} />
-                        <AvatarFallback>{otherUser.name[0]}</AvatarFallback>
-                      </Avatar>
-                    )}
-                    <div
-                      className={`rounded-2xl px-4 py-2.5 ${
-                        message.senderId === user.id
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-accent text-accent-foreground"
-                      }`}
-                    >
-                      <p className="text-[15px] leading-relaxed">{message.content}</p>
-                      <div className="flex items-center gap-2 text-xs opacity-60 mt-1">
-                        <span>
-                          {new Date(message.createdAt).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false
-                          })}
-                        </span>
-                      </div>
+                <div className="flex items-end gap-2 max-w-[80%] group">
+                  {message.senderId !== user.id && (
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={otherUser.profileImage} />
+                      <AvatarFallback>{otherUser.name[0]}</AvatarFallback>
+                    </Avatar>
+                  )}
+                  <div
+                    className={`rounded-2xl px-4 py-2.5 ${
+                      message.senderId === user.id
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-accent text-accent-foreground"
+                    }`}
+                  >
+                    <p className="text-[15px] leading-relaxed">{message.content}</p>
+                    <div className="flex items-center gap-2 text-xs opacity-60 mt-1">
+                      <span>
+                        {new Date(message.createdAt).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: false
+                        })}
+                      </span>
                     </div>
                   </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          )}
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       </ScrollArea>
 
