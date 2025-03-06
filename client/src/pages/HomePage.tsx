@@ -374,7 +374,7 @@ export default function HomePage() {
                               </Button>
                               <Button
                                 variant="secondary"
-                                className="bg-white text-black hover:bg-white/90 w-full md:w-auto"
+                                className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white w-full md:w-auto"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setLocation(`/event/${featuredEvent.id}/register`);
