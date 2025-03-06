@@ -24,14 +24,14 @@ const getFirstName = (fullName: string) => fullName.split(' ')[0];
 // Update the featuredEventData to use the correct image
 const featuredEventData = {
   id: 1001,
-  title: "SURREAL: Welcome to the New Era",
-  description: "Experience the next evolution of electronic music and art in the mystical Valle de Bravo.",
+  title: "Onda Linda Festival",
+  description: "Experience the mystical fusion of electronic music and art in an immersive natural setting, featuring world-class DJs and stunning visual installations.",
   location: "Valle de Bravo",
   date: new Date("2025-05-02T21:00:00"),
   category: "Nightlife",
   tags: ["Electronic Music", "Art", "Festival"],
   price: 85,
-  image: "/attached_assets/Screenshot 2025-03-05 at 10.14.53 PM.png",
+  image: "/attached_assets/Screenshot 2025-03-06 at 12.10.33 AM.png",
   attendingCount: 156,
   interestedCount: 342
 };
@@ -248,6 +248,9 @@ export default function HomePage() {
           <div className="space-y-8">
             {featuredEvent && (
               <section>
+                <h2 className="text-sm font-medium text-primary uppercase tracking-wider mb-4">
+                  SPOTLIGHT
+                </h2>
                 <Card
                   className="bg-card border-border hover:bg-accent/50 transition-colors cursor-pointer overflow-hidden"
                   onClick={() => setLocation(`/event/${featuredEvent.id}`)}
@@ -260,7 +263,7 @@ export default function HomePage() {
                           <img
                             src={featuredEvent.image}
                             alt={featuredEvent.title}
-                            className="w-full h-full object-cover bg-black/40"
+                            className="w-full h-full object-cover"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                         </div>
@@ -268,11 +271,11 @@ export default function HomePage() {
 
                       {/* Desktop view */}
                       <div className="hidden md:block">
-                        <div className="aspect-[3/2] relative">
+                        <div className="aspect-[16/9] relative">
                           <img
                             src={featuredEvent.image}
                             alt={featuredEvent.title}
-                            className="w-full h-full object-cover bg-black/40"
+                            className="w-full h-full object-cover"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                         </div>
