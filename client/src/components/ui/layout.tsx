@@ -1,11 +1,9 @@
 import { BottomNav } from "./bottom-nav";
 import { Logo } from "./logo";
-import { Bot, Menu, Share2 } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "./button";
 import { useLocation } from "wouter";
 import { LanguageToggle } from "./language-toggle";
-import { PremiumDialog } from "./premium-dialog";
-import { InviteTrigger } from "./invite-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,32 +30,7 @@ export function Layout({ children }: LayoutProps) {
               </a>
             </div>
             <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setLocation("/companion")}
-                className="hidden md:inline-flex items-center text-foreground interactive-hover"
-              >
-                <Bot className="w-6 h-6 mr-2" />
-                AI City Guide
-              </Button>
-
               <LanguageToggle />
-
-              {/* Desktop: Premium Button */}
-              <div className="hidden md:block">
-                <PremiumDialog />
-              </div>
-
-              {/* Desktop: Invite Button */}
-              <div className="hidden md:block">
-                <InviteTrigger>
-                  <Button variant="ghost" size="sm" className="interactive-hover">
-                    <Share2 className="w-6 h-6 mr-2" />
-                    Invite
-                  </Button>
-                </InviteTrigger>
-              </div>
 
               {/* Hamburger Menu */}
               <DropdownMenu>
