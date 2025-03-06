@@ -7,10 +7,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronLeft, Search, MessageCircle } from "lucide-react";
 import { useLocation } from "wouter";
 import { useMessages } from "@/hooks/use-messages";
+import { useUser } from "@/hooks/use-user";
 
 export default function MessagesPage() {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
+  const { user } = useUser();
   const {
     conversations,
     loading,
@@ -19,9 +21,46 @@ export default function MessagesPage() {
   } = useMessages();
 
   useEffect(() => {
-    // Load conversations without requiring authentication
-    fetchConversations();
-  }, []);
+    if (user?.id) {
+      fetchConversations(user.id);
+    }
+  }, [user?.id]);
+
+  // Check if user is not logged in
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <MessageCircle className="mx-auto h-12 w-12 text-muted-foreground opacity-50" />
+          <p className="mt-4 text-lg">Create a free account to start messaging</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Connect with other members by creating your profile
+          </p>
+          <Button className="mt-4" onClick={() => setLocation("/auth")}>
+            Get Started
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if user hasn't completed their profile
+  if (!user.profileImage || !user.fullName) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <MessageCircle className="mx-auto h-12 w-12 text-muted-foreground opacity-50" />
+          <p className="mt-4 text-lg">Complete your profile to start messaging</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Add a profile picture and your name to connect with others
+          </p>
+          <Button className="mt-4" onClick={() => setLocation("/profile/setup")}>
+            Complete Profile
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const filteredConversations = conversations.filter(conv =>
     conv.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -87,7 +126,7 @@ export default function MessagesPage() {
               <Button 
                 variant="outline" 
                 className="mt-4"
-                onClick={() => fetchConversations()}
+                onClick={() => user?.id && fetchConversations(user.id)}
               >
                 Retry
               </Button>
