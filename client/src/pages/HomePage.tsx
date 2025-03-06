@@ -25,17 +25,25 @@ import {
 
 // Event types for filtering
 const EVENT_TYPES = [
-  "Parties",
-  "Galleries",
-  "Outdoor",
-  "Networking",
-  "Workshops",
+  "Afterhours",
+  "Art",
   "Cultural",
-  "Music",
+  "Festivals",
   "Food & Drink",
+  "Free",
+  "Galleries",
+  "Intimate",
+  "Music",
+  "Networking",
+  "Outdoor",
+  "Parties",
+  "Spiritual",
   "Sports",
   "Tech",
-  "Wellness"
+  "VIP",
+  "Wellness",
+  "Workshops",
+  "Yoga"
 ] as const;
 
 const featuredEventData = {
