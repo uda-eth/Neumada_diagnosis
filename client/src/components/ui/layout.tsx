@@ -3,7 +3,6 @@ import { Logo } from "./logo";
 import { Menu } from "lucide-react";
 import { Button } from "./button";
 import { useLocation } from "wouter";
-import { LanguageToggle } from "./language-toggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,8 +29,6 @@ export function Layout({ children }: LayoutProps) {
               </a>
             </div>
             <div className="flex items-center gap-4">
-              <LanguageToggle />
-
               {/* Hamburger Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
