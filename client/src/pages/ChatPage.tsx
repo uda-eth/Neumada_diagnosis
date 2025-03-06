@@ -22,7 +22,7 @@ const messageVariants = {
 };
 
 export default function ChatPage() {
-  const { username } = useParams();
+  const { id } = useParams();
   const [, setLocation] = useLocation();
   const [newMessage, setNewMessage] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -38,18 +38,23 @@ export default function ChatPage() {
     disconnectSocket
   } = useMessages();
 
-  // Find the other user based on the URL parameter
+  // Find the other user from connections
   const otherUser = user?.connections?.find(
-    (connection) => connection.username.toLowerCase().replace(/\s+/g, '-') === username
+    (connection) => connection.id === Number(id)
   );
 
   useEffect(() => {
-    if (user?.id && otherUser?.id) {
-      fetchMessages(user.id, otherUser.id);
+    if (!user) {
+      setLocation("/auth");
+      return;
+    }
+
+    if (user?.id && id) {
+      fetchMessages(user.id, Number(id));
       connectSocket(user.id);
       return () => disconnectSocket();
     }
-  }, [user?.id, otherUser?.id]);
+  }, [user?.id, id]);
 
   useEffect(() => {
     // Scroll to bottom when new messages arrive
@@ -60,12 +65,12 @@ export default function ChatPage() {
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !user?.id || !otherUser?.id) return;
+    if (!newMessage.trim() || !user?.id || !id) return;
 
     try {
       await sendMessage({
         senderId: user.id,
-        receiverId: otherUser.id,
+        receiverId: Number(id),
         content: newMessage
       });
       setNewMessage("");
@@ -102,8 +107,7 @@ export default function ChatPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-black/40 backdrop-blur-sm border-b border-white/10">
+      <header className="sticky top-0 z-10 bg-black/40 backdrop-blur-sm border-b border-white/10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Button
@@ -116,21 +120,20 @@ export default function ChatPage() {
             </Button>
             <Avatar className="h-10 w-10 ring-2 ring-primary/10">
               <AvatarImage src={otherUser.profileImage} />
-              <AvatarFallback>{otherUser.name[0]}</AvatarFallback>
+              <AvatarFallback>{otherUser.fullName[0]}</AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <h1 className="text-lg font-semibold">{otherUser.name}</h1>
+              <h1 className="text-lg font-semibold">{otherUser.fullName}</h1>
               <p className="text-sm text-muted-foreground">{otherUser.status}</p>
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Messages */}
       <ScrollArea className="h-[calc(100vh-8rem)] py-4" ref={scrollAreaRef}>
         <div className="container mx-auto px-4 space-y-4">
           <AnimatePresence initial={false}>
-            {messages.map((message, index) => (
+            {messages.map((message) => (
               <motion.div
                 key={message.id}
                 variants={messageVariants}
@@ -142,7 +145,7 @@ export default function ChatPage() {
                   {message.senderId !== user.id && (
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={otherUser.profileImage} />
-                      <AvatarFallback>{otherUser.name[0]}</AvatarFallback>
+                      <AvatarFallback>{otherUser.fullName[0]}</AvatarFallback>
                     </Avatar>
                   )}
                   <div
@@ -170,7 +173,6 @@ export default function ChatPage() {
         </div>
       </ScrollArea>
 
-      {/* Input Area */}
       <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t border-white/10">
         <div className="container mx-auto px-4 py-4">
           <form onSubmit={handleSend} className="flex gap-2">

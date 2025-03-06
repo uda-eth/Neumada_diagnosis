@@ -1,5 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { User, NewUser } from "@db/schema";
+import type { User } from "@db/schema";
+
+interface UserResponse extends User {
+  connections?: Array<{
+    id: number;
+    username: string;
+    fullName: string;
+    profileImage: string | null;
+    status?: string;
+  }>;
+}
 
 type RequestResult = {
   ok: true;
@@ -11,7 +21,7 @@ type RequestResult = {
 async function handleRequest(
   url: string,
   method: string,
-  body?: NewUser
+  body?: any
 ): Promise<RequestResult> {
   try {
     const response = await fetch(url, {
@@ -38,7 +48,7 @@ async function handleRequest(
 export function useUser() {
   const queryClient = useQueryClient();
 
-  const { data: user, error, isLoading } = useQuery<User>({
+  const { data: user, error, isLoading } = useQuery<UserResponse>({
     queryKey: ['user'],
     queryFn: async () => {
       const response = await fetch('/api/user', {
@@ -53,7 +63,7 @@ export function useUser() {
   });
 
   const login = useMutation({
-    mutationFn: (userData: NewUser) => 
+    mutationFn: (userData: any) => 
       handleRequest('/api/login', 'POST', userData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user'] });
@@ -61,7 +71,7 @@ export function useUser() {
   });
 
   const register = useMutation({
-    mutationFn: (userData: NewUser) =>
+    mutationFn: (userData: any) =>
       handleRequest('/api/register', 'POST', userData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user'] });
@@ -75,6 +85,11 @@ export function useUser() {
     },
   });
 
+  const startChat = async (userId: number) => {
+    if (!user) return '/auth';
+    return `/chat/${userId}`;
+  };
+
   return {
     user,
     isLoading,
@@ -82,5 +97,6 @@ export function useUser() {
     login: login.mutateAsync,
     logout: logout.mutateAsync,
     register: register.mutateAsync,
+    startChat,
   };
 }
