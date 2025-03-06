@@ -218,7 +218,7 @@ export default function EventPage() {
           </div>
         </div>
 
-        {/* Event Title and Meta */}
+        {/* Title and Meta */}
         <div>
           <h1 className="text-2xl font-bold">{event.title}</h1>
           <div className="mt-2 text-white/60">
@@ -228,6 +228,22 @@ export default function EventPage() {
               {format(new Date(event.date).setHours(new Date(event.date).getHours() + 2), "h:mm a")}
             </p>
             <p className="mt-1">{event.location}</p>
+          </div>
+        </div>
+
+        {/* Price and Registration */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-sm text-white/60">Price</p>
+              <p className="text-xl font-semibold">${event.price}</p>
+            </div>
+            <Button 
+              className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
+              onClick={() => setLocation(`/event/${event.id}/register`)}
+            >
+              Get Tickets
+            </Button>
           </div>
         </div>
 
