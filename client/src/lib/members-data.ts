@@ -92,7 +92,7 @@ export const members: Member[] = [
   },
   {
     id: 5,
-    name: "Gabe Tavera",
+    name: "Gabriel Tavera",
     age: 44,
     location: "Austin",
     bio: "LA-born yogi now based in Austin, sharing wellness and mindful living practices.",
