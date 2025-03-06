@@ -10,7 +10,7 @@ export function useChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
-      content: "Hello! I'm Maly your local city guide. I'll help you discover the best spots in your chosen city. What would you like to know?",
+      content: "Hello! I'm Maly your local city concierge. I'll help you discover the best spots in your chosen city. What would you like to know?",
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
@@ -26,7 +26,7 @@ export function useChat() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           message,
-          context: `You are a knowledgeable AI city guide specializing in local experiences and recommendations.
+          context: `You are a knowledgeable AI city concierge specializing in local experiences and recommendations.
           Focus on providing practical, up-to-date information specifically for the selected city about:
           - Local neighborhoods and best areas
           - Coworking spaces and cafes suitable for remote work
@@ -50,7 +50,7 @@ export function useChat() {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: error.message || 'Failed to get response from the city guide',
+        description: error.message || 'Failed to get response from the city concierge',
       });
     } finally {
       setIsLoading(false);

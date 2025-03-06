@@ -3,12 +3,9 @@ import { useToast } from '@/hooks/use-toast';
 
 interface Message {
   id: number;
+  senderId: number;
+  receiverId: number;
   content: string;
-  sender: {
-    id: number;
-    name: string;
-    image: string;
-  };
   createdAt: string;
 }
 
@@ -17,6 +14,7 @@ interface Conversation {
     id: number;
     name: string;
     image: string;
+    status?: string;
   };
   lastMessage?: Message;
 }
@@ -27,34 +25,12 @@ interface MessagesState {
   loading: boolean;
   error: string | null;
   fetchConversations: () => Promise<void>;
-  fetchMessages: (userId: number) => Promise<void>;
-  sendMessage: (content: string, to: { id: number; name: string }) => Promise<void>;
+  fetchMessages: (userId: number, otherId: number) => Promise<void>;
+  sendMessage: (params: { senderId: number; receiverId: number; content: string }) => Promise<void>;
+  markAsRead: (messageId: number) => Promise<void>;
+  connectSocket: (userId: number) => void;
+  disconnectSocket: () => void;
 }
-
-// Mock conversations for demo
-const mockConversations = [
-  {
-    user: {
-      id: 1009,
-      name: "Luca Hudek",
-      image: "/attached_assets/Screenshot 2025-03-04 at 11.21.13 PM.png"
-    },
-  },
-  {
-    user: {
-      id: 1010,
-      name: "Maria Torres",
-      image: "/attached_assets/profile-image-1.jpg"
-    },
-  },
-  {
-    user: {
-      id: 1011,
-      name: "James Chen",
-      image: "/attached_assets/profile-image-2.jpg"
-    }
-  }
-];
 
 export const useMessages = create<MessagesState>((set) => ({
   messages: [],
@@ -65,38 +41,43 @@ export const useMessages = create<MessagesState>((set) => ({
   fetchConversations: async () => {
     try {
       set({ loading: true });
-      // For now, return mock conversations
-      set({ conversations: mockConversations, loading: false });
+      const response = await fetch('/api/messages/conversations', {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch conversations');
+      const data = await response.json();
+      set({ conversations: data, loading: false });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to fetch conversations';
       set({ error: message, loading: false });
     }
   },
 
-  fetchMessages: async (userId: number) => {
+  fetchMessages: async (userId: number, otherId: number) => {
     try {
       set({ loading: true });
-      // For now, return empty messages array
-      set({ messages: [], loading: false });
+      const response = await fetch(`/api/messages/${userId}/${otherId}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch messages');
+      const data = await response.json();
+      set({ messages: data, loading: false });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to fetch messages';
       set({ error: message, loading: false });
     }
   },
 
-  sendMessage: async (content: string, to: { id: number; name: string }) => {
+  sendMessage: async ({ senderId, receiverId, content }) => {
     try {
-      const newMessage = {
-        id: Date.now(),
-        content,
-        sender: {
-          id: 0, // Guest user ID
-          name: "Guest",
-          image: "/default-avatar.png"
-        },
-        createdAt: new Date().toISOString()
-      };
-
+      const response = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ senderId, receiverId, content }),
+      });
+      if (!response.ok) throw new Error('Failed to send message');
+      const newMessage = await response.json();
       set((state) => ({
         messages: [...state.messages, newMessage]
       }));
@@ -104,6 +85,32 @@ export const useMessages = create<MessagesState>((set) => ({
       const message = error instanceof Error ? error.message : 'Failed to send message';
       set({ error: message });
     }
+  },
+
+  markAsRead: async (messageId: number) => {
+    try {
+      await fetch(`/api/messages/${messageId}/read`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (error) {
+      console.error('Failed to mark message as read:', error);
+    }
+  },
+
+  connectSocket: (userId: number) => {
+    // WebSocket connection logic here
+    const ws = new WebSocket(`wss://${window.location.host}/ws/chat/${userId}`);
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      set((state) => ({
+        messages: [...state.messages, message]
+      }));
+    };
+  },
+
+  disconnectSocket: () => {
+    // WebSocket disconnection logic here
   }
 }));
 
@@ -112,7 +119,7 @@ export function useMessageNotifications() {
 
   const showNotification = (message: Message) => {
     toast({
-      title: `New message from ${message.sender.name}`,
+      title: `New message from ${message.senderId}`,
       description: message.content.slice(0, 50) + (message.content.length > 50 ? '...' : ''),
       duration: 5000,
     });
