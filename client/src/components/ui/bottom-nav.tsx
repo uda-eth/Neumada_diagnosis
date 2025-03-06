@@ -56,7 +56,7 @@ export const menuItems = [
   { 
     icon: UserCircle, 
     label: 'Edit Profile', 
-    href: "/profile/edit", 
+    href: "/profile-edit"
   },
   { 
     icon: Globe2, 
