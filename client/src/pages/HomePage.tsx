@@ -21,7 +21,7 @@ import { useTranslation } from "@/lib/translations";
 
 const getFirstName = (fullName: string) => fullName.split(' ')[0];
 
-// Hardcoded featured event for demo
+// Hardcoded featured event for demo (SURREAL event)
 const featuredEventData = {
   id: 1001,
   title: "SURREAL: Welcome to the New Era",
@@ -36,6 +36,24 @@ const featuredEventData = {
   interestedCount: 342
 };
 
+// Add a hiking event with the new image
+const defaultEvents = [
+  {
+    id: 1002,
+    title: "Weekend Mountain Trek: Nature & Community",
+    description: "Join our vibrant community for an invigorating mountain trek. Experience breathtaking views, forge new friendships, and reconnect with nature in this guided group adventure.",
+    location: "Sierra Norte Mountains",
+    date: new Date("2025-03-09T09:00:00"),
+    category: "Sports",
+    tags: ["Hiking", "Nature", "Community"],
+    price: 45,
+    image: "/attached_assets/Screenshot 2025-03-05 at 10.18.34 PM.png",
+    attendingCount: 42,
+    interestedCount: 89
+  },
+];
+
+// Cities and categories arrays remain unchanged
 const cities = [
   "Bali",
   "Bangkok",
@@ -86,14 +104,14 @@ export default function HomePage() {
   const [selectedCity, setSelectedCity] = useState("Mexico City");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const { events, isLoading } = useEvents(undefined, selectedCity);
+  const { events: fetchedEvents = defaultEvents, isLoading } = useEvents(undefined, selectedCity);
   const [, setLocation] = useLocation();
 
   // Mock the featured event with our hardcoded data
   const featuredEvent = featuredEventData;
 
   // Filter remaining events to exclude the featured event
-  const remainingEvents = events?.filter(event => event.id !== featuredEvent?.id);
+  const remainingEvents = fetchedEvents?.filter(event => event.id !== featuredEvent?.id);
 
   const filteredEvents = remainingEvents?.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
