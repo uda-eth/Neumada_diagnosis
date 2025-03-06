@@ -21,7 +21,7 @@ import { useTranslation } from "@/lib/translations";
 
 const getFirstName = (fullName: string) => fullName.split(' ')[0];
 
-// Hardcoded featured event for demo (SURREAL event)
+// Update the featuredEventData to use the vertical flyer image
 const featuredEventData = {
   id: 1001,
   title: "SURREAL: Welcome to the New Era",
@@ -31,7 +31,7 @@ const featuredEventData = {
   category: "Nightlife",
   tags: ["Electronic Music", "Art", "Festival"],
   price: 85,
-  image: "/attached_assets/Screenshot 2025-03-05 at 10.14.53 PM.png",
+  image: "/attached_assets/Screenshot 2025-03-05 at 10.29.46 PM.png",
   attendingCount: 156,
   interestedCount: 342
 };
@@ -264,13 +264,9 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Removed isLoading conditional rendering as allEvents handles the case where data is not yet loaded */}
-            <div className="space-y-8">
+          <div className="space-y-8">
               {featuredEvent && (
                 <section>
-                  <h2 className="text-lg font-medium text-muted-foreground mb-4">
-                    Featured Event of the Week
-                  </h2>
                   <Card
                     className="bg-card border-border hover:bg-accent/50 transition-colors cursor-pointer overflow-hidden"
                     onClick={() => setLocation(`/event/${featuredEvent.id}`)}
@@ -540,7 +536,6 @@ export default function HomePage() {
                 </section>
               )}
             </div>
-          {/* Removed isLoading conditional rendering */}
         </main>
       </ScrollArea>
 
