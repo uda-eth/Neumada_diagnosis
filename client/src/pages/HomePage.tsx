@@ -193,30 +193,37 @@ export default function HomePage() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-full md:w-[180px] bg-background/5 border-border">
-                  <SelectValue placeholder={t('allCategories')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('allCategories')}</SelectItem>
-                  {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {/* Categories dropdown only shown on mobile */}
+              <div className="md:hidden">
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-full bg-background/5 border-border">
+                    <SelectValue placeholder={t('allCategories')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('allCategories')}</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            {/* Event Type Filters */}
+            {/* Event Type Filters - Enhanced */}
             <ScrollArea className="w-full" orientation="horizontal">
-              <div className="flex gap-2 py-2">
+              <div className="flex gap-2 py-4">
                 {EVENT_TYPES.map((type) => (
                   <Button
                     key={type}
                     variant={selectedEventTypes.includes(type) ? "default" : "outline"}
                     size="sm"
-                    className="whitespace-nowrap"
+                    className={`whitespace-nowrap transition-all ${
+                      selectedEventTypes.includes(type)
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                        : "hover:bg-accent"
+                    }`}
                     onClick={() => {
                       setSelectedEventTypes(prev =>
                         prev.includes(type)
@@ -235,7 +242,7 @@ export default function HomePage() {
             </ScrollArea>
 
             {selectedEventTypes.length > 0 && (
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center py-2 border-t border-border">
                 <div className="text-sm text-muted-foreground">
                   {selectedEventTypes.length} filter{selectedEventTypes.length !== 1 ? 's' : ''} selected
                 </div>
@@ -243,12 +250,13 @@ export default function HomePage() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setSelectedEventTypes([])}
+                  className="text-muted-foreground hover:text-foreground"
                 >
                   Clear all
                 </Button>
               </div>
             )}
-          </div>
+            </div>
 
           <div className="space-y-8">
             {featuredEvent && (
