@@ -27,7 +27,7 @@ const featuredEventData = {
   title: "SURREAL: Welcome to the New Era",
   description: "Experience the next evolution of electronic music and art in the mystical Valle de Bravo. A night where reality blends with the extraordinary, featuring world-class DJs and immersive installations.",
   location: "Valle de Bravo",
-  date: new Date("2025-03-15T21:00:00"),
+  date: new Date("2025-05-02T21:00:00"), // Updated to match the promotional image
   category: "Nightlife",
   tags: ["Electronic Music", "Art", "Festival"],
   price: 85,
