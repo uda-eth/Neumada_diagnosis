@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useLocation } from "wouter";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronLeft, Send } from "lucide-react";
 import { useMessages } from "@/hooks/use-messages";
-import { useUser } from "@/hooks/use-user";
 import { motion, AnimatePresence } from "framer-motion";
 
 const messageVariants = {
@@ -21,40 +20,40 @@ const messageVariants = {
   }
 };
 
+// Mock data for development
+const mockUser = {
+  id: 1,
+  name: "Current User",
+  image: "/attached_assets/profile-image-1.jpg"
+};
+
 export default function ChatPage() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
   const [newMessage, setNewMessage] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const { user } = useUser();
-  const {
-    messages,
-    loading,
-    error,
-    sendMessage,
-    fetchMessages,
-    markAsRead,
-    connectSocket,
-    disconnectSocket
-  } = useMessages();
+  const [messages, setMessages] = useState([
+    {
+      id: 1,
+      content: "Hey! How are you?",
+      senderId: 2,
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 2,
+      content: "I'm good, thanks! How about you?",
+      senderId: 1,
+      createdAt: new Date().toISOString(),
+    },
+  ]);
 
-  // Find the other user from connections
-  const otherUser = user?.connections?.find(
-    (connection) => connection.id === Number(id)
-  );
-
-  useEffect(() => {
-    if (!user) {
-      setLocation("/auth");
-      return;
-    }
-
-    if (user?.id && id) {
-      fetchMessages(user.id, Number(id));
-      connectSocket(user.id);
-      return () => disconnectSocket();
-    }
-  }, [user?.id, id]);
+  // Mock other user data
+  const otherUser = {
+    id: 2,
+    fullName: "John Doe",
+    profileImage: "/attached_assets/profile-image-2.jpg",
+    status: "Online"
+  };
 
   useEffect(() => {
     // Scroll to bottom when new messages arrive
@@ -65,45 +64,18 @@ export default function ChatPage() {
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !user?.id || !id) return;
+    if (!newMessage.trim()) return;
 
-    try {
-      await sendMessage({
-        senderId: user.id,
-        receiverId: Number(id),
-        content: newMessage
-      });
-      setNewMessage("");
-    } catch (error) {
-      console.error('Failed to send message:', error);
-    }
+    const newMsg = {
+      id: messages.length + 1,
+      content: newMessage,
+      senderId: mockUser.id,
+      createdAt: new Date().toISOString(),
+    };
+
+    setMessages(prev => [...prev, newMsg]);
+    setNewMessage("");
   };
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-muted-foreground">Please sign in to send messages</p>
-          <Button className="mt-4" onClick={() => setLocation("/auth")}>
-            Sign In
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!otherUser) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-muted-foreground">User not found</p>
-          <Button className="mt-4" onClick={() => setLocation("/messages")}>
-            Back to Messages
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -139,10 +111,10 @@ export default function ChatPage() {
                 variants={messageVariants}
                 initial="hidden"
                 animate="visible"
-                className={`flex ${message.senderId === user.id ? "justify-end" : "justify-start"}`}
+                className={`flex ${message.senderId === mockUser.id ? "justify-end" : "justify-start"}`}
               >
                 <div className="flex items-end gap-2 max-w-[80%] group">
-                  {message.senderId !== user.id && (
+                  {message.senderId !== mockUser.id && (
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={otherUser.profileImage} />
                       <AvatarFallback>{otherUser.fullName[0]}</AvatarFallback>
@@ -150,7 +122,7 @@ export default function ChatPage() {
                   )}
                   <div
                     className={`rounded-2xl px-4 py-2.5 ${
-                      message.senderId === user.id
+                      message.senderId === mockUser.id
                         ? "bg-primary text-primary-foreground"
                         : "bg-accent text-accent-foreground"
                     }`}
@@ -184,7 +156,7 @@ export default function ChatPage() {
             />
             <Button 
               type="submit" 
-              disabled={!newMessage.trim() || loading}
+              disabled={!newMessage.trim()}
               className="px-6"
             >
               <Send className="h-4 w-4" />
