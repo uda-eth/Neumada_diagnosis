@@ -13,48 +13,29 @@ export const MalyLogo: React.FC<MalyLogoProps> = ({ className = "", color = "cur
       fill="none" 
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Decorative flowing curves */}
+      {/* M */}
       <path
-        d="M30 40 C 45 20, 55 60, 70 40 C 85 20, 95 60, 110 40 C 125 20, 135 60, 150 40"
-        stroke={color}
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        style={{
-          fill: "none",
-          strokeDasharray: "none",
-          strokeLinejoin: "round",
-          strokeMiterlimit: "4",
-          strokeOpacity: "0.6"
-        }}
-      />
-
-      {/* Custom M */}
-      <path
-        d="M55 25 L60 25 L65 40 L70 25 L75 25 L80 40 L85 25 L90 25 L82 45 L77 45 L72 30 L67 45 L62 45 L55 25Z"
+        d="M40 20 L45 20 L55 50 L65 20 L75 20 L85 50 L95 20 L100 20 L87 60 L77 60 L65 30 L53 60 L43 60 L40 20Z"
         fill={color}
       />
 
-      {/* Custom A without middle line */}
+      {/* A without middle line */}
       <path
-        d="M95 45 L100 25 L110 25 L115 45 L110 45 L109 40 L101 40 L100 45 L95 45Z M102 36 L108 36 L105 28 L102 36Z"
+        d="M105 60 L110 20 L130 20 L135 60 L125 60 L123 50 L117 50 L115 60 L105 60Z M118 42 L122 42 L120 30 L118 42Z"
         fill={color}
       />
 
-      {/* Custom L */}
+      {/* L */}
       <path
-        d="M120 25 L125 25 L125 40 L135 40 L135 45 L120 45 L120 25Z"
+        d="M140 20 L150 20 L150 50 L165 50 L165 60 L140 60 L140 20Z"
         fill={color}
       />
 
-      {/* Custom Y */}
+      {/* Y */}
       <path
-        d="M140 25 L145 25 L150 35 L155 25 L160 25 L152 40 L152 45 L147 45 L147 40 L140 25Z"
+        d="M170 20 L180 20 L190 35 L200 20 L210 20 L195 42 L195 60 L185 60 L185 42 L170 20Z"
         fill={color}
       />
-
-      {/* Subtle decorative dots */}
-      <circle cx="40" cy="55" r="1" fill={color} opacity="0.6" />
-      <circle cx="160" cy="55" r="1" fill={color} opacity="0.6" />
     </svg>
   );
 };

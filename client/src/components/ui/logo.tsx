@@ -12,25 +12,25 @@ export function Logo({ className = "" }: LogoProps) {
     >
       {/* M */}
       <path
-        d="M120 30 L130 30 L140 60 L150 30 L160 30 L170 60 L180 30 L190 30 L175 70 L165 70 L155 40 L145 70 L135 70 L120 30Z"
+        d="M80 30 L100 30 L120 90 L140 30 L160 30 L180 90 L200 30 L220 30 L190 100 L170 100 L140 40 L110 100 L90 100 L80 30Z"
         fill="currentColor"
       />
 
-      {/* A without middle line */}
+      {/* A without middle line - no horizontal bar */}
       <path
-        d="M200 70 L210 30 L230 30 L240 70 L230 70 L227 60 L213 60 L210 70 L200 70Z M215 50 L225 50 L220 35 L215 50Z"
+        d="M230 100 L240 30 L280 30 L290 100 L270 100 L265 80 L255 80 L250 100 L230 100Z M257 65 L263 65 L260 45 L257 65Z"
         fill="currentColor"
       />
 
       {/* L */}
       <path
-        d="M250 30 L260 30 L260 60 L280 60 L280 70 L250 70 L250 30Z"
+        d="M300 30 L320 30 L320 80 L350 80 L350 100 L300 100 L300 30Z"
         fill="currentColor"
       />
 
       {/* Y */}
       <path
-        d="M290 30 L300 30 L310 50 L320 30 L330 30 L315 55 L315 70 L305 70 L305 55 L290 30Z"
+        d="M360 30 L380 30 L400 60 L420 30 L440 30 L410 70 L410 100 L390 100 L390 70 L360 30Z"
         fill="currentColor"
       />
     </svg>
