@@ -19,7 +19,7 @@ const messageVariants = {
   }
 };
 
-// Mock user profiles with interests and moods
+// User profiles with interests and moods
 const mockProfiles = {
   "1": {
     id: 1,
@@ -41,34 +41,61 @@ const mockProfiles = {
   }
 };
 
-// Mock conversations based on interests
-const getMockConversation = (profileId) => {
+// Generate conversations based on user interests and mood
+const generateMockConversation = (profileId: string) => {
   const profile = mockProfiles[profileId];
   if (!profile) return [];
 
-  return [
-    {
-      id: 1,
-      content: `Hey! I saw you're into ${profile.interests[0]}. I'm planning an event next week!`,
-      senderId: 2,
-      createdAt: new Date(Date.now() - 3600000).toISOString(),
-      image: null
-    },
-    {
-      id: 2,
-      content: "That sounds amazing! Would love to hear more about it.",
-      senderId: 1,
-      createdAt: new Date(Date.now() - 3500000).toISOString(),
-      image: null
-    },
-    {
-      id: 3,
-      content: `Here's a preview from my last show in ${profile.location}`,
-      senderId: 2,
-      createdAt: new Date(Date.now() - 3400000).toISOString(),
-      image: profile.image
-    }
-  ];
+  const conversations = {
+    Creative: [
+      {
+        id: 1,
+        content: `Hey! Love your creative energy! I see you're into ${profile.interests[0]}. I'm organizing a collaborative session next week.`,
+        senderId: 2,
+        createdAt: new Date(Date.now() - 3600000).toISOString(),
+        image: null
+      },
+      {
+        id: 2,
+        content: "That sounds fantastic! I'd love to collaborate and share some ideas.",
+        senderId: 1,
+        createdAt: new Date(Date.now() - 3500000).toISOString(),
+        image: null
+      },
+      {
+        id: 3,
+        content: `Here's a glimpse of my latest performance in ${profile.location}`,
+        senderId: 1,
+        createdAt: new Date(Date.now() - 3400000).toISOString(),
+        image: profile.image
+      }
+    ],
+    Adventurous: [
+      {
+        id: 1,
+        content: "Hey! Just saw your travel photos - amazing shots! Planning any new adventures?",
+        senderId: 2,
+        createdAt: new Date(Date.now() - 3600000).toISOString(),
+        image: null
+      },
+      {
+        id: 2,
+        content: "Thanks! Yes, heading to a remote location for a photo expedition next month.",
+        senderId: 1,
+        createdAt: new Date(Date.now() - 3500000).toISOString(),
+        image: null
+      },
+      {
+        id: 3,
+        content: "Check out this shot from my last trip!",
+        senderId: 1,
+        createdAt: new Date(Date.now() - 3400000).toISOString(),
+        image: profile.image
+      }
+    ]
+  };
+
+  return conversations[profile.mood] || [];
 };
 
 export default function ChatPage() {
@@ -76,7 +103,7 @@ export default function ChatPage() {
   const [, setLocation] = useLocation();
   const [newMessage, setNewMessage] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const [messages, setMessages] = useState(getMockConversation(id));
+  const [messages, setMessages] = useState(generateMockConversation(id));
 
   const otherUser = mockProfiles[id];
 
@@ -124,14 +151,19 @@ export default function ChatPage() {
               <ChevronLeft className="w-5 h-5" />
             </Button>
             <Avatar className="h-10 w-10 ring-2 ring-primary/10">
-              <AvatarImage src={otherUser.image} />
+              <AvatarImage src={otherUser.image} alt={otherUser.name} />
               <AvatarFallback>{otherUser.name[0]}</AvatarFallback>
             </Avatar>
             <div className="flex-1">
               <h1 className="text-lg font-semibold">{otherUser.name}</h1>
-              <p className="text-sm text-muted-foreground">
-                {otherUser.status} • {otherUser.location}
-              </p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">{otherUser.status}</span>
+                <span className={`px-2 py-0.5 rounded-full text-xs bg-gradient-to-r ${
+                  otherUser.mood === "Creative" ? "from-purple-600 to-pink-600" : "from-blue-600 to-green-600"
+                } text-white`}>
+                  {otherUser.mood}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -151,7 +183,7 @@ export default function ChatPage() {
                 <div className="flex items-end gap-2 max-w-[80%] group">
                   {message.senderId !== 1 && (
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={otherUser.image} />
+                      <AvatarImage src={otherUser.image} alt={otherUser.name} />
                       <AvatarFallback>{otherUser.name[0]}</AvatarFallback>
                     </Avatar>
                   )}

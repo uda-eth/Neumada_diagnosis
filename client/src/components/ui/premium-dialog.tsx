@@ -1,15 +1,31 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Crown, MessageSquare, Star, Shield, Gift, Zap } from "lucide-react";
+import { Crown, MessageSquare, Star, Shield, Gift, Zap, Smile } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
 
 interface PremiumDialogProps {
   children?: React.ReactNode;
   userId?: number;
+  mood?: string;
+  interests?: string[];
+  name?: string;
+  status?: string;
 }
 
-export function PremiumDialog({ children, userId }: PremiumDialogProps) {
+const getMoodColor = (mood: string) => {
+  const moodColors = {
+    'Creative': 'from-purple-600 to-pink-600',
+    'Adventurous': 'from-blue-600 to-green-600',
+    'Relaxed': 'from-green-600 to-teal-600',
+    'Energetic': 'from-orange-600 to-red-600',
+    'Social': 'from-yellow-600 to-orange-600',
+    'Focused': 'from-indigo-600 to-purple-600'
+  };
+  return moodColors[mood] || 'from-gray-600 to-gray-800';
+};
+
+export function PremiumDialog({ children, userId, mood, interests, name, status }: PremiumDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [, setLocation] = useLocation();
 
@@ -33,20 +49,11 @@ export function PremiumDialog({ children, userId }: PremiumDialogProps) {
       icon: Zap,
       title: "Ad Customization",
       description: "Choose to see tailored ads from brands you love or opt for an ad-free experience"
-    },
-    {
-      icon: Gift,
-      title: "Event Creation & Monetization",
-      description: "Organize events and earn directly from ticket sales"
-    },
-    {
-      icon: MessageSquare,
-      title: "Premium Networking",
-      description: "Connect and message exclusively with other Premium Members, talents, artists, and influencers worldwide"
     }
   ];
 
   const handleMessageClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     if (userId) {
       setLocation(`/chat/${userId}`);
@@ -77,11 +84,35 @@ export function PremiumDialog({ children, userId }: PremiumDialogProps) {
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] max-h-[90vh] bg-black text-white overflow-hidden flex flex-col">
-        <DialogHeader className="pb-4">
-          <DialogTitle className="flex items-center gap-2 text-2xl">
-            <Crown className="w-6 h-6 text-purple-400" />
-            Unlock the World with Maly Premium
-          </DialogTitle>
+        <DialogHeader>
+          <div className="flex items-center gap-4 mb-4">
+            {name && (
+              <div className="space-y-1">
+                <DialogTitle className="text-xl">{name}</DialogTitle>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">{status}</span>
+                  {mood && (
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r ${getMoodColor(mood)} text-white flex items-center gap-1`}>
+                      <Smile className="w-3 h-3" />
+                      {mood}
+                    </span>
+                  )}
+                </div>
+                {interests && interests.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {interests.map((interest, index) => (
+                      <span 
+                        key={index}
+                        className="px-2 py-0.5 rounded-full text-xs bg-white/10 text-white"
+                      >
+                        {interest}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
           <DialogDescription className="text-muted-foreground">
             Maximize your Maly experience for less than $1/day
           </DialogDescription>
@@ -112,7 +143,6 @@ export function PremiumDialog({ children, userId }: PremiumDialogProps) {
           <Button 
             className="w-full bg-gradient-to-r from-purple-900 via-purple-800 to-black hover:from-purple-800 hover:via-purple-700 hover:to-gray-900 text-white border-0"
             onClick={() => {
-              // TODO: Implement subscription flow
               console.log("Subscribe clicked");
             }}
           >
