@@ -261,24 +261,27 @@ export default function HomePage() {
                             </div>
                           </div>
                           <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="shrink-0"
-                              onClick={(e) => handleShare(featuredEvent, e)}
-                            >
-                              <Share2 className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="secondary"
-                              className="bg-white text-black hover:bg-white/90 w-full md:w-auto"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setLocation(`/event/${featuredEvent.id}/register`);
-                              }}
-                            >
-                              Get Tickets
-                            </Button>
+                            <div className="flex gap-2">
+                              <span className="text-lg font-medium text-white">${featuredEvent.price}</span>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="shrink-0"
+                                onClick={(e) => handleShare(featuredEvent, e)}
+                              >
+                                <Share2 className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="secondary"
+                                className="bg-white text-black hover:bg-white/90 w-full md:w-auto"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setLocation(`/event/${featuredEvent.id}/register`);
+                                }}
+                              >
+                                Get Tickets
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -345,24 +348,27 @@ export default function HomePage() {
                                 </div>
                               </div>
                               <div className="flex items-center gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  className="shrink-0"
-                                  onClick={(e) => handleShare(event, e)}
-                                >
-                                  <Share2 className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="secondary"
-                                  className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setLocation(`/event/${event.id}/register`);
-                                  }}
-                                >
-                                  Get Tickets
-                                </Button>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-lg font-medium">${event.price}</span>
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="shrink-0"
+                                    onClick={(e) => handleShare(event, e)}
+                                  >
+                                    <Share2 className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="secondary"
+                                    className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setLocation(`/event/${event.id}/register`);
+                                    }}
+                                  >
+                                    Get Tickets
+                                  </Button>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -471,24 +477,27 @@ export default function HomePage() {
                                 </div>
                               </div>
                               <div className="flex items-center gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  className="shrink-0"
-                                  onClick={(e) => handleShare(event, e)}
-                                >
-                                  <Share2 className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="secondary"
-                                  className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setLocation(`/event/${event.id}/register`);
-                                  }}
-                                >
-                                  Get Tickets
-                                </Button>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-lg font-medium">${event.price}</span>
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="shrink-0"
+                                    onClick={(e) => handleShare(event, e)}
+                                  >
+                                    <Share2 className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="secondary"
+                                    className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setLocation(`/event/${event.id}/register`);
+                                    }}
+                                  >
+                                    Get Tickets
+                                  </Button>
+                                </div>
                               </div>
                             </div>
                           </div>
