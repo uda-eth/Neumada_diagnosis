@@ -27,11 +27,11 @@ export const mainNavItems = [
   { icon: UsersRound, label: 'connect', href: "/connect" },
   { icon: PlusSquare, label: 'create', href: "/create" },
   { icon: Bot, label: 'concierge', href: "/companion" }
-];
+] as const;
 
 // Menu items
 export const menuItems = [
-  { icon: Crown, label: 'Premium Upgrade', href: "/premium" },
+  { icon: Crown, label: 'Premium Upgrade', href: "/premium", isPremium: true },
   { icon: Inbox, label: 'Inbox', href: "/inbox" },
   { icon: Globe, label: 'Translator', href: "/translator" }
 ];
@@ -74,10 +74,10 @@ export function BottomNav() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              {menuItems.map(({ icon: Icon, label, href }) => (
+              {menuItems.map(({ icon: Icon, label, href, isPremium }) => (
                 <DropdownMenuItem key={href}>
                   <Link href={href}>
-                    <a className="flex items-center gap-2 w-full">
+                    <a className={`flex items-center gap-2 w-full ${isPremium ? 'text-purple-500 font-medium' : ''}`}>
                       <Icon className="w-4 h-4" />
                       <span>{label}</span>
                     </a>
@@ -120,10 +120,10 @@ export function BottomNav() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center" side="right" className="w-56">
-              {menuItems.map(({ icon: Icon, label, href }) => (
+              {menuItems.map(({ icon: Icon, label, href, isPremium }) => (
                 <DropdownMenuItem key={href}>
                   <Link href={href}>
-                    <a className="flex items-center gap-2 w-full">
+                    <a className={`flex items-center gap-2 w-full ${isPremium ? 'text-purple-500 font-medium' : ''}`}>
                       <Icon className="w-4 h-4" />
                       <span>{label}</span>
                     </a>

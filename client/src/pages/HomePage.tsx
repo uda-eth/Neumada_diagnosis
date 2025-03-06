@@ -254,7 +254,7 @@ export default function HomePage() {
                 >
                   <CardContent className="p-0">
                     <div className="relative">
-                      <div className="aspect-[3/2] md:aspect-[16/9] relative">
+                      <div className="aspect-[3/4] md:aspect-[3/4] relative">
                         <img
                           src={featuredEvent.image}
                           alt={featuredEvent.title}
@@ -330,11 +330,11 @@ export default function HomePage() {
                     >
                       <CardContent className="p-0">
                         <div className="flex flex-col md:flex-row">
-                          <div className="w-full md:w-80 h-[360px] md:h-auto flex-shrink-0">
+                          <div className="w-full md:w-64 h-[360px] md:h-[400px] flex-shrink-0">
                             <img
                               src={event.image}
                               alt={event.title}
-                              className="w-full h-full object-contain bg-black/40"
+                              className="w-full h-full object-cover bg-black/40"
                             />
                           </div>
                           <div className="flex-1 p-6 flex flex-col justify-between">
@@ -452,11 +452,11 @@ export default function HomePage() {
                     >
                       <CardContent className="p-0">
                         <div className="flex flex-col md:flex-row">
-                          <div className="w-full md:w-80 h-[360px] md:h-auto flex-shrink-0">
+                          <div className="w-full md:w-64 h-[360px] md:h-[400px] flex-shrink-0">
                             <img
                               src={event.image}
                               alt={event.title}
-                              className="w-full h-full object-contain bg-black/40"
+                              className="w-full h-full object-cover bg-black/40"
                             />
                           </div>
                           <div className="flex-1 p-6 flex flex-col justify-between">
