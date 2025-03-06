@@ -12,7 +12,7 @@ const mockMessages = [
     id: 1,
     sender: {
       name: "Sofia Rodriguez",
-      avatar: "/attached_assets/profile-image-1.jpg",
+      avatar: "/attached_assets/profile-elena.jpg",
       initials: "SR"
     },
     preview: "Hey! Are you coming to the art exhibition tonight?",
@@ -34,7 +34,7 @@ const mockMessages = [
     id: 3,
     sender: {
       name: "Luna Park",
-      avatar: "/attached_assets/profile-image-3.jpg",
+      avatar: "/attached_assets/profile-miguel.jpg",
       initials: "LP"
     },
     preview: "About the upcoming tech conference...",
@@ -45,7 +45,7 @@ const mockMessages = [
     id: 4,
     sender: {
       name: "Alex Thompson",
-      avatar: "/attached_assets/profile-image-4.jpg",
+      avatar: "/attached_assets/marco_profile.jpg",
       initials: "AT"
     },
     preview: "Let's collaborate on the new project!",
@@ -56,7 +56,7 @@ const mockMessages = [
     id: 5,
     sender: {
       name: "Maya Patel",
-      avatar: "/attached_assets/profile-image-5.jpg",
+      avatar: "/attached_assets/profile-image-1.jpg",
       initials: "MP"
     },
     preview: "Thanks for the coworking space recommendation",
@@ -67,7 +67,7 @@ const mockMessages = [
     id: 6,
     sender: {
       name: "David Kim",
-      avatar: "/attached_assets/profile-image-6.jpg",
+      avatar: "/attached_assets/profile-image-3.jpg",
       initials: "DK"
     },
     preview: "Joining for sunset yoga at the beach?",
@@ -78,7 +78,7 @@ const mockMessages = [
     id: 7,
     sender: {
       name: "Emma Wilson",
-      avatar: "/attached_assets/profile-image-7.jpg",
+      avatar: "/attached_assets/profile-image-4.jpg",
       initials: "EW"
     },
     preview: "Looking forward to the weekend hiking trip!",
