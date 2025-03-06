@@ -9,7 +9,8 @@ import {
   User,
   Crown,
   Share2,
-  Inbox
+  Inbox,
+  Globe
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { InviteTrigger } from "./invite-dialog";
@@ -36,6 +37,16 @@ export const mainNavItems = [
 
 // Secondary navigation items for the hamburger menu
 export const secondaryNavItems = [
+  { 
+    icon: Bot,
+    label: 'aiGuide',
+    href: "/ai-guide"
+  },
+  {
+    icon: Globe,
+    label: 'translator',
+    href: "/translator"
+  },
   { 
     icon: Inbox, 
     label: 'inbox', 
@@ -128,67 +139,54 @@ export function BottomNav() {
 
       {/* Desktop Side Navigation */}
       <nav className="hidden md:flex fixed left-0 top-0 bottom-0 z-[100] w-16 glass border-r border-border/10 shadow-lg flex-col items-center py-8">
-        {/* Premium Button at the top for desktop */}
-        <PremiumDialog>
-          <button className="mb-8 relative flex flex-col items-center justify-center gap-1 w-12 h-12 rounded-lg transition-all duration-300 ease-out interactive-hover text-purple-500 group">
-            <Crown className="w-6 h-6 transition-transform" />
-            <span className="text-[10px] font-medium opacity-0 group-hover:opacity-100 absolute left-16 glass text-foreground px-2 py-1 rounded whitespace-nowrap border border-border/10 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
-              Get Premium
-            </span>
-          </button>
-        </PremiumDialog>
-
-        {mainNavItems.map(({ icon: Icon, label, href }) => {
-          const isActive = location === href;
-          return (
-            <Link key={href} href={href}>
-              <a 
-                role="button"
-                className={`relative flex flex-col items-center justify-center gap-1 w-12 h-12 rounded-lg transition-all duration-300 ease-out mb-4 group interactive-hover ${
-                  isActive 
-                    ? "text-white scale-105" 
-                    : "text-foreground/60 hover:text-foreground"
-                }`}
-              >
-                <Icon className="w-6 h-6 transition-transform" />
-                <span className="text-[10px] font-medium opacity-0 group-hover:opacity-100 absolute left-16 glass text-foreground px-2 py-1 rounded whitespace-nowrap border border-border/10 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
-                  {label === 'guide' ? 'AI City Guide' : t(label)}
-                </span>
-              </a>
-            </Link>
-          );
-        })}
-
-        {/* Desktop Hamburger Menu */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="mt-auto relative flex flex-col items-center justify-center gap-1 w-12 h-12 rounded-lg transition-all duration-300 ease-out interactive-hover text-foreground/60 hover:text-foreground">
-              <Menu className="w-6 h-6 transition-transform" />
+          {/* Premium Button at the top for desktop */}
+          <PremiumDialog>
+            <button className="mb-8 relative flex flex-col items-center justify-center gap-1 w-12 h-12 rounded-lg transition-all duration-300 ease-out interactive-hover text-purple-500 group">
+              <Crown className="w-6 h-6 transition-transform" />
+              <span className="text-[10px] font-medium opacity-0 group-hover:opacity-100 absolute left-16 glass text-foreground px-2 py-1 rounded whitespace-nowrap border border-border/10 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+                Get Premium
+              </span>
             </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="center" side="right" className="w-56">
-            {secondaryNavItems
-              .filter(item => !item.mobileOnly)
-              .map(({ icon: Icon, label, href, badge }) => (
-                <DropdownMenuItem key={href}>
-                  <Link href={href}>
-                    <a className="flex items-center gap-2">
-                      <Icon className="w-4 h-4" />
-                      {t(label)}
-                      {badge && (
-                        <Badge 
-                          variant="destructive" 
-                          className="ml-auto h-5 w-5 flex items-center justify-center p-0 text-[10px]"
-                        >
-                          {badge > 99 ? '99+' : badge}
-                        </Badge>
-                      )}
-                    </a>
-                  </Link>
+          </PremiumDialog>
+
+          {/* Desktop Hamburger Menu - now contains all secondary nav items */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="mt-auto relative flex flex-col items-center justify-center gap-1 w-12 h-12 rounded-lg transition-all duration-300 ease-out interactive-hover text-foreground/60 hover:text-foreground">
+                <Menu className="w-6 h-6 transition-transform" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" side="right" className="w-56">
+              {/* Premium Button at the top */}
+              <PremiumDialog>
+                <DropdownMenuItem className="cursor-pointer text-purple-500 font-medium">
+                  <Crown className="w-4 h-4 mr-2" />
+                  Get Premium
                 </DropdownMenuItem>
-              ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+              </PremiumDialog>
+              <DropdownMenuSeparator />
+              {secondaryNavItems
+                .filter(item => !item.mobileOnly)
+                .map(({ icon: Icon, label, href, badge }) => (
+                  <DropdownMenuItem key={href}>
+                    <Link href={href}>
+                      <a className="flex items-center gap-2">
+                        <Icon className="w-4 h-4" />
+                        {t(label)}
+                        {badge && (
+                          <Badge 
+                            variant="destructive" 
+                            className="ml-auto h-5 w-5 flex items-center justify-center p-0 text-[10px]"
+                          >
+                            {badge > 99 ? '99+' : badge}
+                          </Badge>
+                        )}
+                      </a>
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
       </nav>
     </>
   );
