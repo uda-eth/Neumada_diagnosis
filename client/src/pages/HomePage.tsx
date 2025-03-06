@@ -71,30 +71,28 @@ export default function HomePage() {
   const [selectedCity, setSelectedCity] = useState("Mexico City");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const { events, isLoading, createEvent } = useEvents(undefined, selectedCity);
+  const { events, isLoading } = useEvents(undefined, selectedCity);
   const [, setLocation] = useLocation();
-  const { toast } = useToast();
-  const { user } = useUser();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [newEvent, setNewEvent] = useState({
-    title: "",
-    description: "",
-    location: "",
-    date: "",
-    category: "",
-    imageFile: null as File | null,
-    capacity: 0,
-  });
 
-  const today = new Date();
-  const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+  // Get featured event (first event with most attendees/interested)
+  const featuredEvent = events?.reduce((featured, current) => {
+    const featuredTotal = (featured?.attendingCount || 0) + (featured?.interestedCount || 0);
+    const currentTotal = (current.attendingCount || 0) + (current.interestedCount || 0);
+    return currentTotal > featuredTotal ? current : featured;
+  }, events[0]);
 
-  const filteredEvents = events?.filter(event => {
+  // Filter remaining events
+  const remainingEvents = events?.filter(event => event.id !== featuredEvent?.id);
+
+  const filteredEvents = remainingEvents?.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          event.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "all" || event.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  const today = new Date();
+  const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
 
   const groupedEvents = filteredEvents?.reduce(
     (acc: { thisWeekend: any[]; nextWeek: any[] }, event) => {
@@ -146,6 +144,18 @@ export default function HomePage() {
       });
     }
   };
+  const { user } = useUser();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newEvent, setNewEvent] = useState({
+    title: "",
+    description: "",
+    location: "",
+    date: "",
+    category: "",
+    imageFile: null as File | null,
+    capacity: 0,
+  });
+
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -226,12 +236,85 @@ export default function HomePage() {
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="animate-pulse">
-                  <div className="h-48 bg-muted rounded-lg mb-2"></div>
+                  <div className="h-64 bg-muted rounded-lg mb-2"></div>
                 </div>
               ))}
             </div>
           ) : (
             <div className="space-y-8">
+              {featuredEvent && (
+                <section>
+                  <h2 className="text-lg font-medium text-muted-foreground mb-4">
+                    Featured Event of the Week
+                  </h2>
+                  <Card
+                    className="bg-card border-border hover:bg-accent/50 transition-colors cursor-pointer overflow-hidden"
+                    onClick={() => setLocation(`/event/${featuredEvent.id}`)}
+                  >
+                    <CardContent className="p-0">
+                      <div className="relative">
+                        <div className="aspect-[21/9] relative">
+                          <img
+                            src={featuredEvent.image}
+                            alt={featuredEvent.title}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        </div>
+                        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                          <div className="flex flex-wrap items-center gap-2 mb-2">
+                            <Badge className="bg-primary text-white">
+                              Featured
+                            </Badge>
+                            <Badge variant="outline" className="text-white border-white/20">
+                              {featuredEvent.category}
+                            </Badge>
+                            {featuredEvent.tags?.slice(0, 2).map((tag: string) => (
+                              <Badge
+                                key={tag}
+                                variant="secondary"
+                                className="bg-white/10 text-white"
+                              >
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                          <h3 className="text-2xl font-bold mb-2">
+                            {featuredEvent.title}
+                          </h3>
+                          <p className="text-white/80 line-clamp-2 mb-4">
+                            {featuredEvent.description}
+                          </p>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center gap-2">
+                                <MapPin className="h-4 w-4 text-white/60" />
+                                <span className="text-white/60">
+                                  {featuredEvent.location}
+                                </span>
+                              </div>
+                              <div className="text-white/60">
+                                {format(new Date(featuredEvent.date), "EEE, MMM d, h:mm a")}
+                              </div>
+                            </div>
+                            <Button 
+                              variant="secondary"
+                              className="bg-white text-black hover:bg-white/90"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setLocation(`/event/${featuredEvent.id}/register`);
+                              }}
+                            >
+                              Get Tickets
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </section>
+              )}
+
               {groupedEvents?.thisWeekend.length > 0 && (
                 <section>
                   <h2 className="text-sm font-medium text-muted-foreground mb-4">
@@ -245,66 +328,60 @@ export default function HomePage() {
                         onClick={() => setLocation(`/event/${event.id}`)}
                       >
                         <CardContent className="p-0">
-                          <div className="flex flex-row h-auto">
-                            <div className="w-24 h-24 md:w-32 md:h-32 flex-shrink-0">
+                          <div className="flex flex-col md:flex-row">
+                            <div className="w-full md:w-72 h-48 md:h-auto flex-shrink-0">
                               <img
                                 src={event.image}
                                 alt={event.title}
-                                className="h-full w-full object-cover rounded-l"
+                                className="h-full w-full object-cover"
                               />
                             </div>
-                            <div className="flex-1 p-3 md:p-4 flex flex-col justify-between min-w-0">
+                            <div className="flex-1 p-6 flex flex-col justify-between">
                               <div>
-                                <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                                  <Badge variant="outline" className="text-xs">
+                                <div className="flex flex-wrap items-center gap-2 mb-3">
+                                  <Badge variant="outline" className="text-sm">
                                     {event.category}
                                   </Badge>
-                                  {event.title.toLowerCase().includes('pargot') && (
-                                    <Badge variant="secondary" className="text-xs bg-primary/20 text-primary border border-primary/20">
-                                      Maly Members Only
-                                    </Badge>
-                                  )}
                                   {event.tags?.slice(0, 2).map((tag: string) => (
                                     <Badge
                                       key={tag}
                                       variant="secondary"
-                                      className="text-xs"
+                                      className="text-sm"
                                     >
                                       {tag}
                                     </Badge>
                                   ))}
-                                  {((event.attendingCount || 0) + (event.interestedCount || 0)) > 10 && (
-                                    <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
-                                      Trending
-                                    </Badge>
-                                  )}
                                 </div>
-                                <p className="text-xs text-muted-foreground">
-                                  {format(new Date(event.date), "EEE, MMM d, h:mm a")}
-                                </p>
-                                <h3 className="font-semibold text-foreground mt-1 text-sm md:text-base line-clamp-2">
+                                <h3 className="text-xl font-semibold mb-2">
                                   {event.title}
                                 </h3>
+                                <p className="text-muted-foreground line-clamp-2 mb-4">
+                                  {event.description}
+                                </p>
                               </div>
-                              <div className="flex items-center justify-between mt-2 md:mt-3">
-                                <div className="flex items-center gap-1 min-w-0">
-                                  <MapPin className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0 text-muted-foreground" />
-                                  <span className="text-xs md:text-sm text-muted-foreground truncate">
-                                    {event.location}
-                                  </span>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                  <div className="flex items-center gap-2">
+                                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                                    <span className="text-muted-foreground">
+                                      {event.location}
+                                    </span>
+                                  </div>
+                                  <div className="text-muted-foreground">
+                                    {format(new Date(event.date), "EEE, MMM d, h:mm a")}
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm font-medium">${event.price}</span>
+                                <div className="flex items-center gap-4">
+                                  <span className="text-lg font-medium">${event.price}</span>
                                   <Button 
-                                    variant="secondary" 
-                                    size="sm"
+                                    variant="secondary"
                                     className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setLocation(`/event/${event.id}/register`);
                                     }}
                                   >
-                                    Buy
+                                    Get Tickets
                                   </Button>
                                 </div>
                               </div>
@@ -373,66 +450,60 @@ export default function HomePage() {
                         onClick={() => setLocation(`/event/${event.id}`)}
                       >
                         <CardContent className="p-0">
-                          <div className="flex flex-row h-auto">
-                            <div className="w-24 h-24 md:w-32 md:h-32 flex-shrink-0">
+                          <div className="flex flex-col md:flex-row">
+                            <div className="w-full md:w-72 h-48 md:h-auto flex-shrink-0">
                               <img
                                 src={event.image}
                                 alt={event.title}
-                                className="h-full w-full object-cover rounded-l"
+                                className="h-full w-full object-cover"
                               />
                             </div>
-                            <div className="flex-1 p-3 md:p-4 flex flex-col justify-between min-w-0">
+                            <div className="flex-1 p-6 flex flex-col justify-between">
                               <div>
-                                <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                                  <Badge variant="outline" className="text-xs">
+                                <div className="flex flex-wrap items-center gap-2 mb-3">
+                                  <Badge variant="outline" className="text-sm">
                                     {event.category}
                                   </Badge>
-                                  {event.title.toLowerCase().includes('pargot') && (
-                                    <Badge variant="secondary" className="text-xs bg-primary/20 text-primary border border-primary/20">
-                                      Maly Members Only
-                                    </Badge>
-                                  )}
                                   {event.tags?.slice(0, 2).map((tag: string) => (
                                     <Badge
                                       key={tag}
                                       variant="secondary"
-                                      className="text-xs"
+                                      className="text-sm"
                                     >
                                       {tag}
                                     </Badge>
                                   ))}
-                                  {((event.attendingCount || 0) + (event.interestedCount || 0)) > 10 && (
-                                    <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
-                                      Trending
-                                    </Badge>
-                                  )}
                                 </div>
-                                <p className="text-xs text-muted-foreground">
-                                  {format(new Date(event.date), "EEE, MMM d, h:mm a")}
-                                </p>
-                                <h3 className="font-semibold text-foreground mt-1 text-sm md:text-base line-clamp-2">
+                                <h3 className="text-xl font-semibold mb-2">
                                   {event.title}
                                 </h3>
+                                <p className="text-muted-foreground line-clamp-2 mb-4">
+                                  {event.description}
+                                </p>
                               </div>
-                              <div className="flex items-center justify-between mt-2 md:mt-3">
-                                <div className="flex items-center gap-1 min-w-0">
-                                  <MapPin className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0 text-muted-foreground" />
-                                  <span className="text-xs md:text-sm text-muted-foreground truncate">
-                                    {event.location}
-                                  </span>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                  <div className="flex items-center gap-2">
+                                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                                    <span className="text-muted-foreground">
+                                      {event.location}
+                                    </span>
+                                  </div>
+                                  <div className="text-muted-foreground">
+                                    {format(new Date(event.date), "EEE, MMM d, h:mm a")}
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm font-medium">${event.price}</span>
+                                <div className="flex items-center gap-4">
+                                  <span className="text-lg font-medium">${event.price}</span>
                                   <Button 
-                                    variant="secondary" 
-                                    size="sm"
+                                    variant="secondary"
                                     className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setLocation(`/event/${event.id}/register`);
                                     }}
                                   >
-                                    Buy
+                                    Get Tickets
                                   </Button>
                                 </div>
                               </div>
@@ -449,7 +520,6 @@ export default function HomePage() {
         </main>
       </ScrollArea>
 
-      {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-black text-white border-t border-border p-4 md:hidden">
         <div className="container mx-auto">
           <div className="flex justify-around items-center">
