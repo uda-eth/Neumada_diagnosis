@@ -21,23 +21,24 @@ import { useTranslation } from "@/lib/translations";
 
 const getFirstName = (fullName: string) => fullName.split(' ')[0];
 
-// Update the featuredEventData to use the correct image
 const featuredEventData = {
   id: 1001,
   title: "Onda Linda Festival",
   description: "Experience the mystical fusion of electronic music and art in an immersive natural setting, featuring world-class DJs and stunning visual installations.",
   location: "Valle de Bravo",
-  date: new Date("2025-05-02T21:00:00"),
+  date: new Date("2025-05-02T21:00:00").toISOString(),
   category: "Nightlife",
   tags: ["Electronic Music", "Art", "Festival"],
   price: 85,
   image: "/attached_assets/Screenshot 2025-03-06 at 12.16.27 AM.png",
   attendingCount: 156,
-  interestedCount: 342
+  interestedCount: 342,
+  creatorId: null,
+  creatorName: null,
+  creatorImage: null,
+  image_url: null
 };
 
-
-// Cities and categories arrays remain unchanged
 const cities = [
   "Bali",
   "Bangkok",
@@ -71,7 +72,7 @@ const categories = [
 
 const AvatarImage = ({ src, alt }: { src: string; alt: string }) => {
   const [error, setError] = useState(false);
-  const fallbackImage = "/attached_assets/profile-image-1.jpg"; // Default fallback image
+  const fallbackImage = "/attached_assets/profile-image-1.jpg";
 
   return (
     <img 
@@ -91,13 +92,10 @@ export default function HomePage() {
   const { events: fetchedEvents } = useEvents(undefined, selectedCity);
   const [, setLocation] = useLocation();
 
-  // Use only fetched events, no default events
   const allEvents = fetchedEvents || [];
 
-  // Mock the featured event with our hardcoded data
   const featuredEvent = featuredEventData;
 
-  // Filter events based on search and category
   const filteredEvents = allEvents.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          event.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -257,7 +255,6 @@ export default function HomePage() {
                 >
                   <CardContent className="p-0">
                     <div className="relative">
-                      {/* Mobile view */}
                       <div className="md:hidden">
                         <div className="aspect-[4/3] relative">
                           <img
@@ -269,7 +266,6 @@ export default function HomePage() {
                         </div>
                       </div>
 
-                      {/* Desktop view */}
                       <div className="hidden md:block">
                         <div className="aspect-[16/9] relative">
                           <img
@@ -413,14 +409,12 @@ export default function HomePage() {
               </section>
             )}
 
-            {/* Ad Space - MUSA Zihuatanejo */}
             <section className="py-4">
               <div className="w-full relative">
                 <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded z-10">
                   Premium Ad Partner
                 </div>
                 <div className="rounded-lg overflow-hidden relative">
-                  {/* Desktop version */}
                   <div className="relative hidden md:block">
                     <img 
                       src="/attached_assets/Screenshot 2025-03-05 at 10.20.48 PM.png"
@@ -436,7 +430,6 @@ export default function HomePage() {
                       </p>
                     </div>
                   </div>
-                  {/* Mobile version */}
                   <div className="md:hidden relative">
                     <img 
                       src="/attached_assets/Screenshot 2025-03-05 at 10.20.48 PM.png"
