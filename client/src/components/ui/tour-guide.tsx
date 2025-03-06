@@ -11,15 +11,15 @@ export function TourGuide() {
     // Initialize with default steps
     setSteps(defaultTourSteps);
 
-    // Check if this is the user's first visit
-    const hasSeenTour = localStorage.getItem('hasSeenTour');
-    if (!hasSeenTour) {
-      setRun(true);
-    }
+    // Force start the tour for testing
+    setRun(true);
+    console.log('Tour should start now:', { steps: defaultTourSteps });
   }, [setSteps, setRun]);
 
   const handleJoyrideCallback = (data: CallBackProps) => {
-    const { status, type } = data;
+    const { status, type, step } = data;
+    console.log('Tour callback:', { status, type, step });
+
     const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
 
     if (finishedStatuses.includes(status)) {
@@ -42,10 +42,14 @@ export function TourGuide() {
       continuous
       showProgress
       showSkipButton
+      hideCloseButton={false}
+      spotlightClicks={false}
+      disableOverlayClose
+      disableScrolling={false}
       styles={{
         options: {
-          primaryColor: '#15B79E', // Teal base color
-          zIndex: 1000,
+          primaryColor: '#15B79E',
+          zIndex: 9999,
           overlayColor: 'rgba(0, 0, 0, 0.85)',
           backgroundColor: '#18181b',
           arrowColor: '#18181b',
@@ -58,6 +62,7 @@ export function TourGuide() {
           fontSize: '14px',
           backgroundColor: '#18181b',
           color: '#ffffff',
+          borderRadius: '8px',
         },
         buttonNext: {
           backgroundColor: 'transparent',
@@ -65,6 +70,7 @@ export function TourGuide() {
           border: 'none',
           padding: '8px 16px',
           fontSize: '14px',
+          borderRadius: '6px',
         },
         buttonBack: {
           color: '#ffffff',

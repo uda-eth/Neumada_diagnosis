@@ -23,23 +23,26 @@ export const useTour = create<TourState>((set) => ({
   reset: () => set({ currentStep: 0, run: false }),
 }));
 
-// Default tour steps that will be used across the application
 export const defaultTourSteps: Step[] = [
   {
     target: '.tour-discover',
     content: 'Discover upcoming events & happenings in your desired location',
     disableBeacon: true,
+    placement: 'bottom',
   },
   {
     target: '.tour-connect',
     content: 'Connect with like-vibe individuals and communities effortlessly',
+    placement: 'bottom',
   },
   {
     target: '.tour-create',
     content: 'Create or promote your event in minutes',
+    placement: 'bottom',
   },
   {
     target: '.tour-concierge',
     content: 'Utilize our chat-based Concierge for recs, city guides and more',
+    placement: 'bottom',
   },
 ];
