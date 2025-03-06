@@ -1,6 +1,6 @@
 import { BottomNav } from "./bottom-nav";
 import { Logo } from "./logo";
-import { Menu } from "lucide-react";
+import { Menu, Bot, Globe, Inbox } from "lucide-react";
 import { Button } from "./button";
 import { useLocation } from "wouter";
 import {
@@ -18,6 +18,9 @@ export function Layout({ children }: LayoutProps) {
   const [, setLocation] = useLocation();
 
   const menuItems = [
+    { href: "/inbox", label: "Inbox", icon: Inbox },
+    { href: "/translator", label: "Translator", icon: Globe },
+    { href: "/companion", label: "Concierge", icon: Bot },
     { href: "/profile", label: "Profile" },
     { href: "/settings", label: "Settings" },
     { href: "/help", label: "Help" }
@@ -50,6 +53,7 @@ export function Layout({ children }: LayoutProps) {
                         className="cursor-pointer interactive-hover"
                         onClick={() => setLocation(item.href)}
                       >
+                        {item.icon && <item.icon className="w-4 h-4 mr-2" />}
                         <span>{item.label}</span>
                       </DropdownMenuItem>
                     ))}
