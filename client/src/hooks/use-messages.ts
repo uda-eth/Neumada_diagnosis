@@ -4,10 +4,12 @@ import { useToast } from '@/hooks/use-toast';
 interface Message {
   id: number;
   content: string;
-  senderId: number;
-  receiverId: number;
+  sender: {
+    id: number;
+    name: string;
+    image: string;
+  };
   createdAt: string;
-  isRead: boolean;
 }
 
 interface Conversation {
@@ -16,137 +18,93 @@ interface Conversation {
     name: string;
     image: string;
   };
-  lastMessage: Message;
+  lastMessage?: Message;
 }
 
 interface MessagesState {
   messages: Message[];
   conversations: Conversation[];
-  unreadCount: number;
   loading: boolean;
   error: string | null;
-  socket: WebSocket | null;
-  sendMessage: (message: { senderId: number; receiverId: number; content: string }) => Promise<void>;
-  fetchConversations: (userId: number) => Promise<void>;
-  fetchMessages: (userId: number, otherId: number) => Promise<void>;
-  markAsRead: (messageId: number) => Promise<void>;
-  markAllAsRead: (userId: number) => Promise<void>;
-  connectSocket: (userId: number) => void;
-  disconnectSocket: () => void;
+  fetchConversations: () => Promise<void>;
+  fetchMessages: (userId: number) => Promise<void>;
+  sendMessage: (content: string, to: { id: number; name: string }) => Promise<void>;
 }
 
-export const useMessages = create<MessagesState>((set, get) => ({
+// Mock conversations for demo
+const mockConversations = [
+  {
+    user: {
+      id: 1009,
+      name: "Luca Hudek",
+      image: "/attached_assets/Screenshot 2025-03-04 at 11.21.13 PM.png"
+    },
+  },
+  {
+    user: {
+      id: 1010,
+      name: "Maria Torres",
+      image: "/attached_assets/profile-image-1.jpg"
+    },
+  },
+  {
+    user: {
+      id: 1011,
+      name: "James Chen",
+      image: "/attached_assets/profile-image-2.jpg"
+    }
+  }
+];
+
+export const useMessages = create<MessagesState>((set) => ({
   messages: [],
   conversations: [],
-  unreadCount: 0,
   loading: false,
   error: null,
-  socket: null,
 
-  sendMessage: async (message) => {
-    try {
-      const response = await fetch('/api/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(message),
-      });
-
-      if (!response.ok) throw new Error('Failed to send message');
-
-      const newMessage = await response.json();
-      set((state) => ({
-        messages: [...state.messages, newMessage],
-        unreadCount: state.unreadCount + 1,
-      }));
-    } catch (error) {
-      set({ error: error.message });
-    }
-  },
-
-  fetchConversations: async (userId) => {
+  fetchConversations: async () => {
     try {
       set({ loading: true });
-      const response = await fetch(`/api/conversations/${userId}`);
-      if (!response.ok) throw new Error('Failed to fetch conversations');
-      const conversations = await response.json();
-      set({ conversations, loading: false });
+      // For now, return mock conversations
+      set({ conversations: mockConversations, loading: false });
     } catch (error) {
-      set({ error: error.message, loading: false });
+      const message = error instanceof Error ? error.message : 'Failed to fetch conversations';
+      set({ error: message, loading: false });
     }
   },
 
-  fetchMessages: async (userId, otherId) => {
+  fetchMessages: async (userId: number) => {
     try {
       set({ loading: true });
-      const response = await fetch(`/api/messages/${userId}/${otherId}`);
-      if (!response.ok) throw new Error('Failed to fetch messages');
-      const messages = await response.json();
-      set({ messages, loading: false });
+      // For now, return empty messages array
+      set({ messages: [], loading: false });
     } catch (error) {
-      set({ error: error.message, loading: false });
+      const message = error instanceof Error ? error.message : 'Failed to fetch messages';
+      set({ error: message, loading: false });
     }
   },
 
-  markAsRead: async (messageId) => {
+  sendMessage: async (content: string, to: { id: number; name: string }) => {
     try {
-      const response = await fetch(`/api/messages/${messageId}/read`, {
-        method: 'POST',
-      });
-      if (!response.ok) throw new Error('Failed to mark message as read');
-      const updatedMessage = await response.json();
+      const newMessage = {
+        id: Date.now(),
+        content,
+        sender: {
+          id: 0, // Guest user ID
+          name: "Guest",
+          image: "/default-avatar.png"
+        },
+        createdAt: new Date().toISOString()
+      };
+
       set((state) => ({
-        messages: state.messages.map((msg) =>
-          msg.id === messageId ? { ...msg, isRead: true } : msg
-        ),
-        unreadCount: state.unreadCount - 1,
+        messages: [...state.messages, newMessage]
       }));
     } catch (error) {
-      set({ error: error.message });
+      const message = error instanceof Error ? error.message : 'Failed to send message';
+      set({ error: message });
     }
-  },
-
-  markAllAsRead: async (userId) => {
-    try {
-      const response = await fetch(`/api/messages/read-all/${userId}`, {
-        method: 'POST',
-      });
-      if (!response.ok) throw new Error('Failed to mark all messages as read');
-      set((state) => ({
-        messages: state.messages.map((msg) => ({ ...msg, isRead: true })),
-        unreadCount: 0,
-      }));
-    } catch (error) {
-      set({ error: error.message });
-    }
-  },
-
-  connectSocket: (userId) => {
-    const socket = new WebSocket(`ws://${window.location.host}`);
-
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'message') {
-        set((state) => ({
-          messages: [...state.messages, data.message],
-          unreadCount: state.unreadCount + 1,
-        }));
-      }
-    };
-
-    socket.onclose = () => {
-      setTimeout(() => get().connectSocket(userId), 1000);
-    };
-
-    set({ socket });
-  },
-
-  disconnectSocket: () => {
-    const { socket } = get();
-    if (socket) {
-      socket.close();
-      set({ socket: null });
-    }
-  },
+  }
 }));
 
 export function useMessageNotifications() {
@@ -154,7 +112,7 @@ export function useMessageNotifications() {
 
   const showNotification = (message: Message) => {
     toast({
-      title: `New message from ${message.senderId}`,
+      title: `New message from ${message.sender.name}`,
       description: message.content.slice(0, 50) + (message.content.length > 50 ? '...' : ''),
       duration: 5000,
     });
