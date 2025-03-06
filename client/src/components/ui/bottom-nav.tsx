@@ -130,7 +130,7 @@ export function BottomNav() {
       <nav className="hidden md:flex fixed left-0 top-0 bottom-0 z-[100] w-16 glass border-r border-border/10 shadow-lg flex-col items-center py-8">
         {/* Premium Button at the top for desktop */}
         <PremiumDialog>
-          <button className="mb-8 relative flex flex-col items-center justify-center gap-1 w-12 h-12 rounded-lg transition-all duration-300 ease-out interactive-hover text-purple-500">
+          <button className="mb-8 relative flex flex-col items-center justify-center gap-1 w-12 h-12 rounded-lg transition-all duration-300 ease-out interactive-hover text-purple-500 group">
             <Crown className="w-6 h-6 transition-transform" />
             <span className="text-[10px] font-medium opacity-0 group-hover:opacity-100 absolute left-16 glass text-foreground px-2 py-1 rounded whitespace-nowrap border border-border/10 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
               Get Premium
@@ -168,7 +168,7 @@ export function BottomNav() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="center" side="right" className="w-56">
             {secondaryNavItems
-              .filter(item => !item.mobileOnly)
+              .filter(item => !item.mobileOnly && item.label !== 'invite') //Filter out invite for desktop
               .map(({ icon: Icon, label, href, badge }) => (
                 <DropdownMenuItem key={href}>
                   <Link href={href}>
