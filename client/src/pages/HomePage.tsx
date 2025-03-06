@@ -24,7 +24,7 @@ const featuredEventData = {
   category: "Cultural",
   tags: ["Art", "Exhibition", "Culture"],
   price: 45,
-  image: "/attached_assets/Screenshot 2025-03-05 at 10.20.48 PM.png",
+  image: "/attached_assets/Screenshot 2025-03-06 at 9.50.03 AM.png",
   attendingCount: 89,
   interestedCount: 213
 };
