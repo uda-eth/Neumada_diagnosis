@@ -253,11 +253,11 @@ export default function HomePage() {
                   >
                     <CardContent className="p-0">
                       <div className="relative">
-                        <div className="aspect-[21/9] relative">
+                        <div className="aspect-[16/9] relative">
                           <img
                             src={featuredEvent.image}
                             alt={featuredEvent.title}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain bg-black/40"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                         </div>
@@ -329,11 +329,11 @@ export default function HomePage() {
                       >
                         <CardContent className="p-0">
                           <div className="flex flex-col md:flex-row">
-                            <div className="w-full md:w-72 h-48 md:h-auto flex-shrink-0">
+                            <div className="w-full md:w-80 h-[360px] md:h-auto flex-shrink-0">
                               <img
                                 src={event.image}
                                 alt={event.title}
-                                className="h-full w-full object-cover"
+                                className="w-full h-full object-contain bg-black/40"
                               />
                             </div>
                             <div className="flex-1 p-6 flex flex-col justify-between">
@@ -451,11 +451,11 @@ export default function HomePage() {
                       >
                         <CardContent className="p-0">
                           <div className="flex flex-col md:flex-row">
-                            <div className="w-full md:w-72 h-48 md:h-auto flex-shrink-0">
+                            <div className="w-full md:w-80 h-[360px] md:h-auto flex-shrink-0">
                               <img
                                 src={event.image}
                                 alt={event.title}
-                                className="h-full w-full object-cover"
+                                className="w-full h-full object-contain bg-black/40"
                               />
                             </div>
                             <div className="flex-1 p-6 flex flex-col justify-between">
