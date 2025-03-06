@@ -50,7 +50,7 @@ const defaultEvents = [
     image: "/attached_assets/Screenshot 2025-03-05 at 10.18.34 PM.png",
     attendingCount: 42,
     interestedCount: 89
-  },
+  }
 ];
 
 // Cities and categories arrays remain unchanged
@@ -104,16 +104,19 @@ export default function HomePage() {
   const [selectedCity, setSelectedCity] = useState("Mexico City");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const { events: fetchedEvents = defaultEvents, isLoading } = useEvents(undefined, selectedCity);
+  const { events: fetchedEvents } = useEvents(undefined, selectedCity);
   const [, setLocation] = useLocation();
+
+  // Combine fetched events with default events if no fetched events
+  const allEvents = fetchedEvents?.length ? fetchedEvents : defaultEvents;
 
   // Mock the featured event with our hardcoded data
   const featuredEvent = featuredEventData;
 
   // Filter remaining events to exclude the featured event
-  const remainingEvents = fetchedEvents?.filter(event => event.id !== featuredEvent?.id);
+  const remainingEvents = allEvents.filter(event => event.id !== featuredEvent?.id);
 
-  const filteredEvents = remainingEvents?.filter(event => {
+  const filteredEvents = remainingEvents.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          event.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "all" || event.category === selectedCategory;
@@ -123,7 +126,7 @@ export default function HomePage() {
   const today = new Date();
   const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-  const groupedEvents = filteredEvents?.reduce(
+  const groupedEvents = filteredEvents.reduce(
     (acc: { thisWeekend: any[]; nextWeek: any[] }, event) => {
       const eventDate = new Date(event.date);
       if (eventDate <= nextWeek && eventDate >= today) {
@@ -261,15 +264,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          {isLoading ? (
-            <div className="space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="h-64 bg-muted rounded-lg mb-2"></div>
-                </div>
-              ))}
-            </div>
-          ) : (
+          { /* Removed isLoading conditional rendering as allEvents handles the case where data is not yet loaded */}
             <div className="space-y-8">
               {featuredEvent && (
                 <section>
@@ -433,7 +428,7 @@ export default function HomePage() {
                     {/* Desktop version */}
                     <div className="relative hidden md:block">
                       <img 
-                        src="/attached_assets/Screenshot 2025-03-05 at 1.52.18 AM.png"
+                        src="/attached_assets/Screenshot 2025-03-05 at 10.20.48 PM.png"
                         alt="MUSA Zihuatanejo"
                         className="w-full object-cover h-[400px]"
                       />
@@ -449,7 +444,7 @@ export default function HomePage() {
                     {/* Mobile version */}
                     <div className="md:hidden relative">
                       <img 
-                        src="/attached_assets/Screenshot 2025-03-05 at 1.52.18 AM.png"
+                        src="/attached_assets/Screenshot 2025-03-05 at 10.20.48 PM.png"
                         alt="MUSA Zihuatanejo"
                         className="w-full aspect-[3/2] object-cover"
                       />
@@ -545,7 +540,7 @@ export default function HomePage() {
                 </section>
               )}
             </div>
-          )}
+          {/* Removed isLoading conditional rendering */}
         </main>
       </ScrollArea>
 
