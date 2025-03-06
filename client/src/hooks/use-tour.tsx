@@ -27,19 +27,19 @@ export const useTour = create<TourState>((set) => ({
 export const defaultTourSteps: Step[] = [
   {
     target: '.tour-discover',
-    content: 'Discover exciting events and connect with fellow digital nomads in your city',
+    content: 'Discover upcoming events & happenings in your desired location',
     disableBeacon: true,
   },
   {
     target: '.tour-connect',
-    content: 'Connect with like-minded professionals and expand your network',
+    content: 'Connect with like-vibe individuals and communities effortlessly',
   },
   {
     target: '.tour-create',
-    content: 'Create and host your own events to share your passions with the community',
+    content: 'Create or promote your event in minutes',
   },
   {
     target: '.tour-concierge',
-    content: 'Get personalized recommendations and assistance from our AI concierge',
+    content: 'Utilize our chat-based Concierge for recs, city guides and more',
   },
 ];
