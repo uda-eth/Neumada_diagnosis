@@ -16,16 +16,6 @@ import { Badge } from "@/components/ui/badge";
 import { InviteTrigger } from "./invite-dialog";
 import { useTranslation } from "@/lib/translations";
 import { PremiumDialog } from "./premium-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-
-// Mock unread count for demo
-const unreadCount = 3;
 
 // Main navigation items - only the 4 core features
 export const mainNavItems = [
@@ -33,29 +23,6 @@ export const mainNavItems = [
   { icon: UsersRound, label: 'connect', href: "/connect" },
   { icon: PlusSquare, label: 'create', href: "/create" },
   { icon: Bot, label: 'guide', href: "/companion" }
-];
-
-// Secondary navigation items for the hamburger menu
-export const secondaryNavItems = [
-  { 
-    icon: Bot,
-    label: 'aiGuide',
-    href: "/ai-guide"
-  },
-  {
-    icon: Globe,
-    label: 'translator',
-    href: "/translator"
-  },
-  { 
-    icon: Inbox, 
-    label: 'inbox', 
-    href: "/messages",
-    badge: unreadCount
-  },
-  { icon: User, label: 'profile', href: "/profile/luca-hudek/edit" },
-  { icon: Settings, label: 'settings', href: "/settings" },
-  { icon: Share2, label: 'invite', href: "#", isInviteTrigger: true, mobileOnly: true },
 ];
 
 export function BottomNav() {
@@ -87,53 +54,6 @@ export function BottomNav() {
               </Link>
             );
           })}
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="relative flex flex-col items-center justify-center gap-1 w-12 h-16 rounded-lg transition-all duration-300 ease-out touch-target interactive-hover text-foreground/60 hover:text-foreground">
-                <Menu className="w-6 h-6 transition-transform" />
-                <span className="text-[10px] font-medium">Menu</span>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              {/* Premium Button at the top */}
-              <PremiumDialog>
-                <DropdownMenuItem className="cursor-pointer text-purple-500 font-medium">
-                  <Crown className="w-4 h-4 mr-2" />
-                  Get Premium
-                </DropdownMenuItem>
-              </PremiumDialog>
-              <DropdownMenuSeparator />
-              {/* Other menu items */}
-              {secondaryNavItems.map(({ icon: Icon, label, href, badge, isInviteTrigger }) => (
-                <DropdownMenuItem key={href}>
-                  {isInviteTrigger ? (
-                    <InviteTrigger>
-                      <a className="flex items-center gap-2">
-                        <Icon className="w-4 h-4" />
-                        {t(label)}
-                      </a>
-                    </InviteTrigger>
-                  ) : (
-                    <Link href={href}>
-                      <a className="flex items-center gap-2">
-                        <Icon className="w-4 h-4" />
-                        {t(label)}
-                        {badge && (
-                          <Badge 
-                            variant="destructive" 
-                            className="ml-auto h-5 w-5 flex items-center justify-center p-0 text-[10px]"
-                          >
-                            {badge > 99 ? '99+' : badge}
-                          </Badge>
-                        )}
-                      </a>
-                    </Link>
-                  )}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       </nav>
 
@@ -159,45 +79,6 @@ export function BottomNav() {
               </Link>
             );
           })}
-
-          {/* Desktop Hamburger Menu */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="mt-auto relative flex flex-col items-center justify-center gap-1 w-12 h-12 rounded-lg transition-all duration-300 ease-out interactive-hover text-foreground/60 hover:text-foreground">
-                <Menu className="w-6 h-6 transition-transform" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="center" side="right" className="w-56">
-              {/* Premium Button at the top */}
-              <PremiumDialog>
-                <DropdownMenuItem className="cursor-pointer text-purple-500 font-medium">
-                  <Crown className="w-4 h-4 mr-2" />
-                  Get Premium
-                </DropdownMenuItem>
-              </PremiumDialog>
-              <DropdownMenuSeparator />
-              {secondaryNavItems
-                .filter(item => !item.mobileOnly)
-                .map(({ icon: Icon, label, href, badge }) => (
-                  <DropdownMenuItem key={href}>
-                    <Link href={href}>
-                      <a className="flex items-center gap-2">
-                        <Icon className="w-4 h-4" />
-                        {t(label)}
-                        {badge && (
-                          <Badge 
-                            variant="destructive" 
-                            className="ml-auto h-5 w-5 flex items-center justify-center p-0 text-[10px]"
-                          >
-                            {badge > 99 ? '99+' : badge}
-                          </Badge>
-                        )}
-                      </a>
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
       </nav>
     </>
   );
