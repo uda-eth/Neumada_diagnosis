@@ -69,7 +69,7 @@ export function ConnectPage() {
     const matchesInterests = selectedInterests.length === 0 ||
       selectedInterests.some(interest => member.interests.includes(interest));
     const matchesMoods = selectedMoods.length === 0 ||
-      member.currentMood && selectedMoods.includes(member.currentMood);
+      selectedMoods.some(mood => member.currentMoods.includes(mood));
 
     return matchesSearch && matchesCity && matchesInterests && matchesMoods;
   });
@@ -182,12 +182,17 @@ export function ConnectPage() {
                           <MapPin className="h-3 w-3 mr-1" />
                           <span className="truncate">{member.location}</span>
                         </div>
-                        <Badge
-                          variant="secondary"
-                          className={`${moodStyles[member.currentMood]} text-xs`}
-                        >
-                          {member.currentMood}
-                        </Badge>
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {member.currentMoods.map((mood, index) => (
+                            <Badge
+                              key={index}
+                              variant="secondary"
+                              className={`${moodStyles[mood]} text-xs`}
+                            >
+                              {mood}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>

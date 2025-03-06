@@ -12,6 +12,7 @@ import PremiumPage from "./pages/PremiumPage";
 import InboxPage from "./pages/InboxPage";
 import ProfileEditPage from "./pages/ProfileEditPage";
 import TranslatorPage from "./pages/TranslatorPage";
+import OndaLindaFestivalPage from "./pages/OndaLindaFestivalPage";
 import { Layout } from "./components/ui/layout";
 import { ThemeProvider } from "./lib/theme-provider";
 import { LanguageProvider } from "./lib/language-context";
@@ -23,6 +24,7 @@ function App() {
         <Layout>
           <Switch>
             <Route path="/" component={HomePage} />
+            <Route path="/event/onda-linda-festival" component={OndaLindaFestivalPage} />
             <Route path="/event/:id" component={EventPage} />
             <Route path="/profile/:username" component={ProfilePage} />
             <Route path="/create" component={CreateEventPage} />
