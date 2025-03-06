@@ -6,13 +6,14 @@ import {
   Bot,
   Menu,
   Crown,
-  Globe,
-  Inbox
+  Inbox,
+  Settings,
+  UserCircle,
+  Globe2
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { InviteTrigger } from "./invite-dialog";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useTranslation } from "@/lib/translations";
-import { PremiumDialog } from "./premium-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,9 +32,38 @@ export const mainNavItems = [
 
 // Menu items
 export const menuItems = [
-  { icon: Crown, label: 'Premium Upgrade', href: "/premium", isPremium: true },
-  { icon: Inbox, label: 'Inbox', href: "/inbox" },
-  { icon: Globe, label: 'Translator', href: "/translator" }
+  { 
+    icon: Crown, 
+    label: 'Premium Benefits', 
+    href: "/premium", 
+    isPremium: true 
+  },
+  { 
+    icon: Inbox, 
+    label: 'Inbox', 
+    href: "/inbox",
+    badge: "3",
+    preview: [
+      { name: "Sarah K.", image: "/attached_assets/profile-1.jpg" },
+      { name: "Miguel R.", image: "/attached_assets/profile-2.jpg" },
+      { name: "Lisa T.", image: "/attached_assets/profile-3.jpg" }
+    ]
+  },
+  { 
+    icon: Settings, 
+    label: 'Settings', 
+    href: "/settings" 
+  },
+  { 
+    icon: UserCircle, 
+    label: 'Edit Profile', 
+    href: "/profile/edit" 
+  },
+  { 
+    icon: Globe2, 
+    label: 'Translator', 
+    href: "/translator" 
+  }
 ];
 
 export function BottomNav() {
@@ -48,20 +78,19 @@ export function BottomNav() {
           {mainNavItems.map(({ icon: Icon, label, href }) => {
             const isActive = location === href;
             return (
-              <Link key={href} href={href}>
-                <a 
-                  role="button"
-                  className={`relative flex flex-col items-center justify-center gap-1 w-12 h-16 rounded-lg transition-all duration-300 ease-out touch-target interactive-hover ${
-                    isActive 
-                      ? "text-white scale-105" 
-                      : "text-foreground/60 hover:text-foreground"
-                  }`}
-                >
-                  <Icon className="w-6 h-6 transition-transform" />
-                  <span className="text-[10px] font-medium text-center">
-                    {label === 'concierge' ? 'Concierge' : t(label)}
-                  </span>
-                </a>
+              <Link 
+                key={href} 
+                href={href}
+                className={`relative flex flex-col items-center justify-center gap-1 w-12 h-16 rounded-lg transition-all duration-300 ease-out touch-target interactive-hover ${
+                  isActive 
+                    ? "text-white scale-105" 
+                    : "text-foreground/60 hover:text-foreground"
+                }`}
+              >
+                <Icon className="w-6 h-6 transition-transform" />
+                <span className="text-[10px] font-medium text-center">
+                  {label === 'concierge' ? 'Concierge' : t(label)}
+                </span>
               </Link>
             );
           })}
@@ -73,14 +102,19 @@ export function BottomNav() {
                 <span className="text-[10px] font-medium">Menu</span>
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              {menuItems.map(({ icon: Icon, label, href, isPremium }) => (
+            <DropdownMenuContent align="end" className="w-64">
+              {menuItems.map(({ icon: Icon, label, href, isPremium, preview, badge }) => (
                 <DropdownMenuItem key={href}>
-                  <Link href={href}>
-                    <a className={`flex items-center gap-2 w-full ${isPremium ? 'text-purple-500 font-medium' : ''}`}>
+                  <Link href={href} className="flex items-center gap-2 w-full">
+                    <div className={`flex items-center gap-2 w-full ${isPremium ? 'text-purple-500 font-medium' : ''}`}>
                       <Icon className="w-4 h-4" />
-                      <span>{label}</span>
-                    </a>
+                      <span className="flex-1">{label}</span>
+                      {badge && (
+                        <Badge variant="secondary" className="ml-auto">
+                          {badge}
+                        </Badge>
+                      )}
+                    </div>
                   </Link>
                 </DropdownMenuItem>
               ))}
@@ -91,47 +125,51 @@ export function BottomNav() {
 
       {/* Desktop Side Navigation */}
       <nav className="hidden md:flex fixed left-0 top-0 bottom-0 z-[100] w-16 glass border-r border-border/10 shadow-lg flex-col items-center py-8">
-          {mainNavItems.map(({ icon: Icon, label, href }) => {
-            const isActive = location === href;
-            return (
-              <Link key={href} href={href}>
-                <a 
-                  role="button"
-                  className={`relative flex flex-col items-center justify-center gap-1 w-12 h-12 rounded-lg transition-all duration-300 ease-out mb-4 group interactive-hover ${
-                    isActive 
-                      ? "text-white scale-105" 
-                      : "text-foreground/60 hover:text-foreground"
-                  }`}
-                >
-                  <Icon className="w-6 h-6 transition-transform" />
-                  <span className="text-[10px] font-medium opacity-0 group-hover:opacity-100 absolute left-16 glass text-foreground px-2 py-1 rounded whitespace-nowrap border border-border/10 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
-                    {label === 'concierge' ? 'Concierge' : t(label)}
-                  </span>
-                </a>
-              </Link>
-            );
-          })}
+        {mainNavItems.map(({ icon: Icon, label, href }) => {
+          const isActive = location === href;
+          return (
+            <Link 
+              key={href} 
+              href={href}
+              className={`relative flex flex-col items-center justify-center gap-1 w-12 h-12 rounded-lg transition-all duration-300 ease-out mb-4 group interactive-hover ${
+                isActive 
+                  ? "text-white scale-105" 
+                  : "text-foreground/60 hover:text-foreground"
+              }`}
+            >
+              <Icon className="w-6 h-6 transition-transform" />
+              <span className="text-[10px] font-medium opacity-0 group-hover:opacity-100 absolute left-16 glass text-foreground px-2 py-1 rounded whitespace-nowrap border border-border/10 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+                {label === 'concierge' ? 'Concierge' : t(label)}
+              </span>
+            </Link>
+          );
+        })}
 
-          {/* Desktop Menu */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="mt-auto relative flex flex-col items-center justify-center gap-1 w-12 h-12 rounded-lg transition-all duration-300 ease-out interactive-hover text-foreground/60 hover:text-foreground">
-                <Menu className="w-6 h-6 transition-transform" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="center" side="right" className="w-56">
-              {menuItems.map(({ icon: Icon, label, href, isPremium }) => (
-                <DropdownMenuItem key={href}>
-                  <Link href={href}>
-                    <a className={`flex items-center gap-2 w-full ${isPremium ? 'text-purple-500 font-medium' : ''}`}>
-                      <Icon className="w-4 h-4" />
-                      <span>{label}</span>
-                    </a>
-                  </Link>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+        {/* Desktop Menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="mt-auto relative flex flex-col items-center justify-center gap-1 w-12 h-12 rounded-lg transition-all duration-300 ease-out interactive-hover text-foreground/60 hover:text-foreground">
+              <Menu className="w-6 h-6 transition-transform" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="center" side="right" className="w-64">
+            {menuItems.map(({ icon: Icon, label, href, isPremium, preview, badge }) => (
+              <DropdownMenuItem key={href}>
+                <Link href={href} className="flex items-center gap-2 w-full">
+                  <div className={`flex items-center gap-2 w-full ${isPremium ? 'text-purple-500 font-medium' : ''}`}>
+                    <Icon className="w-4 h-4" />
+                    <span className="flex-1">{label}</span>
+                    {badge && (
+                      <Badge variant="secondary" className="ml-auto">
+                        {badge}
+                      </Badge>
+                    )}
+                  </div>
+                </Link>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </nav>
     </>
   );
