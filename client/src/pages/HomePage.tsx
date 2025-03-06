@@ -264,7 +264,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          { /* Removed isLoading conditional rendering as allEvents handles the case where data is not yet loaded */}
+          {/* Removed isLoading conditional rendering as allEvents handles the case where data is not yet loaded */}
             <div className="space-y-8">
               {featuredEvent && (
                 <section>
