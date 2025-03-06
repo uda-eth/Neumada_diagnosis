@@ -4,16 +4,15 @@ import { useEvents } from "@/hooks/use-events";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Users, Plus, Search, Globe2, Bot } from "lucide-react";
+import { MapPin, Users, Plus, Search, Globe2, Bot, Share2 } from "lucide-react";
 import { format } from "date-fns";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DIGITAL_NOMAD_CITIES } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTranslation } from "@/lib/translations";
+import { ShareDialog } from "@/components/ui/share-dialog";
 
 const featuredEventData = {
   id: 1008,
@@ -82,6 +81,8 @@ export default function HomePage() {
   const { events: fetchedEvents } = useEvents(undefined, selectedCity);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
 
   const allEvents = fetchedEvents || [];
   const featuredEvent = featuredEventData;
@@ -110,16 +111,11 @@ export default function HomePage() {
   );
 
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [newEvent, setNewEvent] = useState({
-    title: "",
-    description: "",
-    location: "",
-    date: "",
-    category: "",
-    imageFile: null as File | null,
-    capacity: 0,
-  });
+  const handleShare = (event: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedEvent(event);
+    setShareDialogOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -264,16 +260,26 @@ export default function HomePage() {
                               {format(new Date(featuredEvent.date), "EEE, MMM d, h:mm a")}
                             </div>
                           </div>
-                          <Button
-                            variant="secondary"
-                            className="bg-white text-black hover:bg-white/90 w-full md:w-auto"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setLocation(`/event/${featuredEvent.id}/register`);
-                            }}
-                          >
-                            Get Tickets
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="shrink-0"
+                              onClick={(e) => handleShare(featuredEvent, e)}
+                            >
+                              <Share2 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="secondary"
+                              className="bg-white text-black hover:bg-white/90 w-full md:w-auto"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setLocation(`/event/${featuredEvent.id}/register`);
+                              }}
+                            >
+                              Get Tickets
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -338,8 +344,15 @@ export default function HomePage() {
                                   {format(new Date(event.date), "EEE, MMM d, h:mm a")}
                                 </div>
                               </div>
-                              <div className="flex items-center gap-4">
-                                <span className="text-lg font-medium">${event.price}</span>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="shrink-0"
+                                  onClick={(e) => handleShare(event, e)}
+                                >
+                                  <Share2 className="h-4 w-4" />
+                                </Button>
                                 <Button
                                   variant="secondary"
                                   className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
@@ -457,8 +470,15 @@ export default function HomePage() {
                                   {format(new Date(event.date), "EEE, MMM d, h:mm a")}
                                 </div>
                               </div>
-                              <div className="flex items-center gap-4">
-                                <span className="text-lg font-medium">${event.price}</span>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="shrink-0"
+                                  onClick={(e) => handleShare(event, e)}
+                                >
+                                  <Share2 className="h-4 w-4" />
+                                </Button>
                                 <Button
                                   variant="secondary"
                                   className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
@@ -524,6 +544,15 @@ export default function HomePage() {
           </div>
         </div>
       </nav>
+      {selectedEvent && (
+        <ShareDialog
+          isOpen={shareDialogOpen}
+          onClose={() => setShareDialogOpen(false)}
+          title={selectedEvent.title}
+          description={selectedEvent.description}
+          url={`${window.location.origin}/event/${selectedEvent.id}`}
+        />
+      )}
     </div>
   );
 }
