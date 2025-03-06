@@ -21,17 +21,17 @@ import { useTranslation } from "@/lib/translations";
 
 const getFirstName = (fullName: string) => fullName.split(' ')[0];
 
-// Update the featuredEventData to use the vertical flyer image
+// Update the featuredEventData to use the correct image
 const featuredEventData = {
   id: 1001,
   title: "SURREAL: Welcome to the New Era",
   description: "Experience the next evolution of electronic music and art in the mystical Valle de Bravo. A night where reality blends with the extraordinary, featuring world-class DJs and immersive installations.",
   location: "Valle de Bravo",
-  date: new Date("2025-05-02T21:00:00"), // Updated to match the promotional image
+  date: new Date("2025-05-02T21:00:00"),
   category: "Nightlife",
   tags: ["Electronic Music", "Art", "Festival"],
   price: 85,
-  image: "", // Removed problematic image
+  image: "/attached_assets/Screenshot 2025-03-05 at 10.14.53 PM.png",
   attendingCount: 156,
   interestedCount: 342
 };
@@ -274,7 +274,6 @@ export default function HomePage() {
                     <CardContent className="p-0">
                       <div className="relative">
                         <div className="aspect-[16/9] relative">
-                          {/* Image will not render because src is an empty string */}
                           <img
                             src={featuredEvent.image}
                             alt={featuredEvent.title}
