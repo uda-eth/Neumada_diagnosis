@@ -29,7 +29,7 @@ const getMoodColor = (mood: string) => {
     case 'Energetic': return 'from-orange-600 to-red-600';
     case 'Social': return 'from-yellow-600 to-orange-600';
     case 'Focused': return 'from-indigo-600 to-purple-600';
-    default: return 'from-gray-600 to-gray-800';
+    default: return 'from-purple-600 to-pink-600'; // Default colorful gradient
   }
 };
 
@@ -117,7 +117,7 @@ export default function ProfilePage() {
                 {profile.currentMoods.map((mood, idx) => (
                   <Badge 
                     key={idx} 
-                    className={`bg-gradient-to-r ${getMoodColor(mood)} text-white border-0 flex items-center gap-1`}
+                    className={`bg-gradient-to-r ${getMoodColor(mood)} text-white border-0 flex items-center gap-1 px-3 py-1`}
                   >
                     <Smile className="w-3 h-3" />
                     {mood}
@@ -131,7 +131,10 @@ export default function ProfilePage() {
               <h3 className="text-lg font-semibold mb-3">Interests</h3>
               <div className="flex flex-wrap gap-2">
                 {profile.interests.map((interest, idx) => (
-                  <Badge key={idx} variant="secondary">
+                  <Badge 
+                    key={idx} 
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0 px-3 py-1"
+                  >
                     {interest}
                   </Badge>
                 ))}
@@ -140,7 +143,10 @@ export default function ProfilePage() {
 
             {/* Action Buttons */}
             <motion.div variants={item} className="flex gap-4">
-              <Button className="flex-1 h-12" onClick={handleMessageClick}>
+              <Button 
+                className="flex-1 h-12 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" 
+                onClick={handleMessageClick}
+              >
                 <MessageSquare className="w-4 h-4 mr-2" />
                 Message
               </Button>
