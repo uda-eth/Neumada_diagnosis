@@ -25,7 +25,7 @@ const getFirstName = (fullName: string) => fullName.split(' ')[0];
 const featuredEventData = {
   id: 1001,
   title: "SURREAL: Welcome to the New Era",
-  description: "Experience the next evolution of electronic music and art in the mystical Valle de Bravo. A night where reality blends with the extraordinary, featuring world-class DJs and immersive installations.",
+  description: "Experience the next evolution of electronic music and art in the mystical Valle de Bravo.",
   location: "Valle de Bravo",
   date: new Date("2025-05-02T21:00:00"),
   category: "Nightlife",
@@ -36,22 +36,6 @@ const featuredEventData = {
   interestedCount: 342
 };
 
-// Add a hiking event with the new image
-const defaultEvents = [
-  {
-    id: 1002,
-    title: "Weekend Mountain Trek: Nature & Community",
-    description: "Join our vibrant community for an invigorating mountain trek. Experience breathtaking views, forge new friendships, and reconnect with nature in this guided group adventure.",
-    location: "Sierra Norte Mountains",
-    date: new Date("2025-03-09T09:00:00"),
-    category: "Sports",
-    tags: ["Hiking", "Nature", "Community"],
-    price: 45,
-    image: "/attached_assets/Screenshot 2025-03-05 at 10.18.34 PM.png",
-    attendingCount: 42,
-    interestedCount: 89
-  }
-];
 
 // Cities and categories arrays remain unchanged
 const cities = [
@@ -107,16 +91,14 @@ export default function HomePage() {
   const { events: fetchedEvents } = useEvents(undefined, selectedCity);
   const [, setLocation] = useLocation();
 
-  // Combine fetched events with default events if no fetched events
-  const allEvents = fetchedEvents?.length ? fetchedEvents : defaultEvents;
+  // Use only fetched events, no default events
+  const allEvents = fetchedEvents || [];
 
   // Mock the featured event with our hardcoded data
   const featuredEvent = featuredEventData;
 
-  // Filter remaining events to exclude the featured event
-  const remainingEvents = allEvents.filter(event => event.id !== featuredEvent?.id);
-
-  const filteredEvents = remainingEvents.filter(event => {
+  // Filter events based on search and category
+  const filteredEvents = allEvents.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          event.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "all" || event.category === selectedCategory;
