@@ -85,7 +85,6 @@ const messageVariants = {
   }
 };
 
-
 export default function ChatbotPage() {
   const { messages, isLoading, sendMessage } = useChat();
   const [input, setInput] = useState("");
@@ -124,7 +123,7 @@ export default function ChatbotPage() {
             <div className="flex items-center justify-between gap-3 pb-4 border-b border-white/10">
               <div className="flex items-center gap-2">
                 <Globe className="w-5 h-5 text-primary" />
-                <h1 className="text-sm font-medium uppercase tracking-[.5em] gradient-text">Guide</h1>
+                <h1 className="text-sm font-medium uppercase tracking-[.5em] gradient-text">Concierge</h1>
               </div>
               <select 
                 value={selectedCity}
