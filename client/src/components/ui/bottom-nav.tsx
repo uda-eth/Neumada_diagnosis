@@ -22,7 +22,7 @@ export const mainNavItems = [
   { icon: Compass, label: 'discover', href: "/" },
   { icon: UsersRound, label: 'connect', href: "/connect" },
   { icon: PlusSquare, label: 'create', href: "/create" },
-  { icon: Bot, label: 'guide', href: "/companion" }
+  { icon: Bot, label: 'concierge', href: "/companion" }
 ];
 
 export function BottomNav() {
@@ -48,7 +48,7 @@ export function BottomNav() {
                 >
                   <Icon className="w-6 h-6 transition-transform" />
                   <span className="text-[10px] font-medium text-center">
-                    {label === 'guide' ? 'AI Guide' : t(label)}
+                    {label === 'concierge' ? 'AI Concierge' : t(label)}
                   </span>
                 </a>
               </Link>
@@ -73,7 +73,7 @@ export function BottomNav() {
                 >
                   <Icon className="w-6 h-6 transition-transform" />
                   <span className="text-[10px] font-medium opacity-0 group-hover:opacity-100 absolute left-16 glass text-foreground px-2 py-1 rounded whitespace-nowrap border border-border/10 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
-                    {label === 'guide' ? 'AI Guide' : t(label)}
+                    {label === 'concierge' ? 'AI Concierge' : t(label)}
                   </span>
                 </a>
               </Link>
