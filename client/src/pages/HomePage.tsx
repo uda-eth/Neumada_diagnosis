@@ -6,13 +6,28 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Users, Plus, Search, Globe2, Bot, Share2 } from "lucide-react";
+import { MapPin, Users, Plus, Search, Globe2, Bot, Share2, X } from "lucide-react";
 import { format } from "date-fns";
 import { DIGITAL_NOMAD_CITIES } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTranslation } from "@/lib/translations";
 import { ShareDialog } from "@/components/ui/share-dialog";
+
+// Event types for filtering
+const EVENT_TYPES = [
+  "Parties",
+  "Galleries",
+  "Outdoor",
+  "Networking",
+  "Workshops",
+  "Cultural",
+  "Music",
+  "Food & Drink",
+  "Sports",
+  "Tech",
+  "Wellness"
+] as const;
 
 const featuredEventData = {
   id: "onda-linda-festival",
@@ -78,6 +93,7 @@ export default function HomePage() {
   const [selectedCity, setSelectedCity] = useState("Mexico City");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>([]);
   const { events: fetchedEvents } = useEvents(undefined, selectedCity);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -91,7 +107,9 @@ export default function HomePage() {
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          event.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "all" || event.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const matchesEventTypes = selectedEventTypes.length === 0 ||
+                             event.tags?.some(tag => selectedEventTypes.includes(tag));
+    return matchesSearch && matchesCategory && matchesEventTypes;
   });
 
   const today = new Date();
@@ -189,6 +207,47 @@ export default function HomePage() {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Event Type Filters */}
+            <ScrollArea className="w-full" orientation="horizontal">
+              <div className="flex gap-2 py-2">
+                {EVENT_TYPES.map((type) => (
+                  <Button
+                    key={type}
+                    variant={selectedEventTypes.includes(type) ? "default" : "outline"}
+                    size="sm"
+                    className="whitespace-nowrap"
+                    onClick={() => {
+                      setSelectedEventTypes(prev =>
+                        prev.includes(type)
+                          ? prev.filter(t => t !== type)
+                          : [...prev, type]
+                      );
+                    }}
+                  >
+                    {type}
+                    {selectedEventTypes.includes(type) && (
+                      <X className="ml-2 h-4 w-4" />
+                    )}
+                  </Button>
+                ))}
+              </div>
+            </ScrollArea>
+
+            {selectedEventTypes.length > 0 && (
+              <div className="flex justify-between items-center">
+                <div className="text-sm text-muted-foreground">
+                  {selectedEventTypes.length} filter{selectedEventTypes.length !== 1 ? 's' : ''} selected
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedEventTypes([])}
+                >
+                  Clear all
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="space-y-8">
