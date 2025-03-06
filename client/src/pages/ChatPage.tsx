@@ -214,6 +214,12 @@ export default function ChatPage() {
                       </span>
                     </div>
                   </div>
+                  {message.senderId === 1 && (
+                    <Avatar className="h-8 w-8 order-last">
+                      <AvatarImage src={mockProfiles["1"].image} alt="You" />
+                      <AvatarFallback>You</AvatarFallback>
+                    </Avatar>
+                  )}
                 </div>
               </motion.div>
             ))}
