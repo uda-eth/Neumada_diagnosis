@@ -10,7 +10,7 @@ export function useChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
-      content: "Hello! I'm Maly your chat based concierge. I'll help you discover the best local spots while living or traveling abroad. What would you like to know about your city of interest?",
+      content: "Hello! I'm Maly your local city guide. I'll help you discover the best spots in your chosen city. What would you like to know?",
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
@@ -19,24 +19,23 @@ export function useChat() {
   const sendMessage = async (message: string) => {
     try {
       setIsLoading(true);
-      setMessages(prev => [...prev, { role: 'user', content: message }]);
+      setMessages(prev => [...prev, { role: 'user', content: message.replace(/\[City: [^\]]+\]/, '').trim() }]);
 
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           message,
-          context: `You are a knowledgeable AI city guide concierge specializing in digital nomad lifestyle and local experiences. 
-          Focus on providing practical, up-to-date information about:
+          context: `You are a knowledgeable AI city guide specializing in local experiences and recommendations.
+          Focus on providing practical, up-to-date information specifically for the selected city about:
+          - Local neighborhoods and best areas
           - Coworking spaces and cafes suitable for remote work
-          - Local neighborhoods and accommodation recommendations
-          - Cultural insights and community events
-          - Cost of living and practical tips
+          - Best restaurants and dining experiences
+          - Cultural spots and community events
           - Transportation and getting around
-          - Food and entertainment spots
-          - Safety and essential services
 
-          Always consider the specific city mentioned in the query and tailor your responses accordingly.
+          Keep responses focused only on the selected city.
+          Provide specific venue names and locations when possible.
           Keep responses concise but informative.`
         }),
       });
@@ -51,7 +50,7 @@ export function useChat() {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: error.message || 'Failed to get response from the city guide concierge',
+        description: error.message || 'Failed to get response from the city guide',
       });
     } finally {
       setIsLoading(false);
