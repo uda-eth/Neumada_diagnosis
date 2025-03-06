@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/lib/theme-provider";
 import { QueryProvider } from "@/lib/query-provider";
 import { UserProvider } from "@/lib/user-provider";
 import { TranslationProvider } from "@/lib/language-context";
+import { Layout } from "@/components/ui/layout";
 import AuthPage from "@/pages/AuthPage";
 import HomePage from "@/pages/HomePage";
 import EventPage from "@/pages/EventPage";
@@ -25,24 +26,26 @@ function App() {
       <QueryProvider>
         <UserProvider>
           <TranslationProvider>
-            <Suspense fallback={<div>Loading...</div>}>
-              <Switch>
-                <Route path="/" component={HomePage} />
-                <Route path="/login" component={AuthPage} />
-                <Route path="/event/1001" component={OndaLindaFestivalPage} />
-                <Route path="/event/:id" component={EventPage} />
-                <Route path="/event/:id/register" component={EventRegistrationPage} />
-                <Route path="/event/:id/users" component={EventUsersPage} />
-                <Route path="/create-event" component={CreateEventPage} />
-                <Route path="/profile/:username" component={ProfilePage} />
-                <Route path="/profile/:username/edit" component={SettingsPage} />
-                <Route path="/chat" component={ChatPage} />
-                <Route path="/chat/:id" component={ChatDetailPage} />
-                <Route path="/explore" component={ExploreUsersPage} />
-                <Route component={NotFoundPage} />
-              </Switch>
-            </Suspense>
-            <Toaster />
+            <Layout>
+              <Suspense fallback={<div>Loading...</div>}>
+                <Switch>
+                  <Route path="/" component={HomePage} />
+                  <Route path="/login" component={AuthPage} />
+                  <Route path="/event/1001" component={OndaLindaFestivalPage} />
+                  <Route path="/event/:id" component={EventPage} />
+                  <Route path="/event/:id/register" component={EventRegistrationPage} />
+                  <Route path="/event/:id/users" component={EventUsersPage} />
+                  <Route path="/create-event" component={CreateEventPage} />
+                  <Route path="/profile/:username" component={ProfilePage} />
+                  <Route path="/profile/:username/edit" component={SettingsPage} />
+                  <Route path="/chat" component={ChatPage} />
+                  <Route path="/chat/:id" component={ChatDetailPage} />
+                  <Route path="/explore" component={ExploreUsersPage} />
+                  <Route component={NotFoundPage} />
+                </Switch>
+              </Suspense>
+              <Toaster />
+            </Layout>
           </TranslationProvider>
         </UserProvider>
       </QueryProvider>
