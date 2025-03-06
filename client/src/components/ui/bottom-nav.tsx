@@ -44,7 +44,7 @@ export const secondaryNavItems = [
   },
   { icon: User, label: 'profile', href: "/profile/luca-hudek/edit" },
   { icon: Settings, label: 'settings', href: "/settings" },
-  { icon: Share2, label: 'invite', href: "#", isInviteTrigger: true },
+  { icon: Share2, label: 'invite', href: "#", isInviteTrigger: true, mobileOnly: true },
 ];
 
 export function BottomNav() {
@@ -69,7 +69,7 @@ export function BottomNav() {
                   }`}
                 >
                   <Icon className="w-6 h-6 transition-transform" />
-                  <span className="text-[10px] font-medium">
+                  <span className="text-[10px] font-medium text-center">
                     {label === 'guide' ? 'AI Guide' : t(label)}
                   </span>
                 </a>
@@ -158,6 +158,37 @@ export function BottomNav() {
             </Link>
           );
         })}
+
+        {/* Desktop Hamburger Menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="mt-auto relative flex flex-col items-center justify-center gap-1 w-12 h-12 rounded-lg transition-all duration-300 ease-out interactive-hover text-foreground/60 hover:text-foreground">
+              <Menu className="w-6 h-6 transition-transform" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="center" side="right" className="w-56">
+            {secondaryNavItems
+              .filter(item => !item.mobileOnly)
+              .map(({ icon: Icon, label, href, badge }) => (
+                <DropdownMenuItem key={href}>
+                  <Link href={href}>
+                    <a className="flex items-center gap-2">
+                      <Icon className="w-4 h-4" />
+                      {t(label)}
+                      {badge && (
+                        <Badge 
+                          variant="destructive" 
+                          className="ml-auto h-5 w-5 flex items-center justify-center p-0 text-[10px]"
+                        >
+                          {badge > 99 ? '99+' : badge}
+                        </Badge>
+                      )}
+                    </a>
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </nav>
     </>
   );
