@@ -3,20 +3,30 @@ import {
   Compass, 
   UsersRound,
   PlusSquare,
-  User,
   Inbox,
   Bot,
-  Crown
+  Menu,
+  Settings,
+  User,
+  Crown,
+  Share2
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { InviteTrigger } from "./invite-dialog";
 import { useTranslation } from "@/lib/translations";
 import { PremiumDialog } from "./premium-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-// Mock unread count for demo - this would come from your actual message state
+// Mock unread count for demo
 const unreadCount = 3;
 
-export const navItems = [
+// Main navigation items
+export const mainNavItems = [
   { icon: Compass, label: 'discover', href: "/" },
   { icon: UsersRound, label: 'connect', href: "/connect" },
   { icon: PlusSquare, label: 'create', href: "/create" },
@@ -26,8 +36,14 @@ export const navItems = [
     href: "/messages",
     badge: unreadCount
   },
-  { icon: User, label: 'profile', href: "/profile/luca-hudek/edit" },
   { icon: Bot, label: 'guide', href: "/companion" }
+];
+
+// Secondary navigation items for the hamburger menu
+export const secondaryNavItems = [
+  { icon: User, label: 'profile', href: "/profile/luca-hudek/edit" },
+  { icon: Settings, label: 'settings', href: "/settings" },
+  { icon: Crown, label: 'premium', href: "/premium" },
 ];
 
 export function BottomNav() {
@@ -39,6 +55,13 @@ export function BottomNav() {
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[100] glass border-t border-border/10 shadow-lg pb-6">
         <div className="flex justify-around items-center h-16 max-w-md mx-auto px-3">
+          {/* Invite Button */}
+          <InviteTrigger>
+            <button className="relative flex flex-col items-center justify-center gap-1 w-12 h-16 rounded-lg transition-all duration-300 ease-out touch-target interactive-hover text-foreground/60 hover:text-foreground">
+              <Share2 className="w-6 h-6 transition-transform" />
+              <span className="text-[10px] font-medium">Invite</span>
+            </button>
+          </InviteTrigger>
           {/* Premium Button - Special Position */}
           <PremiumDialog>
             <button className="relative flex flex-col items-center justify-center gap-1 w-12 h-16 rounded-lg transition-all duration-300 ease-out touch-target interactive-hover text-purple-400">
@@ -47,7 +70,7 @@ export function BottomNav() {
             </button>
           </PremiumDialog>
 
-          {navItems.map(({ icon: Icon, label, href, badge }) => {
+          {mainNavItems.map(({ icon: Icon, label, href, badge }) => {
             const isActive = location === href;
             return (
               <Link key={href} href={href}>
@@ -75,12 +98,31 @@ export function BottomNav() {
               </Link>
             );
           })}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="relative flex flex-col items-center justify-center gap-1 w-12 h-16 rounded-lg transition-all duration-300 ease-out touch-target interactive-hover text-foreground/60 hover:text-foreground">
+                <Menu className="w-6 h-6 transition-transform" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {secondaryNavItems.map(({ icon: Icon, label, href }) => (
+                <DropdownMenuItem key={href}>
+                  <Link href={href}>
+                    <a className="flex items-center gap-2">
+                      <Icon className="w-4 h-4" />
+                      {t(label)}
+                    </a>
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </nav>
 
       {/* Desktop Side Navigation */}
       <nav className="hidden md:flex fixed left-0 top-0 bottom-0 z-[100] w-16 glass border-r border-border/10 shadow-lg flex-col items-center py-8">
-        {navItems.map(({ icon: Icon, label, href, badge }) => {
+        {mainNavItems.map(({ icon: Icon, label, href, badge }) => {
           const isActive = location === href;
           return (
             <Link key={href} href={href}>

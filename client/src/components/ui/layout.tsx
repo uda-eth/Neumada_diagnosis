@@ -1,17 +1,18 @@
 import { BottomNav } from "./bottom-nav";
 import { Logo } from "./logo";
-import { Bot, Menu } from "lucide-react";
+import { Bot, Menu, Share2 } from "lucide-react";
 import { Button } from "./button";
 import { useLocation } from "wouter";
 import { LanguageToggle } from "./language-toggle";
 import { PremiumDialog } from "./premium-dialog";
+import { InviteTrigger } from "./invite-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { navItems } from "./bottom-nav";
+import { secondaryNavItems } from "./bottom-nav";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -43,39 +44,42 @@ export function Layout({ children }: LayoutProps) {
 
               <LanguageToggle />
 
-              {/* Premium Button - Desktop Only */}
+              {/* Desktop: Premium Button */}
               <div className="hidden md:block">
                 <PremiumDialog />
               </div>
 
-              {/* Desktop Navigation Menu */}
+              {/* Desktop: Invite Button */}
               <div className="hidden md:block">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="interactive-hover">
-                      <Menu className="w-6 h-6" />
-                      <span className="sr-only">Toggle navigation menu</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    {navItems.map((item) => (
-                      <DropdownMenuItem 
-                        key={item.href}
-                        className="cursor-pointer interactive-hover"
-                        onClick={() => setLocation(item.href)}
-                      >
-                        <item.icon className="w-5 h-5 mr-2" />
-                        <span>{item.label}</span>
-                        {item.badge && (
-                          <span className="ml-auto bg-destructive text-destructive-foreground text-xs px-1.5 py-0.5 rounded">
-                            {item.badge}
-                          </span>
-                        )}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <InviteTrigger>
+                  <Button variant="ghost" size="sm" className="interactive-hover">
+                    <Share2 className="w-6 h-6 mr-2" />
+                    Invite
+                  </Button>
+                </InviteTrigger>
               </div>
+
+              {/* Hamburger Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="interactive-hover">
+                    <Menu className="w-6 h-6" />
+                    <span className="sr-only">Toggle navigation menu</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  {secondaryNavItems.map((item) => (
+                    <DropdownMenuItem 
+                      key={item.href}
+                      className="cursor-pointer interactive-hover"
+                      onClick={() => setLocation(item.href)}
+                    >
+                      <item.icon className="w-5 h-5 mr-2" />
+                      <span>{item.label}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
