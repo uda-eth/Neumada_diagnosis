@@ -168,7 +168,7 @@ export function BottomNav() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="center" side="right" className="w-56">
             {secondaryNavItems
-              .filter(item => !item.mobileOnly && item.label !== 'invite') //Filter out invite for desktop
+              .filter(item => !item.mobileOnly)
               .map(({ icon: Icon, label, href, badge }) => (
                 <DropdownMenuItem key={href}>
                   <Link href={href}>
