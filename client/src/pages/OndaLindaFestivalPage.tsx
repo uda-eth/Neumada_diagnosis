@@ -7,7 +7,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/hooks/use-user";
 import { useTranslation } from "@/lib/translations";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Clock } from "lucide-react";
+import { Timeline } from "@/components/ui/timeline";
 
 interface EventUser {
   id: number;
@@ -23,6 +24,46 @@ export default function OndaLindaFestivalPage() {
   const { toast } = useToast();
   const { t } = useTranslation();
 
+  // Festival schedule data
+  const festivalSchedule = [
+    {
+      time: "4:00 PM",
+      artist: "Opening Ceremony",
+      stage: "Main Stage",
+      description: "Welcome to Onda Linda Festival 2025"
+    },
+    {
+      time: "5:00 PM",
+      artist: "DJ Maria Luna",
+      stage: "Beach Stage",
+      description: "Sunset electronic vibes"
+    },
+    {
+      time: "7:00 PM",
+      artist: "The Crystal Collective",
+      stage: "Forest Stage",
+      description: "Live electronic fusion"
+    },
+    {
+      time: "9:00 PM",
+      artist: "Cosmic Brothers",
+      stage: "Main Stage",
+      description: "Progressive trance journey"
+    },
+    {
+      time: "11:00 PM",
+      artist: "Luna Sage",
+      stage: "Beach Stage",
+      description: "Deep house meditation"
+    },
+    {
+      time: "1:00 AM",
+      artist: "Closing Ceremony",
+      stage: "All Stages",
+      description: "United closing celebration"
+    }
+  ];
+
   // Festival data
   const festival = {
     id: 1001,
@@ -30,8 +71,8 @@ export default function OndaLindaFestivalPage() {
     description: "Experience the mystical fusion of electronic music and art in an immersive natural setting, featuring world-class DJs and stunning visual installations.",
     date: new Date("2025-05-02T21:00:00"),
     location: "Valle de Bravo",
-    category: "Nightlife",
-    image: "/attached_assets/Screenshot 2025-03-06 at 12.16.27 AM.png",
+    category: "Festivals",
+    image: "/attached_assets/Screenshot 2025-03-06 at 11.00.33 AM.png",
     capacity: 500,
     price: 85,
     attendingCount: 156,
@@ -88,7 +129,6 @@ export default function OndaLindaFestivalPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header */}
       <header className="sticky top-0 z-10 bg-black/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center gap-4">
           <Button
@@ -103,7 +143,6 @@ export default function OndaLindaFestivalPage() {
         </div>
       </header>
 
-      {/* Event Image */}
       <div className="w-full h-64 md:h-96 relative">
         <img
           src={festival.image}
@@ -113,9 +152,7 @@ export default function OndaLindaFestivalPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
       </div>
 
-      {/* Event Details */}
       <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Title and Meta */}
         <div>
           <h1 className="text-2xl font-bold">{festival.title}</h1>
           <div className="mt-2 text-white/60">
@@ -128,7 +165,14 @@ export default function OndaLindaFestivalPage() {
           </div>
         </div>
 
-        {/* Description */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Clock className="w-5 h-5 text-primary" />
+            <h2 className="text-lg font-semibold">Festival Schedule</h2>
+          </div>
+          <Timeline schedule={festivalSchedule} className="mt-6" />
+        </div>
+
         <div className="space-y-2">
           <h2 className="text-lg font-semibold">About this event</h2>
           <p className="text-white/80 whitespace-pre-wrap">
@@ -136,7 +180,6 @@ export default function OndaLindaFestivalPage() {
           </p>
         </div>
 
-        {/* Price and Registration */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
@@ -152,9 +195,7 @@ export default function OndaLindaFestivalPage() {
           </div>
         </div>
 
-        {/* Attendees Section */}
         <div className="flex flex-col gap-6">
-          {/* Attending Users */}
           <div className="space-y-3">
             <h3 className="text-sm font-medium text-white/60">
               Attending
@@ -189,7 +230,6 @@ export default function OndaLindaFestivalPage() {
             </div>
           </div>
 
-          {/* Interested Users */}
           <div className="space-y-3">
             <h3 className="text-sm font-medium text-white/60">
               Interested
@@ -225,7 +265,6 @@ export default function OndaLindaFestivalPage() {
           </div>
         </div>
 
-        {/* Actions */}
         <div className="flex flex-col gap-4 pt-4">
           <Button 
             className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
