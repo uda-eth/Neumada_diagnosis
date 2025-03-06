@@ -200,6 +200,7 @@ export default function HomePage() {
       <ScrollArea className="h-[calc(100vh-8rem)]">
         <main className="container mx-auto px-4 py-8 pb-24 md:pb-8">
           <div className="mb-8 space-y-4">
+            {/* Search and Filter Section */}
             <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -211,20 +212,22 @@ export default function HomePage() {
                 />
               </div>
 
-              {/* Mobile Filter Dropdown */}
-              <div className="md:hidden">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="w-full justify-between">
-                      <span>Filter Events</span>
+              {/* Unified Filter Dropdown for both Mobile and Desktop */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="w-full md:w-[180px] justify-between">
+                    <span>Filter Events</span>
+                    {selectedEventTypes.length > 0 && (
                       <Badge variant="secondary" className="ml-2">
                         {selectedEventTypes.length}
                       </Badge>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-72">
-                    <DropdownMenuLabel>Event Types</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-[280px]">
+                  <DropdownMenuLabel>Event Types</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <div className="max-h-[400px] overflow-y-auto">
                     {EVENT_TYPES.map((type) => (
                       <DropdownMenuCheckboxItem
                         key={type}
@@ -240,69 +243,53 @@ export default function HomePage() {
                         {type}
                       </DropdownMenuCheckboxItem>
                     ))}
-                    {selectedEventTypes.length > 0 && (
-                      <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          className="justify-center text-muted-foreground"
-                          onClick={() => setSelectedEventTypes([])}
-                        >
-                          Clear all filters
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-
-            {/* Desktop Event Type Filters */}
-            <div className="hidden md:block">
-              <ScrollArea className="w-full" orientation="horizontal">
-                <div className="flex gap-2 py-4">
-                  {EVENT_TYPES.map((type) => (
-                    <Button
-                      key={type}
-                      variant={selectedEventTypes.includes(type) ? "default" : "outline"}
-                      size="sm"
-                      className={`whitespace-nowrap transition-all ${
-                        selectedEventTypes.includes(type)
-                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                          : "hover:bg-accent"
-                      }`}
-                      onClick={() => {
-                        setSelectedEventTypes(prev =>
-                          prev.includes(type)
-                            ? prev.filter(t => t !== type)
-                            : [...prev, type]
-                        );
-                      }}
-                    >
-                      {type}
-                      {selectedEventTypes.includes(type) && (
-                        <X className="ml-2 h-4 w-4" />
-                      )}
-                    </Button>
-                  ))}
-                </div>
-              </ScrollArea>
-
-              {selectedEventTypes.length > 0 && (
-                <div className="flex justify-between items-center py-2 border-t border-border">
-                  <div className="text-sm text-muted-foreground">
-                    {selectedEventTypes.length} filter{selectedEventTypes.length !== 1 ? 's' : ''} selected
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedEventTypes([])}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    Clear all
-                  </Button>
-                </div>
-              )}
+                  {selectedEventTypes.length > 0 && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="justify-center text-muted-foreground"
+                        onClick={() => setSelectedEventTypes([])}
+                      >
+                        Clear all filters
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
+
+            {/* Selected Filters Display */}
+            {selectedEventTypes.length > 0 && (
+              <div className="flex flex-wrap gap-2 py-4">
+                {selectedEventTypes.map((type) => (
+                  <Badge
+                    key={type}
+                    variant="secondary"
+                    className="px-3 py-1 flex items-center gap-1"
+                  >
+                    {type}
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setSelectedEventTypes(prev => prev.filter(t => t !== type));
+                      }}
+                      className="ml-1 hover:text-destructive focus:outline-none"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedEventTypes([])}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  Clear all
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="space-y-8">
