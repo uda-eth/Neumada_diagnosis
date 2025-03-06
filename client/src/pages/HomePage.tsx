@@ -254,13 +254,28 @@ export default function HomePage() {
                 >
                   <CardContent className="p-0">
                     <div className="relative">
-                      <div className="aspect-[3/4] md:aspect-[3/4] relative">
-                        <img
-                          src={featuredEvent.image}
-                          alt={featuredEvent.title}
-                          className="w-full h-full object-cover bg-black/40"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                      {/* Mobile view */}
+                      <div className="md:hidden">
+                        <div className="aspect-[4/3] relative">
+                          <img
+                            src={featuredEvent.image}
+                            alt={featuredEvent.title}
+                            className="w-full h-full object-cover bg-black/40"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                        </div>
+                      </div>
+
+                      {/* Desktop view */}
+                      <div className="hidden md:block">
+                        <div className="aspect-[3/2] relative">
+                          <img
+                            src={featuredEvent.image}
+                            alt={featuredEvent.title}
+                            className="w-full h-full object-cover bg-black/40"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                        </div>
                       </div>
                       <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 text-white">
                         <div className="flex flex-wrap items-center gap-2 mb-2">

@@ -1,10 +1,12 @@
-import { useState } from "react";
-import { useLocation } from "wouter";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ChevronLeft, Search, MessageCircle } from "lucide-react";
+import { useLocation } from "wouter";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft } from "lucide-react";
 
 // Mock data for inbox messages
 const mockMessages = [
@@ -89,6 +91,12 @@ const mockMessages = [
 
 export default function InboxPage() {
   const [, setLocation] = useLocation();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredMessages = mockMessages.filter(message =>
+    message.sender.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    message.preview.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -109,8 +117,20 @@ export default function InboxPage() {
       </header>
 
       <main className="container mx-auto px-4 py-6">
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search messages"
+              className="pl-9 bg-accent/50"
+            />
+          </div>
+        </div>
+
         <div className="space-y-4">
-          {mockMessages.map((message) => (
+          {filteredMessages.map((message) => (
             <Card
               key={message.id}
               className={`hover:bg-accent/5 cursor-pointer transition-colors ${
@@ -118,9 +138,9 @@ export default function InboxPage() {
               }`}
               onClick={() => setLocation(`/chat/${message.sender.name.toLowerCase().replace(/\s+/g, '-')}`)}
             >
-              <CardContent className="p-4">
+              <div className="p-4">
                 <div className="flex items-center gap-4">
-                  <Avatar className="h-12 w-12">
+                  <Avatar className="h-12 w-12 ring-2 ring-primary/10">
                     <AvatarImage src={message.sender.avatar} />
                     <AvatarFallback>{message.sender.initials}</AvatarFallback>
                   </Avatar>
@@ -145,7 +165,7 @@ export default function InboxPage() {
                     </Badge>
                   )}
                 </div>
-              </CardContent>
+              </div>
             </Card>
           ))}
         </div>
