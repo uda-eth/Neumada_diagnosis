@@ -1,6 +1,6 @@
 import { BottomNav } from "./bottom-nav";
 import { Logo } from "./logo";
-import { Menu, Bot, Globe, Inbox } from "lucide-react";
+import { Menu, Bot, Globe, Inbox, Crown } from "lucide-react";
 import { Button } from "./button";
 import { useLocation } from "wouter";
 import {
@@ -8,6 +8,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
 interface LayoutProps {
@@ -18,6 +19,7 @@ export function Layout({ children }: LayoutProps) {
   const [, setLocation] = useLocation();
 
   const menuItems = [
+    { href: "/premium", label: "Premium Upgrade", icon: Crown, isPremium: true },
     { href: "/inbox", label: "Inbox", icon: Inbox },
     { href: "/translator", label: "Translator", icon: Globe },
     { href: "/companion", label: "Concierge", icon: Bot },
@@ -50,7 +52,7 @@ export function Layout({ children }: LayoutProps) {
                     {menuItems.map((item) => (
                       <DropdownMenuItem 
                         key={item.href}
-                        className="cursor-pointer interactive-hover"
+                        className={`cursor-pointer interactive-hover ${item.isPremium ? 'text-purple-500 font-medium' : ''}`}
                         onClick={() => setLocation(item.href)}
                       >
                         {item.icon && <item.icon className="w-4 h-4 mr-2" />}
