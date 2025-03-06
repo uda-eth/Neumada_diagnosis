@@ -4,9 +4,46 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useChat } from "@/hooks/use-chat";
-import { Loader2, Send, Bot, User, Globe, MapPin, Compass, Building, Coffee, Utensils } from "lucide-react";
+import { 
+  Loader2, Send, Bot, User, Globe,
+  Utensils, Building, Compass, MapPin, PalmtreeIcon
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DIGITAL_NOMAD_CITIES } from "@/lib/constants";
+
+// Quick prompts for the most common questions
+const quickPrompts = [
+  {
+    text: "Best Restaurants & Local Food",
+    icon: Utensils,
+    prompt: "What are the best restaurants and local food spots?",
+    ariaLabel: "Find best restaurants"
+  },
+  {
+    text: "Best Places to Work",
+    icon: Building,
+    prompt: "Where are the best cafes and coworking spaces to work from?",
+    ariaLabel: "Find work-friendly places"
+  },
+  {
+    text: "Best Neighborhoods",
+    icon: MapPin,
+    prompt: "Which are the best neighborhoods to stay in?",
+    ariaLabel: "Find best neighborhoods"
+  },
+  {
+    text: "Must-See Attractions",
+    icon: Compass,
+    prompt: "What are the must-see attractions and things to do?",
+    ariaLabel: "Find attractions"
+  },
+  {
+    text: "Weekend Getaways",
+    icon: PalmtreeIcon,
+    prompt: "What are the best day trips or weekend getaways from here?",
+    ariaLabel: "Find weekend getaways"
+  }
+];
 
 // Enhanced loading animation variants
 const loadingVariants = {
@@ -48,39 +85,6 @@ const messageVariants = {
   }
 };
 
-// Update quick prompts array
-const quickPrompts = [
-  {
-    text: "Best cafes for digital nomads",
-    icon: Coffee,
-    ariaLabel: "Find cafes suitable for digital nomads"
-  },
-  {
-    text: "Local food recommendations",
-    icon: Utensils,
-    ariaLabel: "Get local food recommendations"
-  },
-  {
-    text: "Best Restaurants Near Me",
-    icon: Utensils,
-    ariaLabel: "Find best restaurants nearby"
-  },
-  {
-    text: "Best Coffeeshops to Work Near Me",
-    icon: Coffee,
-    ariaLabel: "Find best coffeeshops for working"
-  },
-  {
-    text: "Safe neighborhoods to stay",
-    icon: Building,
-    ariaLabel: "Find safe neighborhoods"
-  },
-  {
-    text: "Getting around the city",
-    icon: MapPin,
-    ariaLabel: "Learn about city transportation"
-  }
-];
 
 export default function ChatbotPage() {
   const { messages, isLoading, sendMessage } = useChat();
@@ -110,12 +114,6 @@ export default function ChatbotPage() {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      setInput('');
-    }
-  };
-
   return (
     <div className="min-h-screen bg-[#121212] text-white p-4">
       <div className="max-w-2xl mx-auto flex flex-col gap-4">
@@ -140,25 +138,27 @@ export default function ChatbotPage() {
               </select>
             </div>
 
-            {/* Quick Prompts with Icons */}
-            <ScrollArea className="flex-none py-4 whitespace-nowrap">
-              <div className="flex gap-2">
-                {quickPrompts.map(({ text, icon: Icon, ariaLabel }) => (
-                  <Button
-                    key={text}
-                    variant="outline"
-                    size="sm"
-                    className="border-white/10 hover:bg-white/5 glass-hover flex items-center gap-2 interactive-hover"
-                    onClick={() => handleQuickPrompt(text)}
-                    disabled={isLoading}
-                    aria-label={ariaLabel}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {text}
-                  </Button>
-                ))}
-              </div>
-            </ScrollArea>
+            {/* Quick Prompts with Icons - Horizontal Scroll */}
+            <div className="py-4 border-b border-white/10">
+              <ScrollArea className="w-full" orientation="horizontal">
+                <div className="flex gap-2 pb-2">
+                  {quickPrompts.map(({ text, icon: Icon, prompt, ariaLabel }) => (
+                    <Button
+                      key={text}
+                      variant="outline"
+                      size="sm"
+                      className="border-white/10 hover:bg-white/5 glass-hover flex items-center gap-2 interactive-hover whitespace-nowrap"
+                      onClick={() => handleQuickPrompt(prompt)}
+                      disabled={isLoading}
+                      aria-label={ariaLabel}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {text}
+                    </Button>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
 
             {/* Chat Messages */}
             <ScrollArea className="flex-1 pr-4 my-4">
@@ -216,7 +216,7 @@ export default function ChatbotPage() {
                       </div>
                       <div className="rounded-lg p-4 bg-white/5 glass flex items-center gap-2">
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span className="text-white/60">Searching local insights...</span>
+                        <span className="text-white/60">Finding local insights...</span>
                       </div>
                     </motion.div>
                   )}
@@ -232,7 +232,6 @@ export default function ChatbotPage() {
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
                 placeholder={`Ask anything about ${selectedCity}...`}
                 disabled={isLoading}
                 className="bg-white/5 border-white/10 glass-hover focus-visible"
