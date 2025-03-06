@@ -413,7 +413,7 @@ const newEvents = {
         { id: 1047, name: "David Black", image: "/attached_assets/profile-image-38.jpg" },
         { id: 1048, name: "Jessica Jones", image: "/attached_assets/profile-image-39.jpg" },
         { id: 1049, name: "William Green", image: "/attached_assets/profile-image-40.jpg" },
-        { id: 1050, name: "Amanda Brown", image: "/attached_assetsimage-41.jpg" },
+        { id: 1050, name: "Amanda Brown", image: "/attached_assets/profile-image-41.jpg" },
         { id: 1051, name: "Robert White", image: "/attached_assets/profile-image-42.jpg" },
         { id: 1052, name: "Ashley Black", image: "/attached_assets/profile-image-43.jpg" },
         { id: 1053, name: "William Jones", image: "/attached_assets/profile-image-44.jpg" },
@@ -511,7 +511,7 @@ const newEvents = {
       date: new Date(2025, 4, 2),
       location: "Mexico City",
       category: "Festivals",
-      image: "/attached_assets/baac6810-cef8-4632-a20d-08ae3d08f3fc.jpg",
+      image: "/attached_assets/Screenshot 2025-03-06 at 11.00.33 AM.png",
       capacity: 500,
       price: "200",
       createdAt: new Date(),
@@ -890,7 +890,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
-      res.status(500).json({ error: "Failed to fetch user" });
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 
