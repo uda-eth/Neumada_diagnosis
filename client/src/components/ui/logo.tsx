@@ -19,11 +19,12 @@ export function Logo({ className = "" }: LogoProps) {
         style={{
           fontFamily: "'Arial', sans-serif",
           fontSize: "72px",
-          fontWeight: "lighter",
+          fontWeight: "300",
           letterSpacing: "0.2em",
+          textTransform: "uppercase"
         }}
       >
-        M Ā L Y
+        MALY
       </text>
     </svg>
   );
