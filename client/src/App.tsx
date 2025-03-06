@@ -16,12 +16,14 @@ import OndaLindaFestivalPage from "./pages/OndaLindaFestivalPage";
 import { Layout } from "./components/ui/layout";
 import { ThemeProvider } from "./lib/theme-provider";
 import { LanguageProvider } from "./lib/language-context";
+import { TourGuide } from "./components/ui/tour-guide";
 
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="nomad-theme">
       <LanguageProvider>
         <Layout>
+          <TourGuide />
           <Switch>
             <Route path="/" component={HomePage} />
             <Route path="/event/onda-linda-festival" component={OndaLindaFestivalPage} />
