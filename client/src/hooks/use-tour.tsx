@@ -42,7 +42,7 @@ export const defaultTourSteps: Step[] = [
   },
   {
     target: '.tour-concierge',
-    content: 'Utilize our chat-based Concierge for recs, city guides and more',
+    content: 'How can I help you today?',
     placement: 'bottom',
   },
 ];
