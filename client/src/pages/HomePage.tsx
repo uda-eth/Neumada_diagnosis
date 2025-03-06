@@ -16,7 +16,7 @@ import { getEventImage } from "@/lib/eventImages";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DIGITAL_NOMAD_CITIES } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
-import {ScrollArea} from "@/components/ui/scroll-area";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTranslation } from "@/lib/translations";
 
 const getFirstName = (fullName: string) => fullName.split(' ')[0];
@@ -91,9 +91,10 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const { events: fetchedEvents } = useEvents(undefined, selectedCity);
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const { user } = useUser();
 
   const allEvents = fetchedEvents || [];
-
   const featuredEvent = featuredEventData;
 
   const filteredEvents = allEvents.filter(event => {
@@ -119,44 +120,7 @@ export default function HomePage() {
     { thisWeekend: [], nextWeek: [] }
   );
 
-  const handleCreateEvent = async () => {
-    try {
-      const formData = new FormData();
-      formData.append('title', newEvent.title);
-      formData.append('description', newEvent.description);
-      formData.append('location', newEvent.location);
-      formData.append('date', new Date(newEvent.date).toISOString());
-      formData.append('category', newEvent.category);
-      formData.append('capacity', String(newEvent.capacity));
 
-      if (newEvent.imageFile) {
-        formData.append('image', newEvent.imageFile);
-      }
-
-      await createEvent(formData);
-      toast({
-        title: "Success",
-        description: "Event created successfully",
-      });
-      setIsDialogOpen(false);
-      setNewEvent({
-        title: "",
-        description: "",
-        location: "",
-        date: "",
-        category: "",
-        imageFile: null,
-        capacity: 0,
-      });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "Failed to create event",
-      });
-    }
-  };
-  const { user } = useUser();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({
     title: "",
@@ -206,7 +170,7 @@ export default function HomePage() {
                 onClick={() => setLocation("/create")}
               >
                 <Plus className="h-5 w-5 md:mr-2" />
-                <span className="hidden md:inline">{t('create')} {t('event')}</span>
+                <span className="hidden md:inline">{t('create')}</span>
                 <span className="inline md:hidden">{t('create')}</span>
               </Button>
             </div>

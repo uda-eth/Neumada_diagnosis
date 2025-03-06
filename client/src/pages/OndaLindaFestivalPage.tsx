@@ -1,35 +1,18 @@
-
 import { useState } from "react";
-import { useParams, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { format } from "date-fns";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { useToast } from "@/components/ui/use-toast";
-import { useUser } from "@/hooks/useUser";
-import { useTranslation } from "@/hooks/useTranslation";
+import { useToast } from "@/hooks/use-toast";
+import { useUser } from "@/hooks/use-user";
+import { useTranslation } from "@/lib/translations";
 import { ChevronLeft } from "lucide-react";
 
 interface EventUser {
   id: number;
   name: string;
   image: string;
-}
-
-interface Event {
-  id: number;
-  title: string;
-  description: string;
-  date: Date;
-  location: string;
-  category: string;
-  image: string;
-  capacity: number;
-  price: string;
-  attendingCount: number;
-  interestedCount: number;
-  attendingUsers: EventUser[];
-  interestedUsers: EventUser[];
 }
 
 const getFirstName = (fullName: string) => fullName?.split(' ')[0] || '';
@@ -40,32 +23,32 @@ export default function OndaLindaFestivalPage() {
   const { toast } = useToast();
   const { t } = useTranslation();
 
-  // Mock data for Onda Linda Festival
-  const festival: Event = {
-    id: 1009,
-    title: "Surreal Festival",
-    description: "Experience a surreal journey in the breathtaking Valle de Bravo. A two-day immersive festival that blends art, music, and nature in a unique mountain setting. Get your full pass now and be part of this extraordinary event that pushes the boundaries of reality and imagination.",
-    date: new Date(2025, 4, 2),
-    location: "Mexico City",
-    category: "Festivals",
-    image: "/attached_assets/baac6810-cef8-4632-a20d-08ae3d08f3fc.jpg",
+  // Festival data
+  const festival = {
+    id: 1001,
+    title: "Onda Linda Festival",
+    description: "Experience the mystical fusion of electronic music and art in an immersive natural setting, featuring world-class DJs and stunning visual installations.",
+    date: new Date("2025-05-02T21:00:00"),
+    location: "Valle de Bravo",
+    category: "Nightlife",
+    image: "/attached_assets/Screenshot 2025-03-06 at 12.16.27 AM.png",
     capacity: 500,
-    price: "200",
-    attendingCount: 162,
-    interestedCount: 324,
+    price: 85,
+    attendingCount: 156,
+    interestedCount: 342,
     attendingUsers: [
-      { id: 1009, name: "Alexander Reeves", image: "/attached_assets/Screenshot 2024-03-06 at 12.19.10 PM.png" },
-      { id: 1010, name: "Maria Torres", image: "/attached_assets/profile-image-1.jpg" },
-      { id: 1011, name: "James Chen", image: "/attached_assets/profile-image-2.jpg" },
-      { id: 1012, name: "Sara Johnson", image: "/attached_assets/profile-image-3.jpg" },
-      { id: 1013, name: "David Kim", image: "/attached_assets/profile-image-4.jpg" }
+      { id: 1, name: "Alexander Reeves", image: "/attached_assets/Screenshot 2024-03-06 at 12.19.10 PM.png" },
+      { id: 2, name: "Maria Torres", image: "/attached_assets/profile-image-1.jpg" },
+      { id: 3, name: "James Chen", image: "/attached_assets/profile-image-2.jpg" },
+      { id: 4, name: "Sara Johnson", image: "/attached_assets/profile-image-3.jpg" },
+      { id: 5, name: "David Kim", image: "/attached_assets/profile-image-4.jpg" }
     ],
     interestedUsers: [
-      { id: 1014, name: "Lisa Park", image: "/attached_assets/profile-image-5.jpg" },
-      { id: 1015, name: "John Smith", image: "/attached_assets/profile-image-6.jpg" },
-      { id: 1016, name: "Jane Doe", image: "/attached_assets/profile-image-7.jpg" },
-      { id: 1017, name: "Peter Jones", image: "/attached_assets/profile-image-8.jpg" },
-      { id: 1018, name: "Susan Brown", image: "/attached_assets/profile-image-9.jpg" }
+      { id: 6, name: "Lisa Park", image: "/attached_assets/profile-image-5.jpg" },
+      { id: 7, name: "John Smith", image: "/attached_assets/profile-image-6.jpg" },
+      { id: 8, name: "Jane Doe", image: "/attached_assets/profile-image-7.jpg" },
+      { id: 9, name: "Peter Jones", image: "/attached_assets/profile-image-8.jpg" },
+      { id: 10, name: "Susan Brown", image: "/attached_assets/profile-image-9.jpg" }
     ]
   };
 
@@ -132,14 +115,14 @@ export default function OndaLindaFestivalPage() {
 
       {/* Event Details */}
       <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Event Title and Meta */}
+        {/* Title and Meta */}
         <div>
           <h1 className="text-2xl font-bold">{festival.title}</h1>
           <div className="mt-2 text-white/60">
-            <p>{format(new Date(festival.date), "EEE, MMM d")}</p>
+            <p>{format(festival.date, "EEE, MMM d")}</p>
             <p className="mt-1">
-              {format(new Date(festival.date), "h:mm a")} -{" "}
-              {format(new Date(festival.date).setHours(new Date(festival.date).getHours() + 2), "h:mm a")}
+              {format(festival.date, "h:mm a")} -{" "}
+              {format(new Date(festival.date.getTime() + 2 * 60 * 60 * 1000), "h:mm a")}
             </p>
             <p className="mt-1">{festival.location}</p>
           </div>
@@ -241,7 +224,7 @@ export default function OndaLindaFestivalPage() {
             </div>
           </div>
         </div>
-        
+
         {/* Actions */}
         <div className="flex flex-col gap-4 pt-4">
           <Button 
