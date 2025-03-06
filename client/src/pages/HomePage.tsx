@@ -1,42 +1,32 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useEvents } from "@/hooks/use-events";
-import { useUser } from "@/hooks/use-user";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Users, Plus, UserCircle2, Search, MessageSquare, Bot, Languages } from "lucide-react";
+import { MapPin, Users, Plus, Search, Globe2, Bot } from "lucide-react";
 import { format } from "date-fns";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { getEventImage } from "@/lib/eventImages";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DIGITAL_NOMAD_CITIES } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTranslation } from "@/lib/translations";
 
-const getFirstName = (fullName: string) => fullName.split(' ')[0];
-
 const featuredEventData = {
-  id: 1001,
-  title: "Onda Linda Festival",
-  description: "Experience the mystical fusion of electronic music and art in an immersive natural setting, featuring world-class DJs and stunning visual installations.",
-  location: "Valle de Bravo",
-  date: new Date("2025-05-02T21:00:00").toISOString(),
-  category: "Nightlife",
-  tags: ["Electronic Music", "Art", "Festival"],
-  price: 85,
-  image: "/attached_assets/Screenshot 2025-03-06 at 12.16.27 AM.png",
-  attendingCount: 156,
-  interestedCount: 342,
-  creatorId: null,
-  creatorName: null,
-  creatorImage: null,
-  image_url: null
+  id: 1008,
+  title: "Zona MACO: Art Festival Week",
+  description: "Experience Mexico City's premier art fair, featuring contemporary artwork from leading galleries worldwide.",
+  location: "Mexico City",
+  date: new Date("2025-03-08T15:00:00").toISOString(),
+  category: "Cultural",
+  tags: ["Art", "Exhibition", "Culture"],
+  price: 45,
+  image: "/attached_assets/zona-maco-2025.jpg",
+  attendingCount: 89,
+  interestedCount: 213
 };
 
 const cities = [
@@ -75,9 +65,9 @@ const AvatarImage = ({ src, alt }: { src: string; alt: string }) => {
   const fallbackImage = "/attached_assets/profile-image-1.jpg";
 
   return (
-    <img 
-      src={error ? fallbackImage : src} 
-      alt={alt} 
+    <img
+      src={error ? fallbackImage : src}
+      alt={alt}
       className="w-6 h-6 rounded-full object-cover"
       onError={() => setError(true)}
     />
@@ -92,7 +82,6 @@ export default function HomePage() {
   const { events: fetchedEvents } = useEvents(undefined, selectedCity);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const { user } = useUser();
 
   const allEvents = fetchedEvents || [];
   const featuredEvent = featuredEventData;
@@ -132,7 +121,6 @@ export default function HomePage() {
     capacity: 0,
   });
 
-
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border sticky top-0 z-50 bg-black text-white">
@@ -156,16 +144,16 @@ export default function HomePage() {
               </Select>
             </div>
             <div className="flex items-center gap-2">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setLocation("/connect")} 
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setLocation("/connect")}
                 className="hidden md:inline-flex items-center text-white"
               >
                 <Users className="h-5 w-5 mr-2" />
                 {t('connect')}
               </Button>
-              <Button 
+              <Button
                 className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white whitespace-nowrap px-2 md:px-4"
                 onClick={() => setLocation("/create")}
               >
@@ -211,7 +199,7 @@ export default function HomePage() {
             {featuredEvent && (
               <section>
                 <h2 className="text-sm font-medium text-primary uppercase tracking-wider mb-4">
-                  SPOTLIGHT
+                  RECOMMENDED
                 </h2>
                 <Card
                   className="bg-card border-border hover:bg-accent/50 transition-colors cursor-pointer overflow-hidden"
@@ -276,7 +264,7 @@ export default function HomePage() {
                               {format(new Date(featuredEvent.date), "EEE, MMM d, h:mm a")}
                             </div>
                           </div>
-                          <Button 
+                          <Button
                             variant="secondary"
                             className="bg-white text-black hover:bg-white/90 w-full md:w-auto"
                             onClick={(e) => {
@@ -352,7 +340,7 @@ export default function HomePage() {
                               </div>
                               <div className="flex items-center gap-4">
                                 <span className="text-lg font-medium">${event.price}</span>
-                                <Button 
+                                <Button
                                   variant="secondary"
                                   className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
                                   onClick={(e) => {
@@ -380,7 +368,7 @@ export default function HomePage() {
                 </div>
                 <div className="rounded-lg overflow-hidden relative">
                   <div className="relative hidden md:block">
-                    <img 
+                    <img
                       src="/attached_assets/Screenshot 2025-03-05 at 10.20.48 PM.png"
                       alt="MUSA Zihuatanejo"
                       className="w-full object-cover h-[400px]"
@@ -395,7 +383,7 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="md:hidden relative">
-                    <img 
+                    <img
                       src="/attached_assets/Screenshot 2025-03-05 at 10.20.48 PM.png"
                       alt="MUSA Zihuatanejo"
                       className="w-full aspect-[3/2] object-cover"
@@ -471,7 +459,7 @@ export default function HomePage() {
                               </div>
                               <div className="flex items-center gap-4">
                                 <span className="text-lg font-medium">${event.price}</span>
-                                <Button 
+                                <Button
                                   variant="secondary"
                                   className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
                                   onClick={(e) => {
@@ -497,36 +485,36 @@ export default function HomePage() {
       <nav className="fixed bottom-0 left-0 right-0 bg-black text-white border-t border-border p-4 md:hidden">
         <div className="container mx-auto">
           <div className="flex justify-around items-center">
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setLocation("/")}
               className="text-white flex flex-col items-center"
             >
               <Search className="h-5 w-5" />
               <span className="text-xs mt-1">Discover</span>
             </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setLocation("/connect")}
               className="text-white flex flex-col items-center"
             >
               <Users className="h-5 w-5" />
               <span className="text-xs mt-1">Connect</span>
             </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setLocation("/translate")}
               className="text-white flex flex-col items-center"
             >
-              <Languages className="h-5 w-5" />
+              <Globe2 className="h-5 w-5" />
               <span className="text-xs mt-1">Translate</span>
             </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setLocation("/concierge")}
               className="text-white flex flex-col items-center"
             >
