@@ -1,17 +1,10 @@
 import { useParams, useLocation } from "wouter";
 import { members } from "@/lib/members-data";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ChevronLeft, MapPin, MessageSquare, UserPlus2 } from "lucide-react";
-import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ChevronLeft, MapPin, MessageSquare, UserPlus2, Smile } from "lucide-react";
+import { motion } from "framer-motion";
 
 const container = {
   hidden: { opacity: 0 },
@@ -28,19 +21,36 @@ const item = {
   show: { opacity: 1, y: 0 }
 };
 
+const getMoodColor = (mood: string) => {
+  switch (mood) {
+    case 'Creative': return 'from-purple-600 to-pink-600';
+    case 'Adventurous': return 'from-blue-600 to-green-600';
+    case 'Relaxed': return 'from-green-600 to-teal-600';
+    case 'Energetic': return 'from-orange-600 to-red-600';
+    case 'Social': return 'from-yellow-600 to-orange-600';
+    case 'Focused': return 'from-indigo-600 to-purple-600';
+    default: return 'from-gray-600 to-gray-800';
+  }
+};
+
 export default function ProfilePage() {
   const { username } = useParams();
   const [, setLocation] = useLocation();
 
-  // Find the member based on the URL parameter
   const profile = members.find(
     (member) => member.name.toLowerCase().replace(/\s+/g, '-') === username
   );
 
+  const handleMessageClick = () => {
+    if (profile) {
+      setLocation(`/chat/${profile.id}`);
+    }
+  };
+
   if (!profile) {
     return (
       <motion.div 
-        className="min-h-screen flex items-center justify-center bg-background text-foreground"
+        className="min-h-screen flex items-center justify-center bg-background"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
@@ -53,7 +63,6 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="container mx-auto px-4 py-8">
-        {/* Back Button */}
         <motion.div 
           className="mb-8"
           initial={{ opacity: 0, x: -20 }}
@@ -66,9 +75,7 @@ export default function ProfilePage() {
           </Button>
         </motion.div>
 
-        {/* Profile Content */}
         <div className="max-w-2xl mx-auto">
-          {/* Profile Image Section */}
           <motion.div 
             className="relative aspect-[4/5] mb-8 rounded-lg overflow-hidden"
             initial={{ opacity: 0, y: 20 }}
@@ -82,7 +89,6 @@ export default function ProfilePage() {
             />
           </motion.div>
 
-          {/* User Info */}
           <motion.div
             className="space-y-6"
             variants={container}
@@ -90,7 +96,9 @@ export default function ProfilePage() {
             animate="show"
           >
             <motion.div variants={item}>
-              <h1 className="text-2xl font-semibold">{profile.name}, {profile.age}</h1>
+              <h1 className="text-2xl font-semibold flex items-center gap-4">
+                {profile.name}, {profile.age}
+              </h1>
               <div className="flex items-center text-muted-foreground mt-2">
                 <MapPin className="h-4 w-4 mr-2" />
                 {profile.location}
@@ -98,12 +106,27 @@ export default function ProfilePage() {
               <p className="text-muted-foreground mt-2">{profile.occupation}</p>
             </motion.div>
 
-            {/* Bio */}
             <motion.div variants={item}>
               <p className="text-lg">{profile.bio}</p>
             </motion.div>
 
-            {/* Interests */}
+            {/* Current Mood Section */}
+            <motion.div variants={item}>
+              <h3 className="text-lg font-semibold mb-3">Current Mood</h3>
+              <div className="flex flex-wrap gap-2">
+                {profile.currentMoods.map((mood, idx) => (
+                  <Badge 
+                    key={idx} 
+                    className={`bg-gradient-to-r ${getMoodColor(mood)} text-white border-0 flex items-center gap-1`}
+                  >
+                    <Smile className="w-3 h-3" />
+                    {mood}
+                  </Badge>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Interests Section */}
             <motion.div variants={item}>
               <h3 className="text-lg font-semibold mb-3">Interests</h3>
               <div className="flex flex-wrap gap-2">
@@ -117,7 +140,7 @@ export default function ProfilePage() {
 
             {/* Action Buttons */}
             <motion.div variants={item} className="flex gap-4">
-              <Button className="flex-1 h-12">
+              <Button className="flex-1 h-12" onClick={handleMessageClick}>
                 <MessageSquare className="w-4 h-4 mr-2" />
                 Message
               </Button>
