@@ -2,13 +2,16 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Button } from "@/components/ui/button";
 import { Crown, MessageSquare, Star, Shield, Gift, Zap } from "lucide-react";
 import { useState } from "react";
+import { useLocation } from "wouter";
 
 interface PremiumDialogProps {
   children?: React.ReactNode;
+  userId?: number;
 }
 
-export function PremiumDialog({ children }: PremiumDialogProps) {
+export function PremiumDialog({ children, userId }: PremiumDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [, setLocation] = useLocation();
 
   const features = [
     {
@@ -43,17 +46,34 @@ export function PremiumDialog({ children }: PremiumDialogProps) {
     }
   ];
 
+  const handleMessageClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (userId) {
+      setLocation(`/chat/${userId}`);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         {children || (
-          <Button 
-            variant="outline"
-            className="bg-gradient-to-r from-purple-900 via-purple-800 to-black hover:from-purple-800 hover:via-purple-700 hover:to-gray-900 text-white border-0"
-          >
-            <Crown className="w-4 h-4 mr-2" />
-            Premium
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              className="bg-gradient-to-r from-purple-900 via-purple-800 to-black hover:from-purple-800 hover:via-purple-700 hover:to-gray-900 text-white border-0"
+            >
+              <Crown className="w-4 h-4 mr-2" />
+              Premium
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleMessageClick}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0"
+            >
+              <MessageSquare className="w-4 h-4 mr-2" />
+              Message
+            </Button>
+          </div>
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] max-h-[90vh] bg-black text-white overflow-hidden flex flex-col">
