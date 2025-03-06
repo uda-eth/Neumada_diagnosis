@@ -31,7 +31,7 @@ const featuredEventData = {
   category: "Nightlife",
   tags: ["Electronic Music", "Art", "Festival"],
   price: 85,
-  image: "/attached_assets/Screenshot 2025-03-06 at 12.10.33 AM.png",
+  image: "/attached_assets/Screenshot 2025-03-06 at 12.16.27 AM.png",
   attendingCount: 156,
   interestedCount: 342
 };
