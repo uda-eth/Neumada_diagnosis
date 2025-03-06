@@ -40,6 +40,50 @@ const mockMessages = [
     preview: "About the upcoming tech conference...",
     timestamp: "2025-03-05T09:15:00",
     unread: true
+  },
+  {
+    id: 4,
+    sender: {
+      name: "Alex Thompson",
+      avatar: "/attached_assets/profile-image-4.jpg",
+      initials: "AT"
+    },
+    preview: "Let's collaborate on the new project!",
+    timestamp: "2025-03-04T18:20:00",
+    unread: false
+  },
+  {
+    id: 5,
+    sender: {
+      name: "Maya Patel",
+      avatar: "/attached_assets/profile-image-5.jpg",
+      initials: "MP"
+    },
+    preview: "Thanks for the coworking space recommendation",
+    timestamp: "2025-03-04T14:10:00",
+    unread: false
+  },
+  {
+    id: 6,
+    sender: {
+      name: "David Kim",
+      avatar: "/attached_assets/profile-image-6.jpg",
+      initials: "DK"
+    },
+    preview: "Joining for sunset yoga at the beach?",
+    timestamp: "2025-03-04T11:30:00",
+    unread: false
+  },
+  {
+    id: 7,
+    sender: {
+      name: "Emma Wilson",
+      avatar: "/attached_assets/profile-image-7.jpg",
+      initials: "EW"
+    },
+    preview: "Looking forward to the weekend hiking trip!",
+    timestamp: "2025-03-04T09:45:00",
+    unread: false
   }
 ];
 
