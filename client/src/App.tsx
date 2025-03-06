@@ -33,7 +33,7 @@ function App() {
             <Route path="/settings" component={SettingsPage} />
             <Route path="/premium" component={PremiumPage} />
             <Route path="/inbox" component={InboxPage} />
-            <Route path="/profile/edit" component={ProfileEditPage} />
+            <Route path="/profile-edit" component={ProfileEditPage} />
             <Route path="/translator" component={TranslatorPage} />
             <Route path="/:rest*">
               {() => <div className="text-center p-8">404 - Page Not Found</div>}
