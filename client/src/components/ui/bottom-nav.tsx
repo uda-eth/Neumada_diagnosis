@@ -19,7 +19,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
 // Main navigation items - only the 4 core features
@@ -61,7 +60,7 @@ export const menuItems = [
   },
   { 
     icon: Globe2, 
-    label: 'Translator', 
+    label: 'Language', 
     href: "/translator" 
   }
 ];
