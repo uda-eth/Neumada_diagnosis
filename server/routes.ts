@@ -1,13 +1,14 @@
 import multer from 'multer';
 import path from 'path';
 import express, { Request, Response } from 'express';
-import { createServer } from 'http';
+import { createServer, Server } from 'http';
 import { setupAuth } from './auth';
 import { handleChatMessage } from './chat';
 import { findMatches } from './services/matchingService';
 import { translateMessage } from './services/translationService';
 import { getEventImage } from './services/eventsService';
 import { WebSocketServer } from 'ws';
+import { sendMessage, getConversations, getMessages, markMessageAsRead, markAllMessagesAsRead } from './services/messagingService';
 
 const categories = [
   "Retail",
@@ -412,7 +413,7 @@ const newEvents = {
         { id: 1047, name: "David Black", image: "/attached_assets/profile-image-38.jpg" },
         { id: 1048, name: "Jessica Jones", image: "/attached_assets/profile-image-39.jpg" },
         { id: 1049, name: "William Green", image: "/attached_assets/profile-image-40.jpg" },
-        { id: 1050, name: "Amanda Brown", image: "/attached_assets/profile-image-41.jpg" },
+        { id: 1050, name: "Amanda Brown", image: "/attached_assetsimage-41.jpg" },
         { id: 1051, name: "Robert White", image: "/attached_assets/profile-image-42.jpg" },
         { id: 1052, name: "Ashley Black", image: "/attached_assets/profile-image-43.jpg" },
         { id: 1053, name: "William Jones", image: "/attached_assets/profile-image-44.jpg" },
@@ -995,6 +996,61 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       res.status(500).json({
         error: "Failed to translate message"
       });
+    }
+  });
+
+  app.post('/api/messages', async (req: Request, res: Response) => {
+    try {
+      const { senderId, receiverId, content } = req.body;
+      const message = await sendMessage({ senderId, receiverId, content });
+      res.json(message);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      res.status(500).json({ error: 'Failed to send message' });
+    }
+  });
+
+  app.get('/api/conversations/:userId', async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const conversations = await getConversations(parseInt(userId));
+      res.json(conversations);
+    } catch (error) {
+      console.error('Error getting conversations:', error);
+      res.status(500).json({ error: 'Failed to get conversations' });
+    }
+  });
+
+  app.get('/api/messages/:userId/:otherId', async (req: Request, res: Response) => {
+    try {
+      const { userId, otherId } = req.params;
+      const messages = await getMessages(parseInt(userId), parseInt(otherId));
+      res.json(messages);
+    } catch (error) {
+      console.error('Error getting messages:', error);
+      res.status(500).json({ error: 'Failed to get messages' });
+    }
+  });
+
+  app.post('/api/messages/:messageId/read', async (req: Request, res: Response) => {
+    try {
+      const { messageId } = req.params;
+      const message = await markMessageAsRead(parseInt(messageId));
+      res.json(message);
+    } catch (error) {
+      console.error('Error marking message as read:', error);
+      res.status(500).json({ error: 'Failed to mark message as read' });
+    }
+  });
+
+  app.post('/api/messages/read-all/:userId', async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const messages = await markAllMessagesAsRead(parseInt(userId));
+      res.json(messages);
+    } catch (error) {
+      console.error('Error marking all messages as read:', error);
+      res.status(500).json({ error: 'Failed to mark all messages as read' });
     }
   });
 

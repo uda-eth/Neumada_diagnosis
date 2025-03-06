@@ -7,71 +7,55 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronLeft, Search, MessageCircle } from "lucide-react";
 import { useLocation } from "wouter";
 import { useMessages, useMessageNotifications } from "@/hooks/use-messages";
-import { members } from "@/lib/members-data";
-
-// Generate relevant messages based on mood
-const getMoodMessage = (mood: string) => {
-  const messages = {
-    "Networking": [
-      "Would love to discuss potential collaboration opportunities! ☕️",
-      "Your recent project caught my attention. Let's connect!",
-      "Looking to expand my professional network here in the city.",
-    ],
-    "Dating": [
-      "Hey! Want to grab coffee at that new place downtown? 😊",
-      "Loved your travel photos! Where was that taken?",
-      "I know this amazing rooftop bar with great views...",
-    ],
-    "Parties": [
-      "Don't forget about tonight's event at Condesa! 🎉",
-      "Are you going to the art gallery opening this weekend?",
-      "Just got VIP passes for the new club opening! Interested?",
-    ],
-    "Adventure": [
-      "Planning a hike this weekend, want to join? 🏔️",
-      "Found this amazing hidden spot in the city!",
-      "Up for some urban exploration tomorrow?",
-    ],
-    "Dining Out": [
-      "Have you tried that new fusion place in Roma? 🍜",
-      "Know any good spots for authentic Mexican food?",
-      "Found an amazing hidden gem restaurant yesterday!",
-    ]
-  };
-
-  return messages[mood][Math.floor(Math.random() * messages[mood].length)];
-};
-
-// Mock conversations for demo with mood-based messages
-const mockConversations = members.slice(0, 5).map(member => ({
-  id: member.id,
-  user: member,
-  lastMessage: {
-    content: getMoodMessage(member.currentMood),
-    timestamp: new Date().toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute:'2-digit',
-      hour12: false 
-    }),
-    unread: Math.random() > 0.5,
-  }
-}));
+import { useUser } from "@/hooks/use-user";
 
 export default function MessagesPage() {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
-  const [conversations, setConversations] = useState(mockConversations);
-  const messageStore = useMessages();
-  const { showNotification } = useMessageNotifications();
+  const { user } = useUser();
+  const {
+    conversations,
+    unreadCount,
+    loading,
+    error,
+    fetchConversations,
+    markAllAsRead,
+    connectSocket,
+    disconnectSocket,
+  } = useMessages();
 
   useEffect(() => {
-    messageStore.markAllAsRead();
+    if (user?.id) {
+      fetchConversations(user.id);
+      connectSocket(user.id);
+      return () => disconnectSocket();
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (user?.id) {
+      markAllAsRead(user.id);
+    }
   }, []);
 
   const filteredConversations = conversations.filter(conv =>
     conv.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     conv.lastMessage.content.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <MessageCircle className="mx-auto h-12 w-12 text-muted-foreground opacity-50" />
+          <p className="mt-4 text-muted-foreground">Please sign in to view messages</p>
+          <Button className="mt-4" onClick={() => setLocation("/auth")}>
+            Sign In
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -89,6 +73,11 @@ export default function MessagesPage() {
             </Button>
             <div className="flex-1">
               <h1 className="text-xl font-semibold">Messages</h1>
+              {unreadCount > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  {unreadCount} unread message{unreadCount === 1 ? '' : 's'}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -112,10 +101,35 @@ export default function MessagesPage() {
       {/* Conversations List */}
       <ScrollArea className="flex-1">
         <div className="container mx-auto px-4 py-4 space-y-2">
-          {filteredConversations.length > 0 ? (
+          {loading ? (
+            <div className="space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <Card key={i} className="p-4">
+                  <div className="animate-pulse flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-full bg-accent" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-accent rounded w-1/4" />
+                      <div className="h-3 bg-accent/50 rounded w-3/4" />
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : error ? (
+            <div className="text-center py-8 text-destructive">
+              <p>{error}</p>
+              <Button 
+                variant="outline" 
+                className="mt-4"
+                onClick={() => user?.id && fetchConversations(user.id)}
+              >
+                Retry
+              </Button>
+            </div>
+          ) : filteredConversations.length > 0 ? (
             filteredConversations.map((conv) => (
               <Card
-                key={conv.id}
+                key={conv.user.id}
                 className="hover:bg-accent/5 transition-colors cursor-pointer"
                 onClick={() => setLocation(`/chat/${conv.user.name.toLowerCase().replace(/\s+/g, '-')}`)}
               >
@@ -128,12 +142,16 @@ export default function MessagesPage() {
                     <div className="flex justify-between items-center">
                       <h3 className="font-semibold truncate">{conv.user.name}</h3>
                       <span className="text-xs text-muted-foreground">
-                        {conv.lastMessage.timestamp}
+                        {new Date(conv.lastMessage.createdAt).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: false
+                        })}
                       </span>
                     </div>
                     <p className={`text-sm truncate ${
-                      conv.lastMessage.unread 
-                        ? "text-foreground font-medium" 
+                      !conv.lastMessage.isRead
+                        ? "text-foreground font-medium"
                         : "text-muted-foreground"
                     }`}>
                       {conv.lastMessage.content}
