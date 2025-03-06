@@ -461,6 +461,32 @@ export default function HomePage() {
                 </div>
               </section>
 
+              {/* Surreal Festival Promotion */}
+              <section className="py-8">
+                <div className="w-full relative">
+                  <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded z-10">
+                    Featured Event
+                  </div>
+                  <div className="rounded-lg overflow-hidden relative">
+                    <div className="relative">
+                      <img 
+                        src="/attached_assets/Screenshot 2025-03-05 at 10.29.46 PM.png"
+                        alt="Surreal Festival Early Bird Tickets"
+                        className="w-full max-w-2xl mx-auto object-contain"
+                      />
+                      <div className="absolute bottom-4 left-4 right-4 text-center">
+                        <Button 
+                          className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold"
+                          onClick={() => setLocation(`/event/${featuredEvent.id}/register`)}
+                        >
+                          Get Early Bird Tickets
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
               {groupedEvents?.nextWeek.length > 0 && (
                 <section>
                   <h2 className="text-sm font-medium text-muted-foreground mb-4">
