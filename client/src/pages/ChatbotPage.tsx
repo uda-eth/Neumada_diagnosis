@@ -48,7 +48,7 @@ const messageVariants = {
   }
 };
 
-// Enhanced travel-focused quick prompts
+// Update quick prompts array
 const quickPrompts = [
   {
     text: "Best cafes for digital nomads",
@@ -61,6 +61,16 @@ const quickPrompts = [
     ariaLabel: "Get local food recommendations"
   },
   {
+    text: "Best Restaurants Near Me",
+    icon: Utensils,
+    ariaLabel: "Find best restaurants nearby"
+  },
+  {
+    text: "Best Coffeeshops to Work Near Me",
+    icon: Coffee,
+    ariaLabel: "Find best coffeeshops for working"
+  },
+  {
     text: "Safe neighborhoods to stay",
     icon: Building,
     ariaLabel: "Find safe neighborhoods"
@@ -69,16 +79,6 @@ const quickPrompts = [
     text: "Getting around the city",
     icon: MapPin,
     ariaLabel: "Learn about city transportation"
-  },
-  {
-    text: "Cost of living insights",
-    icon: Globe,
-    ariaLabel: "Get cost of living information"
-  },
-  {
-    text: "Must-visit local spots",
-    icon: Compass,
-    ariaLabel: "Discover must-visit locations"
   }
 ];
 
@@ -119,7 +119,7 @@ export default function ChatbotPage() {
 
   return (
     <div className="min-h-screen bg-[#121212] text-white p-4">
-      <Card className="max-w-2xl mx-auto h-[80vh] flex flex-col bg-black/40 border-white/10 shadow-card">
+      <Card className="max-w-2xl mx-auto h-[calc(100vh-12rem)] flex flex-col bg-black/40 border-white/10 shadow-card">
         <CardContent className="flex-1 p-4 flex flex-col">
           {/* Header with City Selection */}
           <div className="flex items-center justify-between gap-3 pb-4 border-b border-white/10">
@@ -160,65 +160,67 @@ export default function ChatbotPage() {
           </ScrollArea>
 
           {/* Chat Messages */}
-          <ScrollArea className="flex-1 pr-4 my-4">
-            <AnimatePresence initial={false}>
-              {messages.map((message, index) => (
-                <motion.div
-                  key={index}
-                  variants={messageVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                  className={`flex gap-3 mb-4 ${
-                    message.role === "assistant" ? "flex-row" : "flex-row-reverse"
-                  }`}
-                >
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      message.role === "assistant"
-                        ? "bg-gradient-to-r from-purple-600 via-pink-600 to-red-500"
-                        : "bg-white/10"
+          <ScrollArea className="flex-1 pr-4 my-4 relative">
+            <div className="space-y-4">
+              <AnimatePresence initial={false}>
+                {messages.map((message, index) => (
+                  <motion.div
+                    key={index}
+                    variants={messageVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    className={`flex gap-3 mb-4 ${
+                      message.role === "assistant" ? "flex-row" : "flex-row-reverse"
                     }`}
                   >
-                    {message.role === "assistant" ? (
-                      <Bot className="w-5 h-5" />
-                    ) : (
-                      <User className="w-5 h-5" />
-                    )}
-                  </div>
-                  <div
-                    className={`rounded-lg p-4 max-w-[80%] ${
-                      message.role === "assistant"
-                        ? "bg-white/5 glass"
-                        : "bg-gradient-to-r from-purple-600 via-pink-600 to-red-500"
-                    }`}
-                  >
-                    {message.content}
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        message.role === "assistant"
+                          ? "bg-gradient-to-r from-purple-600 via-pink-600 to-red-500"
+                          : "bg-white/10"
+                      }`}
+                    >
+                      {message.role === "assistant" ? (
+                        <Bot className="w-5 h-5" />
+                      ) : (
+                        <User className="w-5 h-5" />
+                      )}
+                    </div>
+                    <div
+                      className={`rounded-lg p-4 max-w-[80%] ${
+                        message.role === "assistant"
+                          ? "bg-white/5 glass"
+                          : "bg-gradient-to-r from-purple-600 via-pink-600 to-red-500"
+                      }`}
+                    >
+                      {message.content}
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
 
-            {/* Enhanced Loading Animation */}
-            <AnimatePresence>
-              {isLoading && (
-                <motion.div
-                  variants={loadingVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  className="flex gap-3 mb-4"
-                >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-red-500 flex items-center justify-center">
-                    <Bot className="w-5 h-5" />
-                  </div>
-                  <div className="rounded-lg p-4 bg-white/5 glass flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span className="text-white/60">Searching local insights...</span>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+              {/* Enhanced Loading Animation */}
+              <AnimatePresence>
+                {isLoading && (
+                  <motion.div
+                    variants={loadingVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    className="flex gap-3 mb-4"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-red-500 flex items-center justify-center">
+                      <Bot className="w-5 h-5" />
+                    </div>
+                    <div className="rounded-lg p-4 bg-white/5 glass flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span className="text-white/60">Searching local insights...</span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </ScrollArea>
 
           {/* Input Form */}
@@ -248,8 +250,8 @@ export default function ChatbotPage() {
       </Card>
 
       {/* Premium Ad Partner Banner */}
-      <div className="max-w-2xl mx-auto mt-8 border-t border-white/10">
-        <div className="py-8">
+      <div className="max-w-2xl mx-auto mt-4 border-t border-white/10">
+        <div className="py-4">
           <p className="text-center text-sm font-medium text-muted-foreground mb-4">
             Premium Ad Partner
           </p>
