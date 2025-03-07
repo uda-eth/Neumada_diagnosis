@@ -7,9 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronLeft, Plus } from "lucide-react";
-import type { Event } from "@db/schema";
 import { insertEventSchema } from "@db/schema";
+import type { z } from "zod";
 import { ScrollArea } from "@/components/ui/scroll-area";
+
+// Define the form data type using the zod schema
+type FormData = z.infer<typeof insertEventSchema>;
 
 const interestTags = [
   "Digital Nomads",
@@ -32,17 +35,24 @@ export default function CreateEventPage() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [eventImage, setEventImage] = useState<string | null>(null);
 
-  const form = useForm({
+  const form = useForm<FormData>({
     resolver: zodResolver(insertEventSchema),
     defaultValues: {
       title: "",
       description: "",
       location: "",
-      date: "",
+      date: new Date().toISOString(),
       startTime: "",
       endTime: "",
       price: 0,
       isPrivate: false,
+      category: "Social", // Default category
+      image: null,
+      tags: [],
+      image_url: null,
+      creatorId: null,
+      attendingCount: 0,
+      interestedCount: 0
     },
   });
 
@@ -52,18 +62,23 @@ export default function CreateEventPage() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setEventImage(reader.result as string);
+        // Also update the form data
+        form.setValue("image", reader.result as string);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const onSubmit = async (data: Event) => {
+  const onSubmit = async (data: FormData) => {
     try {
       const eventData = {
         ...data,
         image: eventImage,
         tags: selectedTags,
       };
+
+      // Here you would typically make an API call to save the event
+      console.log("Submitting event:", eventData);
 
       toast({
         title: "Success",
@@ -214,19 +229,19 @@ export default function CreateEventPage() {
                 </Button>
                 <Button
                   type="button"
-                  variant={form.watch("price") !== 0 ? "default" : "outline"}
+                  variant={form.watch("price") > 0 ? "default" : "outline"}
                   className="flex-1 h-12"
-                  onClick={() => form.setValue("price", undefined)}
+                  onClick={() => form.setValue("price", 10)} // Set a default price instead of undefined
                 >
                   Paid
                 </Button>
               </div>
 
-              {form.watch("price") !== 0 && (
+              {form.watch("price") > 0 && (
                 <div className="space-y-2">
                   <Input
                     type="number"
-                    {...form.register("price")}
+                    {...form.register("price", { valueAsNumber: true })}
                     className="bg-white/5 border-0 h-12"
                     placeholder="0.00"
                   />
