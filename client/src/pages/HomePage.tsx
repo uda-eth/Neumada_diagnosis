@@ -158,7 +158,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <h1 className="text-sm font-medium uppercase tracking-[.5em] text-white tour-discover">
+              <h1 className="text-sm font-medium uppercase tracking-[.5em] text-white">
                 {t('discover')}
               </h1>
               <Select value={selectedCity} onValueChange={setSelectedCity}>
@@ -179,13 +179,13 @@ export default function HomePage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setLocation("/connect")}
-                className="hidden md:inline-flex items-center text-white tour-connect"
+                className="hidden md:inline-flex items-center text-white"
               >
                 <Users className="h-5 w-5 mr-2" />
                 {t('connect')}
               </Button>
               <Button
-                className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white whitespace-nowrap px-2 md:px-4 tour-create"
+                className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white whitespace-nowrap px-2 md:px-4"
                 onClick={() => setLocation("/create")}
               >
                 <Plus className="h-5 w-5 md:mr-2" />
@@ -619,7 +619,7 @@ export default function HomePage() {
               variant="ghost"
               size="sm"
               onClick={() => setLocation("/")}
-              className="text-white flex flex-col items-center tour-discover"
+              className="text-white flex flex-col items-center"
             >
               <Search className="h-5 w-5" />
               <span className="text-xs mt-1">Discover</span>
@@ -628,7 +628,7 @@ export default function HomePage() {
               variant="ghost"
               size="sm"
               onClick={() => setLocation("/connect")}
-              className="text-white flex flex-col items-center tour-connect"
+              className="text-white flex flex-col items-center"
             >
               <Users className="h-5 w-5" />
               <span className="text-xs mt-1">Connect</span>
@@ -646,7 +646,7 @@ export default function HomePage() {
               variant="ghost"
               size="sm"
               onClick={() => setLocation("/concierge")}
-              className="text-white flex flex-col items-center tour-concierge"
+              className="text-white flex flex-col items-center"
             >
               <Bot className="h-5 w-5" />
               <span className="text-xs mt-1">Concierge</span>
