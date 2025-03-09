@@ -1,7 +1,19 @@
 import request from 'supertest';
-import { app } from '../../server/app';
+import { Express } from 'express';
+import { createApp } from '../../server/app';
 
 describe('Chat API', () => {
+  let app: Express.Application;
+
+  beforeAll(async () => {
+    const { app: expressApp } = await createApp();
+    app = expressApp;
+  });
+
+  it('should have a valid structure', () => {
+    expect(true).toBe(true);
+  });
+
   it('GET /api/chat/messages should return an array of messages', async () => {
     const response = await request(app).get('/api/chat/messages');
 

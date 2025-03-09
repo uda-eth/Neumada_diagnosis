@@ -1,5 +1,6 @@
 import request from 'supertest';
-import { app } from '../../server/app';
+import { Express } from 'express';
+import { createApp } from '../../server/app';
 
 describe('Auth API', () => {
   it('POST /api/auth/login should validate credentials', async () => {
@@ -31,7 +32,7 @@ describe('Authentication API', () => {
     location: 'Test City',
     interests: ['Testing', 'Coding']
   };
-  
+
   beforeAll(async () => {
     const { app: expressApp } = await createApp();
     app = expressApp;
@@ -42,7 +43,7 @@ describe('Authentication API', () => {
       const response = await request(app)
         .post('/api/register')
         .send(testUser);
-      
+
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('id');
       expect(response.body).toHaveProperty('username', testUser.username);
@@ -53,7 +54,7 @@ describe('Authentication API', () => {
       const response = await request(app)
         .post('/api/register')
         .send({ username: 'user_without_password' });
-      
+
       expect(response.status).toBe(400);
     });
 
@@ -61,7 +62,7 @@ describe('Authentication API', () => {
       const response = await request(app)
         .post('/api/register')
         .send(testUser);
-      
+
       expect(response.status).toBe(400);
     });
   });
@@ -74,7 +75,7 @@ describe('Authentication API', () => {
           username: testUser.username,
           password: testUser.password
         });
-      
+
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('username', testUser.username);
     });
@@ -86,7 +87,7 @@ describe('Authentication API', () => {
           username: testUser.username,
           password: 'wrong_password'
         });
-      
+
       expect(response.status).toBe(400);
     });
 
@@ -96,7 +97,7 @@ describe('Authentication API', () => {
         .send({
           username: testUser.username
         });
-      
+
       expect(response.status).toBe(400);
     });
   });
@@ -111,16 +112,16 @@ describe('Authentication API', () => {
           username: testUser.username,
           password: testUser.password
         });
-      
+
       const response = await agent.get('/api/user');
-      
+
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('username', testUser.username);
     });
 
     it('should return 401 for unauthenticated requests', async () => {
       const response = await request(app).get('/api/user');
-      
+
       expect(response.status).toBe(401);
     });
   });
@@ -135,12 +136,12 @@ describe('Authentication API', () => {
           username: testUser.username,
           password: testUser.password
         });
-      
+
       const logoutResponse = await agent.post('/api/logout');
-      
+
       expect(logoutResponse.status).toBe(200);
       expect(logoutResponse.body).toHaveProperty('message', 'Logged out successfully');
-      
+
       // Verify the user is logged out
       const userResponse = await agent.get('/api/user');
       expect(userResponse.status).toBe(401);

@@ -1,7 +1,15 @@
 import request from 'supertest';
-import { app } from '../../server/app';
+import { Express } from 'express';
+import { createApp } from '../../server/app';
 
 describe('Events API', () => {
+  let app: Express.Application;
+
+  beforeAll(async () => {
+    const { app: expressApp } = await createApp();
+    app = expressApp;
+  });
+
   it('GET /api/events should return an array of events', async () => {
     const response = await request(app).get('/api/events');
     expect(response.status).toBe(200);
