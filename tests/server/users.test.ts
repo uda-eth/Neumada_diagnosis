@@ -1,15 +1,28 @@
-
 import request from 'supertest';
-import { createApp } from '../../server/app';
+import { app } from '../../server/app';
 
 describe('Users API', () => {
-  let app: Express.Application;
-  
-  beforeAll(async () => {
-    const { app: expressApp } = await createApp();
-    app = expressApp;
+  it('GET /api/users should return an array of users', async () => {
+    const response = await request(app).get('/api/users');
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.body)).toBe(true);
   });
 
+  it('GET /api/users/:id should return a single user or 404', async () => {
+    // First get all users to find a valid ID
+    const allUsers = await request(app).get('/api/users');
+
+    if (allUsers.body.length > 0) {
+      const firstUserId = allUsers.body[0].id;
+      const response = await request(app).get(`/api/users/${firstUserId}`);
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('id', firstUserId);
+    } else {
+      // If no users exist, test for a 404 with a made-up ID
+      const response = await request(app).get('/api/users/nonexistent-id');
+      expect(response.status).toBe(404);
+    }
+  });
   describe('GET /api/users/:city', () => {
     it('should return users from a specific city', async () => {
       const city = 'Mexico City';

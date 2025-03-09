@@ -1,6 +1,25 @@
-
 import request from 'supertest';
-import { createApp } from '../../server/app';
+import { app } from '../../server/app';
+
+describe('Auth API', () => {
+  it('POST /api/auth/login should validate credentials', async () => {
+    // Test with invalid credentials
+    const response = await request(app)
+      .post('/api/auth/login')
+      .send({ username: 'testuser', password: 'wrongpassword' });
+
+    // We don't know the exact behavior yet, but we can expect either a 401 (Unauthorized) 
+    // or a 400 (Bad Request) if the credentials are invalid
+    expect([400, 401]).toContain(response.status);
+  });
+
+  it('GET /api/auth/me should require authentication', async () => {
+    const response = await request(app).get('/api/auth/me');
+
+    // Without auth, this should be unauthorized
+    expect([401, 403]).toContain(response.status);
+  });
+});
 
 describe('Authentication API', () => {
   let app: Express.Application;
