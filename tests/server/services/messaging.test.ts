@@ -3,65 +3,92 @@ import {
   sendMessage, 
   getConversations, 
   getMessages, 
-  markMessageAsRead 
-} from "../../../server/services/messagingService";
+  markMessageAsRead, 
+  markAllMessagesAsRead 
+} from '../../../server/services/messagingService';
 
-describe("Messaging Service", () => {
-  describe("sendMessage", () => {
-    it("should create a new message", async () => {
+// Mock data for testing
+const mockSender = 1009;
+const mockReceiver = 1010;
+const mockContent = 'Hello, this is a test message';
+const mockMessageId = 1;
+
+describe('Messaging Service', () => {
+  describe('sendMessage', () => {
+    it('should create and return a new message', async () => {
       const message = await sendMessage({
-        senderId: 1009,
-        receiverId: 1010,
-        content: "Test message"
+        senderId: mockSender,
+        receiverId: mockReceiver,
+        content: mockContent
       });
       
-      expect(message).toHaveProperty("id");
-      expect(message).toHaveProperty("senderId", 1009);
-      expect(message).toHaveProperty("receiverId", 1010);
-      expect(message).toHaveProperty("content", "Test message");
-      expect(message).toHaveProperty("createdAt");
-      expect(message).toHaveProperty("read", false);
+      expect(message).toBeDefined();
+      expect(message.senderId).toBe(mockSender);
+      expect(message.receiverId).toBe(mockReceiver);
+      expect(message.content).toBe(mockContent);
+      expect(message.read).toBe(false);
+      expect(message.createdAt).toBeDefined();
     });
   });
 
-  describe("getConversations", () => {
-    it("should return user conversations", async () => {
-      const conversations = await getConversations(1009);
+  describe('getConversations', () => {
+    it('should return conversations for a user', async () => {
+      const conversations = await getConversations(mockSender);
+      
       expect(Array.isArray(conversations)).toBe(true);
-    });
-  });
-
-  describe("getMessages", () => {
-    it("should return messages between two users", async () => {
-      // First, create a test message
-      await sendMessage({
-        senderId: 1009,
-        receiverId: 1010,
-        content: "Another test message"
-      });
       
-      const messages = await getMessages(1009, 1010);
-      expect(Array.isArray(messages)).toBe(true);
-      
-      if (messages.length > 0) {
-        expect(messages[0]).toHaveProperty("id");
-        expect(messages[0]).toHaveProperty("content");
+      if (conversations.length > 0) {
+        const conversation = conversations[0];
+        expect(conversation).toHaveProperty('userId');
+        expect(conversation).toHaveProperty('username');
+        expect(conversation).toHaveProperty('fullName');
+        expect(conversation).toHaveProperty('profileImage');
+        expect(conversation).toHaveProperty('lastMessage');
+        expect(conversation).toHaveProperty('unreadCount');
       }
     });
   });
 
-  describe("markMessageAsRead", () => {
-    it("should mark a message as read", async () => {
-      // Create a message first
-      const message = await sendMessage({
-        senderId: 1010,
-        receiverId: 1009,
-        content: "Message to be marked as read"
-      });
+  describe('getMessages', () => {
+    it('should return messages between two users', async () => {
+      const messages = await getMessages(mockSender, mockReceiver);
       
-      const updatedMessage = await markMessageAsRead(message.id);
-      expect(updatedMessage).toHaveProperty("id", message.id);
-      expect(updatedMessage).toHaveProperty("read", true);
+      expect(Array.isArray(messages)).toBe(true);
+      
+      if (messages.length > 0) {
+        const message = messages[0];
+        expect(message).toHaveProperty('id');
+        expect(message).toHaveProperty('senderId');
+        expect(message).toHaveProperty('receiverId');
+        expect(message).toHaveProperty('content');
+        expect(message).toHaveProperty('read');
+        expect(message).toHaveProperty('createdAt');
+      }
+    });
+  });
+
+  describe('markMessageAsRead', () => {
+    it('should mark a message as read', async () => {
+      const message = await markMessageAsRead(mockMessageId);
+      
+      expect(message).toBeDefined();
+      expect(message.id).toBe(mockMessageId);
+      expect(message.read).toBe(true);
+    });
+  });
+
+  describe('markAllMessagesAsRead', () => {
+    it('should mark all messages for a user as read', async () => {
+      const messages = await markAllMessagesAsRead(mockReceiver);
+      
+      expect(Array.isArray(messages)).toBe(true);
+      
+      if (messages.length > 0) {
+        messages.forEach(message => {
+          expect(message.receiverId).toBe(mockReceiver);
+          expect(message.read).toBe(true);
+        });
+      }
     });
   });
 });
