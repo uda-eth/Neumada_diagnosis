@@ -1,5 +1,6 @@
 
 // Global test setup for Jest
+import '@jest/globals';
 import { getTestApp, closeTestApp } from './utils/test-utils';
 
 // Setup before all tests
