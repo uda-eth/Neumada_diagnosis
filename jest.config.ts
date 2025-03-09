@@ -2,7 +2,10 @@
 export default {
   preset: "ts-jest",
   testEnvironment: "node",
-  testMatch: ["<rootDir>/tests/**/*.test.ts"],
+  testMatch: [
+    "<rootDir>/tests/**/*.test.ts",
+    "<rootDir>/tests/**/*.spec.ts"
+  ],
   collectCoverage: true,
   coverageDirectory: "coverage",
   moduleNameMapper: {
