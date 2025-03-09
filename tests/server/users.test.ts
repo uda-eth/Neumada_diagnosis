@@ -1,7 +1,15 @@
 import request from 'supertest';
-import { app } from '../../server/app';
+import { Express } from 'express';
+import { createApp } from '../../server/app';
 
 describe('Users API', () => {
+  let app: Express.Application;
+
+  beforeAll(async () => {
+    const { app: expressApp } = await createApp();
+    app = expressApp;
+  });
+
   it('GET /api/users should return an array of users', async () => {
     const response = await request(app).get('/api/users');
     expect(response.status).toBe(200);
@@ -27,10 +35,10 @@ describe('Users API', () => {
     it('should return users from a specific city', async () => {
       const city = 'Mexico City';
       const response = await request(app).get(`/api/users/${city}`);
-      
+
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
-      
+
       if (response.body.length > 0) {
         const user = response.body[0];
         expect(user).toHaveProperty('id');
@@ -45,7 +53,7 @@ describe('Users API', () => {
       const response = await request(app)
         .get('/api/users/browse')
         .query({ city: 'Mexico City' });
-      
+
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
     });
@@ -55,10 +63,10 @@ describe('Users API', () => {
       const response = await request(app)
         .get('/api/users/browse')
         .query({ gender });
-      
+
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
-      
+
       if (response.body.length > 0) {
         response.body.forEach((user: any) => {
           expect(user.gender).toBe(gender);
@@ -72,10 +80,10 @@ describe('Users API', () => {
       const response = await request(app)
         .get('/api/users/browse')
         .query({ minAge, maxAge });
-      
+
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
-      
+
       if (response.body.length > 0) {
         response.body.forEach((user: any) => {
           if (user.age) {
@@ -91,12 +99,12 @@ describe('Users API', () => {
     it('should return a specific user by username', async () => {
       // First get all users to extract a valid username
       const allUsers = await request(app).get('/api/users/Mexico City');
-      
+
       if (allUsers.body.length > 0) {
         const username = allUsers.body[0].username;
-        
+
         const response = await request(app).get(`/api/users/${username}`);
-        
+
         expect(response.status).toBe(200);
         expect(response.body).toHaveProperty('username', username);
       }
@@ -105,7 +113,7 @@ describe('Users API', () => {
     it('should return 404 for non-existent username', async () => {
       const nonExistentUsername = 'non_existent_user_123456';
       const response = await request(app).get(`/api/users/${nonExistentUsername}`);
-      
+
       expect(response.status).toBe(404);
       expect(response.body).toHaveProperty('error');
     });
