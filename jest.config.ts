@@ -18,9 +18,10 @@ const config: Config.InitialOptions = {
   transform: {
     "^.+\\.tsx?$": ["ts-jest", {
       tsconfig: "tsconfig.json",
-      useESM: false
+      useESM: true
     }]
   },
+  extensionsToTreatAsEsm: ['.ts', '.tsx'],
   testTimeout: 10000,
   verbose: true,
   setupFilesAfterEnv: ["<rootDir>/tests/setup.ts"]
