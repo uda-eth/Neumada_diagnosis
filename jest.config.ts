@@ -1,3 +1,4 @@
+
 import type { Config } from '@jest/types';
 
 const config: Config.InitialOptions = {
@@ -16,12 +17,13 @@ const config: Config.InitialOptions = {
   },
   transform: {
     "^.+\\.tsx?$": ["ts-jest", {
-      tsconfig: "tsconfig.json"
+      tsconfig: "tsconfig.json",
+      useESM: false
     }]
   },
-  testTimeout: 10000, // Increased timeout for tests
+  testTimeout: 10000,
   verbose: true,
-  setupFiles: ["<rootDir>/tests/setup.ts"]
+  setupFilesAfterEnv: ["<rootDir>/tests/setup.ts"]
 };
 
 export default config;
