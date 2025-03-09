@@ -1,5 +1,16 @@
-// Setup global test environment
-process.env.NODE_ENV = 'test';
 
-// Add any global test setup here
-// For example, mock external services or set environment variables
+// Global test setup for Jest
+import { getTestApp, closeTestApp } from './utils/test-utils';
+
+// Setup before all tests
+beforeAll(async () => {
+  // Initialize app for tests
+  await getTestApp();
+  console.log('Test app initialized');
+});
+
+// Cleanup after all tests
+afterAll(async () => {
+  await closeTestApp();
+  console.log('Test app closed');
+});
