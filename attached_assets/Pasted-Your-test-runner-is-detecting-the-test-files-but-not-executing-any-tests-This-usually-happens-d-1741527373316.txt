@@ -1,0 +1,128 @@
+Your test runner is detecting the test files but **not executing any tests**. This usually happens due to one of the following issues:
+
+---
+
+## **🔍 Possible Reasons & Fixes**
+
+### **1️⃣ Check Test File Naming Conventions**
+Jest only runs test files that match its default pattern:  
+- `*.test.ts` ✅ (Recommended)  
+- `*.spec.ts` ✅  
+- **Not** `*.ts` ❌ (unless explicitly configured)  
+
+🔹 **Fix:** Ensure your test files are named correctly, like:  
+✅ `auth.test.ts`  
+✅ `users.test.ts`  
+
+If you have files like `authTests.ts`, Jest will ignore them unless explicitly configured.
+
+---
+
+### **2️⃣ Check If `testMatch` in `jest.config.ts` Is Set Correctly**
+Run:  
+```sh
+cat jest.config.ts
+```
+It should contain:  
+```ts
+export default {
+  preset: "ts-jest",
+  testEnvironment: "node",
+  testMatch: ["<rootDir>/tests/**/*.test.ts"], // <-- Ensure this is correct
+  collectCoverage: true,
+  coverageDirectory: "coverage",
+};
+```
+🔹 **Fix:** If this is missing, update your `jest.config.ts`.
+
+---
+
+### **3️⃣ Ensure You Have Valid `describe()` and `it()` Blocks in Each Test**
+Jest requires test files to contain **at least one test case** inside a `describe` or `it` block.  
+
+🔹 **Fix:** Open a test file (e.g., `auth.test.ts`) and verify it contains:  
+```ts
+import request from "supertest";
+import app from "../../server"; // Adjust path as needed
+
+describe("Auth API Tests", () => {
+  it("should return 200 OK for login", async () => {
+    const response = await request(app).post("/api/login").send({
+      username: "testuser",
+      password: "password123",
+    });
+    expect(response.status).toBe(200);
+  });
+});
+```
+🔹 **If this is missing, Jest won't run the file!**  
+
+---
+
+### **4️⃣ Check Jest for Silent Errors**
+Jest might be **silently failing** due to a config error or dependency issue. Run:  
+```sh
+npm test -- --verbose
+```
+🔹 This will print detailed output, showing if Jest is skipping tests due to a config issue.
+
+---
+
+### **5️⃣ Ensure `jest` Is Installed & Configured in `package.json`**
+Run:  
+```sh
+npm list --depth=0 | grep jest
+```
+You should see:  
+```
+jest@xx.x.x
+ts-jest@xx.x.x
+@types/jest@xx.x.x
+```
+🔹 **If missing, reinstall Jest:**  
+```sh
+npm install --save-dev jest ts-jest @types/jest
+```
+
+---
+
+### **6️⃣ Check If Jest Is Detecting Tests at All**
+Run:  
+```sh
+npx jest --detectOpenHandles
+```
+🔹 This will detect if Jest is stuck due to an unclosed async function.
+
+---
+
+### **7️⃣ Ensure You're Using `test()` Instead of `it()` Globally**
+Some AI-generated tests might have `test.only()` or `it.only()`, which skips all other tests.  
+
+🔹 **Fix:** Open your test files and check for:  
+❌ `test.only("...", () => {...})`  
+❌ `it.only("...", () => {...})`  
+✅ Instead, use:  
+```ts
+it("should return 200 OK", () => {
+  expect(1 + 1).toBe(2);
+});
+```
+
+---
+
+## **🛠️ Next Steps**
+1️⃣ **Check if your test files are properly named (`*.test.ts`).**  
+2️⃣ **Ensure each test file has at least one `describe` or `it` block.**  
+3️⃣ **Run Jest in verbose mode:**  
+   ```sh
+   npm test -- --verbose
+   ```  
+4️⃣ **If still failing, check `jest.config.ts` and ensure `testMatch` includes `*.test.ts`.**  
+5️⃣ **If Jest is stuck, run:**  
+   ```sh
+   npx jest --detectOpenHandles
+   ```  
+
+---
+
+🚀 Try these fixes and let me know what happens! I’ll help you debug further if needed.
