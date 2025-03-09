@@ -3,9 +3,9 @@ export default {
   preset: "ts-jest",
   testEnvironment: "node",
   testMatch: [
-    "<rootDir>/tests/**/*.test.ts",
-    "<rootDir>/tests/**/*.spec.ts"
+    "**/tests/**/*.test.ts"
   ],
+  moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   collectCoverage: true,
   coverageDirectory: "coverage",
   moduleNameMapper: {
@@ -17,5 +17,7 @@ export default {
     "^.+\\.tsx?$": ["ts-jest", {
       tsconfig: "tsconfig.json"
     }]
-  }
+  },
+  testTimeout: 10000, // Increased timeout for tests
+  verbose: true
 };

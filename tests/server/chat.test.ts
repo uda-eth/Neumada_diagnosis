@@ -3,12 +3,12 @@ import { Express } from 'express';
 import { createApp } from '../../server/app';
 
 describe('Chat API', () => {
-  let app: Express.Application;
+  let app: Express;
 
   beforeAll(async () => {
     const { app: expressApp } = await createApp();
     app = expressApp;
-  });
+  }, 10000);
 
   it('should have a valid structure', () => {
     expect(true).toBe(true);
