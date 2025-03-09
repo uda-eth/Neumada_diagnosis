@@ -3,12 +3,12 @@ import { Express } from 'express';
 import { createApp } from '../../server/app';
 
 describe('Users API', () => {
-  let app: Express.Application;
+  let app: Express;
 
   beforeAll(async () => {
     const { app: expressApp } = await createApp();
     app = expressApp;
-  });
+  }, 10000);
 
   it('GET /api/users should return an array of users', async () => {
     const response = await request(app).get('/api/users');
