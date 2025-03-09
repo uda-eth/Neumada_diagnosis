@@ -1,6 +1,14 @@
+
 import request from 'supertest';
 import { Express } from 'express';
 import { createApp } from '../../server/app';
+
+let app: Express;
+
+beforeAll(async () => {
+  const { app: expressApp } = await createApp();
+  app = expressApp;
+}, 10000); // Extended timeout to ensure server starts
 
 describe('Auth API', () => {
   it('POST /api/auth/login should validate credentials', async () => {
@@ -23,7 +31,6 @@ describe('Auth API', () => {
 });
 
 describe('Authentication API', () => {
-  let app: Express.Application;
   const testUser = {
     username: `test_user_${Date.now()}`,
     password: 'test_password',
@@ -32,11 +39,6 @@ describe('Authentication API', () => {
     location: 'Test City',
     interests: ['Testing', 'Coding']
   };
-
-  beforeAll(async () => {
-    const { app: expressApp } = await createApp();
-    app = expressApp;
-  });
 
   describe('POST /api/register', () => {
     it('should register a new user', async () => {

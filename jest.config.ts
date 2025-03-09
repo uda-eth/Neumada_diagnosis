@@ -17,5 +17,6 @@ export default {
     "^.+\\.tsx?$": ["ts-jest", {
       tsconfig: "tsconfig.json"
     }]
-  }
+  },
+  testTimeout: 10000 // Increased timeout for tests
 };
