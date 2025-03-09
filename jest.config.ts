@@ -1,5 +1,6 @@
+import type { Config } from '@jest/types';
 
-export default {
+const config: Config.InitialOptions = {
   preset: "ts-jest",
   testEnvironment: "node",
   testMatch: [
@@ -19,5 +20,8 @@ export default {
     }]
   },
   testTimeout: 10000, // Increased timeout for tests
-  verbose: true
+  verbose: true,
+  setupFiles: ["<rootDir>/tests/setup.ts"]
 };
+
+export default config;
