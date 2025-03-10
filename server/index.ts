@@ -1,7 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { createApp } from "./app";
 
 const app = express();
 app.use(express.json());
@@ -67,7 +66,7 @@ app.use((req, res, next) => {
     };
 
     await cleanupPort();
-    const { httpServer } = await createApp();
+    const { httpServer } = await registerRoutes(app);
 
     // Error handling middleware
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
