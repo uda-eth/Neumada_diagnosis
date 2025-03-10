@@ -1,4 +1,3 @@
-import OpenAI from 'openai';
 import type { Request, Response } from 'express';
 
 // City-specific mock responses organized by categories
@@ -29,12 +28,12 @@ const MOCK_RESPONSES: { [key: string]: { [category: string]: string[] } } = {
       "Visit Puebla and Cholula for colonial architecture, amazing food, and the world's largest pyramid, 2 hours away.",
       "Explore Valle de Bravo for watersports and paragliding, or visit the Monarch Butterfly Sanctuary (seasonal) in Michoacán."
     ]
-  },
-  // Add similar structured responses for other cities...
+  }
 };
 
-// Default responses by category when city-specific data isn't available
-const DEFAULT_RESPONSES = {
+type ResponseCategory = 'restaurants' | 'workspaces' | 'neighborhoods' | 'attractions' | 'daytrips' | 'general';
+
+const DEFAULT_RESPONSES: Record<ResponseCategory, string[]> = {
   restaurants: [
     "Let me help you discover the best local restaurants in the area.",
     "The city has a diverse food scene ranging from street food to fine dining."
@@ -64,20 +63,21 @@ const DEFAULT_RESPONSES = {
 };
 
 export async function handleChatMessage(req: Request, res: Response) {
-  const { message, context } = req.body;
+  const { message } = req.body;
 
   if (!message) {
     return res.status(400).json({ error: "Message is required" });
   }
 
   try {
-    // Extract city and category from the message
+    // Extract city from the message
     const cityMatch = message.match(/\[City: ([^\]]+)\]/);
     const city = cityMatch ? cityMatch[1] : "Mexico City";
 
     // Determine the category based on keywords in the message
-    let category = 'general';
     const lowerMessage = message.toLowerCase();
+    let category: ResponseCategory = 'general';
+
     if (lowerMessage.includes('restaurant') || lowerMessage.includes('food') || lowerMessage.includes('eat')) {
       category = 'restaurants';
     } else if (lowerMessage.includes('work') || lowerMessage.includes('coworking') || lowerMessage.includes('café') || lowerMessage.includes('cafe')) {
@@ -92,13 +92,10 @@ export async function handleChatMessage(req: Request, res: Response) {
 
     // Get city-specific responses for the category or fall back to default
     const cityResponses = MOCK_RESPONSES[city];
-    const responses = cityResponses ? 
-      (cityResponses[category] || Object.values(cityResponses)[0]) : 
-      (DEFAULT_RESPONSES[category] || DEFAULT_RESPONSES.general);
-
+    const responses = cityResponses?.[category] || DEFAULT_RESPONSES[category];
     const response = responses[Math.floor(Math.random() * responses.length)];
 
-    console.log(`Using mock response for ${city} - Category: ${category}`);
+    console.log(`Using response for ${city} - Category: ${category}`);
 
     // Simulate a small delay to feel more natural
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -107,7 +104,7 @@ export async function handleChatMessage(req: Request, res: Response) {
   } catch (error: any) {
     console.error("Chat error:", error);
     res.status(500).json({ 
-      error: "Failed to get response from AI",
+      error: "Failed to get response",
       details: error.message 
     });
   }
