@@ -189,8 +189,8 @@ export default function HomePage() {
                 onClick={() => setLocation("/create")}
               >
                 <Plus className="h-5 w-5 md:mr-2" />
-                <span className="hidden md:inline">{t('create')}</span>
-                <span className="inline md:hidden">{t('create')}</span>
+                <span className="hidden md:inline">Make</span>
+                <span className="inline md:hidden">Make</span>
               </Button>
             </div>
           </div>
