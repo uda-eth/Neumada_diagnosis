@@ -3,7 +3,7 @@ import { useLanguage } from './language-context';
 type TranslationKey = 
   | 'discover'
   | 'connect'
-  | 'make'
+  | 'create'
   | 'inbox'
   | 'profile'
   | 'settings'
