@@ -12,11 +12,14 @@ import { Link } from "wouter";
 import { z } from "zod";
 
 const loginSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
+  username: z.string().min(3, "Username or email must be provided"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-const registerSchema = loginSchema.extend({
+const registerSchema = z.object({
+  username: z.string().min(3, "Username must be at least 3 characters"),
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
   fullName: z.string().optional(),
   bio: z.string().optional(),
   location: z.string().optional(),
@@ -27,6 +30,7 @@ export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     username: "",
+    email: "",
     password: "",
     fullName: "",
     bio: "",
@@ -145,44 +149,36 @@ export default function AuthPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {!isLogin && isReplitEnv && (
-            <div className="mb-6">
-              <Button 
-                onClick={handleReplitProfileSetup}
-                variant="outline" 
-                className="w-full flex items-center justify-center gap-2 h-11 bg-primary/5 hover:bg-primary/10 border-primary/20"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" fill="currentColor">
-                  <path d="M7.25471 16.001C7.25471 11.6146 10.813 8.05631 15.1993 8.05631C19.5856 8.05631 23.1439 11.6146 23.1439 16.001C23.1439 20.3874 19.5856 23.9457 15.1993 23.9457C10.813 23.9457 7.25471 20.3874 7.25471 16.001Z" />
-                  <path fillRule="evenodd" clipRule="evenodd" d="M15.1993 32.0001C23.593 32.0001 30.3986 25.1946 30.3986 16.8008C30.3986 8.40708 23.593 1.60156 15.1993 1.60156C6.80551 1.60156 0 8.40708 0 16.8008C0 25.1946 6.80551 32.0001 15.1993 32.0001ZM15.1993 27.1922C21.2518 27.1922 26.1622 22.2818 26.1622 16.2293C26.1622 10.1767 21.2518 5.26638 15.1993 5.26638C9.14671 5.26638 4.23644 10.1767 4.23644 16.2293C4.23644 22.2818 9.14671 27.1922 15.1993 27.1922Z"/>
-                </svg>
-                Sign up with Replit
-              </Button>
-              
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t"></span>
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-                </div>
-              </div>
-            </div>
-          )}
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">{isLogin ? "Username or Email" : "Username"}</Label>
               <Input
                 id="username"
                 required
-                placeholder="Enter your username"
+                placeholder={isLogin ? "Enter your username or email" : "Enter your username"}
                 value={formData.username}
                 onChange={(e) =>
                   setFormData({ ...formData, username: e.target.value })
                 }
               />
             </div>
+
+            {!isLogin && (
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  required
+                  placeholder="Enter your email address"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                />
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
@@ -273,19 +269,6 @@ export default function AuthPage() {
               ? "Don't have an account? Register"
               : "Already have an account? Login"}
           </Button>
-          
-          {isLogin && isReplitEnv && (
-            <div className="w-full mt-4 pt-4 border-t text-center">
-              <Button 
-                onClick={handleReplitProfileSetup}
-                variant="link" 
-                className="text-sm text-primary"
-              >
-                <ExternalLink className="h-4 w-4 mr-1" />
-                Sign up with your Replit account
-              </Button>
-            </div>
-          )}
         </CardFooter>
       </Card>
     </div>

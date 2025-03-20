@@ -12,6 +12,7 @@ import { eq } from "drizzle-orm";
 type UserType = {
   id: number;
   username: string;
+  email: string;
   password: string;
   fullName: string | null;
   bio: string | null;
@@ -32,6 +33,7 @@ declare global {
     interface User {
       id: number;
       username: string;
+      email: string;
       password: string;
       fullName: string | null;
       bio: string | null;
@@ -92,29 +94,34 @@ export function setupAuth(app: Express) {
   app.use(passport.session());
 
   passport.use(
-    new LocalStrategy(async (username, password, done) => {
+    new LocalStrategy(async (usernameOrEmail, password, done) => {
       try {
-        console.log("Login attempt for username:", username);
+        console.log("Login attempt for usernameOrEmail:", usernameOrEmail);
+        
+        // Check if the input is an email (contains @)
+        const isEmail = usernameOrEmail.includes('@');
+        
+        // Search by either username or email
         const [user] = await db
           .select()
           .from(users)
-          .where(eq(users.username, username))
+          .where(isEmail ? eq(users.email, usernameOrEmail) : eq(users.username, usernameOrEmail))
           .limit(1);
 
         if (!user) {
-          console.log("No user found with username:", username);
-          return done(null, false, { message: "Invalid username or password." });
+          console.log("No user found with", isEmail ? "email" : "username", ":", usernameOrEmail);
+          return done(null, false, { message: "Invalid username/email or password." });
         }
 
         console.log("Found user:", { id: user.id, username: user.username });
         const isMatch = await crypto.compare(password, user.password);
 
         if (!isMatch) {
-          console.log("Password mismatch for username:", username);
-          return done(null, false, { message: "Invalid username or password." });
+          console.log("Password mismatch for user:", usernameOrEmail);
+          return done(null, false, { message: "Invalid username/email or password." });
         }
 
-        console.log("Login successful for username:", username);
+        console.log("Login successful for user:", usernameOrEmail);
         return done(null, user);
       } catch (err) {
         console.error("Login error:", err);
@@ -149,6 +156,7 @@ export function setupAuth(app: Express) {
       console.log("Registration attempt:", req.body);
       const { 
         username, 
+        email,
         password, 
         fullName, 
         bio, 
@@ -162,8 +170,8 @@ export function setupAuth(app: Express) {
         nextLocation
       } = req.body;
 
-      if (!username || !password) {
-        return res.status(400).send("Username and password are required");
+      if (!username || !password || !email) {
+        return res.status(400).send("Username, email, and password are required");
       }
 
       if (username.length < 3) {
@@ -173,16 +181,33 @@ export function setupAuth(app: Express) {
       if (password.length < 6) {
         return res.status(400).send("Password must be at least 6 characters long");
       }
+      
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).send("Please enter a valid email address");
+      }
 
-      // Check if user already exists
-      const [existingUser] = await db
+      // Check if username already exists
+      const [existingUsername] = await db
         .select()
         .from(users)
         .where(eq(users.username, username))
         .limit(1);
 
-      if (existingUser) {
+      if (existingUsername) {
         return res.status(400).send("Username already exists");
+      }
+      
+      // Check if email already exists
+      const [existingEmail] = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1);
+
+      if (existingEmail) {
+        return res.status(400).send("Email address already in use");
       }
 
       // Hash the password
@@ -207,6 +232,7 @@ export function setupAuth(app: Express) {
           .insert(users)
           .values({
             username,
+            email,
             password: hashedPassword,
             fullName: fullName || null,
             bio: bio || null,
@@ -238,10 +264,11 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/login", (req, res, next) => {
-    console.log("Login attempt:", { username: req.body.username });
+    const usernameOrEmail = req.body.username; // We keep the parameter name as 'username' for backward compatibility
+    console.log("Login attempt:", { usernameOrEmail });
 
-    if (!req.body.username || !req.body.password) {
-      return res.status(400).send("Username and password are required");
+    if (!usernameOrEmail || !req.body.password) {
+      return res.status(400).send("Email/username and password are required");
     }
 
     passport.authenticate("local", (err: any, user: Express.User, info: IVerifyOptions) => {
@@ -252,7 +279,7 @@ export function setupAuth(app: Express) {
       }
 
       if (!user) {
-        return res.status(400).send(info.message ?? "Invalid username or password");
+        return res.status(400).send(info.message ?? "Invalid email/username or password");
       }
 
       req.logIn(user, (err) => {
