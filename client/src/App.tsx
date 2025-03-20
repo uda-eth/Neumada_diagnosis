@@ -13,36 +13,45 @@ import InboxPage from "./pages/InboxPage";
 import ProfileEditPage from "./pages/ProfileEditPage";
 import TranslatorPage from "./pages/TranslatorPage";
 import OndaLindaFestivalPage from "./pages/OndaLindaFestivalPage";
+import ProfileGeneratorPage from "./pages/ProfileGeneratorPage";
+import ReplitProfilePage from "./pages/ReplitProfilePage";
+import AuthPage from "./pages/AuthPage";
 import { Layout } from "./components/ui/layout";
 import { ThemeProvider } from "./lib/theme-provider";
 import { LanguageProvider } from "./lib/language-context";
+import { QueryProvider } from "./lib/query-provider";
 
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="nomad-theme">
-      <LanguageProvider>
-        <Layout>
-          <Switch>
-            <Route path="/" component={HomePage} />
-            <Route path="/event/onda-linda-festival" component={OndaLindaFestivalPage} />
-            <Route path="/event/:id" component={EventPage} />
-            <Route path="/profile/:username" component={ProfilePage} />
-            <Route path="/create" component={CreateEventPage} />
-            <Route path="/companion" component={ChatbotPage} />
-            <Route path="/connect" component={ConnectPage} />
-            <Route path="/messages" component={MessagesPage} />
-            <Route path="/chat/:username" component={ChatPage} />
-            <Route path="/settings" component={SettingsPage} />
-            <Route path="/premium" component={PremiumPage} />
-            <Route path="/inbox" component={InboxPage} />
-            <Route path="/profile-edit" component={ProfileEditPage} />
-            <Route path="/translator" component={TranslatorPage} />
-            <Route path="/:rest*">
-              {() => <div className="text-center p-8">404 - Page Not Found</div>}
-            </Route>
-          </Switch>
-        </Layout>
-      </LanguageProvider>
+      <QueryProvider>
+        <LanguageProvider>
+          <Layout>
+            <Switch>
+              <Route path="/" component={HomePage} />
+              <Route path="/event/onda-linda-festival" component={OndaLindaFestivalPage} />
+              <Route path="/event/:id" component={EventPage} />
+              <Route path="/profile/:username" component={ProfilePage} />
+              <Route path="/create" component={CreateEventPage} />
+              <Route path="/companion" component={ChatbotPage} />
+              <Route path="/connect" component={ConnectPage} />
+              <Route path="/messages" component={MessagesPage} />
+              <Route path="/chat/:username" component={ChatPage} />
+              <Route path="/settings" component={SettingsPage} />
+              <Route path="/premium" component={PremiumPage} />
+              <Route path="/inbox" component={InboxPage} />
+              <Route path="/profile-edit" component={ProfileEditPage} />
+              <Route path="/translator" component={TranslatorPage} />
+              <Route path="/auth" component={AuthPage} />
+              <Route path="/profile-setup" component={ProfileGeneratorPage} />
+              <Route path="/replit-profile" component={ReplitProfilePage} />
+              <Route path="/:rest*">
+                {() => <div className="text-center p-8">404 - Page Not Found</div>}
+              </Route>
+            </Switch>
+          </Layout>
+        </LanguageProvider>
+      </QueryProvider>
     </ThemeProvider>
   );
 }

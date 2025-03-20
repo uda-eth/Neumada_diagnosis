@@ -3,6 +3,7 @@ import { useLanguage } from './language-context';
 type TranslationKey = 
   | 'discover'
   | 'connect'
+  | 'create'
   | 'make'
   | 'inbox'
   | 'profile'
@@ -25,6 +26,7 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     discover: 'Discover',
     connect: 'Connect',
     create: 'Create',
+    make: 'Make',
     inbox: 'Inbox',
     profile: 'Profile',
     settings: 'Settings',
@@ -45,6 +47,7 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     discover: 'Descubrir',
     connect: 'Conectar',
     create: 'Crear',
+    make: 'Hacer',
     inbox: 'Mensajes',
     profile: 'Perfil',
     settings: 'Ajustes',

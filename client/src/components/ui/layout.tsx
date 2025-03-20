@@ -1,6 +1,6 @@
 import { BottomNav } from "./bottom-nav";
 import { Logo } from "./logo";
-import { Menu, Bot, Globe, Inbox, Crown, Settings, UserCircle, HelpCircle } from "lucide-react";
+import { Menu, Bot, Globe, Inbox, Crown, Settings, UserCircle, HelpCircle, LogIn } from "lucide-react";
 import { Button } from "./button";
 import { useLocation } from "wouter";
 import {
@@ -18,6 +18,7 @@ export function Layout({ children }: LayoutProps) {
   const [, setLocation] = useLocation();
 
   const menuItems = [
+    { href: "/auth", label: "Login / Sign Up", icon: LogIn },
     { href: "/premium", label: "Premium Upgrade", icon: Crown, isPremium: true },
     { href: "/inbox", label: "Inbox", icon: Inbox },
     { href: "/translator", label: "Translator", icon: Globe },
@@ -38,6 +39,17 @@ export function Layout({ children }: LayoutProps) {
               </a>
             </div>
             <div className="flex items-center gap-4">
+              {/* Login button */}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="interactive-hover hidden md:flex items-center gap-2"
+                onClick={() => setLocation("/auth")}
+              >
+                <LogIn className="w-4 h-4" />
+                <span>Login / Sign Up</span>
+              </Button>
+              
               {/* Hamburger Menu - only show on desktop */}
               <div className="hidden md:block">
                 <DropdownMenu>

@@ -7,7 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronLeft, Search, MessageCircle } from "lucide-react";
 import { useLocation } from "wouter";
 
-// Mock conversations data with real member profiles
+// Mock data moved to a separate constant
 const mockConversations = [
   {
     user: {
@@ -39,11 +39,54 @@ const mockConversations = [
   }
 ];
 
+const ConversationCard = ({ conversation, onClick }: { 
+  conversation: typeof mockConversations[0];
+  onClick: () => void;
+}) => (
+  <Card
+    className="hover:bg-accent/5 transition-colors cursor-pointer"
+    onClick={onClick}
+  >
+    <div className="p-4 flex items-center gap-4">
+      <Avatar className="h-12 w-12 ring-2 ring-primary/10">
+        <AvatarImage src={conversation.user.image} alt={conversation.user.name} />
+        <AvatarFallback>{conversation.user.name[0]}</AvatarFallback>
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold truncate">{conversation.user.name}</h3>
+            <span className={`px-2 py-0.5 rounded-full text-xs ${
+              conversation.user.mood === "Creative" 
+                ? "bg-pink-500/20 text-pink-500" 
+                : "bg-blue-500/20 text-blue-500"
+            }`}>
+              {conversation.user.mood}
+            </span>
+          </div>
+          <span className="text-xs text-muted-foreground">
+            {new Date(conversation.lastMessage.createdAt).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false
+            })}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 mt-1">
+          <p className="text-sm truncate text-muted-foreground">
+            {conversation.lastMessage.content}
+          </p>
+          <span className="text-xs text-muted-foreground">• {conversation.user.location}</span>
+        </div>
+      </div>
+    </div>
+  </Card>
+);
+
 export default function MessagesPage() {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Filter conversations based on search query
   const filteredConversations = mockConversations.filter(conv =>
     conv.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     conv.lastMessage.content.toLowerCase().includes(searchQuery.toLowerCase())
@@ -86,45 +129,11 @@ export default function MessagesPage() {
       <ScrollArea className="flex-1">
         <div className="container mx-auto px-4 py-4 space-y-2">
           {filteredConversations.map((conv) => (
-            <Card
+            <ConversationCard
               key={conv.user.id}
-              className="hover:bg-accent/5 transition-colors cursor-pointer"
+              conversation={conv}
               onClick={() => setLocation(`/chat/${conv.user.id}`)}
-            >
-              <div className="p-4 flex items-center gap-4">
-                <Avatar className="h-12 w-12 ring-2 ring-primary/10">
-                  <AvatarImage src={conv.user.image} alt={conv.user.name} />
-                  <AvatarFallback>{conv.user.name[0]}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold truncate">{conv.user.name}</h3>
-                      <span className={`px-2 py-0.5 rounded-full text-xs ${
-                        conv.user.mood === "Creative" 
-                          ? "bg-pink-500/20 text-pink-500" 
-                          : "bg-blue-500/20 text-blue-500"
-                      }`}>
-                        {conv.user.mood}
-                      </span>
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(conv.lastMessage.createdAt).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false
-                      })}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <p className="text-sm truncate text-muted-foreground">
-                      {conv.lastMessage.content}
-                    </p>
-                    <span className="text-xs text-muted-foreground">• {conv.user.location}</span>
-                  </div>
-                </div>
-              </div>
-            </Card>
+            />
           ))}
           {filteredConversations.length === 0 && (
             <div className="text-center py-8">
