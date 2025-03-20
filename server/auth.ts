@@ -9,7 +9,7 @@ import { db } from "@db";
 import { eq } from "drizzle-orm";
 
 // Define the User type to match our schema
-type User = {
+type UserType = {
   id: number;
   username: string;
   password: string;
@@ -18,12 +18,33 @@ type User = {
   profileImage: string | null;
   location: string | null;
   interests: string[] | null;
+  currentMoods?: string[] | null;
+  profession?: string | null;
+  age?: number | null;
+  gender?: string | null;
+  nextLocation?: string | null;
   createdAt: Date | null;
 };
 
 declare global {
   namespace Express {
-    interface User extends User {}
+    // Define the User interface without circular reference
+    interface User {
+      id: number;
+      username: string;
+      password: string;
+      fullName: string | null;
+      bio: string | null;
+      profileImage: string | null;
+      location: string | null;
+      interests: string[] | null;
+      currentMoods?: string[] | null;
+      profession?: string | null;
+      age?: number | null;
+      gender?: string | null;
+      nextLocation?: string | null;
+      createdAt: Date | null;
+    }
   }
 }
 
@@ -126,7 +147,20 @@ export function setupAuth(app: Express) {
   app.post("/api/register", async (req, res, next) => {
     try {
       console.log("Registration attempt:", req.body);
-      const { username, password, fullName, bio, location, interests } = req.body;
+      const { 
+        username, 
+        password, 
+        fullName, 
+        bio, 
+        location, 
+        interests,
+        profession,
+        profileImage,
+        currentMoods,
+        age,
+        gender,
+        nextLocation
+      } = req.body;
 
       if (!username || !password) {
         return res.status(400).send("Username and password are required");
@@ -155,9 +189,19 @@ export function setupAuth(app: Express) {
       const hashedPassword = await crypto.hash(password);
       console.log("Password hashed successfully for new user");
 
-      // Ensure interests is always an array or null
+      // Ensure interests and moods are always arrays or null
       const processedInterests = interests && Array.isArray(interests) ? interests : null;
+      const processedMoods = currentMoods && Array.isArray(currentMoods) ? currentMoods : null;
 
+      // Create additional user metadata
+      const userData = {
+        profession: profession || null,
+        age: age ? Number(age) : null,
+        gender: gender || null,
+        nextLocation: nextLocation || null
+      };
+
+      // Create user with extended fields
       try {
         const [newUser] = await db
           .insert(users)
@@ -168,6 +212,9 @@ export function setupAuth(app: Express) {
             bio: bio || null,
             location: location || null,
             interests: processedInterests,
+            profileImage: profileImage || null,
+            // Add new fields if they're supported in the schema
+            ...userData
           })
           .returning();
 
@@ -240,5 +287,60 @@ export function setupAuth(app: Express) {
     }
     console.log("Unauthenticated user request");
     res.status(401).send("Not authenticated");
+  });
+
+  // Add endpoint for updating user profiles
+  app.post("/api/profile", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const userId = req.user?.id;
+      const updatedFields = req.body;
+      
+      // Remove sensitive fields that shouldn't be updated directly
+      const { password, id, ...safeFields } = updatedFields;
+      
+      // Process arrays
+      if (safeFields.interests && Array.isArray(safeFields.interests)) {
+        safeFields.interests = safeFields.interests.length > 0 ? safeFields.interests : null;
+      }
+      
+      if (safeFields.currentMoods && Array.isArray(safeFields.currentMoods)) {
+        safeFields.currentMoods = safeFields.currentMoods.length > 0 ? safeFields.currentMoods : null;
+      }
+      
+      // Update the user
+      const [updatedUser] = await db
+        .update(users)
+        .set(safeFields)
+        .where(eq(users.id, userId))
+        .returning();
+      
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Profile update error:", error);
+      res.status(500).send("Failed to update profile");
+    }
+  });
+
+  // Add endpoint to check for Replit environment
+  app.get("/api/replit-info", (req, res) => {
+    // Check if we're running in a Replit environment
+    const isReplitEnv = process.env.REPL_ID && process.env.REPL_OWNER;
+    
+    if (isReplitEnv) {
+      res.json({
+        isReplit: true,
+        replId: process.env.REPL_ID,
+        owner: process.env.REPL_OWNER,
+        slug: process.env.REPL_SLUG
+      });
+    } else {
+      res.json({
+        isReplit: false
+      });
+    }
   });
 }
