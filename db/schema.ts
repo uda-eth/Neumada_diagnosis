@@ -58,6 +58,7 @@ export const events = pgTable("events", {
   timeFrame: text("time_frame"), // Today, This Week, This Weekend, This Month, Next Month
   stripeProductId: text("stripe_product_id"), // For payment integration
   stripePriceId: text("stripe_price_id"), // For payment integration
+  isDraft: boolean("is_draft").default(false), // For drafts vs published events
 });
 
 export const eventParticipants = pgTable("event_participants", {
