@@ -297,15 +297,35 @@ export default function CreateEventPage() {
                 <div>
                   <Input
                     type="time"
-                    {...form.register("startTime")}
                     className="bg-white/5 border-0 h-12"
+                    onChange={(e) => {
+                      const time = e.target.value;
+                      const currentDate = form.getValues("date");
+                      if (currentDate && time) {
+                        // Set the time component on the date
+                        const [hours, minutes] = time.split(':').map(Number);
+                        const newDate = new Date(currentDate);
+                        newDate.setHours(hours, minutes);
+                        form.setValue("date", newDate);
+                      }
+                    }}
                   />
                 </div>
                 <div>
                   <Input
                     type="time"
-                    {...form.register("endTime")}
                     className="bg-white/5 border-0 h-12"
+                    onChange={(e) => {
+                      const time = e.target.value;
+                      if (time) {
+                        // Create or update end date with this time
+                        const [hours, minutes] = time.split(':').map(Number);
+                        const endDate = form.getValues("endDate") || new Date(form.getValues("date"));
+                        const newEndDate = new Date(endDate);
+                        newEndDate.setHours(hours, minutes);
+                        form.setValue("endDate", newEndDate);
+                      }
+                    }}
                   />
                 </div>
               </div>
