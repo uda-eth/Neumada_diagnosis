@@ -219,18 +219,19 @@ export default function HomePage() {
           description: "Your city suggestion has been received. We'll notify you when we add support for this location.",
           variant: "default"
         });
-        
-        // Clear the form fields individually instead of using reset()
-        const cityInput = form.querySelector('#city') as HTMLInputElement;
-        const emailInput = form.querySelector('#email') as HTMLInputElement;
-        const reasonInput = form.querySelector('#reason') as HTMLTextAreaElement;
-        
-        if (cityInput) cityInput.value = '';
-        if (emailInput) emailInput.value = '';
-        if (reasonInput) reasonInput.value = '';
-        
-        // Close the dialog
+        // Success! Close the dialog first to prevent UI issues
         setShowCitySuggestDialog(false);
+        
+        // Then clear the form fields (for next time the dialog opens)
+        setTimeout(() => {
+          const cityInput = form.querySelector('#city') as HTMLInputElement;
+          const emailInput = form.querySelector('#email') as HTMLInputElement;
+          const reasonInput = form.querySelector('#reason') as HTMLTextAreaElement;
+          
+          if (cityInput) cityInput.value = '';
+          if (emailInput) emailInput.value = '';
+          if (reasonInput) reasonInput.value = '';
+        }, 300); // Small delay to ensure dialog closes first
       } else {
         throw new Error(data.message || 'Something went wrong');
       }
@@ -772,8 +773,25 @@ export default function HomePage() {
       )}
 
       {/* City Suggestion Dialog */}
-      <Dialog open={showCitySuggestDialog} onOpenChange={setShowCitySuggestDialog}>
-        <DialogContent className="sm:max-w-[425px]">
+      <Dialog 
+        open={showCitySuggestDialog} 
+        onOpenChange={(open) => {
+          // Only update state if not currently submitting
+          if (!isSubmitting) {
+            setShowCitySuggestDialog(open);
+          }
+        }}
+      >
+        <DialogContent 
+          className="sm:max-w-[425px]"
+          onInteractOutside={(e) => {
+            // Prevent interaction with outside elements while dialog is open
+            // but only if not currently submitting
+            if (isSubmitting) {
+              e.preventDefault();
+            }
+          }}
+        >
           <DialogHeader>
             <DialogTitle>Suggest a City</DialogTitle>
             <DialogDescription>
@@ -812,7 +830,11 @@ export default function HomePage() {
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={() => setShowCitySuggestDialog(false)}
+                onClick={() => {
+                  if (!isSubmitting) {
+                    setShowCitySuggestDialog(false);
+                  }
+                }}
                 disabled={isSubmitting}
               >
                 Cancel
