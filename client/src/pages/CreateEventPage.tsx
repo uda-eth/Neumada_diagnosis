@@ -10,6 +10,7 @@ import { ChevronLeft, Plus } from "lucide-react";
 import { insertEventSchema } from "@db/schema";
 import type { z } from "zod";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useUser } from "@/hooks/use-user";
 
 // Define the form data type using the zod schema
 type FormData = z.infer<typeof insertEventSchema>;
@@ -29,30 +30,44 @@ const interestTags = [
   "Languages",
 ];
 
+const categories = [
+  "Social",
+  "Professional",
+  "Cultural",
+  "Sports",
+  "Dining",
+  "Festivals",
+  "Retail",
+  "Fashion",
+  "Tech",
+  "Educational"
+];
+
 export default function CreateEventPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { user } = useUser();
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [eventImage, setEventImage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("Social");
 
   const form = useForm<FormData>({
     resolver: zodResolver(insertEventSchema),
     defaultValues: {
       title: "",
       description: "",
-      location: "",
-      date: new Date().toISOString(),
-      startTime: "",
-      endTime: "",
-      price: 0,
+      location: user?.location || "",
+      city: user?.location || "",
+      date: new Date().toISOString().split('T')[0], // Format as YYYY-MM-DD
+      price: "0",
       isPrivate: false,
       category: "Social", // Default category
       image: null,
       tags: [],
       image_url: null,
-      creatorId: null,
-      attendingCount: 0,
-      interestedCount: 0
+      creatorId: user?.id || null,
+      capacity: 20
     },
   });
 
@@ -63,7 +78,7 @@ export default function CreateEventPage() {
       reader.onloadend = () => {
         setEventImage(reader.result as string);
         // Also update the form data
-        form.setValue("image", reader.result as string);
+        form.setValue("image_url", reader.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -71,14 +86,49 @@ export default function CreateEventPage() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const eventData = {
-        ...data,
-        image: eventImage,
-        tags: selectedTags,
-      };
-
-      // Here you would typically make an API call to save the event
-      console.log("Submitting event:", eventData);
+      setIsSubmitting(true);
+      
+      // Create FormData for multipart/form-data (for image upload)
+      const formData = new FormData();
+      
+      // Add all form fields to FormData
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          formData.append(key, value.toString());
+        }
+      });
+      
+      // Add the selected tags as JSON string
+      formData.append('tags', JSON.stringify(selectedTags));
+      
+      // Add category
+      formData.append('category', selectedCategory);
+      
+      // If we have a Base64 image URL, convert it to a file and append
+      if (eventImage && eventImage.startsWith('data:image')) {
+        // Convert base64 to blob
+        const fetchResponse = await fetch(eventImage);
+        const blob = await fetchResponse.blob();
+        const file = new File([blob], "event-image.jpg", { type: "image/jpeg" });
+        formData.append('image', file);
+      }
+      
+      console.log("Submitting event:", Object.fromEntries(formData));
+      
+      // Make the API call
+      const response = await fetch('/api/events', {
+        method: 'POST',
+        body: formData,
+        // No Content-Type header - browser will set it for FormData with correct boundary
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create event');
+      }
+      
+      const createdEvent = await response.json();
+      console.log("Event created:", createdEvent);
 
       toast({
         title: "Success",
@@ -86,11 +136,14 @@ export default function CreateEventPage() {
       });
       setLocation("/");
     } catch (error) {
+      console.error("Error creating event:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to create event",
+        description: error instanceof Error ? error.message : "Failed to create event",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -161,6 +214,30 @@ export default function CreateEventPage() {
                   placeholder="Fill in event details"
                 />
               </div>
+              
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium">Event Category</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {categories.map((category) => (
+                    <Button
+                      key={category}
+                      type="button"
+                      variant={selectedCategory === category ? "default" : "outline"}
+                      className={`h-10 text-sm ${
+                        selectedCategory === category
+                          ? ""
+                          : "bg-white/5 border-white/10 hover:bg-white/10"
+                      }`}
+                      onClick={() => {
+                        setSelectedCategory(category);
+                        form.setValue("category", category);
+                      }}
+                    >
+                      {category}
+                    </Button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -221,23 +298,23 @@ export default function CreateEventPage() {
               <div className="flex gap-4">
                 <Button
                   type="button"
-                  variant={form.watch("price") === 0 ? "default" : "outline"}
+                  variant={form.watch("price") === "0" ? "default" : "outline"}
                   className="flex-1 h-12"
-                  onClick={() => form.setValue("price", 0)}
+                  onClick={() => form.setValue("price", "0")}
                 >
                   Free
                 </Button>
                 <Button
                   type="button"
-                  variant={form.watch("price") > 0 ? "default" : "outline"}
+                  variant={parseFloat(form.watch("price") || "0") > 0 ? "default" : "outline"}
                   className="flex-1 h-12"
-                  onClick={() => form.setValue("price", 10)} // Set a default price instead of undefined
+                  onClick={() => form.setValue("price", "10")} // Set a default price
                 >
                   Paid
                 </Button>
               </div>
 
-              {form.watch("price") > 0 && (
+              {parseFloat(form.watch("price") || "0") > 0 && (
                 <div className="space-y-2">
                   <Input
                     type="number"
