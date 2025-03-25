@@ -1,4 +1,3 @@
-
 import type { Request, Response } from 'express';
 import { openai, SYSTEM_PROMPT } from './config/openai';
 import { db } from '../db';
@@ -45,7 +44,7 @@ export async function handleChatMessage(req: Request, res: Response) {
       const city = cityMatch ? cityMatch[1].trim() : undefined;
 
       const localEvents = await searchLocalEvents(city);
-      
+
       if (localEvents && localEvents.length > 0) {
         let response = '### Local Events (Mexico City)\n\n';
         localEvents.forEach((event, index) => {
@@ -53,16 +52,21 @@ export async function handleChatMessage(req: Request, res: Response) {
           response += `   - Date: ${new Date(event.date).toLocaleDateString()}\n`;
           response += `   - Location: ${event.location}\n`;
           response += `   - Category: ${event.category}\n`;
-          response += `   - Price: ${event.price || 'Free'}\n\n`;
+          response += `   - Price: ${event.price || 'Free'}\n`;
+          if (event.description) {
+            response += `   - Description: ${event.description}\n`;
+          }
+          response += '\n';
         });
-        response += '\nThese events are sourced from local seeded data.';
+        response += '\nThese events are sourced from local user-posted data.';
         return res.json({ response });
       } else {
         let response = '### Debugging Information\n\n';
         response += 'No local events were found. Please check the following:\n\n';
-        response += '- Verify that the seed file was executed using `npm run seed`\n';
-        response += '- Confirm that the local database connection is working\n';
-        response += '- Check that the seeded data includes events for Mexico City\n';
+        response += '* Verify that the seed file was executed using `npm run seed`\n';
+        response += '* Confirm that the local database connection is working properly\n';
+        response += '* Check that the seeded data includes events for Mexico City\n';
+        response += '\nOnce these steps are completed, try your query again.';
         return res.json({ response });
       }
     }
