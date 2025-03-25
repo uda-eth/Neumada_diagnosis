@@ -57,7 +57,6 @@ export async function handleChatMessage(req: Request, res: Response) {
         },
         { role: "user", content: message }
       ],
-      temperature: 0.7,
       max_tokens: 500
     });
 
