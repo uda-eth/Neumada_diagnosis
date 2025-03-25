@@ -34,11 +34,12 @@ export async function handleChatMessage(req: Request, res: Response) {
 
       // Get relevant web search results
       const searchResults = await webSearch(message);
-      searchContext = searchResults.map(result => {
+      // Format search results as numbered list
+      searchContext = searchResults.map((result, index) => {
         const cleanTitle = result.title.replace(/\*\*/g, '').replace(/\[|\]/g, '');
         const cleanSnippet = result.snippet.replace(/\*\*/g, '').replace(/\[|\]/g, '');
-        return `Title: ${cleanTitle}\nDetails: ${cleanSnippet}`;
-      }).join('\n\n');
+        return `${index + 1}. ${cleanTitle}: ${cleanSnippet}`;
+      }).join('\n');
     }
 
     // Get latest events and format them
