@@ -197,6 +197,21 @@ export function useUser() {
     refreshUser();
   }
 
+  // Add profile update mutation
+  const updateProfile = useMutation({
+    mutationFn: async (profileData: any) => {
+      const result = await handleRequest('/api/profile', 'POST', profileData);
+      if (result.ok) {
+        // Force a refetch immediately after successful profile update
+        await refetch();
+      }
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+    },
+  });
+
   return {
     user,
     isLoading,
@@ -206,6 +221,7 @@ export function useUser() {
     register: register.mutateAsync,
     startChat,
     refetchUser: refetch,
-    refreshUser
+    refreshUser,
+    updateProfile: updateProfile.mutateAsync
   };
 }
