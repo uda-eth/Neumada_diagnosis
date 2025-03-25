@@ -30,9 +30,27 @@ function AppContent() {
 
   // Redirect to auth page if not logged in and not already on auth page
   useEffect(() => {
-    if (!isLoading && !user && !location.startsWith('/auth')) {
-      setLocation('/auth');
-    }
+    const checkAuth = async () => {
+      if (!isLoading && !user && !location.startsWith('/auth')) {
+        // Check if we have a valid session by making a direct API call
+        try {
+          const response = await fetch('/api/user', { 
+            credentials: 'include',
+            headers: { 'Cache-Control': 'no-cache' }
+          });
+          
+          if (!response.ok) {
+            // Not authenticated, redirect to auth page
+            setLocation('/auth');
+          }
+        } catch (error) {
+          console.error("Error checking authentication:", error);
+          setLocation('/auth');
+        }
+      }
+    };
+    
+    checkAuth();
   }, [user, isLoading, location, setLocation]);
 
   // Determine if we should show the layout based on the current route

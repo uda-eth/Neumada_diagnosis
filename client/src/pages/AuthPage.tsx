@@ -101,23 +101,30 @@ export default function AuthPage() {
     setIsSubmitting(true);
     try {
       if (isLogin) {
-        const result = await login({
-          username: formData.username,
-          password: formData.password,
+        // Direct fetch approach for login to ensure session is properly set
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: formData.username,
+            password: formData.password,
+          }),
+          credentials: 'include',
         });
-        if (!result.ok) {
-          throw new Error(result.message);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || 'Login failed');
         }
+        
+        // Successfully logged in
         toast({
           title: "Success",
           description: "Logged in successfully",
         });
         
-        // Delay for a moment to allow authentication state to update
-        setTimeout(() => {
-          // Redirect to home page after successful login
-          setLocation("/");
-        }, 300);
+        // Hard redirect to home page to ensure full page reload with new auth state
+        window.location.href = '/';
       } else {
         // Convert interests string to array and clean it up
         const registerData = {
@@ -125,20 +132,26 @@ export default function AuthPage() {
           interests: formData.interests ? formData.interests.split(',').map(i => i.trim()) : undefined,
         };
 
-        const result = await register(registerData);
-        if (!result.ok) {
-          throw new Error(result.message);
+        // Direct fetch approach for registration
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(registerData),
+          credentials: 'include',
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || 'Registration failed');
         }
+        
         toast({
           title: "Success",
           description: "Registered successfully",
         });
         
-        // Delay for a moment to allow authentication state to update
-        setTimeout(() => {
-          // Redirect to home page after successful registration
-          setLocation("/");
-        }, 300);
+        // Hard redirect to home page to ensure full page reload with new auth state
+        window.location.href = '/';
       }
     } catch (error: any) {
       toast({
