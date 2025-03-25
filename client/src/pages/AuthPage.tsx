@@ -8,8 +8,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, ExternalLink } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Link } from "wouter";
+import { useLocation } from "wouter";
 import { z } from "zod";
+import { Logo } from "@/components/ui/logo";
 
 const loginSchema = z.object({
   username: z.string().min(3, "Username or email must be provided"),
@@ -40,8 +41,16 @@ export default function AuthPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isReplitEnv, setIsReplitEnv] = useState(false);
   const [replitData, setReplitData] = useState<any>(null);
-  const { login, register } = useUser();
+  const { login, register, user } = useUser();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
+  
+  // If user is already logged in, redirect to home page
+  useEffect(() => {
+    if (user) {
+      setLocation("/");
+    }
+  }, [user, setLocation]);
   
   // Check if we're in a Replit environment
   useEffect(() => {
@@ -103,6 +112,8 @@ export default function AuthPage() {
           title: "Success",
           description: "Logged in successfully",
         });
+        // Redirect to home page after successful login
+        setLocation("/");
       } else {
         // Convert interests string to array and clean it up
         const registerData = {
@@ -118,6 +129,8 @@ export default function AuthPage() {
           title: "Success",
           description: "Registered successfully",
         });
+        // Redirect to home page after successful registration
+        setLocation("/");
       }
     } catch (error: any) {
       toast({
@@ -133,11 +146,15 @@ export default function AuthPage() {
   // Function to handle Replit profile setup
   const handleReplitProfileSetup = () => {
     // Navigate to the Replit profile setup page
-    window.location.href = "/replit-profile";
+    setLocation("/replit-profile");
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
+      <div className="mb-8 flex items-center">
+        <Logo className="h-12 w-auto" />
+      </div>
+      
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>{isLogin ? "Login" : "Register"}</CardTitle>
