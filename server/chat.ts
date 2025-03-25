@@ -17,7 +17,13 @@ export async function handleChatMessage(req: Request, res: Response) {
     const needsWebSearch = message.toLowerCase().includes('event') || 
                           message.toLowerCase().includes('happening') ||
                           message.toLowerCase().includes('what\'s on') ||
-                          message.toLowerCase().includes('whats on');
+                          message.toLowerCase().includes('whats on') ||
+                          message.toLowerCase().includes('restaurant') ||
+                          message.toLowerCase().includes('food') ||
+                          message.toLowerCase().includes('eat') ||
+                          message.toLowerCase().includes('dining') ||
+                          message.toLowerCase().includes('cafe') ||
+                          message.toLowerCase().includes('bar');
 
     let model = "gpt-4";
     let webSearchOptions = undefined;
@@ -71,10 +77,10 @@ export async function handleChatMessage(req: Request, res: Response) {
           Important instructions:
           1. Always respond in English
           2. Keep responses brief and direct
-          3. Limit responses to 2-3 key points or events
-          4. Format event listings as:
-             • [Event Name] - [Date] at [Location]
-             Brief one-line description if needed.
+          3. Limit responses to 3-4 key recommendations
+          4. For restaurants/venues format as:
+             • [Name] - [Area]
+             One-line description of cuisine and price range
           5. Avoid using bold text or complex formatting
           6. Use simple bullet points for readability
           
