@@ -112,8 +112,12 @@ export default function AuthPage() {
           title: "Success",
           description: "Logged in successfully",
         });
-        // Redirect to home page after successful login
-        setLocation("/");
+        
+        // Delay for a moment to allow authentication state to update
+        setTimeout(() => {
+          // Redirect to home page after successful login
+          setLocation("/");
+        }, 300);
       } else {
         // Convert interests string to array and clean it up
         const registerData = {
@@ -129,8 +133,12 @@ export default function AuthPage() {
           title: "Success",
           description: "Registered successfully",
         });
-        // Redirect to home page after successful registration
-        setLocation("/");
+        
+        // Delay for a moment to allow authentication state to update
+        setTimeout(() => {
+          // Redirect to home page after successful registration
+          setLocation("/");
+        }, 300);
       }
     } catch (error: any) {
       toast({
