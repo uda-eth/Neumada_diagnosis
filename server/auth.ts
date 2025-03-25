@@ -71,18 +71,25 @@ export function setupAuth(app: Express) {
   const MemoryStore = createMemoryStore(session);
   const sessionSettings: session.SessionOptions = {
     secret: process.env.REPL_ID || "nomad-platform-secret",
-    resave: false,
-    saveUninitialized: false,
+    resave: true,
+    saveUninitialized: true,
     cookie: {
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/'
     },
     store: new MemoryStore({
       checkPeriod: 86400000, // 24 hours
     }),
   };
 
+  // Always trust the proxy in Replit environment
+  app.set("trust proxy", 1);
+  
+  // Don't set secure cookie in development to work with http
+  // In Replit's environment, we'll use secure cookies only if not in development mode
   if (app.get("env") === "production") {
-    app.set("trust proxy", 1);
     sessionSettings.cookie = { 
       ...sessionSettings.cookie,
       secure: true 
@@ -287,8 +294,20 @@ export function setupAuth(app: Express) {
           console.error("Login error:", err);
           return next(err);
         }
-        console.log("Login successful, session established");
-        return res.json(user);
+        
+        // Save session explicitly to ensure it's stored before responding
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error:", err);
+            return next(err);
+          }
+          
+          // Sanitize the user object before sending it (remove password)
+          const { password, ...userWithoutPassword } = user as any;
+          
+          console.log("Login successful, session established");
+          return res.json(userWithoutPassword);
+        });
       });
     })(req, res, next);
   });
@@ -296,22 +315,48 @@ export function setupAuth(app: Express) {
   app.post("/api/logout", (req, res) => {
     const username = req.user?.username;
     console.log("Logout attempt for user:", username);
+    
     req.logout((err) => {
       if (err) {
         console.error("Logout error:", err);
         return res.status(500).send("Logout failed");
       }
-      console.log("Logout successful for user:", username);
-      res.json({ message: "Logged out successfully" });
+      
+      // Destroy the session completely for a clean logout
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Session destroy error:", err);
+          // Continue anyway as the user is already logged out
+        }
+        
+        // Clear the cookie on the client
+        res.clearCookie('connect.sid', {
+          path: '/',
+          httpOnly: true,
+          sameSite: 'lax'
+        });
+        
+        console.log("Logout successful for user:", username);
+        res.json({ message: "Logged out successfully" });
+      });
     });
   });
 
   app.get("/api/user", (req, res) => {
-    if (req.isAuthenticated()) {
+    // Log session ID for debugging
+    console.log("Session ID in /api/user:", req.sessionID);
+    
+    // Check authentication directly rather than trying to reload the session
+    if (req.isAuthenticated() && req.user) {
       const user = req.user;
       console.log("Authenticated user request:", user.username);
-      return res.json(user);
+      
+      // Sanitize user object to remove sensitive info (like password)
+      const { password, ...userWithoutPassword } = user as any;
+      
+      return res.json(userWithoutPassword);
     }
+    
     console.log("Unauthenticated user request");
     res.status(401).send("Not authenticated");
   });
