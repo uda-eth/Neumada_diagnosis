@@ -1,15 +1,8 @@
 import { type Event } from "@db/schema";
 
 export const DIGITAL_NOMAD_CITIES = [
-  "Amsterdam", "Athens", "Austin", "Bali", "Bangkok", "Barcelona", "Berlin",
-  "Boston", "Buenos Aires", "Cape Town", "Chicago", "Copenhagen", "Dubai",
-  "Dublin", "Edinburgh", "Ho Chi Minh City", "Hong Kong", "Istanbul", "Kuala Lumpur",
-  "Lisbon", "London", "Los Angeles", "Madrid", "Melbourne", "Mexico City",
-  "Miami", "Milan", "Montreal", "Mumbai", "Munich", "New York", "Oslo", "Paris",
-  "Porto", "Prague", "Rome", "San Francisco", "Seoul", "Shanghai", "Singapore",
-  "Stockholm", "Sydney", "Taipei", "Tel Aviv", "Tokyo", "Toronto", "Vancouver",
-  "Vienna", "Zürich"
-].sort();
+  "Mexico City"
+];
 
 export const DEFAULT_CITY = "Mexico City";
 
