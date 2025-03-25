@@ -50,7 +50,7 @@ export default function ProfilePage() {
   };
 
   const handleEditClick = () => {
-    setLocation('/profile/edit');
+    setLocation('/profile-edit');
   };
 
   if (!profile && !isOwnProfile) {
