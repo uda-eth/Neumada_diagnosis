@@ -1,0 +1,204 @@
+Agreements to Sign
+Service Provider Agreement
+
+
+MALY MVP - https://maly-mvp25.replit.app/
+
+WEDNESDAY CALL REVIEW
+
+DISCOVER
+Cities List - when selected should have a pop-up message that says this market is coming soon. Be the first here, invite members there or create your own happening! (COPY NEEDED FOR NEW CITY CTA)
+Event Display -  in “Discovery” needs to show profile icons of “Interested (Saved/Liked)” members and “Going” - Can be 3 profile images plus # interested. This should also be displayed when they click on the event itself and see its main page. If the profile icons / # interested/going is engaged it should create a drop down list of all the members profiles and when selected takes you to there main profile page.
+Filter by Time Frame
+Recommended
+This week
+Next Month sections
+FILTER by Time Frame (Today, This Week, This Weekend, This Month, Next Month) 
+The Event Host Profile - on the bottom of the main page of event should demonstrate photo of the profile icon and when engaged show full profile for message
+Follow Button (We currently dont have rules around “Follow) vs. “Connect”
+Buy ticketbutton to payment gateway (ticketing)
+Back button on Members Profiles in CONNECT needs to be directed back to Connect Main screen not Discovery
+REFERRAL Links Display - (Reference Mozi) 
+
+
+ADD REFERRAL BUTTON (INVITE) REPLIT REFERENCE. VISIBLE ALL PAGES
+
+
+Event Display -  in Grid Format on both Desktop and Mobile (2 or 3 horizontal) and Down similar to connect member display vs. single event at a time. 
+MENU
+Inbox button/icon be visible from Desktop and Mobile main pages rather than only in menu?
+
+INBOX
+UX/UI Issues -I don’t currently like the UX/UI on Inbox and profile images should appear. We should remove the dark box element around each text thread. Use inbox best practices.
+
+
+
+
+
+PROFILE
+Profile Edit Page - We formerly had a page that was dedicated to editing your profile. Looked great but the button is currently not working. Perhaps prompt replit. Be insured it has edit MOOD, Interest, Display Name, remove AGE from displaying on profile. 
+Add to Profile = 
+
+Currently: 
+Born:
+Raised: 
+Lived: 
+Upcoming:
+
+CONNECT
+ADD -  a Male/Female/Other Filter, Gay/Straight/Bi/Other, 
+ADD or REMOVE - When the connect button is hit on a persons profile we should make a contacts button and have those displayed in the profile page or hidden in settings
+MOOD - Lets spotlight filtering by MOOD and make that the main focus on the filter section.
+
+
+__________________________________________________________________________
+
+
+Full Project Scope – $2,400 (Fixed Price)
+This includes implementing all core features necessary to make the app functional. The estimated timeline is 30-50 hours, with a structured development approach to ensure smooth progress.
+Included Features in Full Project Scope:
+User Authentication: Signup, login, and profile page.
+Payment Integration: Connect a payment system for premium upgrades.
+Language Selection Fix: Resolve setLanguage is not a function error.
+AI Chatbot Integration: Connect the chatbot to an actual AI service.
+Help Page: Add a dedicated help/FAQ section.
+Event Creation: Allow users to create events.
+Event Registration Fix: Fix blank page issue when registering for an event.
+
+Feature-Based Pricing (If Selecting Individual Features)
+If you prefer to have only certain features completed, we can adjust the scope and pricing accordingly. Below are the estimated costs per feature:
+Feature
+Estimated Cost
+User Authentication (Signup, Login, Profile Page)
+$550
+Payment Integration (Premium Upgrade Button)
+$600
+Language Selection Fix
+$250
+AI Chatbot Integration
+$500
+Help Page
+$50
+Event Creation
+$500
+Event Registration Fix
+$250
+
+If you choose multiple features, we can adjust the pricing accordingly.
+
+Payment Terms
+Full Project ($2,400):
+50% upfront ($1,200) before starting
+50% upon completion ($1,200)
+Feature-Based Work:
+50% upfront per selected feature
+50% upon completion
+
+_________________________________________________________________________
+
+RESPONSE
+
+Finalizing Scope & Milestone Schedule
+Hey Tony,
+I appreciate your proposal and wanted to get aligned on a few things before we move forward. Since we’re leveraging Replit’s AI-powered dev tools and I’ve already built the MVP’s foundation, Hi-Fidelity UI/UX, and core features, I’d like to fine-tune the proposal to ensure everything needed for MVP launch is included.
+Updated Scope of Work (Up to 30 Hours Estimated)
+1️⃣ Core API Integrations & Security
+ ✅ Finalize user authentication (OAuth, Google, Apple Login) & security protocols.
+
+ ✅ Implement payment gateway (Stripe/PayPal) & event ticketing system.
+ ✅ Connect AI chatbot (OpenAI API) for event recommendations.
+ ✅ Integrate real-time chat & messaging system (Twilio or Stream Chat).
+2️⃣ Media & File Upload Support
+✅ Enable profile & event banner image uploads via Cloudinary, Firebase Storage, or AWS S3.
+ ✅ Ensure advertisers can upload media (if required).
+3️⃣ Analytics & Tracking for User Behavior & Ads
+✅ User tracking (Google Analytics, Firebase Analytics, or Mixpanel).
+✅ Event RSVP & engagement tracking (e.g., Mixpanel or custom database logs).
+✅ Advertising analytics & reporting (ad clicks, impressions, and conversions).
+4️⃣ App Deployment & Testing
+✅ Assist with iOS App Store submission & compliance checks.
+✅ Optional: Google Play Store submission for Android version.
+✅ Bug testing & debugging based on shareholder and early user feedback.
+Reminder: Referral button on all pages to invite new members, share events, profiles
+
+🔹 Payment Structure & Milestones
+✔ Milestone 1 – API Integrations & Security (Due: March 17th)
+ Payment: 30% ($600) - $300 to start and $300 upon completion.
+User authentication & security setup
+Core API integrations (Payments, Ticketing, AI Chatbot, Messaging)
+✔ Milestone 2 – Media, Analytics & Testing (Due: March 24th)
+ Payment: 30% ($600) upon completion of:
+Media upload functionality (profile pictures, event images, advertiser media)
+Analytics integration & reporting setup
+Internal testing & debugging for early-stage user feedback
+✔ Milestone 3 – Deployment & Final Fixes (Due: March 31st)
+ Payment: 40% ($800) upon completion of:
+App Store submission & launch-ready status
+Final bug fixes, optimization, and performance testing
+💰 Total Project Cost: $2,000 USD - If you finish sooner, we can pay you sooner no problem.
+($66/hr if completed in 30 hrs)
+($133/hr if completed in 15 hrs)
+Would love to hear your thoughts! If everything aligns, we can finalize and issue the first payment to get started!
+Best,
+Lucas
+
+
+
+(See Estimated Expenses in API & Tech Stack Below) FYI
+
+Estimated Expenses in API & Tech Stack
+API Category
+Free Tier Available?
+Estimated Cost (Paid Tier)
+Notes
+Ticketing (Eventbrite, Stripe Checkout)
+✅
+$0 - 2.9% per transaction
+Consider handling ticketing in-house via Stripe instead of Eventbrite to reduce fees.
+Payments (Stripe, PayPal, Adyen)
+✅
+2.9% + $0.30 per transaction
+Some premium payment features may require an extra fee (e.g., Stripe Radar for fraud protection).
+Auth & Security (Firebase, Auth0, AWS Cognito)
+✅
+$0 - $23/month
+Ensure 2FA and social logins (Google, Apple, Facebook) are included.
+Database & Hosting (Firebase, AWS, Supabase, Heroku)
+✅
+$25 - $100/month
+Consider potential scaling costs beyond the free tier (e.g., $100+/mo if traffic grows).
+AI & Chatbot (OpenAI, GPT-4, Sora, Dialogflow, Claude AI)
+❌
+$10 - $100/month (depends on usage)
+Some AI models charge per request, which could add up quickly.
+Geolocation (Google Maps, Mapbox, HERE API)
+✅
+$5 - $100/month
+If heavy traffic, this could increase to $200+ per month.
+Messaging (Twilio, Sendbird, Pusher, Stream Chat)
+✅
+$0.001 per message
+Expect scaling costs if messaging is used frequently.
+Push Notifications (OneSignal, Firebase Cloud Messaging, Airship)
+✅
+$0 - $99/month
+OneSignal premium plans for advanced targeting can cost $200+/mo.
+Media Storage (Cloudinary, AWS S3, Firebase Storage, Imgix)
+✅
+$10 - $200/month
+Profile photos, event banners, and advertiser media require storage & CDN bandwidth.
+Ad & Revenue Analytics (Google Ads API, Facebook Ads API, Mixpanel, Heap, Amplitude)
+✅
+$0 - $150/month
+Required for tracking ad clicks, user engagement, and conversion rates.
+Crash & Performance Monitoring (Sentry, Firebase Crashlytics, Datadog, LogRocket)
+✅
+$0 - $120/month
+Needed for bug tracking and performance optimization.
+App Store & Deployment (Apple, Google Play, TestFlight, Fastlane CI/CD)
+❌
+$99/year (Apple Developer), $25 one-time (Google Play)
+Required to publish apps on iOS/Android.
+
+
+I've updated the budget estimate to include additional expected costs for media storage, analytics tracking, crash monitoring, and app store submission fees. The total monthly costs now range between $75 - $150/month (minimum) to $500 - $1,000/month (scaling with user growth & API calls).
