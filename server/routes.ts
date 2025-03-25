@@ -9,6 +9,8 @@ import { translateMessage } from './services/translationService';
 import { getEventImage } from './services/eventsService';
 import { WebSocketServer } from 'ws';
 import { sendMessage, getConversations, getMessages, markMessageAsRead, markAllMessagesAsRead } from './services/messagingService';
+import { db } from "../db";
+import { userCities } from "../db/schema";
 
 const categories = [
   "Retail",
@@ -834,6 +836,49 @@ export function registerRoutes(app: express.Application): { app: express.Applica
   app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
 
   setupAuth(app);
+
+  // API endpoint for city suggestions
+  app.post("/api/suggest-city", async (req: Request, res: Response) => {
+    try {
+      const { city, email, reason } = req.body;
+      
+      if (!city || !email) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "City name and email are required" 
+        });
+      }
+
+      console.log(`City suggestion received: ${city}, Email: ${email}, Reason: ${reason || 'Not provided'}`);
+      
+      // Save the suggestion to the database using the userCities table
+      // We set isActive to false so these suggestions won't be displayed in the UI
+      try {
+        await db.insert(userCities).values({
+          city,
+          userId: null, // No user associated (anonymous suggestion)
+          email,
+          reason: reason || null,
+          isActive: false, // Mark as inactive - won't be shown in the UI
+          createdAt: new Date()
+        });
+      } catch (dbError) {
+        console.error("Database error saving suggestion:", dbError);
+        // Continue even if DB save fails - we already logged the suggestion
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Thank you for your suggestion! We'll notify you when we add support for this city."
+      });
+    } catch (error) {
+      console.error("Error saving city suggestion:", error);
+      return res.status(500).json({
+        success: false,
+        message: "An error occurred while submitting your suggestion."
+      });
+    }
+  });
 
   app.post("/api/chat", handleChatMessage);
 
