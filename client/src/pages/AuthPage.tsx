@@ -94,72 +94,72 @@ export default function AuthPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Check for error messages in URL when component mounts
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get('error');
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.replace(/\+/g, ' '),
+      });
+      // Clear the error from URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [toast]);
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     setIsSubmitting(true);
+    
     try {
-      if (isLogin) {
-        // Direct fetch approach for login to ensure session is properly set
-        const response = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            username: formData.username,
-            password: formData.password,
-          }),
-          credentials: 'include',
-        });
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(errorText || 'Login failed');
+      // Create a form for direct server-side submission and redirect
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = isLogin ? '/api/login-redirect' : '/api/register-redirect';
+      
+      // Add all form fields
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = value;
+          form.appendChild(input);
+        }
+      });
+      
+      // Special handling for interests in registration
+      if (!isLogin && formData.interests) {
+        // Replace the interests field with the processed array
+        const interestsField = form.querySelector('input[name="interests"]');
+        if (interestsField) {
+          form.removeChild(interestsField);
         }
         
-        // Successfully logged in
-        toast({
-          title: "Success",
-          description: "Logged in successfully",
-        });
-        
-        // Hard redirect to home page to ensure full page reload with new auth state
-        window.location.href = '/';
-      } else {
-        // Convert interests string to array and clean it up
-        const registerData = {
-          ...formData,
-          interests: formData.interests ? formData.interests.split(',').map(i => i.trim()) : undefined,
-        };
-
-        // Direct fetch approach for registration
-        const response = await fetch('/api/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(registerData),
-          credentials: 'include',
-        });
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(errorText || 'Registration failed');
-        }
-        
-        toast({
-          title: "Success",
-          description: "Registered successfully",
-        });
-        
-        // Hard redirect to home page to ensure full page reload with new auth state
-        window.location.href = '/';
+        const interests = formData.interests.split(',').map(i => i.trim());
+        const interestsInput = document.createElement('input');
+        interestsInput.type = 'hidden';
+        interestsInput.name = 'interests';
+        interestsInput.value = JSON.stringify(interests);
+        form.appendChild(interestsInput);
       }
+      
+      // Append to document and submit
+      document.body.appendChild(form);
+      form.submit();
+      
+      // We don't set isSubmitting back to false here because we're navigating away
     } catch (error: any) {
+      console.error("Form submission error:", error);
       toast({
         variant: "destructive",
         title: "Error",
         description: error.message || "An error occurred",
       });
-    } finally {
       setIsSubmitting(false);
     }
   };
