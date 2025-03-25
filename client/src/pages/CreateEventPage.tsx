@@ -59,7 +59,7 @@ export default function CreateEventPage() {
       description: "",
       location: user?.location || "",
       city: user?.location || "",
-      date: new Date().toISOString().split('T')[0], // Format as YYYY-MM-DD
+      date: new Date(),
       price: "0",
       isPrivate: false,
       category: "Social", // Default category
@@ -67,7 +67,10 @@ export default function CreateEventPage() {
       tags: [],
       image_url: null,
       creatorId: user?.id || null,
-      capacity: 20
+      capacity: 20,
+      ticketType: "free", // Required field
+      availableTickets: 100,
+      timeFrame: "This Week", // Required field
     },
   });
 
@@ -91,10 +94,27 @@ export default function CreateEventPage() {
       // Create FormData for multipart/form-data (for image upload)
       const formData = new FormData();
       
+      // Handle date conversion properly for the server
+      const formattedData = {
+        ...data,
+        // Convert Date to ISO string for API
+        date: data.date instanceof Date ? data.date.toISOString() : data.date,
+        // Make sure ticketType is correctly set based on price
+        ticketType: parseFloat(data.price?.toString() || '0') > 0 ? 'paid' : 'free'
+      };
+
+      // Log all form data for debugging
+      console.log("Form data before submission:", formattedData);
+      
       // Add all form fields to FormData
-      Object.entries(data).forEach(([key, value]) => {
+      Object.entries(formattedData).forEach(([key, value]) => {
         if (value !== null && value !== undefined) {
-          formData.append(key, value.toString());
+          // Handle arrays (like tags) by converting to JSON
+          if (Array.isArray(value)) {
+            formData.append(key, JSON.stringify(value));
+          } else {
+            formData.append(key, value.toString());
+          }
         }
       });
       
@@ -103,6 +123,11 @@ export default function CreateEventPage() {
       
       // Add category
       formData.append('category', selectedCategory);
+      
+      // Ensure creatorId is included
+      if (user && user.id) {
+        formData.append('creatorId', user.id.toString());
+      }
       
       // If we have a Base64 image URL, convert it to a file and append
       if (eventImage && eventImage.startsWith('data:image')) {
@@ -356,7 +381,7 @@ export default function CreateEventPage() {
                   form="event-form"
                   variant="outline"
                   className="flex-1 h-12 bg-white/5 border-white/10 hover:bg-white/10"
-                  disabled={!eventImage || !form.formState.isValid}
+                  disabled={!eventImage || !form.watch("title") || !form.watch("description")}
                 >
                   Save as Draft
                 </Button>
@@ -364,7 +389,7 @@ export default function CreateEventPage() {
                   type="submit"
                   form="event-form"
                   className="flex-1 h-12 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
-                  disabled={!eventImage || !form.formState.isValid}
+                  disabled={!eventImage || !form.watch("title") || !form.watch("description")}
                 >
                   Publish Event
                 </Button>
@@ -393,7 +418,7 @@ export default function CreateEventPage() {
             type="submit"
             form="event-form"
             className="w-full h-12 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white transition-all duration-200"
-            disabled={!eventImage || !form.formState.isValid}
+            disabled={!eventImage || !form.watch("title") || !form.watch("description")}
           >
             <Plus className="h-5 w-5 mr-2" />
             <span>Create Event</span>
