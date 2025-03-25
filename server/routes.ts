@@ -1134,11 +1134,27 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
   app.post("/api/events", upload.single('image'), async (req, res) => {
     try {
-      // Get authenticated user
+      // Get authenticated user from session or form data
       const currentUser = req.user as any;
+      let creatorId = currentUser?.id || null;
       
-      if (!currentUser) {
-        return res.status(401).json({ error: "Authentication required to create events" });
+      // If no authenticated user, but creatorId in form, use that
+      if (!currentUser && req.body.creatorId) {
+        creatorId = parseInt(req.body.creatorId);
+        
+        // Verify the creatorId is valid
+        if (!isNaN(creatorId)) {
+          const userExists = await db.select({ id: users.id })
+            .from(users)
+            .where(eq(users.id, creatorId))
+            .limit(1);
+            
+          if (userExists.length === 0) {
+            creatorId = null; // Reset if user doesn't exist
+          }
+        } else {
+          creatorId = null;
+        }
       }
       
       const imagePath = req.file ? `/uploads/${req.file.filename}` : getEventImage(req.body.category);
@@ -1188,22 +1204,32 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         timeFrame: req.body.timeFrame || null,
         stripeProductId: req.body.stripeProductId || null,
         stripePriceId: req.body.stripePriceId || null,
-        creatorId: currentUser.id
+        creatorId: creatorId
       }).returning();
       
       // Get creator details to return with response
-      const creator = await db.select({
-        id: users.id,
-        name: users.fullName,
-        username: users.username,
-        image: users.profileImage
-      }).from(users).where(eq(users.id, currentUser.id)).limit(1);
+      let creatorName = "Anonymous";
+      let creatorImage = null;
+      
+      if (creatorId) {
+        const creator = await db.select({
+          id: users.id,
+          name: users.fullName,
+          username: users.username,
+          image: users.profileImage
+        }).from(users).where(eq(users.id, creatorId)).limit(1);
+        
+        if (creator.length > 0) {
+          creatorName = creator[0]?.name || creator[0]?.username || "Anonymous";
+          creatorImage = creator[0]?.image || null;
+        }
+      }
       
       // Prepare response with additional fields
       const eventResponse = {
         ...newEvent[0],
-        creatorName: creator[0]?.name || creator[0]?.username || "Anonymous",
-        creatorImage: creator[0]?.image || null,
+        creatorName,
+        creatorImage,
         attendingUsers: [],
         interestedUsers: [],
         attendingCount: 0,
@@ -1212,7 +1238,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
       console.log("Created new event:", eventResponse.title);
       res.status(201).json(eventResponse);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating event:", error);
       res.status(500).json({ error: "Failed to create event", details: error.message });
     }
@@ -1270,8 +1296,8 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         // Create new participation record
         participation = await db.insert(eventParticipants)
           .values({
-            event_id: parsedEventId,
-            user_id: currentUser.id,
+            eventId: parsedEventId,
+            userId: currentUser.id,
             status: status
           })
           .returning();
