@@ -48,12 +48,32 @@ async function handleRequest(
 export function useUser() {
   const queryClient = useQueryClient();
 
+  // Check if there's a session parameter in the URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const sessionId = urlParams.get('sessionId');
+  
+  // If we have a sessionId in the URL, clean it up by removing that parameter
+  if (sessionId) {
+    console.log("Detected session parameter, refreshing user data");
+    // Create a clean URL without the sessionId parameter
+    const url = new URL(window.location.href);
+    url.searchParams.delete('sessionId');
+    url.searchParams.delete('ts');
+    
+    // Replace the URL without reloading the page to remove sessionId from browser history
+    window.history.replaceState({}, document.title, url.toString());
+  }
+
   const { data: user, error, isLoading, refetch } = useQuery<UserResponse>({
     queryKey: ['user'],
     queryFn: async () => {
       // First check auth status with the dedicated endpoint
       const authCheckResponse = await fetch('/api/auth/check', {
-        credentials: 'include'
+        credentials: 'include',
+        headers: { 
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       });
       
       if (!authCheckResponse.ok) {
@@ -77,7 +97,11 @@ export function useUser() {
       
       // If we get here, we need to try the regular user endpoint as fallback
       const response = await fetch('/api/user', {
-        credentials: 'include'
+        credentials: 'include',
+        headers: { 
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       });
       
       if (!response.ok) {
@@ -92,7 +116,9 @@ export function useUser() {
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     refetchOnReconnect: true,
-    retry: 2 // Try more times
+    retry: 2, // Try more times
+    // Force a refresh when there's a sessionId parameter
+    enabled: true
   });
 
   const login = useMutation({
@@ -146,6 +172,7 @@ export function useUser() {
       
       // Then explicitly refetch
       const { data } = await refetch();
+      console.log("User data refreshed successfully:", data);
       
       return data || null;
     } catch (error) {
@@ -153,6 +180,11 @@ export function useUser() {
       return null;
     }
   };
+  
+  // Immediately refresh user data if we have a sessionId in the URL
+  if (sessionId) {
+    refreshUser();
+  }
 
   return {
     user,
