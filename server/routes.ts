@@ -9,6 +9,8 @@ import { translateMessage } from './services/translationService';
 import { getEventImage } from './services/eventsService';
 import { WebSocketServer } from 'ws';
 import { sendMessage, getConversations, getMessages, markMessageAsRead, markAllMessagesAsRead } from './services/messagingService';
+import { db } from "../db";
+import { userCities } from "../db/schema";
 
 const categories = [
   "Retail",
@@ -847,17 +849,23 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         });
       }
 
-      // In a real app, you would insert into the database
-      // For now, we'll just log the suggestion
       console.log(`City suggestion received: ${city}, Email: ${email}, Reason: ${reason || 'Not provided'}`);
       
-      // Here you would normally save to database using something like:
-      // await db.insert(suggestedCities).values({
-      //   city,
-      //   email,
-      //   reason: reason || null,
-      //   createdAt: new Date()
-      // });
+      // Save the suggestion to the database using the userCities table
+      // We set isActive to false so these suggestions won't be displayed in the UI
+      try {
+        await db.insert(userCities).values({
+          city,
+          userId: null, // No user associated (anonymous suggestion)
+          email,
+          reason: reason || null,
+          isActive: false, // Mark as inactive - won't be shown in the UI
+          createdAt: new Date()
+        });
+      } catch (dbError) {
+        console.error("Database error saving suggestion:", dbError);
+        // Continue even if DB save fails - we already logged the suggestion
+      }
 
       return res.status(200).json({
         success: true,

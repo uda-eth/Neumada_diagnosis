@@ -108,14 +108,19 @@ export const invitations = pgTable("invitations", {
 });
 
 // Table for user cities (cities user is interested in)
+// Also used for tracking city suggestions from non-users
 export const userCities = pgTable("user_cities", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id),
   city: text("city").notNull(),
   isCurrent: boolean("is_current").default(false),
   isPrimary: boolean("is_primary").default(false),
+  isActive: boolean("is_active").default(true), // For suggestions: false = not shown in UI
+  email: text("email"), // For suggestions: email to notify when city is added
+  reason: text("reason"), // For suggestions: why this city should be added
   arrivalDate: timestamp("arrival_date"),
   departureDate: timestamp("departure_date"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Relations
