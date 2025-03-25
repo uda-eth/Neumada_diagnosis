@@ -48,7 +48,7 @@ async function handleRequest(
 export function useUser() {
   const queryClient = useQueryClient();
 
-  const { data: user, error, isLoading } = useQuery<UserResponse>({
+  const { data: user, error, isLoading, refetch } = useQuery<UserResponse>({
     queryKey: ['user'],
     queryFn: async () => {
       const response = await fetch('/api/user', {
@@ -60,19 +60,35 @@ export function useUser() {
       }
       return response.json();
     },
+    // Improve refresh behavior
+    staleTime: 30 * 1000, // 30 seconds
+    refetchOnWindowFocus: true,
+    retry: 1
   });
 
   const login = useMutation({
-    mutationFn: (userData: any) => 
-      handleRequest('/api/login', 'POST', userData),
+    mutationFn: async (userData: any) => {
+      const result = await handleRequest('/api/login', 'POST', userData);
+      if (result.ok) {
+        // Force a refetch immediately after successful login
+        await refetch();
+      }
+      return result;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
   });
 
   const register = useMutation({
-    mutationFn: (userData: any) =>
-      handleRequest('/api/register', 'POST', userData),
+    mutationFn: async (userData: any) => {
+      const result = await handleRequest('/api/register', 'POST', userData);
+      if (result.ok) {
+        // Force a refetch immediately after successful registration
+        await refetch();
+      }
+      return result;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
@@ -81,6 +97,8 @@ export function useUser() {
   const logout = useMutation({
     mutationFn: () => handleRequest('/api/logout', 'POST'),
     onSuccess: () => {
+      // Clear user data immediately
+      queryClient.setQueryData(['user'], null);
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
   });
@@ -98,5 +116,6 @@ export function useUser() {
     logout: logout.mutateAsync,
     register: register.mutateAsync,
     startChat,
+    refetchUser: refetch
   };
 }
