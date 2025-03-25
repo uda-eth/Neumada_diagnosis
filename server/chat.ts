@@ -1,4 +1,3 @@
-
 import type { Request, Response } from 'express';
 import { openai, SYSTEM_PROMPT } from './config/openai';
 import { db } from '../db';
@@ -32,7 +31,7 @@ export async function handleChatMessage(req: Request, res: Response) {
     if (needsWebSearch) {
       model = "gpt-4o-search-preview";
       webSearchOptions = { search_context_size: "medium" };
-      
+
       // Get relevant web search results
       const searchResults = await webSearch(message);
       searchContext = searchResults.map(result => {
@@ -75,7 +74,7 @@ export async function handleChatMessage(req: Request, res: Response) {
         { 
           role: "system", 
           content: `${SYSTEM_PROMPT}
-          
+
           Important instructions:
           1. Always respond in English
           2. Keep responses brief and direct
@@ -89,10 +88,10 @@ export async function handleChatMessage(req: Request, res: Response) {
              • One key detail about the event
           5. Use simple bullet points and clean spacing
           6. Avoid markdown formatting or special characters
-          
+
           Context:
           Current Events:\n${eventsContext}
-          
+
           Active Community Members:\n${usersContext}
           ${searchContext ? `\nWeb Search Results:\n${searchContext}` : ''}`
         },
