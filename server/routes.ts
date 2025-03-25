@@ -10,8 +10,8 @@ import { getEventImage } from './services/eventsService';
 import { WebSocketServer } from 'ws';
 import { sendMessage, getConversations, getMessages, markMessageAsRead, markAllMessagesAsRead } from './services/messagingService';
 import { db } from "../db";
-import { userCities, users } from "../db/schema";
-import { eq, ne, gte, lte } from "drizzle-orm";
+import { userCities, users, events } from "../db/schema";
+import { eq, ne, gte, lte, or, asc } from "drizzle-orm";
 
 const categories = [
   "Retail",
@@ -850,23 +850,17 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         });
       }
 
+      // In a real app, you would insert into the database
+      // For now, we'll just log the suggestion
       console.log(`City suggestion received: ${city}, Email: ${email}, Reason: ${reason || 'Not provided'}`);
       
-      // Save the suggestion to the database using the userCities table
-      // We set isActive to false so these suggestions won't be displayed in the UI
-      try {
-        await db.insert(userCities).values({
-          city,
-          userId: null, // No user associated (anonymous suggestion)
-          email,
-          reason: reason || null,
-          isActive: false, // Mark as inactive - won't be shown in the UI
-          createdAt: new Date()
-        });
-      } catch (dbError) {
-        console.error("Database error saving suggestion:", dbError);
-        // Continue even if DB save fails - we already logged the suggestion
-      }
+      // Here you would normally save to database using something like:
+      // await db.insert(suggestedCities).values({
+      //   city,
+      //   email,
+      //   reason: reason || null,
+      //   createdAt: new Date()
+      // });
 
       return res.status(200).json({
         success: true,
@@ -892,73 +886,58 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       const interests = req.query['interests[]'] as string[] | string;
       const moods = req.query['moods[]'] as string[] | string;
       const name = req.query.name as string;
-      const currentUserId = req.user?.id;
 
-      // Database query to get real users
-      let query = db.select().from(users);
-      
-      // Don't include the current user in the results
-      if (currentUserId) {
-        query = query.where(ne(users.id, currentUserId));
-      }
-      
-      // Apply filters to query
-      if (city && city !== 'all') {
-        query = query.where(eq(users.location, city));
-      }
-      
+      let filteredUsers = city && city !== 'all'
+        ? MOCK_USERS[city] || []
+        : Object.values(MOCK_USERS).flat();
+
       if (gender && gender !== 'all') {
-        query = query.where(eq(users.gender, gender));
+        filteredUsers = filteredUsers.filter(user => user.gender === gender);
       }
-      
+
       if (minAge !== undefined) {
-        query = query.where(gte(users.age, minAge));
+        filteredUsers = filteredUsers.filter(user => user.age !== undefined && user.age >= minAge);
       }
-      
+
       if (maxAge !== undefined) {
-        query = query.where(lte(users.age, maxAge));
+        filteredUsers = filteredUsers.filter(user => user.age !== undefined && user.age <= maxAge);
       }
-      
-      // Get all users with the applied filters
-      let dbUsers = await query;
-      
-      // Further filtering that's harder to do at the DB level
+
       if (interests) {
         const interestArray = Array.isArray(interests) ? interests : [interests];
-        dbUsers = dbUsers.filter(user => 
-          user.interests && interestArray.some(interest => 
-            user.interests?.includes(interest)
-          )
+        filteredUsers = filteredUsers.filter(user =>
+          user.interests && interestArray.some(interest => user.interests?.includes(interest))
         );
       }
-      
+
       if (moods) {
         const moodArray = Array.isArray(moods) ? moods : [moods];
-        dbUsers = dbUsers.filter(user => 
-          user.currentMoods && moodArray.some(mood => 
-            user.currentMoods?.includes(mood)
-          )
+        filteredUsers = filteredUsers.filter(user =>
+          user.currentMoods && moodArray.some(mood => user.currentMoods?.includes(mood))
         );
       }
-      
+
       if (name) {
         const lowercaseName = name.toLowerCase();
-        dbUsers = dbUsers.filter(user =>
+        filteredUsers = filteredUsers.filter(user =>
           (user.fullName && user.fullName.toLowerCase().includes(lowercaseName)) ||
           (user.username && user.username.toLowerCase().includes(lowercaseName))
         );
       }
 
-      // Sort users by most recently created first
-      dbUsers.sort((a, b) => {
+      filteredUsers.sort((a, b) => {
         const dateA = new Date(a.createdAt || 0).getTime();
         const dateB = new Date(b.createdAt || 0).getTime();
         return dateB - dateA;
       });
 
-      console.log(`Found ${dbUsers.length} real users in database`);
+      console.log("Sorted users:", filteredUsers.map(u => ({
+        name: u.fullName,
+        createdAt: u.createdAt,
+        profileImage: u.profileImage
+      })));
 
-      res.json(dbUsers);
+      res.json(filteredUsers);
     } catch (error) {
       console.error("Error fetching users:", error);
       res.status(500).json({ error: "Failed to fetch users" });
@@ -998,15 +977,74 @@ export function registerRoutes(app: express.Application): { app: express.Applica
     try {
       const { location } = req.query;
 
-      let filteredEvents = location && location !== 'all'
-        ? MOCK_EVENTS[location as string] || []
-        : Object.values(MOCK_EVENTS).flat();
-
-      filteredEvents.sort((a, b) =>
-        new Date(a.date).getTime() - new Date(b.date).getTime()
+      // Build query for database
+      let query = db.select().from(events);
+      
+      // Filter by location/city if provided
+      if (location && location !== 'all') {
+        query = query.where(
+          // Try to match either location or city field
+          or(
+            eq(events.location, location as string),
+            eq(events.city, location as string)
+          )
+        );
+      }
+      
+      // Execute the query
+      const dbEvents = await query.orderBy(asc(events.date));
+      
+      // Fetch creator information for each event
+      const eventsWithCreators = await Promise.all(
+        dbEvents.map(async (event) => {
+          // Get creator info if available
+          let creator = null;
+          if (event.creatorId) {
+            const creatorResult = await db.select({
+              id: users.id,
+              name: users.fullName,
+              username: users.username,
+              image: users.profileImage
+            })
+            .from(users)
+            .where(eq(users.id, event.creatorId))
+            .limit(1);
+            
+            if (creatorResult.length > 0) {
+              creator = creatorResult[0];
+            }
+          }
+          
+          // For now use empty arrays for attending/interested users
+          // In a future update, we would fetch these from event_participants table
+          return {
+            ...event,
+            creatorName: creator?.name || creator?.username || "Anonymous",
+            creatorImage: creator?.image || null,
+            attendingUsers: [],
+            interestedUsers: [],
+            attendingCount: 0,
+            interestedCount: 0
+          };
+        })
       );
+      
+      // If no events found in the database, fall back to mock events for development
+      // This will be removed once we have enough real events
+      let eventResults = eventsWithCreators;
+      if (eventResults.length === 0) {
+        let filteredEvents = location && location !== 'all'
+          ? MOCK_EVENTS[location as string] || []
+          : Object.values(MOCK_EVENTS).flat();
+  
+        filteredEvents.sort((a, b) =>
+          new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+        
+        eventResults = filteredEvents;
+      }
 
-      res.json(filteredEvents);
+      res.json(eventResults);
     } catch (error) {
       console.error("Error fetching events:", error);
       res.status(500).json({ error: "Failed to fetch events" });
@@ -1016,8 +1054,45 @@ export function registerRoutes(app: express.Application): { app: express.Applica
   app.get("/api/events/:id", async (req, res) => {
     try {
       const { id } = req.params;
+      const eventId = parseInt(id);
+      
+      // Try to find the event in the database
+      const dbEvent = await db.select().from(events).where(eq(events.id, eventId)).limit(1);
+      
+      if (dbEvent.length > 0) {
+        // Get creator info
+        let creator = null;
+        if (dbEvent[0].creatorId) {
+          const creatorResult = await db.select({
+            id: users.id,
+            name: users.fullName,
+            username: users.username,
+            image: users.profileImage
+          })
+          .from(users)
+          .where(eq(users.id, dbEvent[0].creatorId))
+          .limit(1);
+          
+          if (creatorResult.length > 0) {
+            creator = creatorResult[0];
+          }
+        }
+        
+        // Return the event with creator info
+        return res.json({
+          ...dbEvent[0],
+          creatorName: creator?.name || creator?.username || "Anonymous",
+          creatorImage: creator?.image || null,
+          attendingUsers: [],
+          interestedUsers: [],
+          attendingCount: 0,
+          interestedCount: 0
+        });
+      }
+      
+      // If not in database, check mock events (will be removed in production)
       const allEvents = Object.values(MOCK_EVENTS).flat();
-      const event = allEvents.find(e => e.id === parseInt(id));
+      const event = allEvents.find(e => e.id === eventId);
 
       if (!event) {
         return res.status(404).json({ error: "Event not found" });
@@ -1032,16 +1107,59 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
   app.post("/api/events", upload.single('image'), async (req, res) => {
     try {
-      const eventData = {
-        ...req.body,
-        image: req.file ? `/uploads/${req.file.filename}` : getEventImage(req.body.category),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+      // Get authenticated user
+      const currentUser = req.user as any;
+      
+      if (!currentUser) {
+        return res.status(401).json({ error: "Authentication required to create events" });
+      }
+      
+      const imagePath = req.file ? `/uploads/${req.file.filename}` : getEventImage(req.body.category);
+      
+      // Parse date and other fields correctly
+      const eventDate = req.body.date ? new Date(req.body.date) : new Date();
+      const endDate = req.body.endDate ? new Date(req.body.endDate) : null;
+      const capacity = parseInt(req.body.capacity || '0');
+      const price = parseFloat(req.body.price || '0');
+      
+      // Insert new event into database
+      const newEvent = await db.insert(events).values({
+        title: req.body.title,
+        description: req.body.description,
+        date: eventDate,
+        endDate: endDate,
+        location: req.body.location,
+        city: req.body.city || req.body.location, // Default to location if city not specified
+        category: req.body.category,
+        image: imagePath,
+        capacity: capacity,
+        price: price.toString(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        creatorId: currentUser.id
+      }).returning();
+      
+      // Get creator details to return with response
+      const creator = await db.select({
+        id: users.id,
+        name: users.fullName,
+        username: users.username,
+        image: users.profileImage
+      }).from(users).where(eq(users.id, currentUser.id)).limit(1);
+      
+      // Prepare response with additional fields
+      const eventResponse = {
+        ...newEvent[0],
+        creatorName: creator[0]?.name || creator[0]?.username || "Anonymous",
+        creatorImage: creator[0]?.image || null,
         attendingUsers: [],
-        interestedUsers: []
+        interestedUsers: [],
+        attendingCount: 0,
+        interestedCount: 0
       };
 
-      res.json(eventData);
+      console.log("Created new event:", eventResponse.title);
+      res.status(201).json(eventResponse);
     } catch (error) {
       console.error("Error creating event:", error);
       res.status(500).json({ error: "Failed to create event" });
@@ -1052,16 +1170,65 @@ export function registerRoutes(app: express.Application): { app: express.Applica
     try {
       const { eventId } = req.params;
       const { status } = req.body;
-
-      const mockParticipation = {
-        id: Math.floor(Math.random() * 1000),
-        eventId: parseInt(eventId),
-        status,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-
-      res.json(mockParticipation);
+      const currentUser = req.user as any;
+      
+      if (!currentUser) {
+        return res.status(401).json({ error: "Authentication required to participate in events" });
+      }
+      
+      const parsedEventId = parseInt(eventId);
+      
+      // Check if the event exists
+      const eventExists = await db.select({ id: events.id })
+        .from(events)
+        .where(eq(events.id, parsedEventId))
+        .limit(1);
+        
+      if (eventExists.length === 0) {
+        return res.status(404).json({ error: "Event not found" });
+      }
+      
+      // Check if the user already has a participation record
+      const existingParticipation = await db.select()
+        .from(eventParticipants)
+        .where(
+          and(
+            eq(eventParticipants.eventId, parsedEventId),
+            eq(eventParticipants.userId, currentUser.id)
+          )
+        )
+        .limit(1);
+      
+      let participation;
+      
+      if (existingParticipation.length > 0) {
+        // Update existing participation
+        participation = await db.update(eventParticipants)
+          .set({
+            status: status,
+            updatedAt: new Date()
+          })
+          .where(
+            and(
+              eq(eventParticipants.eventId, parsedEventId),
+              eq(eventParticipants.userId, currentUser.id)
+            )
+          )
+          .returning();
+      } else {
+        // Create new participation record
+        participation = await db.insert(eventParticipants)
+          .values({
+            eventId: parsedEventId,
+            userId: currentUser.id,
+            status: status,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          })
+          .returning();
+      }
+      
+      res.json(participation[0]);
     } catch (error) {
       console.error("Error updating participation:", error);
       res.status(500).json({ error: "Failed to update participation" });
