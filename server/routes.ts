@@ -10,8 +10,8 @@ import { getEventImage } from './services/eventsService';
 import { WebSocketServer } from 'ws';
 import { sendMessage, getConversations, getMessages, markMessageAsRead, markAllMessagesAsRead } from './services/messagingService';
 import { db } from "../db";
-import { userCities, users, events } from "../db/schema";
-import { eq, ne, gte, lte, or, asc } from "drizzle-orm";
+import { userCities, users, events, eventParticipants } from "../db/schema";
+import { eq, ne, gte, lte, or, asc, and, count } from "drizzle-orm";
 
 const categories = [
   "Retail",
@@ -975,7 +975,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
   app.get("/api/events", async (req, res) => {
     try {
-      const { location } = req.query;
+      const { location, creatorId } = req.query;
 
       // Build query for database
       let query = db.select().from(events);
@@ -989,6 +989,14 @@ export function registerRoutes(app: express.Application): { app: express.Applica
             eq(events.city, location as string)
           )
         );
+      }
+      
+      // Filter by creator if provided
+      if (creatorId) {
+        const parsedCreatorId = parseInt(creatorId as string);
+        if (!isNaN(parsedCreatorId)) {
+          query = query.where(eq(events.creatorId, parsedCreatorId));
+        }
       }
       
       // Execute the query
@@ -1015,16 +1023,35 @@ export function registerRoutes(app: express.Application): { app: express.Applica
             }
           }
           
+          // Get attendance counts from event_participants table
+          const attendingCount = await db.select({ count: count() })
+            .from(eventParticipants)
+            .where(
+              and(
+                eq(eventParticipants.eventId, event.id),
+                eq(eventParticipants.status, 'attending')
+              )
+            );
+            
+          const interestedCount = await db.select({ count: count() })
+            .from(eventParticipants)
+            .where(
+              and(
+                eq(eventParticipants.eventId, event.id),
+                eq(eventParticipants.status, 'interested')
+              )
+            );
+          
           // For now use empty arrays for attending/interested users
-          // In a future update, we would fetch these from event_participants table
+          // In a future update, we would fetch these from event_participants table with user details
           return {
             ...event,
             creatorName: creator?.name || creator?.username || "Anonymous",
             creatorImage: creator?.image || null,
             attendingUsers: [],
             interestedUsers: [],
-            attendingCount: 0,
-            interestedCount: 0
+            attendingCount: attendingCount[0]?.count || 0,
+            interestedCount: interestedCount[0]?.count || 0
           };
         })
       );
@@ -1032,7 +1059,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       // If no events found in the database, fall back to mock events for development
       // This will be removed once we have enough real events
       let eventResults = eventsWithCreators;
-      if (eventResults.length === 0) {
+      if (eventResults.length === 0 && !creatorId) {
         let filteredEvents = location && location !== 'all'
           ? MOCK_EVENTS[location as string] || []
           : Object.values(MOCK_EVENTS).flat();
@@ -1120,7 +1147,22 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       const eventDate = req.body.date ? new Date(req.body.date) : new Date();
       const endDate = req.body.endDate ? new Date(req.body.endDate) : null;
       const capacity = parseInt(req.body.capacity || '0');
-      const price = parseFloat(req.body.price || '0');
+      const price = req.body.price || '0';
+      const ticketType = req.body.ticketType || (parseFloat(price) > 0 ? 'paid' : 'free');
+      
+      // Parse tags if provided
+      let tags = [];
+      if (req.body.tags) {
+        try {
+          if (typeof req.body.tags === 'string') {
+            tags = JSON.parse(req.body.tags);
+          } else {
+            tags = req.body.tags;
+          }
+        } catch (e) {
+          console.warn("Could not parse tags:", e);
+        }
+      }
       
       // Insert new event into database
       const newEvent = await db.insert(events).values({
@@ -1132,10 +1174,20 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         city: req.body.city || req.body.location, // Default to location if city not specified
         category: req.body.category,
         image: imagePath,
+        image_url: req.body.image_url || null,
         capacity: capacity,
-        price: price.toString(),
+        price: price,
+        ticketType: ticketType,
+        availableTickets: req.body.availableTickets || capacity,
         createdAt: new Date(),
-        updatedAt: new Date(),
+        isPrivate: req.body.isPrivate === 'true' || req.body.isPrivate === true,
+        isBusinessEvent: req.body.isBusinessEvent === 'true' || req.body.isBusinessEvent === true,
+        tags: tags,
+        attendingCount: 0,
+        interestedCount: 0,
+        timeFrame: req.body.timeFrame || null,
+        stripeProductId: req.body.stripeProductId || null,
+        stripePriceId: req.body.stripePriceId || null,
         creatorId: currentUser.id
       }).returning();
       
@@ -1162,7 +1214,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       res.status(201).json(eventResponse);
     } catch (error) {
       console.error("Error creating event:", error);
-      res.status(500).json({ error: "Failed to create event" });
+      res.status(500).json({ error: "Failed to create event", details: error.message });
     }
   });
 
@@ -1205,8 +1257,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         // Update existing participation
         participation = await db.update(eventParticipants)
           .set({
-            status: status,
-            updatedAt: new Date()
+            status: status
           })
           .where(
             and(
@@ -1219,11 +1270,9 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         // Create new participation record
         participation = await db.insert(eventParticipants)
           .values({
-            eventId: parsedEventId,
-            userId: currentUser.id,
-            status: status,
-            createdAt: new Date(),
-            updatedAt: new Date()
+            event_id: parsedEventId,
+            user_id: currentUser.id,
+            status: status
           })
           .returning();
       }
