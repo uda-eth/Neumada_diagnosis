@@ -70,9 +70,13 @@ export async function handleChatMessage(req: Request, res: Response) {
           
           Important instructions:
           1. Always respond in English
-          2. Format responses with clear sections and spacing
-          3. Keep responses concise and well-structured
-          4. Use bullet points and line breaks for readability
+          2. Keep responses brief and direct
+          3. Limit responses to 2-3 key points or events
+          4. Format event listings as:
+             • [Event Name] - [Date] at [Location]
+             Brief one-line description if needed.
+          5. Avoid using bold text or complex formatting
+          6. Use simple bullet points for readability
           
           Context:
           Current Events:\n${eventsContext}
