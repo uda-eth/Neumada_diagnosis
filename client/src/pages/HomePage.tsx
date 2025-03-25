@@ -185,7 +185,9 @@ export default function HomePage() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const formData = new FormData(e.currentTarget);
+    // Store form reference to use later
+    const form = e.currentTarget;
+    const formData = new FormData(form);
     const city = formData.get('city') as string;
     const email = formData.get('email') as string;
     const reason = formData.get('reason') as string;
@@ -217,9 +219,18 @@ export default function HomePage() {
           description: "Your city suggestion has been received. We'll notify you when we add support for this location.",
           variant: "default"
         });
+        
+        // Clear the form fields individually instead of using reset()
+        const cityInput = form.querySelector('#city') as HTMLInputElement;
+        const emailInput = form.querySelector('#email') as HTMLInputElement;
+        const reasonInput = form.querySelector('#reason') as HTMLTextAreaElement;
+        
+        if (cityInput) cityInput.value = '';
+        if (emailInput) emailInput.value = '';
+        if (reasonInput) reasonInput.value = '';
+        
+        // Close the dialog
         setShowCitySuggestDialog(false);
-        // Reset form
-        e.currentTarget.reset();
       } else {
         throw new Error(data.message || 'Something went wrong');
       }
