@@ -69,12 +69,19 @@ const crypto = {
 
 export function setupAuth(app: Express) {
   const MemoryStore = createMemoryStore(session);
+  // Use a stronger session secret combining REPL_ID and a fixed key
+  const sessionSecret = process.env.REPL_ID 
+    ? `${process.env.REPL_ID}-maly-platform-key-${process.env.REPL_OWNER || 'default'}`
+    : "maly-platform-local-development-secret-key";
+  
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.REPL_ID || "nomad-platform-secret",
-    resave: true,
-    saveUninitialized: true,
+    secret: sessionSecret,
+    name: "maly_session", // Use a custom name instead of connect.sid
+    resave: true, // Force the session to be saved back to the store
+    rolling: true, // Force a cookie to be set on every response
+    saveUninitialized: false, // Don't create session until something stored
     cookie: {
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       httpOnly: true,
       sameSite: 'lax',
       path: '/'
@@ -87,8 +94,8 @@ export function setupAuth(app: Express) {
   // Always trust the proxy in Replit environment
   app.set("trust proxy", 1);
   
-  // Don't set secure cookie in development to work with http
-  // In Replit's environment, we'll use secure cookies only if not in development mode
+  // Don't use secure cookies in development (use http)
+  // In production or Replit's environment, we'll use secure cookies
   if (app.get("env") === "production") {
     sessionSettings.cookie = { 
       ...sessionSettings.cookie,
@@ -508,7 +515,7 @@ export function setupAuth(app: Express) {
         }
         
         // Clear the cookie on the client
-        res.clearCookie('connect.sid', {
+        res.clearCookie('maly_session', {
           path: '/',
           httpOnly: true,
           sameSite: 'lax'

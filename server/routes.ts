@@ -802,6 +802,34 @@ app.get('/api/users/:city', (req: Request, res: Response) => {
 });
 
 
+// Middleware to check if user is authenticated
+function isAuthenticated(req: Request, res: Response, next: Function) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  return res.status(401).json({ 
+    authenticated: false, 
+    message: "You need to be logged in to access this resource" 
+  });
+}
+
+// No redirect middleware - just returns authentication status
+function checkAuthentication(req: Request, res: Response) {
+  if (req.isAuthenticated()) {
+    // Return authentication status without redirect
+    return res.json({ 
+      authenticated: true,
+      user: req.user
+    });
+  }
+  
+  // Return unauthenticated status
+  return res.json({ 
+    authenticated: false,
+    message: "Not logged in"
+  });
+}
+
 export function registerRoutes(app: express.Application): { app: express.Application; httpServer: Server } {
   app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
 
@@ -1062,6 +1090,9 @@ export function registerRoutes(app: express.Application): { app: express.Applica
     server: httpServer,
     path: '/ws'
   });
-
+  
+  // Add authentication check endpoint
+  app.get('/api/auth/check', checkAuthentication);
+  
   return { app, httpServer };
 }
