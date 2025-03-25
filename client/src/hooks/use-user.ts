@@ -67,11 +67,19 @@ export function useUser() {
   const { data: user, error, isLoading, refetch } = useQuery<UserResponse>({
     queryKey: ['user'],
     queryFn: async () => {
+      console.log("Fetching user data from server, sessionId present:", !!sessionId);
+      
+      // Force a delay if we have a sessionId to ensure the server has time to process the session
+      if (sessionId) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      
       // First check auth status with the dedicated endpoint
       const authCheckResponse = await fetch('/api/auth/check', {
         credentials: 'include',
+        cache: 'no-store', // Stronger cache control
         headers: { 
-          'Cache-Control': 'no-cache',
+          'Cache-Control': 'no-store, no-cache, must-revalidate, private',
           'Pragma': 'no-cache'
         }
       });
@@ -92,14 +100,16 @@ export function useUser() {
       // If not authenticated, return null (no user)
       if (!authStatus.authenticated) {
         console.log("User not authenticated via auth check");
+        console.log("No authenticated user detected, redirecting to auth page");
         return null;
       }
       
       // If we get here, we need to try the regular user endpoint as fallback
       const response = await fetch('/api/user', {
         credentials: 'include',
+        cache: 'no-store',
         headers: { 
-          'Cache-Control': 'no-cache',
+          'Cache-Control': 'no-store, no-cache, must-revalidate, private',
           'Pragma': 'no-cache'
         }
       });
@@ -112,11 +122,12 @@ export function useUser() {
       return response.json();
     },
     // Improve refresh behavior with more aggressive settings
-    staleTime: 5 * 1000, // 5 seconds instead of 30
+    staleTime: 0, // No stale time - always fetch fresh data
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     refetchOnReconnect: true,
-    retry: 2, // Try more times
+    retry: 3, // Try more times
+    retryDelay: 1000, // Wait 1 second between retries
     // Force a refresh when there's a sessionId parameter
     enabled: true
   });

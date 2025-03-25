@@ -539,9 +539,12 @@ export function setupAuth(app: Express) {
     res.set('Expires', '-1');
     res.set('Pragma', 'no-cache');
     
-    // Force the session to be initialized if not yet done
-    if (!req.session.initialized) {
+    // Force the session to touch to update cookies and expirations
+    if (req.session) {
+      // @ts-ignore - Custom property for tracking session state
       req.session.initialized = true;
+      
+      // Force session save to ensure cookie is set
       req.session.save();
     }
     
@@ -553,8 +556,11 @@ export function setupAuth(app: Express) {
       const user = req.user;
       console.log("Auth check: User authenticated:", user.username);
       
-      // Update session lastAccess - this will trigger a save of the session
-      req.session.lastAccess = Date.now();
+      // Update session with timestamp
+      if (req.session) {
+        // @ts-ignore - Custom property for tracking session state
+        req.session.lastAccess = Date.now();
+      }
       
       // Return user info without sensitive data
       const { password, ...userWithoutPassword } = user as any;
