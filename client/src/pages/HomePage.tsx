@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useEvents } from "@/hooks/use-events";
+import { useUser } from "@/hooks/use-user";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -112,10 +113,33 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>([]);
   const { events: fetchedEvents } = useEvents(undefined, selectedCity);
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const { refreshUser } = useUser();
+  
+  // Handle session parameters when coming from login redirect
+  useEffect(() => {
+    // Parse URL parameters for session information
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('sessionId');
+    
+    if (sessionId) {
+      console.log("Detected session parameter, refreshing user data");
+      
+      // Refresh user data to ensure we're using the new session
+      refreshUser().then(userData => {
+        console.log("User data refreshed successfully:", userData?.username);
+        
+        // Remove the query params from URL without triggering a page reload
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }).catch(error => {
+        console.error("Error refreshing user data:", error);
+      });
+    }
+  }, [location, refreshUser]);
 
   const allEvents = fetchedEvents || [];
   const featuredEvent = featuredEventData;

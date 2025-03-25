@@ -490,8 +490,11 @@ export function setupAuth(app: Express) {
             return res.redirect('/auth?error=Session+error');
           }
           
-          console.log("Login successful, redirecting to homepage");
-          return res.redirect('/');
+          console.log("Login successful, redirecting to homepage with session:", req.sessionID);
+          
+          // Add a timestamp to break browser caching
+          const timestamp = Date.now();
+          return res.redirect(`/?sessionId=${req.sessionID}&ts=${timestamp}`);
         });
       });
     })(req, res, next);

@@ -137,6 +137,23 @@ export function useUser() {
     return `/chat/${userId}`;
   };
 
+  // Dedicated method to refresh user data and return the updated user
+  const refreshUser = async (): Promise<UserResponse | null> => {
+    try {
+      console.log("Explicitly refreshing user data");
+      // Force invalidate the cache first
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+      
+      // Then explicitly refetch
+      const { data } = await refetch();
+      
+      return data || null;
+    } catch (error) {
+      console.error("Error refreshing user data:", error);
+      return null;
+    }
+  };
+
   return {
     user,
     isLoading,
@@ -145,6 +162,7 @@ export function useUser() {
     logout: logout.mutateAsync,
     register: register.mutateAsync,
     startChat,
-    refetchUser: refetch
+    refetchUser: refetch,
+    refreshUser
   };
 }
