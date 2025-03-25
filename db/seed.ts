@@ -31,7 +31,19 @@ async function seed() {
         profileType: "member",
         location: "Mexico City",
         interests: ["Design", "Art"],
-        age: 28
+        age: 28,
+        profession: "UX Designer"
+      },
+      {
+        username: "carlos_tech",
+        email: "carlos@test.com",
+        password: "hashed_password",
+        fullName: "Carlos Rodriguez",
+        profileType: "member",
+        location: "Mexico City",
+        interests: ["Technology", "Startups"],
+        age: 30,
+        profession: "Tech Entrepreneur"
       }
     ])
     .onConflictDoNothing({ target: users.username })
@@ -64,6 +76,42 @@ async function seed() {
         ticketType: "paid",
         capacity: 24,
         creatorId: userInsertResult[1]?.insertedId
+      },
+      {
+        title: "Digital Nomad Networking Breakfast",
+        description: "Start your day connecting with fellow digital nomads over coffee and breakfast.",
+        city: "Mexico City",
+        location: "Blend Station, Condesa",
+        date: new Date("2025-02-18T09:00:00"),
+        category: "Networking",
+        price: "25",
+        ticketType: "paid",
+        capacity: 30,
+        creatorId: userInsertResult[2]?.insertedId
+      },
+      {
+        title: "Sunset Yoga at Chapultepec",
+        description: "Join us for a relaxing yoga session as the sun sets over Chapultepec Park.",
+        city: "Mexico City",
+        location: "Chapultepec Park",
+        date: new Date("2025-02-16T17:30:00"),
+        category: "Wellness",
+        price: "15",
+        ticketType: "paid",
+        capacity: 20,
+        creatorId: userInsertResult[1]?.insertedId
+      },
+      {
+        title: "Tech Startup Pitch Night",
+        description: "Watch local startups pitch their ideas and network with the tech community.",
+        city: "Mexico City",
+        location: "WeWork Reforma",
+        date: new Date("2025-02-22T18:00:00"),
+        category: "Tech",
+        price: "0",
+        ticketType: "free",
+        capacity: 50,
+        creatorId: userInsertResult[2]?.insertedId
       }
     ]);
 
