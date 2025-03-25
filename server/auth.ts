@@ -83,9 +83,9 @@ export function setupAuth(app: Express) {
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: 'none', // Changed from 'lax' to 'none' to work in all contexts including webview
       path: '/',
-      secure: false // Set to false to allow http in development
+      secure: false // Will be updated based on environment
     },
     store: new MemoryStore({
       checkPeriod: 86400000, // 24 hours
@@ -96,12 +96,17 @@ export function setupAuth(app: Express) {
   // Always trust the proxy in Replit environment
   app.set("trust proxy", 1);
   
-  // Don't use secure cookies in development (use http)
-  // In production or Replit's environment, we'll use secure cookies
-  if (app.get("env") === "production") {
+  // Detect Replit environment 
+  const isReplit = !!process.env.REPL_ID;
+  const isHTTPS = process.env.HTTPS === 'true';
+
+  // Configure cookie security based on environment
+  if (isReplit || isHTTPS || app.get("env") === "production") {
+    // Use secure cookies in Replit environment or production
     sessionSettings.cookie = { 
       ...sessionSettings.cookie,
-      secure: true 
+      sameSite: 'none', // Required for cross-site cookie access (including webview)
+      secure: true // Needed for sameSite: 'none'
     };
   }
 
@@ -519,11 +524,12 @@ export function setupAuth(app: Express) {
           // Continue anyway as the user is already logged out
         }
         
-        // Clear the cookie on the client
+        // Clear the cookie on the client with compatible settings
         res.clearCookie('maly_session', {
           path: '/',
           httpOnly: true,
-          sameSite: 'lax'
+          sameSite: 'none',
+          secure: true // Required for sameSite: 'none'
         });
         
         console.log("Logout successful for user:", username);
