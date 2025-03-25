@@ -105,6 +105,7 @@ function AppContent() {
             <Route path="/event/onda-linda-festival" component={OndaLindaFestivalPage} />
             <Route path="/event/:id" component={EventPage} />
             <Route path="/profile/:username" component={ProfilePage} />
+            <Route path="/profile" component={ProfilePage} />
             <Route path="/create" component={CreateEventPage} />
             <Route path="/companion" component={ChatbotPage} />
             <Route path="/connect" component={ConnectPage} />
