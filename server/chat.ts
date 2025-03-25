@@ -3,6 +3,7 @@ import { openai, SYSTEM_PROMPT } from './config/openai';
 import { db } from '../db';
 import { events, users } from '../db/schema';
 import { desc, sql } from 'drizzle-orm';
+import { webSearch } from './services/search';
 
 export async function handleChatMessage(req: Request, res: Response) {
   try {
@@ -38,12 +39,18 @@ export async function handleChatMessage(req: Request, res: Response) {
       Interests: ${user.interests?.join(', ')}
     `).join('\n');
 
+    // Get relevant web search results
+    const searchResults = await webSearch(message);
+    const searchContext = searchResults.map(result => 
+      `${result.title}\n${result.snippet}`
+    ).join('\n\n');
+
     const completion = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [
         { 
           role: "system", 
-          content: `${SYSTEM_PROMPT}\n\nCurrent Events:\n${eventsContext}\n\nActive Community Members:\n${usersContext}` 
+          content: `${SYSTEM_PROMPT}\n\nCurrent Events:\n${eventsContext}\n\nActive Community Members:\n${usersContext}\n\nWeb Search Results:\n${searchContext}` 
         },
         { role: "user", content: message }
       ],
