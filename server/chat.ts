@@ -2,8 +2,21 @@ import type { Request, Response } from 'express';
 import { openai, SYSTEM_PROMPT } from './config/openai';
 import { db } from '../db';
 import { events, users } from '../db/schema';
-import { desc } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { webSearch } from './services/search';
+
+async function searchLocalEvents(city: string) {
+  try {
+    const localEvents = await db.query.events.findMany({
+      where: eq(events.city, city),
+      orderBy: (events, { asc }) => [asc(events.date)]
+    });
+    return localEvents;
+  } catch (error) {
+    console.error('Error querying local events:', error);
+    return null;
+  }
+}
 
 export async function handleChatMessage(req: Request, res: Response) {
   try {
@@ -12,7 +25,28 @@ export async function handleChatMessage(req: Request, res: Response) {
       return res.status(400).json({ error: "Message is required" });
     }
 
-    // Determine if we need web search based on message content
+    // Check if message is asking about events in a specific city
+    if (message.toLowerCase().includes('events')) {
+      const cityMatch = message.match(/in\s+([^?.,]+)(?:[?,.]|$)/i);
+      const city = cityMatch ? cityMatch[1].trim() : null;
+
+      if (city) {
+        const localEvents = await searchLocalEvents(city);
+        if (localEvents && localEvents.length > 0) {
+          let response = '### Local Events Found\n\n';
+          localEvents.forEach(event => {
+            response += `- **${event.title}**\n`;
+            response += `  - Date: ${new Date(event.date).toLocaleDateString()}\n`;
+            response += `  - Location: ${event.location}\n`;
+            response += `  - Category: ${event.category}\n`;
+            response += `  - Price: ${event.price}\n\n`;
+          });
+          return res.json({ response });
+        }
+      }
+    }
+
+    // Default handling with web search capability
     const needsWebSearch = message.toLowerCase().includes('event') || 
                           message.toLowerCase().includes('happening') ||
                           message.toLowerCase().includes('what\'s on') ||
@@ -29,12 +63,9 @@ export async function handleChatMessage(req: Request, res: Response) {
     let searchContext = "";
 
     if (needsWebSearch) {
-      model = "gpt-4o-search-preview";
+      model = "gpt-4-turbo-preview";
       webSearchOptions = { search_context_size: "medium" };
-
-      // Get relevant web search results
       const searchResults = await webSearch(message);
-      // Format search results as numbered list
       searchContext = searchResults.map((result, index) => {
         const cleanTitle = result.title.replace(/\*\*/g, '').replace(/\[|\]/g, '');
         const cleanSnippet = result.snippet.replace(/\*\*/g, '').replace(/\[|\]/g, '');
@@ -114,56 +145,4 @@ export async function handleChatMessage(req: Request, res: Response) {
       details: error.message 
     });
   }
-}
-import { db } from '../db';
-import { events } from '../db/schema';
-import { eq } from 'drizzle-orm';
-
-async function searchLocalEvents(city: string) {
-  try {
-    const localEvents = await db.query.events.findMany({
-      where: eq(events.city, city),
-      orderBy: (events, { asc }) => [asc(events.date)]
-    });
-    return localEvents;
-  } catch (error) {
-    console.error('Error querying local events:', error);
-    return null;
-  }
-}
-
-export async function handleChatMessage(req: Request, res: Response) {
-  const { message } = req.body;
-  
-  // Check if message is asking about events
-  if (message.toLowerCase().includes('events') && message.toLowerCase().includes('mexico city')) {
-    const localEvents = await searchLocalEvents('Mexico City');
-    
-    let response = '';
-    if (localEvents && localEvents.length > 0) {
-      response = '### Local Events Found\n\n';
-      localEvents.forEach(event => {
-        response += `- **${event.title}**\n`;
-        response += `  - Date: ${new Date(event.date).toLocaleDateString()}\n`;
-        response += `  - Location: ${event.location}\n`;
-        response += `  - Category: ${event.category}\n`;
-        response += `  - Price: ${event.price}\n\n`;
-      });
-    } else {
-      // Fallback to external event data
-      response = '### External Events\n\n';
-      response += 'Here are some upcoming events in Mexico City:\n\n';
-      // Add external event data here
-      response += '- **Shakira: Estoy Aquí Experience**\n';
-      response += '  - Dates: March 21–30, 2025\n';
-      response += '  - Location: Mexico City\n';
-      response += '  - Details: An immersive exhibition showcasing Shakira\'s artistic journey\n\n';
-      // Add more external events...
-    }
-    
-    return res.json({ response });
-  }
-  
-  // Handle other types of messages...
-  return res.json({ response: "How can I assist you today?" });
 }
