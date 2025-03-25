@@ -759,6 +759,68 @@ export default function HomePage() {
           url={`${window.location.origin}/event/${selectedEvent.id}`}
         />
       )}
+
+      {/* City Suggestion Dialog */}
+      <Dialog open={showCitySuggestDialog} onOpenChange={setShowCitySuggestDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Suggest a City</DialogTitle>
+            <DialogDescription>
+              Don't see your city? Let us know where you'd like us to expand next.
+              We'll notify you when we add support for your location.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleCitySuggestion} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="city">City Name</Label>
+              <Input id="city" name="city" placeholder="e.g., Austin, Chiang Mai" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Your Email</Label>
+              <div className="flex items-center space-x-2">
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                <Input 
+                  id="email" 
+                  name="email" 
+                  type="email" 
+                  placeholder="email@example.com" 
+                  required 
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="reason">Why should we add this city? (optional)</Label>
+              <Textarea 
+                id="reason" 
+                name="reason" 
+                placeholder="Tell us why this city is great for digital nomads..." 
+                className="min-h-[100px]" 
+              />
+            </div>
+            <DialogFooter>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setShowCitySuggestDialog(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>Submitting...</>
+                ) : (
+                  <>Submit Suggestion</>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
