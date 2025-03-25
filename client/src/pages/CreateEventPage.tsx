@@ -48,6 +48,7 @@ export default function CreateEventPage() {
   const { toast } = useToast();
   const { user } = useUser();
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [isDraft, setIsDraft] = useState<boolean>(false);
   const [eventImage, setEventImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("Social");
@@ -126,6 +127,9 @@ export default function CreateEventPage() {
       
       // Add category
       formData.append('category', selectedCategory);
+      
+      // Add isDraft status based on state
+      formData.append('isDraft', isDraft.toString());
       
       // Ensure creatorId is included
       if (user && user.id) {
@@ -408,19 +412,28 @@ export default function CreateEventPage() {
               <h3 className="text-sm font-medium">Publication Status</h3>
               <div className="flex gap-4">
                 <Button
-                  type="submit"
-                  form="event-form"
+                  type="button"
                   variant="outline"
                   className="flex-1 h-12 bg-white/5 border-white/10 hover:bg-white/10"
                   disabled={!eventImage || !form.watch("title") || !form.watch("description")}
+                  onClick={() => {
+                    console.log("Draft button clicked");
+                    setIsDraft(true);
+                    // Use the state variable in onSubmit
+                    form.handleSubmit(onSubmit)();
+                  }}
                 >
                   Save as Draft
                 </Button>
                 <Button
-                  type="submit"
-                  form="event-form"
+                  type="button"
                   className="flex-1 h-12 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
                   disabled={!eventImage || !form.watch("title") || !form.watch("description")}
+                  onClick={() => {
+                    console.log("Publish button clicked");
+                    setIsDraft(false);
+                    form.handleSubmit(onSubmit)();
+                  }}
                 >
                   Publish Event
                 </Button>
@@ -446,10 +459,14 @@ export default function CreateEventPage() {
       <div className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-lg border-t border-white/10">
         <div className="container mx-auto max-w-2xl p-4">
           <Button
-            type="submit"
-            form="event-form"
+            type="button"
             className="w-full h-12 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white transition-all duration-200"
             disabled={!eventImage || !form.watch("title") || !form.watch("description")}
+            onClick={() => {
+              console.log("Bottom Create Event button clicked");
+              setIsDraft(false);
+              form.handleSubmit(onSubmit)();
+            }}
           >
             <Plus className="h-5 w-5 mr-2" />
             <span>Create Event</span>
