@@ -3,11 +3,15 @@ import { db } from './index';
 import { events, users } from './schema';
 
 async function seed() {
+  // Clear existing data
+  await db.delete(events);
+  await db.delete(users);
+
   // Insert test users first
   const userIds = await db.insert(users).values([
     {
-      username: "lucahudek",
-      email: "luca@test.com",
+      username: "lucahudek_test",
+      email: "luca_test@test.com",
       password: "hashed_password",
       fullName: "Luca Hudek",
       profileType: "member",
@@ -18,8 +22,8 @@ async function seed() {
       profession: "Digital Nomad Platform Creator"
     },
     {
-      username: "maria_design",
-      email: "maria@test.com",
+      username: "maria_design_test",
+      email: "maria_test@test.com",
       password: "hashed_password",
       fullName: "Maria Torres",
       profileType: "member",
