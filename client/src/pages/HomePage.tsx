@@ -7,13 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Users, Plus, Search, Globe2, Bot, Share2, X, Check } from "lucide-react";
+import { MapPin, Users, Plus, Search, Globe2, Bot, Share2, X, Check, Mail } from "lucide-react";
 import { format } from "date-fns";
 import { DIGITAL_NOMAD_CITIES } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTranslation } from "@/lib/translations";
 import { ShareDialog } from "@/components/ui/share-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -117,6 +120,8 @@ export default function HomePage() {
   const { toast } = useToast();
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [showCitySuggestDialog, setShowCitySuggestDialog] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { refreshUser } = useUser();
   
   // Handle session parameters when coming from login redirect
@@ -176,6 +181,60 @@ export default function HomePage() {
     setShareDialogOpen(true);
   };
 
+  const handleCitySuggestion = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const formData = new FormData(e.currentTarget);
+    const city = formData.get('city') as string;
+    const email = formData.get('email') as string;
+    const reason = formData.get('reason') as string;
+
+    if (!city || !email) {
+      toast({
+        title: "Missing information",
+        description: "Please provide both a city name and your email address.",
+        variant: "destructive"
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/suggest-city', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ city, email, reason }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: "Thank you!",
+          description: "Your city suggestion has been received. We'll notify you when we add support for this location.",
+          variant: "default"
+        });
+        setShowCitySuggestDialog(false);
+        // Reset form
+        e.currentTarget.reset();
+      } else {
+        throw new Error(data.message || 'Something went wrong');
+      }
+    } catch (error) {
+      console.error('Error submitting city suggestion:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to submit your suggestion. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border sticky top-0 z-50 bg-black text-white">
@@ -185,18 +244,31 @@ export default function HomePage() {
               <h1 className="text-sm font-medium uppercase tracking-[.5em] text-white">
                 {t('discover')}
               </h1>
-              <Select value={selectedCity} onValueChange={setSelectedCity}>
-                <SelectTrigger className="w-[140px] md:w-[180px] bg-transparent border-border">
-                  <SelectValue placeholder="Select city" />
-                </SelectTrigger>
-                <SelectContent>
-                  {DIGITAL_NOMAD_CITIES.map((city) => (
-                    <SelectItem key={city} value={city}>
-                      {city}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-2">
+                <Select value={selectedCity} onValueChange={setSelectedCity}>
+                  <SelectTrigger className="w-[140px] md:w-[180px] bg-transparent border-border">
+                    <SelectValue placeholder="Select city" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DIGITAL_NOMAD_CITIES.map((city) => (
+                      <SelectItem key={city} value={city}>
+                        {city}
+                      </SelectItem>
+                    ))}
+                    <div 
+                      className="cursor-pointer flex items-center gap-2 p-2 hover:bg-accent text-primary"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setShowCitySuggestDialog(true);
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>Don't see your city?</span>
+                    </div>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <Button

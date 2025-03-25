@@ -835,6 +835,43 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
   setupAuth(app);
 
+  // API endpoint for city suggestions
+  app.post("/api/suggest-city", async (req: Request, res: Response) => {
+    try {
+      const { city, email, reason } = req.body;
+      
+      if (!city || !email) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "City name and email are required" 
+        });
+      }
+
+      // In a real app, you would insert into the database
+      // For now, we'll just log the suggestion
+      console.log(`City suggestion received: ${city}, Email: ${email}, Reason: ${reason || 'Not provided'}`);
+      
+      // Here you would normally save to database using something like:
+      // await db.insert(suggestedCities).values({
+      //   city,
+      //   email,
+      //   reason: reason || null,
+      //   createdAt: new Date()
+      // });
+
+      return res.status(200).json({
+        success: true,
+        message: "Thank you for your suggestion! We'll notify you when we add support for this city."
+      });
+    } catch (error) {
+      console.error("Error saving city suggestion:", error);
+      return res.status(500).json({
+        success: false,
+        message: "An error occurred while submitting your suggestion."
+      });
+    }
+  });
+
   app.post("/api/chat", handleChatMessage);
 
   app.get("/api/users/browse", async (req, res) => {
