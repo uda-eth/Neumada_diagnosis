@@ -47,26 +47,34 @@ export async function handleChatMessage(req: Request, res: Response) {
 
       if (localEvents && localEvents.length > 0) {
         let response = '### Local Events (Mexico City)\n\n';
-        localEvents.forEach((event, index) => {
-          response += `${index + 1}. **${event.title}**\n`;
-          response += `   - Date: ${new Date(event.date).toLocaleDateString()}\n`;
-          response += `   - Location: ${event.location}\n`;
-          response += `   - Category: ${event.category}\n`;
-          response += `   - Price: ${event.price || 'Free'}\n`;
-          if (event.description) {
-            response += `   - Description: ${event.description}\n`;
-          }
-          response += '\n';
-        });
-        response += '\nThese events are sourced from local user-posted data.';
+        localEvents
+          .filter(event => event.location === "Mexico City")
+          .forEach((event, index) => {
+            response += `${index + 1}. **${event.title}**\n`;
+            response += `   - Date: ${new Date(event.date).toLocaleDateString()}\n`;
+            response += `   - Location: ${event.location}\n`;
+            response += `   - Category: ${event.category}\n`;
+            response += `   - Price: ${event.price || 'Free'}\n`;
+            response += `   - Creator: ${event.creatorName}\n`;
+            if (event.description) {
+              response += `   - Description: ${event.description}\n`;
+            }
+            response += '\n';
+          });
+        response += '\nThese events are sourced from local user-posted data in our database.';
         return res.json({ response });
       } else {
         let response = '### Debugging Information\n\n';
-        response += 'No local events were found. Please check the following:\n\n';
-        response += '* Verify that the seed file was executed using `npm run seed`\n';
-        response += '* Confirm that the local database connection is working properly\n';
-        response += '* Check that the seeded data includes events for Mexico City\n';
-        response += '\nOnce these steps are completed, try your query again.';
+        response += 'No local events were found. Please verify the following:\n\n';
+        response += '* Database Seeding: Run `npm run seed` to populate test data\n';
+        response += '* Database Connection: Check database connection status in logs\n';
+        response += '* Data Verification:\n';
+        response += '  - Confirm events exist with location="Mexico City"\n';
+        response += '  - Verify creator_id fields are properly populated\n';
+        response += '* Query Filters:\n';
+        response += '  - Check case sensitivity of "Mexico City" matching\n';
+        response += '  - Verify location field name in schema matches query\n';
+        response += '\nIf issues persist, check server logs for potential error messages.';
         return res.json({ response });
       }
     }
