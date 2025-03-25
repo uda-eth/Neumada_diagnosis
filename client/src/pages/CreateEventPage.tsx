@@ -88,6 +88,7 @@ export default function CreateEventPage() {
   };
 
   const onSubmit = async (data: FormData) => {
+    console.log("Form submit started");
     try {
       setIsSubmitting(true);
       
@@ -118,6 +119,8 @@ export default function CreateEventPage() {
         }
       });
       
+      console.log("FormData prepared, keys:", Array.from(formData.keys()));
+      
       // Add the selected tags as JSON string
       formData.append('tags', JSON.stringify(selectedTags));
       
@@ -138,7 +141,11 @@ export default function CreateEventPage() {
         formData.append('image', file);
       }
       
-      console.log("Submitting event:", Object.fromEntries(formData));
+      const formDataObj: Record<string, any> = {};
+      formData.forEach((value, key) => {
+        formDataObj[key] = value;
+      });
+      console.log("Submitting event:", formDataObj);
       
       // Make the API call
       const response = await fetch('/api/events', {
@@ -193,7 +200,11 @@ export default function CreateEventPage() {
       </header>
 
       <ScrollArea className="flex-1" style={{ height: 'calc(100vh - 140px)' }}>
-        <form id="event-form" onSubmit={form.handleSubmit(onSubmit)}>
+        <form id="event-form" onSubmit={(e) => {
+            e.preventDefault();
+            console.log("Form submitted manually", form.getValues());
+            form.handleSubmit(onSubmit)(e);
+          }}>
           <div className="container mx-auto px-4 py-8 space-y-8 max-w-2xl">
             <div className="space-y-4">
               <p className="text-sm text-white/60">Let's get started!</p>
