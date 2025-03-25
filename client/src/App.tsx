@@ -31,22 +31,45 @@ function AppContent() {
   // Redirect to auth page if not logged in and not already on auth page
   useEffect(() => {
     const checkAuth = async () => {
-      if (!isLoading && !user && !location.startsWith('/auth')) {
-        // Check if we have a valid session by making a direct API call
-        try {
-          const response = await fetch('/api/user', { 
-            credentials: 'include',
-            headers: { 'Cache-Control': 'no-cache' }
-          });
-          
-          if (!response.ok) {
-            // Not authenticated, redirect to auth page
-            setLocation('/auth');
+      // Skip check if we're already on the auth page or during loading
+      if (location.startsWith('/auth') || isLoading) {
+        return;
+      }
+      
+      // If user data is already loaded, no need to check the server
+      if (user) {
+        console.log("User already loaded in client state:", user.username);
+        return;
+      }
+      
+      // No user in client state, check server-side auth status
+      try {
+        console.log("Checking auth status from server...");
+        const response = await fetch('/api/auth/check', { 
+          credentials: 'include',
+          headers: { 
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
           }
-        } catch (error) {
-          console.error("Error checking authentication:", error);
+        });
+        
+        if (response.ok) {
+          const authData = await response.json();
+          
+          if (!authData.authenticated) {
+            console.log("Server reports not authenticated, redirecting to login");
+            setLocation('/auth');
+          } else {
+            console.log("Server authenticated user:", authData.user?.username);
+          }
+        } else {
+          // Server error, assume not authenticated
+          console.error("Auth check failed with status:", response.status);
           setLocation('/auth');
         }
+      } catch (error) {
+        console.error("Error checking authentication:", error);
+        setLocation('/auth');
       }
     };
     

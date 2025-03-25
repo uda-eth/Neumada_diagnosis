@@ -4,6 +4,7 @@ import { Menu, Bot, Globe, Inbox, Crown, Settings, UserCircle, HelpCircle, LogOu
 import { Button } from "./button";
 import { useLocation } from "wouter";
 import { useUser } from "@/hooks/use-user";
+import { useEffect, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,8 +17,34 @@ interface LayoutProps {
 }
 
 export function Layout({ children }: LayoutProps) {
-  const [, setLocation] = useLocation();
-  const { user, logout } = useUser();
+  const [location, setLocation] = useLocation();
+  const { user, logout, isLoading, refetchUser } = useUser();
+  const [authChecked, setAuthChecked] = useState(false);
+
+  // Monitor authentication state and redirect if needed
+  useEffect(() => {
+    const checkAuthState = async () => {
+      // Refetch to ensure we have the latest auth state
+      await refetchUser();
+      
+      // Don't redirect if we're already on the auth page
+      if (location === '/auth') {
+        setAuthChecked(true);
+        return;
+      }
+      
+      // If we've checked auth and user is null (and not loading), redirect to auth page
+      if (!isLoading && !user && !authChecked) {
+        console.log("No authenticated user detected, redirecting to auth page");
+        setLocation('/auth');
+      }
+      
+      // Mark that we've checked authentication
+      setAuthChecked(true);
+    };
+    
+    checkAuthState();
+  }, [user, isLoading, location, setLocation, refetchUser]);
 
   const handleLogout = async () => {
     await logout();
