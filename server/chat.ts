@@ -35,9 +35,11 @@ export async function handleChatMessage(req: Request, res: Response) {
       
       // Get relevant web search results
       const searchResults = await webSearch(message);
-      searchContext = searchResults.map(result => 
-        `${result.title}\n${result.snippet}`
-      ).join('\n\n');
+      searchContext = searchResults.map(result => {
+        const cleanTitle = result.title.replace(/\*\*/g, '').replace(/\[|\]/g, '');
+        const cleanSnippet = result.snippet.replace(/\*\*/g, '').replace(/\[|\]/g, '');
+        return `Title: ${cleanTitle}\nDetails: ${cleanSnippet}`;
+      }).join('\n\n');
     }
 
     // Get latest events and format them
@@ -77,12 +79,16 @@ export async function handleChatMessage(req: Request, res: Response) {
           Important instructions:
           1. Always respond in English
           2. Keep responses brief and direct
-          3. Limit responses to 3-4 key recommendations
-          4. For restaurants/venues format as:
-             • [Name] - [Area]
-             One-line description of cuisine and price range
-          5. Avoid using bold text or complex formatting
-          6. Use simple bullet points for readability
+          3. For restaurant/venue recommendations:
+             • List 3-4 top places
+             • Format as: Name (Area) - Brief description
+             • Include price range when available
+             • Add a one-line specialty or highlight
+          4. For events:
+             • List name, date, and location clearly
+             • One key detail about the event
+          5. Use simple bullet points and clean spacing
+          6. Avoid markdown formatting or special characters
           
           Context:
           Current Events:\n${eventsContext}
