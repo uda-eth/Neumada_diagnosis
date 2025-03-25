@@ -47,8 +47,31 @@ export default function AuthPage() {
   
   // If user is already logged in, redirect to home page
   useEffect(() => {
+    async function checkAndRedirect() {
+      try {
+        // Check auth status via server endpoint
+        const response = await fetch('/api/auth/check', {
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const authStatus = await response.json();
+          if (authStatus.authenticated) {
+            console.log("User already authenticated, redirecting to homepage");
+            setLocation("/");
+          }
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+      }
+    }
+    
+    // If we already have user data, redirect without making another request
     if (user) {
       setLocation("/");
+    } else {
+      // Otherwise check auth status from server
+      checkAndRedirect();
     }
   }, [user, setLocation]);
   
