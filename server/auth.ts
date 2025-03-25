@@ -84,7 +84,8 @@ export function setupAuth(app: Express) {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       httpOnly: true,
       sameSite: 'lax',
-      path: '/'
+      path: '/',
+      secure: false // Set to false to allow http in development
     },
     store: new MemoryStore({
       checkPeriod: 86400000, // 24 hours
@@ -528,6 +529,38 @@ export function setupAuth(app: Express) {
         res.json({ message: "Logged out successfully" });
       });
     });
+  });
+  
+  // Add a dedicated auth check endpoint
+  app.get("/api/auth/check", (req, res) => {
+    // Add cache-control headers to prevent caching of auth status
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.set('Expires', '-1');
+    res.set('Pragma', 'no-cache');
+    
+    // Log session ID for debugging
+    console.log("Session ID in /api/auth/check:", req.sessionID);
+    
+    // Check if user is authenticated
+    if (req.isAuthenticated() && req.user) {
+      const user = req.user;
+      console.log("Auth check: User authenticated:", user.username);
+      
+      // Return user info without sensitive data
+      const { password, ...userWithoutPassword } = user as any;
+      
+      res.json({
+        authenticated: true,
+        user: userWithoutPassword,
+        sessionId: req.sessionID
+      });
+    } else {
+      console.log("Auth check: User not authenticated");
+      res.json({
+        authenticated: false,
+        message: "Not logged in"
+      });
+    }
   });
 
   app.get("/api/user", (req, res) => {
