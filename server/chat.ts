@@ -7,18 +7,21 @@ import { webSearch } from './services/search';
 
 async function searchLocalEvents(city?: string) {
   try {
-    const query = db.query.events.findMany({
+    const baseQuery = {
       orderBy: [desc(events.date)],
       limit: 10,
       with: {
         creator: true
       }
-    });
+    };
 
     if (city) {
-      return query.where(eq(events.city, city));
+      return await db.query.events.findMany({
+        ...baseQuery,
+        where: eq(events.city, city)
+      });
     }
-    return query;
+    return await db.query.events.findMany(baseQuery);
   } catch (error) {
     console.error('Error querying local events:', error);
     return null;
