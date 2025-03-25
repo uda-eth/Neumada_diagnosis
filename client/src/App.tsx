@@ -30,7 +30,23 @@ function AppContent() {
 
   // Redirect to auth page if not logged in and not already on auth page
   useEffect(() => {
+    // Check if we have a session parameter in the URL - if so, we're coming from a login redirect
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('sessionId');
+    
     const checkAuth = async () => {
+      // If there's a sessionId in the URL, we're coming back from a login redirect.
+      // Clean up the URL but don't redirect immediately - wait for user data to load
+      if (sessionId) {
+        console.log("Login redirect detected with sessionId:", sessionId);
+        // Clean the URL without reloading
+        const url = new URL(window.location.href);
+        url.searchParams.delete('sessionId');
+        url.searchParams.delete('ts');
+        window.history.replaceState({}, document.title, url.toString());
+        return; // Skip further checks on first render to give sessionId time to work
+      }
+    
       // Skip check if we're already on the auth page or during loading
       if (location.startsWith('/auth') || isLoading) {
         return;
@@ -47,8 +63,9 @@ function AppContent() {
         console.log("Checking auth status from server...");
         const response = await fetch('/api/auth/check', { 
           credentials: 'include',
+          cache: 'no-store', // Ensure we don't use cached results
           headers: { 
-            'Cache-Control': 'no-cache',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, private',
             'Pragma': 'no-cache'
           }
         });

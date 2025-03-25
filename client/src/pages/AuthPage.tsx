@@ -49,9 +49,14 @@ export default function AuthPage() {
   useEffect(() => {
     async function checkAndRedirect() {
       try {
-        // Check auth status via server endpoint
+        // Check auth status via server endpoint with cache busting
         const response = await fetch('/api/auth/check', {
-          credentials: 'include'
+          credentials: 'include',
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+            'Pragma': 'no-cache'
+          }
         });
         
         if (response.ok) {
@@ -68,6 +73,7 @@ export default function AuthPage() {
     
     // If we already have user data, redirect without making another request
     if (user) {
+      console.log("User found in state, redirecting to homepage");
       setLocation("/");
     } else {
       // Otherwise check auth status from server
