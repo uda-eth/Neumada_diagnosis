@@ -640,6 +640,90 @@ export function setupAuth(app: Express) {
     }
   });
 
+  // Add endpoint for retrieving user by session ID (for webview compatibility)
+  app.get("/api/user-by-session", (req, res) => {
+    const sessionId = req.header('X-Session-ID');
+    console.log("User by session request for sessionID:", sessionId);
+    
+    if (!sessionId) {
+      return res.status(400).send("No session ID provided");
+    }
+    
+    // Use the session store to look up the session
+    const sessionStore = req.sessionStore as any;
+    
+    if (!sessionStore.get) {
+      console.error("Session store missing get method");
+      return res.status(500).send("Session store error");
+    }
+    
+    // Get session data from store
+    sessionStore.get(sessionId, async (err: any, sessionData: any) => {
+      if (err) {
+        console.error("Error getting session:", err);
+        return res.status(500).send("Error retrieving session");
+      }
+      
+      if (!sessionData || !sessionData.passport || !sessionData.passport.user) {
+        console.log("No user found in session:", sessionId);
+        return res.status(401).send("Invalid or expired session");
+      }
+      
+      const userId = sessionData.passport.user;
+      console.log("Found user ID in session:", userId);
+      
+      // Get user from database
+      try {
+        const [user] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1);
+        
+        if (!user) {
+          return res.status(404).send("User not found");
+        }
+        
+        console.log("User found by session ID:", user.username);
+        
+        // Return user without sensitive data
+        const { password, ...userWithoutPassword } = user;
+        return res.json(userWithoutPassword);
+      } catch (dbError) {
+        console.error("Database error when finding user by session:", dbError);
+        return res.status(500).send("Error finding user");
+      }
+    });
+  });
+  
+  // Add endpoint for verifying a cached user exists
+  app.post("/api/verify-user", async (req, res) => {
+    const { userId } = req.body;
+    
+    if (!userId) {
+      return res.status(400).send("No user ID provided");
+    }
+    
+    try {
+      // Get user from database to verify they exist
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+      
+      if (!user) {
+        return res.status(404).send("User not found");
+      }
+      
+      console.log("User verified exists:", user.username);
+      return res.status(200).send({ valid: true });
+    } catch (dbError) {
+      console.error("Database error verifying user:", dbError);
+      return res.status(500).send("Error verifying user");
+    }
+  });
+
   // Add endpoint to check for Replit environment
   app.get("/api/replit-info", (req, res) => {
     // Check if we're running in a Replit environment
