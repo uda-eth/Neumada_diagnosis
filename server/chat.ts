@@ -115,3 +115,55 @@ export async function handleChatMessage(req: Request, res: Response) {
     });
   }
 }
+import { db } from '../db';
+import { events } from '../db/schema';
+import { eq } from 'drizzle-orm';
+
+async function searchLocalEvents(city: string) {
+  try {
+    const localEvents = await db.query.events.findMany({
+      where: eq(events.city, city),
+      orderBy: (events, { asc }) => [asc(events.date)]
+    });
+    return localEvents;
+  } catch (error) {
+    console.error('Error querying local events:', error);
+    return null;
+  }
+}
+
+export async function handleChatMessage(req: Request, res: Response) {
+  const { message } = req.body;
+  
+  // Check if message is asking about events
+  if (message.toLowerCase().includes('events') && message.toLowerCase().includes('mexico city')) {
+    const localEvents = await searchLocalEvents('Mexico City');
+    
+    let response = '';
+    if (localEvents && localEvents.length > 0) {
+      response = '### Local Events Found\n\n';
+      localEvents.forEach(event => {
+        response += `- **${event.title}**\n`;
+        response += `  - Date: ${new Date(event.date).toLocaleDateString()}\n`;
+        response += `  - Location: ${event.location}\n`;
+        response += `  - Category: ${event.category}\n`;
+        response += `  - Price: ${event.price}\n\n`;
+      });
+    } else {
+      // Fallback to external event data
+      response = '### External Events\n\n';
+      response += 'Here are some upcoming events in Mexico City:\n\n';
+      // Add external event data here
+      response += '- **Shakira: Estoy Aquí Experience**\n';
+      response += '  - Dates: March 21–30, 2025\n';
+      response += '  - Location: Mexico City\n';
+      response += '  - Details: An immersive exhibition showcasing Shakira\'s artistic journey\n\n';
+      // Add more external events...
+    }
+    
+    return res.json({ response });
+  }
+  
+  // Handle other types of messages...
+  return res.json({ response: "How can I assist you today?" });
+}
