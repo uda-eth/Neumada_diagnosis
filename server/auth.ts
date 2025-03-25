@@ -69,20 +69,36 @@ const crypto = {
 
 export function setupAuth(app: Express) {
   const MemoryStore = createMemoryStore(session);
+  // Use a stronger session secret combining REPL_ID and a fixed key
+  const sessionSecret = process.env.REPL_ID 
+    ? `${process.env.REPL_ID}-maly-platform-key-${process.env.REPL_OWNER || 'default'}`
+    : "maly-platform-local-development-secret-key";
+  
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.REPL_ID || "nomad-platform-secret",
-    resave: false,
-    saveUninitialized: false,
+    secret: sessionSecret,
+    name: "maly_session", // Use a custom name instead of connect.sid
+    resave: true, // Force the session to be saved back to the store
+    rolling: true, // Force a cookie to be set on every response
+    saveUninitialized: true, // Changed to true to ensure session is always saved
     cookie: {
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+      secure: false // Set to false to allow http in development
     },
     store: new MemoryStore({
       checkPeriod: 86400000, // 24 hours
+      stale: false // Prevent stale sessions
     }),
   };
 
+  // Always trust the proxy in Replit environment
+  app.set("trust proxy", 1);
+  
+  // Don't use secure cookies in development (use http)
+  // In production or Replit's environment, we'll use secure cookies
   if (app.get("env") === "production") {
-    app.set("trust proxy", 1);
     sessionSettings.cookie = { 
       ...sessionSettings.cookie,
       secure: true 
@@ -262,6 +278,144 @@ export function setupAuth(app: Express) {
       next(error);
     }
   });
+  
+  // Add a direct registration-with-redirect endpoint
+  app.post("/api/register-redirect", async (req, res) => {
+    try {
+      console.log("Registration+redirect attempt:", req.body);
+      const { 
+        username, 
+        email,
+        password, 
+        fullName, 
+        bio, 
+        location, 
+        interests,
+        profession,
+        profileImage,
+        currentMoods,
+        age,
+        gender,
+        nextLocation
+      } = req.body;
+
+      // Basic validation
+      if (!username || !password || !email) {
+        return res.redirect('/auth?error=Required+fields+missing');
+      }
+
+      if (username.length < 3) {
+        return res.redirect('/auth?error=Username+too+short');
+      }
+
+      if (password.length < 6) {
+        return res.redirect('/auth?error=Password+too+short');
+      }
+      
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.redirect('/auth?error=Invalid+email+format');
+      }
+
+      // Check if username already exists
+      const [existingUsername] = await db
+        .select()
+        .from(users)
+        .where(eq(users.username, username))
+        .limit(1);
+
+      if (existingUsername) {
+        return res.redirect('/auth?error=Username+already+exists');
+      }
+      
+      // Check if email already exists
+      const [existingEmail] = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1);
+
+      if (existingEmail) {
+        return res.redirect('/auth?error=Email+already+in+use');
+      }
+
+      // Hash the password
+      const hashedPassword = await crypto.hash(password);
+
+      // Process interests - handle string or JSON format
+      let processedInterests = null;
+      if (interests) {
+        if (typeof interests === 'string') {
+          // Check if it's a JSON string
+          if (interests.startsWith('[') && interests.endsWith(']')) {
+            try {
+              processedInterests = JSON.parse(interests);
+            } catch (e) {
+              // If it's not valid JSON, assume it's comma-separated
+              processedInterests = interests.split(',').map((i: string) => i.trim());
+            }
+          } else {
+            // Assume comma-separated string
+            processedInterests = interests.split(',').map((i: string) => i.trim());
+          }
+        } else if (Array.isArray(interests)) {
+          processedInterests = interests;
+        }
+      }
+
+      // Create additional user metadata
+      const userData = {
+        profession: profession || null,
+        age: age ? Number(age) : null,
+        gender: gender || null,
+        nextLocation: nextLocation || null
+      };
+
+      try {
+        const [newUser] = await db
+          .insert(users)
+          .values({
+            username,
+            email,
+            password: hashedPassword,
+            fullName: fullName || null,
+            bio: bio || null,
+            location: location || null,
+            interests: processedInterests,
+            profileImage: profileImage || null,
+            ...userData
+          })
+          .returning();
+
+        console.log("User registered successfully for redirect flow:", username);
+
+        req.login(newUser, (err) => {
+          if (err) {
+            console.error("Login after registration failed in redirect flow:", err);
+            return res.redirect('/auth?error=Authentication+failed+after+registration');
+          }
+
+          // Save session and redirect
+          req.session.save((err) => {
+            if (err) {
+              console.error("Session save error during redirect flow:", err);
+              return res.redirect('/auth?error=Session+error');
+            }
+            
+            console.log("Registration successful, redirecting to homepage");
+            return res.redirect('/');
+          });
+        });
+      } catch (dbError) {
+        console.error("Database error during registration redirect flow:", dbError);
+        return res.redirect('/auth?error=Failed+to+create+account');
+      }
+    } catch (error) {
+      console.error("Registration error in redirect flow:", error);
+      return res.redirect('/auth?error=Registration+failed');
+    }
+  });
 
   app.post("/api/login", (req, res, next) => {
     const usernameOrEmail = req.body.username; // We keep the parameter name as 'username' for backward compatibility
@@ -287,8 +441,63 @@ export function setupAuth(app: Express) {
           console.error("Login error:", err);
           return next(err);
         }
-        console.log("Login successful, session established");
-        return res.json(user);
+        
+        // Save session explicitly to ensure it's stored before responding
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error:", err);
+            return next(err);
+          }
+          
+          // Sanitize the user object before sending it (remove password)
+          const { password, ...userWithoutPassword } = user as any;
+          
+          console.log("Login successful, session established");
+          return res.json(userWithoutPassword);
+        });
+      });
+    })(req, res, next);
+  });
+  
+  // Add a direct login-with-redirect endpoint for form submission
+  app.post("/api/login-redirect", (req, res, next) => {
+    const usernameOrEmail = req.body.username;
+    console.log("Login+redirect attempt:", { usernameOrEmail });
+
+    if (!usernameOrEmail || !req.body.password) {
+      return res.redirect('/auth?error=Email/username+and+password+are+required');
+    }
+
+    passport.authenticate("local", (err: any, user: Express.User, info: IVerifyOptions) => {
+      if (err) {
+        console.error("Login error during redirect flow:", err);
+        return res.redirect('/auth?error=Server+error+occurred');
+      }
+
+      if (!user) {
+        console.log("Failed login during redirect flow:", info?.message);
+        return res.redirect('/auth?error=Invalid+credentials');
+      }
+
+      req.logIn(user, (err) => {
+        if (err) {
+          console.error("Login error during redirect flow:", err);
+          return res.redirect('/auth?error=Authentication+failed');
+        }
+        
+        // Save session and redirect
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error during redirect flow:", err);
+            return res.redirect('/auth?error=Session+error');
+          }
+          
+          console.log("Login successful, redirecting to homepage with session:", req.sessionID);
+          
+          // Add a timestamp to break browser caching
+          const timestamp = Date.now();
+          return res.redirect(`/?sessionId=${req.sessionID}&ts=${timestamp}`);
+        });
       });
     })(req, res, next);
   });
@@ -296,22 +505,95 @@ export function setupAuth(app: Express) {
   app.post("/api/logout", (req, res) => {
     const username = req.user?.username;
     console.log("Logout attempt for user:", username);
+    
     req.logout((err) => {
       if (err) {
         console.error("Logout error:", err);
         return res.status(500).send("Logout failed");
       }
-      console.log("Logout successful for user:", username);
-      res.json({ message: "Logged out successfully" });
+      
+      // Destroy the session completely for a clean logout
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Session destroy error:", err);
+          // Continue anyway as the user is already logged out
+        }
+        
+        // Clear the cookie on the client
+        res.clearCookie('maly_session', {
+          path: '/',
+          httpOnly: true,
+          sameSite: 'lax'
+        });
+        
+        console.log("Logout successful for user:", username);
+        res.json({ message: "Logged out successfully" });
+      });
     });
+  });
+  
+  // Add a dedicated auth check endpoint
+  app.get("/api/auth/check", (req, res) => {
+    // Add cache-control headers to prevent caching of auth status
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.set('Expires', '-1');
+    res.set('Pragma', 'no-cache');
+    
+    // Force the session to touch to update cookies and expirations
+    if (req.session) {
+      // @ts-ignore - Custom property for tracking session state
+      req.session.initialized = true;
+      
+      // Force session save to ensure cookie is set
+      req.session.save();
+    }
+    
+    // Log session ID for debugging
+    console.log("Session ID in /api/auth/check:", req.sessionID);
+    
+    // Check if user is authenticated
+    if (req.isAuthenticated() && req.user) {
+      const user = req.user;
+      console.log("Auth check: User authenticated:", user.username);
+      
+      // Update session with timestamp
+      if (req.session) {
+        // @ts-ignore - Custom property for tracking session state
+        req.session.lastAccess = Date.now();
+      }
+      
+      // Return user info without sensitive data
+      const { password, ...userWithoutPassword } = user as any;
+      
+      res.json({
+        authenticated: true,
+        user: userWithoutPassword,
+        sessionId: req.sessionID
+      });
+    } else {
+      console.log("Auth check: User not authenticated");
+      res.json({
+        authenticated: false,
+        message: "Not logged in"
+      });
+    }
   });
 
   app.get("/api/user", (req, res) => {
-    if (req.isAuthenticated()) {
+    // Log session ID for debugging
+    console.log("Session ID in /api/user:", req.sessionID);
+    
+    // Check authentication directly rather than trying to reload the session
+    if (req.isAuthenticated() && req.user) {
       const user = req.user;
       console.log("Authenticated user request:", user.username);
-      return res.json(user);
+      
+      // Sanitize user object to remove sensitive info (like password)
+      const { password, ...userWithoutPassword } = user as any;
+      
+      return res.json(userWithoutPassword);
     }
+    
     console.log("Unauthenticated user request");
     res.status(401).send("Not authenticated");
   });

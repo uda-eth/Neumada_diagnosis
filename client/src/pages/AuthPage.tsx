@@ -8,8 +8,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, ExternalLink } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Link } from "wouter";
+import { useLocation } from "wouter";
 import { z } from "zod";
+import { Logo } from "@/components/ui/logo";
 
 const loginSchema = z.object({
   username: z.string().min(3, "Username or email must be provided"),
@@ -40,8 +41,45 @@ export default function AuthPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isReplitEnv, setIsReplitEnv] = useState(false);
   const [replitData, setReplitData] = useState<any>(null);
-  const { login, register } = useUser();
+  const { login, register, user } = useUser();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
+  
+  // If user is already logged in, redirect to home page
+  useEffect(() => {
+    async function checkAndRedirect() {
+      try {
+        // Check auth status via server endpoint with cache busting
+        const response = await fetch('/api/auth/check', {
+          credentials: 'include',
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+            'Pragma': 'no-cache'
+          }
+        });
+        
+        if (response.ok) {
+          const authStatus = await response.json();
+          if (authStatus.authenticated) {
+            console.log("User already authenticated, redirecting to homepage");
+            setLocation("/");
+          }
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+      }
+    }
+    
+    // If we already have user data, redirect without making another request
+    if (user) {
+      console.log("User found in state, redirecting to homepage");
+      setLocation("/");
+    } else {
+      // Otherwise check auth status from server
+      checkAndRedirect();
+    }
+  }, [user, setLocation]);
   
   // Check if we're in a Replit environment
   useEffect(() => {
@@ -85,47 +123,72 @@ export default function AuthPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Check for error messages in URL when component mounts
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get('error');
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.replace(/\+/g, ' '),
+      });
+      // Clear the error from URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [toast]);
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     setIsSubmitting(true);
+    
     try {
-      if (isLogin) {
-        const result = await login({
-          username: formData.username,
-          password: formData.password,
-        });
-        if (!result.ok) {
-          throw new Error(result.message);
+      // Create a form for direct server-side submission and redirect
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = isLogin ? '/api/login-redirect' : '/api/register-redirect';
+      
+      // Add all form fields
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = value;
+          form.appendChild(input);
         }
-        toast({
-          title: "Success",
-          description: "Logged in successfully",
-        });
-      } else {
-        // Convert interests string to array and clean it up
-        const registerData = {
-          ...formData,
-          interests: formData.interests ? formData.interests.split(',').map(i => i.trim()) : undefined,
-        };
-
-        const result = await register(registerData);
-        if (!result.ok) {
-          throw new Error(result.message);
+      });
+      
+      // Special handling for interests in registration
+      if (!isLogin && formData.interests) {
+        // Replace the interests field with the processed array
+        const interestsField = form.querySelector('input[name="interests"]');
+        if (interestsField) {
+          form.removeChild(interestsField);
         }
-        toast({
-          title: "Success",
-          description: "Registered successfully",
-        });
+        
+        const interests = formData.interests.split(',').map(i => i.trim());
+        const interestsInput = document.createElement('input');
+        interestsInput.type = 'hidden';
+        interestsInput.name = 'interests';
+        interestsInput.value = JSON.stringify(interests);
+        form.appendChild(interestsInput);
       }
+      
+      // Append to document and submit
+      document.body.appendChild(form);
+      form.submit();
+      
+      // We don't set isSubmitting back to false here because we're navigating away
     } catch (error: any) {
+      console.error("Form submission error:", error);
       toast({
         variant: "destructive",
         title: "Error",
         description: error.message || "An error occurred",
       });
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -133,11 +196,15 @@ export default function AuthPage() {
   // Function to handle Replit profile setup
   const handleReplitProfileSetup = () => {
     // Navigate to the Replit profile setup page
-    window.location.href = "/replit-profile";
+    setLocation("/replit-profile");
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
+      <div className="mb-8 flex items-center">
+        <Logo className="h-12 w-auto" />
+      </div>
+      
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>{isLogin ? "Login" : "Register"}</CardTitle>
