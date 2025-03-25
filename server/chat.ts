@@ -20,9 +20,13 @@ async function searchLocalEvents(city?: string) {
       where: eq(events.city, city)
     } : baseQuery;
 
-    console.log('[SQL Query]', JSON.stringify(query, null, 2));
     const results = await db.query.events.findMany(query);
     console.log('[SQL Results]', results.length, 'events found');
+    
+    // Filter events by city after query
+    return results.filter(event => 
+      city ? event.city.toLowerCase() === city.toLowerCase() : true
+    );
     return results;
   } catch (error) {
     console.error('Error querying local events:', error);
