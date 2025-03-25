@@ -10,7 +10,8 @@ import { getEventImage } from './services/eventsService';
 import { WebSocketServer } from 'ws';
 import { sendMessage, getConversations, getMessages, markMessageAsRead, markAllMessagesAsRead } from './services/messagingService';
 import { db } from "../db";
-import { userCities } from "../db/schema";
+import { userCities, users } from "../db/schema";
+import { eq, ne, gte, lte } from "drizzle-orm";
 
 const categories = [
   "Retail",
@@ -891,58 +892,73 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       const interests = req.query['interests[]'] as string[] | string;
       const moods = req.query['moods[]'] as string[] | string;
       const name = req.query.name as string;
+      const currentUserId = req.user?.id;
 
-      let filteredUsers = city && city !== 'all'
-        ? MOCK_USERS[city] || []
-        : Object.values(MOCK_USERS).flat();
-
+      // Database query to get real users
+      let query = db.select().from(users);
+      
+      // Don't include the current user in the results
+      if (currentUserId) {
+        query = query.where(ne(users.id, currentUserId));
+      }
+      
+      // Apply filters to query
+      if (city && city !== 'all') {
+        query = query.where(eq(users.location, city));
+      }
+      
       if (gender && gender !== 'all') {
-        filteredUsers = filteredUsers.filter(user => user.gender === gender);
+        query = query.where(eq(users.gender, gender));
       }
-
+      
       if (minAge !== undefined) {
-        filteredUsers = filteredUsers.filter(user => user.age !== undefined && user.age >= minAge);
+        query = query.where(gte(users.age, minAge));
       }
-
+      
       if (maxAge !== undefined) {
-        filteredUsers = filteredUsers.filter(user => user.age !== undefined && user.age <= maxAge);
+        query = query.where(lte(users.age, maxAge));
       }
-
+      
+      // Get all users with the applied filters
+      let dbUsers = await query;
+      
+      // Further filtering that's harder to do at the DB level
       if (interests) {
         const interestArray = Array.isArray(interests) ? interests : [interests];
-        filteredUsers = filteredUsers.filter(user =>
-          user.interests && interestArray.some(interest => user.interests?.includes(interest))
+        dbUsers = dbUsers.filter(user => 
+          user.interests && interestArray.some(interest => 
+            user.interests?.includes(interest)
+          )
         );
       }
-
+      
       if (moods) {
         const moodArray = Array.isArray(moods) ? moods : [moods];
-        filteredUsers = filteredUsers.filter(user =>
-          user.currentMoods && moodArray.some(mood => user.currentMoods?.includes(mood))
+        dbUsers = dbUsers.filter(user => 
+          user.currentMoods && moodArray.some(mood => 
+            user.currentMoods?.includes(mood)
+          )
         );
       }
-
+      
       if (name) {
         const lowercaseName = name.toLowerCase();
-        filteredUsers = filteredUsers.filter(user =>
+        dbUsers = dbUsers.filter(user =>
           (user.fullName && user.fullName.toLowerCase().includes(lowercaseName)) ||
           (user.username && user.username.toLowerCase().includes(lowercaseName))
         );
       }
 
-      filteredUsers.sort((a, b) => {
+      // Sort users by most recently created first
+      dbUsers.sort((a, b) => {
         const dateA = new Date(a.createdAt || 0).getTime();
         const dateB = new Date(b.createdAt || 0).getTime();
         return dateB - dateA;
       });
 
-      console.log("Sorted users:", filteredUsers.map(u => ({
-        name: u.fullName,
-        createdAt: u.createdAt,
-        profileImage: u.profileImage
-      })));
+      console.log(`Found ${dbUsers.length} real users in database`);
 
-      res.json(filteredUsers);
+      res.json(dbUsers);
     } catch (error) {
       console.error("Error fetching users:", error);
       res.status(500).json({ error: "Failed to fetch users" });
