@@ -79,10 +79,12 @@ export async function handleChatMessage(req: Request, res: Response) {
           1. Always respond in English
           2. Keep responses brief and direct
           3. For restaurant recommendations:
-             Format as:
-             1. Restaurant name: One sentence description only
-             2. Restaurant name: One sentence description only
-             3. Restaurant name: One sentence description only
+             Format strictly as:
+             1. Restaurant name: One concise description
+             2. Restaurant name: One concise description
+             3. Restaurant name: One concise description
+             4. Restaurant name: One concise description
+             5. Restaurant name: One concise description
           4. For events:
              • List name, date, and location clearly
              • One key detail about the event
