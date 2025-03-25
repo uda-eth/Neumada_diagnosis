@@ -2,6 +2,7 @@ import { pgTable, text, serial, integer, timestamp, jsonb, boolean, varchar, pri
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 
+// Declare table first
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").unique().notNull(),
@@ -29,7 +30,7 @@ export const users = pgTable("users", {
   isPremium: boolean("is_premium").default(false), // For premium features
   preferredLanguage: text("preferred_language").default("en"), // Language preference
   referralCode: text("referral_code").unique(), // For referral system
-  referredBy: integer("referred_by").references(() => users.id), // Who referred this user
+  referredBy: integer("referred_by"), // Will set up relation later to avoid circular dep
 });
 
 export const events = pgTable("events", {
@@ -123,14 +124,14 @@ export const userRelations = relations(users, ({ many, one }) => ({
   participatingEvents: many(eventParticipants),
   sentMessages: many(messages, { relationName: "sentMessages" }),
   receivedMessages: many(messages, { relationName: "receivedMessages" }),
-  followers: many(userConnections, { relationName: "followers", foreignKey: [userConnections.followingId] }),
-  following: many(userConnections, { relationName: "following", foreignKey: [userConnections.followerId] }),
-  sentInvitations: many(invitations, { relationName: "sentInvitations", foreignKey: [invitations.inviterId] }),
+  followers: many(userConnections, { relationName: "followers" }),
+  following: many(userConnections, { relationName: "following" }),
+  sentInvitations: many(invitations, { relationName: "sentInvitations" }),
   referredBy: one(users, {
     fields: [users.referredBy],
     references: [users.id],
   }),
-  userCities: many(userCities, { foreignKey: [userCities.userId] }),
+  userCities: many(userCities),
 }));
 
 export const eventRelations = relations(events, ({ one, many }) => ({
