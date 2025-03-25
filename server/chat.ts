@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { openai, SYSTEM_PROMPT } from './config/openai';
+import { openai, SYSTEM_PROMPT, WEB_SEARCH_MODEL } from './config/openai';
 import { db } from '../db';
 import { events, users } from '../db/schema';
 import { desc, sql } from 'drizzle-orm';
@@ -46,11 +46,14 @@ export async function handleChatMessage(req: Request, res: Response) {
     ).join('\n\n');
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: WEB_SEARCH_MODEL,
+      web_search_options: {
+        search_context_size: "medium",
+      },
       messages: [
         { 
           role: "system", 
-          content: `${SYSTEM_PROMPT}\n\nCurrent Events:\n${eventsContext}\n\nActive Community Members:\n${usersContext}\n\nWeb Search Results:\n${searchContext}` 
+          content: `${SYSTEM_PROMPT}\n\nCurrent Events:\n${eventsContext}\n\nActive Community Members:\n${usersContext}` 
         },
         { role: "user", content: message }
       ],
