@@ -58,13 +58,11 @@ export async function handleChatMessage(req: Request, res: Response) {
                           message.toLowerCase().includes('cafe') ||
                           message.toLowerCase().includes('bar');
 
-    let model = "gpt-4";
-    let webSearchOptions = undefined;
+    let model = "gpt-4-turbo-preview";
     let searchContext = "";
 
+    // Perform web search if needed
     if (needsWebSearch) {
-      model = "gpt-4-turbo-preview";
-      webSearchOptions = { search_context_size: "medium" };
       const searchResults = await webSearch(message);
       searchContext = searchResults.map((result, index) => {
         const cleanTitle = result.title.replace(/\*\*/g, '').replace(/\[|\]/g, '');
@@ -101,7 +99,6 @@ export async function handleChatMessage(req: Request, res: Response) {
 
     const completion = await openai.chat.completions.create({
       model,
-      ...(webSearchOptions && { web_search_options: webSearchOptions }),
       messages: [
         { 
           role: "system", 
