@@ -9,7 +9,8 @@ import {
   Inbox,
   Settings,
   UserCircle,
-  Globe2
+  Globe2,
+  LogIn
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -31,6 +32,11 @@ export const mainNavItems = [
 
 // Menu items
 export const menuItems = [
+  { 
+    icon: LogIn, 
+    label: 'Login / Sign Up', 
+    href: "/auth"
+  },
   { 
     icon: Crown, 
     label: 'Premium Benefits', 
