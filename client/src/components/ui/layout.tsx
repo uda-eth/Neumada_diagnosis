@@ -1,8 +1,9 @@
 import { BottomNav } from "./bottom-nav";
 import { Logo } from "./logo";
-import { Menu, Bot, Globe, Inbox, Crown, Settings, UserCircle, HelpCircle, LogIn } from "lucide-react";
+import { Menu, Bot, Globe, Inbox, Crown, Settings, UserCircle, HelpCircle, LogOut } from "lucide-react";
 import { Button } from "./button";
 import { useLocation } from "wouter";
+import { useUser } from "@/hooks/use-user";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,16 +17,22 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const [, setLocation] = useLocation();
+  const { user, logout } = useUser();
+
+  const handleLogout = async () => {
+    await logout();
+    setLocation("/auth");
+  };
 
   const menuItems = [
-    { href: "/auth", label: "Login / Sign Up", icon: LogIn },
     { href: "/premium", label: "Premium Upgrade", icon: Crown, isPremium: true },
     { href: "/inbox", label: "Inbox", icon: Inbox },
     { href: "/translator", label: "Translator", icon: Globe },
     { href: "/companion", label: "Concierge", icon: Bot },
     { href: "/profile", label: "Profile", icon: UserCircle },
     { href: "/settings", label: "Settings", icon: Settings },
-    { href: "/help", label: "Help", icon: HelpCircle }
+    { href: "/help", label: "Help", icon: HelpCircle },
+    { onClick: handleLogout, label: "Logout", icon: LogOut }
   ];
 
   return (
@@ -39,15 +46,23 @@ export function Layout({ children }: LayoutProps) {
               </a>
             </div>
             <div className="flex items-center gap-4">
-              {/* Login button */}
+              {/* User profile or avatar */}
               <Button 
-                variant="outline" 
+                variant="ghost"
                 size="sm" 
                 className="interactive-hover hidden md:flex items-center gap-2"
-                onClick={() => setLocation("/auth")}
+                onClick={() => setLocation("/profile")}
               >
-                <LogIn className="w-4 h-4" />
-                <span>Login / Sign Up</span>
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white overflow-hidden">
+                  {user?.profileImage ? (
+                    <img src={user.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <UserCircle className="w-6 h-6" />
+                  )}
+                </div>
+                <span className="ml-2 text-sm font-medium">
+                  {user?.fullName || "My Profile"}
+                </span>
               </Button>
               
               {/* Hamburger Menu - only show on desktop */}
@@ -60,11 +75,11 @@ export function Layout({ children }: LayoutProps) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
-                    {menuItems.map((item) => (
+                    {menuItems.map((item, index) => (
                       <DropdownMenuItem 
-                        key={item.href}
+                        key={index}
                         className={`cursor-pointer interactive-hover ${item.isPremium ? 'text-purple-500 font-medium' : ''}`}
-                        onClick={() => setLocation(item.href)}
+                        onClick={() => item.onClick ? item.onClick() : setLocation(item.href)}
                       >
                         <item.icon className="w-4 h-4 mr-2" />
                         <span>{item.label}</span>

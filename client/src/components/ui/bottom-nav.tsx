@@ -10,16 +10,18 @@ import {
   Settings,
   UserCircle,
   Globe2,
-  LogIn
+  LogOut
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useTranslation } from "@/lib/translations";
+import { useUser } from "@/hooks/use-user";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 
 // Main navigation items - only the 4 core features
@@ -30,13 +32,8 @@ export const mainNavItems = [
   { icon: Bot, label: 'concierge', href: "/companion" }
 ] as const;
 
-// Menu items
+// Menu items 
 export const menuItems = [
-  { 
-    icon: LogIn, 
-    label: 'Login / Sign Up', 
-    href: "/auth"
-  },
   { 
     icon: Crown, 
     label: 'Premium Benefits', 
@@ -72,8 +69,14 @@ export const menuItems = [
 ];
 
 export function BottomNav() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const { t } = useTranslation();
+  const { logout } = useUser();
+
+  const handleLogout = async () => {
+    await logout();
+    setLocation("/auth");
+  };
 
   return (
     <>
@@ -123,6 +126,15 @@ export function BottomNav() {
                   </Link>
                 </DropdownMenuItem>
               ))}
+              
+              <DropdownMenuSeparator />
+              
+              <DropdownMenuItem onClick={handleLogout}>
+                <div className="flex items-center gap-2 w-full">
+                  <LogOut className="w-4 h-4" />
+                  <span className="flex-1">Logout</span>
+                </div>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -173,6 +185,15 @@ export function BottomNav() {
                 </Link>
               </DropdownMenuItem>
             ))}
+            
+            <DropdownMenuSeparator />
+            
+            <DropdownMenuItem onClick={handleLogout}>
+              <div className="flex items-center gap-2 w-full">
+                <LogOut className="w-4 h-4" />
+                <span className="flex-1">Logout</span>
+              </div>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </nav>
