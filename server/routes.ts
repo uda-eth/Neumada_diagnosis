@@ -1005,6 +1005,24 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         }
       }
       
+      // Only show non-draft events unless the current user is the creator
+      const currentUser = req.user as any;
+      if (currentUser?.id) {
+        // If user is logged in, show their drafts but hide others' drafts
+        query = query.where(
+          or(
+            eq(events.isDraft, false),
+            and(
+              eq(events.isDraft, true),
+              eq(events.creatorId, currentUser.id)
+            )
+          )
+        );
+      } else {
+        // If no user is logged in, only show published events
+        query = query.where(eq(events.isDraft, false));
+      }
+      
       // Execute the query
       const dbEvents = await query.orderBy(asc(events.date));
       
@@ -1186,6 +1204,9 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         }
       }
       
+      // Process isDraft status
+      const isDraft = req.body.isDraft === 'true' || req.body.isDraft === true;
+      
       // Insert new event into database
       const newEvent = await db.insert(events).values({
         title: req.body.title,
@@ -1210,6 +1231,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         timeFrame: req.body.timeFrame || null,
         stripeProductId: req.body.stripeProductId || null,
         stripePriceId: req.body.stripePriceId || null,
+        isDraft: isDraft,
         creatorId: creatorId
       }).returning();
       
