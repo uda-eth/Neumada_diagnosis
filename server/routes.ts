@@ -713,6 +713,11 @@ export const MOCK_EVENTS = DIGITAL_NOMAD_CITIES.reduce((acc, city) => {
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
+    // Ensure the uploads directory exists
+    const fs = require('fs');
+    if (!fs.existsSync('uploads')) {
+      fs.mkdirSync('uploads', { recursive: true });
+    }
     cb(null, 'uploads/')
   },
   filename: function (req, file, cb) {
@@ -835,6 +840,7 @@ function checkAuthentication(req: Request, res: Response) {
 
 export function registerRoutes(app: express.Application): { app: express.Application; httpServer: Server } {
   app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
   setupAuth(app);
 
