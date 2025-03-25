@@ -79,7 +79,7 @@ export function setupAuth(app: Express) {
     name: "maly_session", // Use a custom name instead of connect.sid
     resave: true, // Force the session to be saved back to the store
     rolling: true, // Force a cookie to be set on every response
-    saveUninitialized: false, // Don't create session until something stored
+    saveUninitialized: true, // Changed to true to ensure session is always saved
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       httpOnly: true,
@@ -89,6 +89,7 @@ export function setupAuth(app: Express) {
     },
     store: new MemoryStore({
       checkPeriod: 86400000, // 24 hours
+      stale: false // Prevent stale sessions
     }),
   };
 
@@ -538,6 +539,12 @@ export function setupAuth(app: Express) {
     res.set('Expires', '-1');
     res.set('Pragma', 'no-cache');
     
+    // Force the session to be initialized if not yet done
+    if (!req.session.initialized) {
+      req.session.initialized = true;
+      req.session.save();
+    }
+    
     // Log session ID for debugging
     console.log("Session ID in /api/auth/check:", req.sessionID);
     
@@ -545,6 +552,9 @@ export function setupAuth(app: Express) {
     if (req.isAuthenticated() && req.user) {
       const user = req.user;
       console.log("Auth check: User authenticated:", user.username);
+      
+      // Update session lastAccess - this will trigger a save of the session
+      req.session.lastAccess = Date.now();
       
       // Return user info without sensitive data
       const { password, ...userWithoutPassword } = user as any;
