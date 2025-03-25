@@ -1,3 +1,4 @@
+
 import type { Request, Response } from 'express';
 import { openai, SYSTEM_PROMPT } from './config/openai';
 import { db } from '../db';
@@ -15,13 +16,13 @@ async function searchLocalEvents(city?: string) {
       }
     };
 
-    if (city) {
-      return await db.query.events.findMany({
-        ...baseQuery,
-        where: eq(events.city, city)
-      });
-    }
-    return await db.query.events.findMany(baseQuery);
+    const query = city ? {
+      ...baseQuery,
+      where: eq(events.city, city)
+    } : baseQuery;
+
+    const results = await db.query.events.findMany(query);
+    return results;
   } catch (error) {
     console.error('Error querying local events:', error);
     return null;
@@ -44,15 +45,24 @@ export async function handleChatMessage(req: Request, res: Response) {
       const city = cityMatch ? cityMatch[1].trim() : undefined;
 
       const localEvents = await searchLocalEvents(city);
+      
       if (localEvents && localEvents.length > 0) {
-        let response = '### Local Events\n\n';
-        localEvents.forEach(event => {
-          response += `**${event.title}**\n`;
-          response += `- Date: ${new Date(event.date).toLocaleDateString()}\n`;
-          response += `- Location: ${event.location}\n`;
-          response += `- Category: ${event.category}\n`;
-          response += `- Price: ${event.price || 'Free'}\n\n`;
+        let response = '### Local Events (Mexico City)\n\n';
+        localEvents.forEach((event, index) => {
+          response += `${index + 1}. **${event.title}**\n`;
+          response += `   - Date: ${new Date(event.date).toLocaleDateString()}\n`;
+          response += `   - Location: ${event.location}\n`;
+          response += `   - Category: ${event.category}\n`;
+          response += `   - Price: ${event.price || 'Free'}\n\n`;
         });
+        response += '\nThese events are sourced from local seeded data.';
+        return res.json({ response });
+      } else {
+        let response = '### Debugging Information\n\n';
+        response += 'No local events were found. Please check the following:\n\n';
+        response += '- Verify that the seed file was executed using `npm run seed`\n';
+        response += '- Confirm that the local database connection is working\n';
+        response += '- Check that the seeded data includes events for Mexico City\n';
         return res.json({ response });
       }
     }
