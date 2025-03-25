@@ -53,8 +53,13 @@ export function useUser() {
   const sessionId = urlParams.get('sessionId');
   
   // If we have a sessionId in the URL, clean it up by removing that parameter
+  // and store it in localStorage for persistence across webview issues
   if (sessionId) {
-    console.log("Detected session parameter, refreshing user data");
+    console.log("Detected session parameter, storing in localStorage and refreshing user data");
+    
+    // Store the session in localStorage for persistence
+    localStorage.setItem('maly_session_id', sessionId);
+    
     // Create a clean URL without the sessionId parameter
     const url = new URL(window.location.href);
     url.searchParams.delete('sessionId');
@@ -64,28 +69,60 @@ export function useUser() {
     window.history.replaceState({}, document.title, url.toString());
   }
 
+  // Retrieve stored session ID from localStorage if it exists
+  const storedSessionId = localStorage.getItem('maly_session_id');
+  
+  // Check for cached user data in localStorage
+  const getCachedUser = (): UserResponse | null => {
+    try {
+      const cachedUserJson = localStorage.getItem('maly_user_data');
+      if (cachedUserJson) {
+        return JSON.parse(cachedUserJson);
+      }
+      return null;
+    } catch (error) {
+      console.error("Error parsing cached user data:", error);
+      return null;
+    }
+  };
+
   const { data: user, error, isLoading, refetch } = useQuery<UserResponse>({
     queryKey: ['user'],
     queryFn: async () => {
-      console.log("Fetching user data from server, sessionId present:", !!sessionId);
+      console.log("Fetching user data from server, sessionId present:", !!(sessionId || storedSessionId));
       
       // Force a delay if we have a sessionId to ensure the server has time to process the session
       if (sessionId) {
         await new Promise(resolve => setTimeout(resolve, 500));
       }
       
+      // Try to include the session ID from localStorage in the request if available
+      const extraHeaders: Record<string, string> = { 
+        'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+        'Pragma': 'no-cache'
+      };
+
+      if (storedSessionId) {
+        extraHeaders['X-Session-ID'] = storedSessionId;
+      }
+
       // First check auth status with the dedicated endpoint
       const authCheckResponse = await fetch('/api/auth/check', {
         credentials: 'include',
         cache: 'no-store', // Stronger cache control
-        headers: { 
-          'Cache-Control': 'no-store, no-cache, must-revalidate, private',
-          'Pragma': 'no-cache'
-        }
+        headers: extraHeaders
       });
       
       if (!authCheckResponse.ok) {
         console.error("Auth check failed:", authCheckResponse.status);
+        
+        // If server auth fails, try using cached user data as fallback
+        const cachedUser = getCachedUser();
+        if (cachedUser) {
+          console.log("Using cached user data as fallback");
+          return cachedUser;
+        }
+        
         return null;
       }
       
@@ -94,17 +131,80 @@ export function useUser() {
       // If authenticated, use the user data from the auth check response
       if (authStatus.authenticated && authStatus.user) {
         console.log("User authenticated via auth check:", authStatus.user.username);
+        
+        // Cache the user data
+        localStorage.setItem('maly_user_data', JSON.stringify(authStatus.user));
+        
         return authStatus.user;
       }
       
-      // If not authenticated, return null (no user)
+      // If not authenticated via cookies, try to send the stored session ID as a header
+      if (!authStatus.authenticated && storedSessionId) {
+        console.log("Cookie auth failed, trying stored session ID");
+        
+        // Try the user endpoint with the stored session ID
+        const response = await fetch('/api/user-by-session', {
+          credentials: 'include',
+          cache: 'no-store',
+          headers: { 
+            'X-Session-ID': storedSessionId,
+            'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+            'Pragma': 'no-cache'
+          }
+        });
+        
+        if (response.ok) {
+          const userData = await response.json();
+          if (userData) {
+            console.log("User authenticated via stored session ID:", userData.username);
+            
+            // Cache the user data
+            localStorage.setItem('maly_user_data', JSON.stringify(userData));
+            
+            return userData;
+          }
+        }
+      }
+      
+      // If still not authenticated, check cached data
       if (!authStatus.authenticated) {
         console.log("User not authenticated via auth check");
-        console.log("No authenticated user detected, redirecting to auth page");
+        console.log("No authenticated user detected, checking for cached data");
+        
+        const cachedUser = getCachedUser();
+        
+        if (cachedUser) {
+          console.log("Using cached user data, verifying with server");
+          
+          // Try to verify the cached user with the server
+          const verifyResponse = await fetch('/api/verify-user', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+              'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+              'Pragma': 'no-cache'
+            },
+            body: JSON.stringify({ userId: cachedUser.id })
+          });
+          
+          if (verifyResponse.ok) {
+            console.log("Cached user verified with server");
+            return cachedUser;
+          } else {
+            console.log("Cached user could not be verified, redirecting to auth page");
+            // Clear cached data if verification fails
+            localStorage.removeItem('maly_user_data');
+            localStorage.removeItem('maly_session_id');
+            return null;
+          }
+        }
+        
+        console.log("No cached user data found, redirecting to auth page");
         return null;
       }
       
-      // If we get here, we need to try the regular user endpoint as fallback
+      // If we get here, try the regular user endpoint as a final fallback
       const response = await fetch('/api/user', {
         credentials: 'include',
         cache: 'no-store',
@@ -119,7 +219,14 @@ export function useUser() {
         throw new Error(await response.text());
       }
       
-      return response.json();
+      const userData = await response.json();
+      
+      // Cache the user data
+      if (userData) {
+        localStorage.setItem('maly_user_data', JSON.stringify(userData));
+      }
+      
+      return userData;
     },
     // Improve refresh behavior with more aggressive settings
     staleTime: 0, // No stale time - always fetch fresh data
@@ -166,6 +273,11 @@ export function useUser() {
       // Clear user data immediately
       queryClient.setQueryData(['user'], null);
       queryClient.invalidateQueries({ queryKey: ['user'] });
+      
+      // Clear localStorage cached data
+      localStorage.removeItem('maly_user_data');
+      localStorage.removeItem('maly_session_id');
+      console.log("Cleared cached user data on logout");
     },
   });
 

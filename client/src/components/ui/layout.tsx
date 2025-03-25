@@ -18,14 +18,36 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const [location, setLocation] = useLocation();
-  const { user, logout, isLoading, refetchUser } = useUser();
+  const { user, logout, isLoading, refetchUser, refreshUser } = useUser();
   const [authChecked, setAuthChecked] = useState(false);
+  const [userDisplayData, setUserDisplayData] = useState<any>(null);
+
+  // Ensure we have user data to display even if the main auth state is slow to update
+  useEffect(() => {
+    // Set user display data from the user object when available
+    if (user) {
+      console.log("User data available for display:", user.username);
+      setUserDisplayData(user);
+    } else {
+      // If no user in state, check localStorage for cached user data as a fallback
+      try {
+        const cachedUserJson = localStorage.getItem('maly_user_data');
+        if (cachedUserJson) {
+          const cachedUser = JSON.parse(cachedUserJson);
+          console.log("Using cached user data for display:", cachedUser.username);
+          setUserDisplayData(cachedUser);
+        }
+      } catch (error) {
+        console.error("Error parsing cached user data for display:", error);
+      }
+    }
+  }, [user]);
 
   // Monitor authentication state and redirect if needed
   useEffect(() => {
     const checkAuthState = async () => {
       // Refetch to ensure we have the latest auth state
-      await refetchUser();
+      await refreshUser(); // Use refreshUser for more thorough refresh
       
       // Don't redirect if we're already on the auth page
       if (location === '/auth') {
@@ -44,7 +66,7 @@ export function Layout({ children }: LayoutProps) {
     };
     
     checkAuthState();
-  }, [user, isLoading, location, setLocation, refetchUser]);
+  }, [user, isLoading, location, setLocation, refetchUser, refreshUser]);
 
   const handleLogout = async () => {
     await logout();
@@ -73,24 +95,30 @@ export function Layout({ children }: LayoutProps) {
               </a>
             </div>
             <div className="flex items-center gap-4">
-              {/* User profile or avatar */}
-              <Button 
-                variant="ghost"
-                size="sm" 
-                className="interactive-hover hidden md:flex items-center gap-2"
-                onClick={() => setLocation("/profile")}
-              >
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white overflow-hidden">
-                  {user?.profileImage ? (
-                    <img src={user.profileImage} alt="Profile" className="w-full h-full object-cover" />
-                  ) : (
-                    <UserCircle className="w-6 h-6" />
-                  )}
-                </div>
-                <span className="ml-2 text-sm font-medium">
-                  {user?.fullName || "My Profile"}
-                </span>
-              </Button>
+              {/* User profile or avatar - only show when authenticated */}
+              {(userDisplayData || user) && (
+                <Button 
+                  variant="ghost"
+                  size="sm" 
+                  className="interactive-hover hidden md:flex items-center gap-2"
+                  onClick={() => setLocation("/profile")}
+                >
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white overflow-hidden">
+                    {(userDisplayData || user)?.profileImage ? (
+                      <img 
+                        src={(userDisplayData || user)?.profileImage} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover" 
+                      />
+                    ) : (
+                      <UserCircle className="w-6 h-6" />
+                    )}
+                  </div>
+                  <span className="ml-2 text-sm font-medium">
+                    {(userDisplayData || user)?.fullName || (userDisplayData || user)?.username || "My Profile"}
+                  </span>
+                </Button>
+              )}
               
               {/* Hamburger Menu - only show on desktop */}
               <div className="hidden md:block">
