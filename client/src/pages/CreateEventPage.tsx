@@ -7,12 +7,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronLeft, Plus } from "lucide-react";
-import { insertEventSchema } from "@db/schema";
-import type { z } from "zod";
+import { z } from "zod";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useUser } from "@/hooks/use-user";
+
+// Define a simple schema for our form
+const eventSchema = z.object({
+  title: z.string().min(3, "Title must be at least 3 characters"),
+  description: z.string().min(10, "Description must be at least 10 characters"),
+  location: z.string().min(3, "Location is required"),
+  category: z.string().default("Social"),
+  price: z.coerce.number().min(0).default(0),
+  isPrivate: z.boolean().default(false),
+  date: z.string().default(() => new Date().toISOString()),
+});
 
 // Define the form data type using the zod schema
-type FormData = z.infer<typeof insertEventSchema>;
+type FormData = z.infer<typeof eventSchema>;
 
 const interestTags = [
   "Digital Nomads",
@@ -32,50 +43,65 @@ const interestTags = [
 export default function CreateEventPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { user } = useUser();
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [eventImage, setEventImage] = useState<string | null>(null);
-  const [isDraft, setIsDraft] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
+  // Use our simplified schema
   const form = useForm<FormData>({
-    resolver: zodResolver(insertEventSchema),
+    resolver: zodResolver(eventSchema),
     defaultValues: {
       title: "",
       description: "",
       location: "",
       date: new Date().toISOString(),
-      startTime: "",
-      endTime: "",
       price: 0,
       isPrivate: false,
-      category: "Social", // Default category
-      image: null,
-      tags: [],
-      image_url: null,
-      creatorId: null,
-      attendingCount: 0,
-      interestedCount: 0
+      category: "Social"
     },
   });
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setEventImage(reader.result as string);
-        // Also update the form data
-        form.setValue("image", reader.result as string);
+        setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const onSubmit = async (data: FormData) => {
+  // The main function to publish events
+  const publishEvent = async (draft: boolean) => {
+    if (!form.formState.isValid) {
+      form.trigger(); // Trigger validation
+      return;
+    }
+
+    // Only proceed if we have a user
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "You must be logged in to create events"
+      });
+      return;
+    }
+
     try {
-      // Create a FormData object for file uploads
+      setLoading(true);
+      
+      // Get data from the form
+      const data = form.getValues();
+      
+      // Create a FormData object for the API call
       const formData = new FormData();
       
-      // Add all form fields to the FormData
+      // Add all form fields
       Object.entries(data).forEach(([key, value]) => {
         if (value !== null && value !== undefined) {
           formData.append(key, value.toString());
@@ -86,41 +112,44 @@ export default function CreateEventPage() {
       formData.append('tags', JSON.stringify(selectedTags));
       
       // Add the isDraft flag
-      formData.append('isDraft', isDraft.toString());
+      formData.append('isDraft', draft.toString());
       
       // Add the image file if it exists
-      if (eventImage) {
-        // Convert data URL to a Blob
-        const imageFile = await fetch(eventImage).then(r => r.blob());
-        formData.append('image', imageFile);
+      if (selectedFile) {
+        formData.append('image', selectedFile);
       }
       
-      // Make the API call to create the event
+      // Make the API call
+      console.log("Submitting event with isDraft =", draft);
       const response = await fetch('/api/events', {
         method: 'POST',
         body: formData,
       });
       
       if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Error: ${response.status}`);
       }
       
       const result = await response.json();
+      console.log("Event created successfully:", result);
       
       toast({
         title: "Success",
-        description: isDraft ? "Event saved as draft" : "Event published successfully",
+        description: draft ? "Event saved as draft" : "Event published successfully"
       });
       
-      // Redirect to the events page
+      // Redirect back to the main page
       setLocation("/");
     } catch (error) {
       console.error("Error creating event:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to create event",
+        description: error instanceof Error ? error.message : "Failed to create event"
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -145,14 +174,13 @@ export default function CreateEventPage() {
       </header>
 
       <ScrollArea className="flex-1" style={{ height: 'calc(100vh - 140px)' }}>
-        <form id="event-form" onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="container mx-auto px-4 py-8 space-y-8 max-w-2xl">
+        <div className="container mx-auto px-4 py-8 space-y-8 max-w-2xl">
             <div className="space-y-4">
               <p className="text-sm text-white/60">Let's get started!</p>
               <div className="relative aspect-[3/2] bg-white/5 rounded-lg overflow-hidden">
-                {eventImage ? (
+                {imagePreview ? (
                   <img
-                    src={eventImage}
+                    src={imagePreview}
                     alt="Event preview"
                     className="w-full h-full object-cover"
                   />
@@ -182,6 +210,9 @@ export default function CreateEventPage() {
                   className="bg-white/5 border-0 h-12 text-lg"
                   placeholder="Event title"
                 />
+                {form.formState.errors.title && (
+                  <p className="text-red-500 text-xs">{form.formState.errors.title.message}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -190,6 +221,9 @@ export default function CreateEventPage() {
                   className="bg-white/5 border-0 h-32 resize-none"
                   placeholder="Fill in event details"
                 />
+                {form.formState.errors.description && (
+                  <p className="text-red-500 text-xs">{form.formState.errors.description.message}</p>
+                )}
               </div>
             </div>
 
@@ -221,30 +255,14 @@ export default function CreateEventPage() {
             </div>
 
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Input
-                    type="time"
-                    {...form.register("startTime")}
-                    className="bg-white/5 border-0 h-12"
-                  />
-                </div>
-                <div>
-                  <Input
-                    type="time"
-                    {...form.register("endTime")}
-                    className="bg-white/5 border-0 h-12"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
               <Input
                 {...form.register("location")}
                 className="bg-white/5 border-0 h-12"
-                placeholder="Tell me system location"
+                placeholder="Event location"
               />
+              {form.formState.errors.location && (
+                <p className="text-red-500 text-xs">{form.formState.errors.location.message}</p>
+              )}
             </div>
 
             <div className="space-y-4">
@@ -261,7 +279,7 @@ export default function CreateEventPage() {
                   type="button"
                   variant={form.watch("price") > 0 ? "default" : "outline"}
                   className="flex-1 h-12"
-                  onClick={() => form.setValue("price", 10)} // Set a default price instead of undefined
+                  onClick={() => form.setValue("price", 10)}
                 >
                   Paid
                 </Button>
@@ -308,29 +326,22 @@ export default function CreateEventPage() {
                   type="button"
                   variant="outline"
                   className="flex-1 h-12 bg-white/5 border-white/10 hover:bg-white/10"
-                  disabled={!eventImage || !form.formState.isValid}
-                  onClick={() => {
-                    setIsDraft(true);
-                    form.handleSubmit(onSubmit)();
-                  }}
+                  disabled={loading}
+                  onClick={() => publishEvent(true)}
                 >
                   Save as Draft
                 </Button>
                 <Button
                   type="button"
                   className="flex-1 h-12 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
-                  disabled={!eventImage || !form.formState.isValid}
-                  onClick={() => {
-                    setIsDraft(false);
-                    form.handleSubmit(onSubmit)();
-                  }}
+                  disabled={loading}
+                  onClick={() => publishEvent(false)}
                 >
                   Publish Event
                 </Button>
               </div>
             </div>
           </div>
-        </form>
 
         <div className="container mx-auto max-w-2xl px-4 pb-32">
           <div className="rounded-lg overflow-hidden relative">
@@ -351,14 +362,11 @@ export default function CreateEventPage() {
           <Button
             type="button"
             className="w-full h-12 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white transition-all duration-200"
-            disabled={!eventImage || !form.formState.isValid}
-            onClick={() => {
-              setIsDraft(false);
-              form.handleSubmit(onSubmit)();
-            }}
+            disabled={loading}
+            onClick={() => publishEvent(false)}
           >
             <Plus className="h-5 w-5 mr-2" />
-            <span>Create Event</span>
+            <span>{loading ? "Creating..." : "Create Event"}</span>
           </Button>
         </div>
       </div>
