@@ -124,11 +124,21 @@ export default function CreateEventPage() {
         formData.append('image', selectedFile);
       }
       
-      // Make the API call
+      // Make the API call with credentials
       console.log("Submitting event with isDraft =", draft);
+      
+      // Get the sessionId from localStorage
+      const sessionId = localStorage.getItem('sessionId');
+      console.log("Using sessionId for authentication:", sessionId ? "yes" : "no");
+      
       const response = await fetch('/api/events', {
         method: 'POST',
         body: formData,
+        headers: {
+          // Include session ID in custom header
+          'X-Session-ID': sessionId || '',
+        },
+        credentials: 'include', // Include credentials like cookies
       });
       
       if (!response.ok) {

@@ -10,7 +10,7 @@ import { getEventImage } from './services/eventsService';
 import { WebSocketServer } from 'ws';
 import { sendMessage, getConversations, getMessages, markMessageAsRead, markAllMessagesAsRead } from './services/messagingService';
 import { db } from "../db";
-import { userCities, users, events } from "../db/schema";
+import { userCities, users, events, sessions } from "../db/schema";
 import { eq, ne, gte, lte } from "drizzle-orm";
 
 const categories = [
@@ -1110,10 +1110,39 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
   app.post("/api/events", upload.single('image'), async (req, res) => {
     try {
-      // Check authentication
-      const currentUser = req.user;
+      // First check if user is in session (traditional method)
+      let currentUser = req.user;
       
+      // If not found in session, check for X-Session-ID header
       if (!currentUser) {
+        const sessionId = req.headers['x-session-id'] as string;
+        console.log("Received custom session ID header:", sessionId ? "yes" : "no");
+        
+        if (sessionId) {
+          // Try to find the user with the provided session ID
+          try {
+            // Find the user ID in the session
+            const sessionQuery = await db.select().from(sessions).where(eq(sessions.id, sessionId));
+            
+            if (sessionQuery.length > 0 && sessionQuery[0].userId) {
+              // Find the user by ID
+              const userId = sessionQuery[0].userId;
+              const userQuery = await db.select().from(users).where(eq(users.id, userId));
+              
+              if (userQuery.length > 0) {
+                currentUser = userQuery[0];
+                console.log("User authenticated via X-Session-ID header:", currentUser.username);
+              }
+            }
+          } catch (err) {
+            console.error("Error finding user by session ID:", err);
+          }
+        }
+      }
+      
+      // Final authentication check
+      if (!currentUser) {
+        console.log("Authentication failed via all methods");
         return res.status(401).json({ error: "You must be logged in to create events" });
       }
       
