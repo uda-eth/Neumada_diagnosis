@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronLeft, Plus } from "lucide-react";
+import { ChevronLeft, Plus, Loader2 } from "lucide-react";
 import { z } from "zod";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useUser } from "@/hooks/use-user";
@@ -79,6 +79,11 @@ export default function CreateEventPage() {
   const publishEvent = async (draft: boolean) => {
     if (!form.formState.isValid) {
       form.trigger(); // Trigger validation
+      toast({
+        variant: "destructive",
+        title: "Validation Error",
+        description: "Please fill out all required fields correctly"
+      });
       return;
     }
 
