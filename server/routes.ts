@@ -10,7 +10,7 @@ import { getEventImage } from './services/eventsService';
 import { WebSocketServer } from 'ws';
 import { sendMessage, getConversations, getMessages, markMessageAsRead, markAllMessagesAsRead } from './services/messagingService';
 import { db } from "../db";
-import { userCities, users } from "../db/schema";
+import { userCities, users, events } from "../db/schema";
 import { eq, ne, gte, lte } from "drizzle-orm";
 
 const categories = [
@@ -1036,7 +1036,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       // Filter out draft events that don't belong to the current user
       dbEvents = dbEvents.filter(event => {
         // If the event is not a draft, or if it's a draft created by the current user, include it
-        return !event.isDraft || (event.isDraft && event.creatorId === currentUserId);
+        return !event.is_draft || (event.is_draft && event.creatorId === currentUserId);
       });
       
       // Sort events by date
@@ -1084,7 +1084,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         const event = dbEvent[0];
         
         // Check if the event is a draft and if the current user is the creator
-        if (event.isDraft && event.creatorId !== currentUserId) {
+        if (event.is_draft && event.creatorId !== currentUserId) {
           return res.status(403).json({ error: "You don't have access to this draft event" });
         }
         
@@ -1127,12 +1127,12 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         tags: req.body.tags ? JSON.parse(req.body.tags) : [],
         image: req.file ? `/uploads/${req.file.filename}` : getEventImage(req.body.category),
         creatorId: currentUser.id,
-        isDraft: req.body.isDraft === 'true',
+        is_draft: req.body.isDraft === 'true',
         createdAt: new Date(),
         city: req.body.city || req.body.location,
       };
       
-      console.log(`Creating new ${eventData.isDraft ? 'draft' : 'published'} event:`, eventData.title);
+      console.log(`Creating new ${eventData.is_draft ? 'draft' : 'published'} event:`, eventData.title);
       
       // Save the event to the database
       const result = await db.insert(events).values(eventData).returning();
