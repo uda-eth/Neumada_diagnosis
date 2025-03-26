@@ -81,6 +81,8 @@ const interests = [
 
 import { useUser } from "@/hooks/use-user";
 
+import { Button } from "../components/ui/button";
+
 const moods = [
   "Dating",
   "Networking",
@@ -96,6 +98,30 @@ export function ConnectPage() {
   const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
   const [isFiltersVisible, setIsFiltersVisible] = useState(false);
   const { toast } = useToast();
+const { sendRequest, connections } = useConnections(currentUser?.id || 0);
+
+const handleConnect = async (userId: number) => {
+  try {
+    await sendRequest(userId);
+    toast({
+      title: "Connection request sent",
+      description: "Your connection request has been sent successfully",
+    });
+  } catch (error) {
+    toast({
+      title: "Error",
+      description: "Failed to send connection request",
+      variant: "destructive",
+    });
+  }
+};
+
+const isConnected = (userId: number) => {
+  return connections.some(conn => 
+    (conn.requesterId === userId && conn.recipientId === currentUser?.id) ||
+    (conn.requesterId === currentUser?.id && conn.recipientId === userId)
+  );
+};
 
   // Fetch real users from the API
   const { user: currentUser } = useUser();
@@ -105,6 +131,7 @@ export function ConnectPage() {
     error
   } = useQuery<User[]>({
     queryKey: ['users', selectedCity, selectedInterests, selectedMoods, currentUser?.id],
+    enabled: !!currentUser?.id,
     queryFn: async () => {
       // Build query parameters
       const params = new URLSearchParams();
@@ -134,6 +161,10 @@ export function ConnectPage() {
       return response.json();
     }
   });
+
+  if (!currentUser) {
+    return <div className="p-8 text-center">Please log in to connect with others</div>;
+  }
 
   useEffect(() => {
     if (error) {
@@ -357,3 +388,30 @@ export function ConnectPage() {
 }
 
 export default ConnectPage;
+  {/* Add this where you render your user cards */}
+  {users?.map((user) => (
+    <div key={user.id} className="p-4 border rounded-lg">
+      <img src={user.profileImage || '/default-avatar.png'} alt={user.username} className="w-20 h-20 rounded-full mb-2" />
+      <h3 className="font-semibold">{user.fullName}</h3>
+      <p className="text-sm text-gray-600">{user.location}</p>
+      {!isConnected(user.id) && user.id !== currentUser?.id && (
+        <Button 
+          onClick={() => handleConnect(user.id)}
+          className="mt-2"
+          size="sm"
+        >
+          Connect
+        </Button>
+      )}
+      {isConnected(user.id) && (
+        <Button 
+          disabled
+          className="mt-2"
+          size="sm"
+          variant="outline"
+        >
+          Connected
+        </Button>
+      )}
+    </div>
+  ))}
