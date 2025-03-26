@@ -101,15 +101,26 @@ export default function CreateEventPage() {
 
   // The main function to publish events
   const publishEvent = async (draft: boolean) => {
-    // Manually trigger validation for all fields
+    // Manually trigger validation for all fields and log current form values
+    console.log("Current form values:", form.getValues());
+    
     const isValid = await form.trigger();
     
     if (!isValid) {
       console.log("Form validation errors:", form.formState.errors);
+      
+      // Create a more specific error message based on which fields failed validation
+      const errorFields = Object.keys(form.formState.errors)
+        .map(field => {
+          const errorField = field as keyof typeof form.formState.errors;
+          return `${field}: ${form.formState.errors[errorField]?.message}`;
+        })
+        .join(', ');
+      
       toast({
         variant: "destructive",
         title: "Validation Error",
-        description: "Please fill out all required fields correctly"
+        description: errorFields || "Please fill out all required fields correctly"
       });
       return;
     }
@@ -129,6 +140,7 @@ export default function CreateEventPage() {
       
       // Get data from the form
       const data = form.getValues();
+      console.log("Form data to be submitted:", data);
       
       // Create a FormData object for the API call
       const formData = new FormData();
@@ -137,18 +149,24 @@ export default function CreateEventPage() {
       Object.entries(data).forEach(([key, value]) => {
         if (value !== null && value !== undefined) {
           formData.append(key, value.toString());
+          console.log(`Added form field: ${key} = ${value}`);
         }
       });
       
       // Add the selected tags
       formData.append('tags', JSON.stringify(selectedTags));
+      console.log("Added tags:", selectedTags);
       
       // Add the isDraft flag
       formData.append('isDraft', draft.toString());
+      console.log("Added isDraft flag:", draft);
       
       // Add the image file if it exists
       if (selectedFile) {
         formData.append('image', selectedFile);
+        console.log("Added image file:", selectedFile.name);
+      } else {
+        console.log("No image file selected");
       }
       
       // Make the API call with credentials
@@ -304,6 +322,29 @@ export default function CreateEventPage() {
               />
               {form.formState.errors.location && (
                 <p className="text-red-500 text-xs">{form.formState.errors.location.message}</p>
+              )}
+            </div>
+
+            {/* Event Category Selector */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium">Event Category</h3>
+              <Select
+                value={form.watch("category")}
+                onValueChange={(value) => form.setValue("category", value)}
+              >
+                <SelectTrigger className="w-full h-12 bg-white/5 border-white/10 hover:bg-white/10">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {EVENT_CATEGORIES.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {form.formState.errors.category && (
+                <p className="text-red-500 text-xs">{form.formState.errors.category.message}</p>
               )}
             </div>
 
