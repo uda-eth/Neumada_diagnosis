@@ -835,7 +835,7 @@ function isAuthenticated(req: Request, res: Response, next: Function) {
     
     if (username) {
       // This is a temporary workaround - in production, we'd verify the session properly
-      console.log(`Alternate authentication using username: ${username}`);
+      console.log(`Alternate authentication using username: ${username}, sessionId: ${sessionId}`);
       
       // Use the username to query the database 
       db.select()
@@ -846,8 +846,10 @@ function isAuthenticated(req: Request, res: Response, next: Function) {
           if (result && result.length > 0) {
             // Temporarily set the user on the request
             req.user = result[0];
+            console.log("User authenticated via custom headers:", username);
             return next();
           } else {
+            console.log("User lookup failed for username:", username);
             return res.status(401).json({ 
               authenticated: false, 
               message: "Invalid session credentials" 
@@ -866,6 +868,8 @@ function isAuthenticated(req: Request, res: Response, next: Function) {
   }
   
   // If no valid auth method found
+  console.log("Authentication failed - no valid auth method found");
+  console.log("Headers:", req.headers);
   return res.status(401).json({ 
     authenticated: false, 
     message: "You need to be logged in to access this resource" 
