@@ -41,6 +41,23 @@ export function CheckoutButton({ eventId, price, className = '' }: CheckoutButto
     }
 
     setIsLoading(true);
+    
+    try {
+      const response = await fetch('/api/checkout/create-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Include custom auth headers since we're having cookie issues
+          'x-username': user.username,
+          'x-session-id': 'temporary-session'
+        },
+        body: JSON.stringify({
+          eventId,
+          quantity: 1
+        })
+      });
+
+      const data = await response.json();
 
     try {
       // First verify authentication for checkout
