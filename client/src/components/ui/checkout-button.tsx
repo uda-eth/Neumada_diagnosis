@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, CreditCard } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/hooks/use-user';
+import { useToast } from '@/components/ui/use-toast';
+import { useUser } from '@/lib/hooks/use-user';
 
 interface CheckoutButtonProps {
   eventId: number;
@@ -27,28 +26,13 @@ export function CheckoutButton({ eventId, price, isFreeEvent }: CheckoutButtonPr
     setIsLoading(true);
 
     try {
-      // Verify user auth first
-      const verifyAuthResponse = await fetch('/api/verify-auth-for-checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: user.username,
-        }),
-      });
-
-      if (!verifyAuthResponse.ok) {
-        throw new Error('Failed to verify authentication');
-      }
-
       // Create checkout session
       const response = await fetch('/api/checkout/create-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-username': user.username,
-          'x-session-id': 'temporary-session' //This should ideally be a proper session ID.
+          'x-session-id': 'temporary-session'
         },
         body: JSON.stringify({
           eventId,
