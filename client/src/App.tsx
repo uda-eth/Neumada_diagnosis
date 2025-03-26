@@ -21,6 +21,7 @@ import { ThemeProvider } from "./lib/theme-provider";
 import { LanguageProvider } from "./lib/language-context";
 import { QueryProvider } from "./lib/query-provider";
 import { UserProvider } from "./lib/user-provider";
+import { StripeProvider } from "./lib/stripe-provider";
 import { useUser } from "@/hooks/use-user";
 import { useEffect } from "react";
 
@@ -141,7 +142,9 @@ function App() {
       <QueryProvider>
         <UserProvider>
           <LanguageProvider>
-            <AppContent />
+            <StripeProvider>
+              <AppContent />
+            </StripeProvider>
           </LanguageProvider>
         </UserProvider>
       </QueryProvider>
