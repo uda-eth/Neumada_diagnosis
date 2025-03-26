@@ -4,7 +4,7 @@ import { type Express } from "express";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { createHash } from "crypto";
-import { users } from "@db/schema";
+import { users, sessions } from "@db/schema";
 import { db } from "@db";
 import { eq } from "drizzle-orm";
 
@@ -457,10 +457,46 @@ export function setupAuth(app: Express) {
         }
         
         // Save session explicitly to ensure it's stored before responding
-        req.session.save((err) => {
+        req.session.save(async (err) => {
           if (err) {
             console.error("Session save error:", err);
             return next(err);
+          }
+          
+          // Store the session ID in our database for header-based authentication
+          try {
+            const sessionId = req.session.id;
+            console.log("Storing session ID in database:", sessionId);
+            
+            // Check if this session already exists in our db
+            const existingSession = await db.select()
+              .from(sessions)
+              .where(eq(sessions.id, sessionId))
+              .limit(1);
+              
+            if (existingSession.length === 0) {
+              // Insert a new session record
+              await db.insert(sessions).values({
+                id: sessionId,
+                userId: user.id,
+                expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+                createdAt: new Date()
+              });
+              console.log("Session stored in database successfully");
+            } else {
+              // Update the existing session
+              await db.update(sessions)
+                .set({
+                  userId: user.id,
+                  expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+                  createdAt: new Date()
+                })
+                .where(eq(sessions.id, sessionId));
+              console.log("Existing session updated in database");
+            }
+          } catch (dbError) {
+            console.error("Error storing session in database:", dbError);
+            // Continue even if DB save fails - regular cookie-based auth will still work
           }
           
           // Sanitize the user object before sending it (remove password)
@@ -469,7 +505,8 @@ export function setupAuth(app: Express) {
           console.log("Login successful, session established");
           return res.json({
             user: userWithoutPassword,
-            authenticated: true
+            authenticated: true,
+            sessionId: req.session.id // Include the session ID in the response
           });
         });
       });
