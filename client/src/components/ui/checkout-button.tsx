@@ -1,36 +1,57 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 
 interface CheckoutButtonProps {
   eventId: string;
 }
 
 const CheckoutButton: React.FC<CheckoutButtonProps> = ({ eventId }) => {
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleClick = async () => {
-    const formData = new FormData();
-    formData.append('eventId', eventId);
+    setIsLoading(true);
+    try {
+      const sessionId = localStorage.getItem('maly_session_id');
+      
+      if (!sessionId) {
+        console.error('No session ID found');
+        return;
+      }
 
-    const response = await fetch('/api/events', {
-      method: 'POST',
-      headers: {
-        'X-Session-ID': localStorage.getItem('maly_session_id') || '',
-        'Cache-Control': 'no-cache'
-      },
-      credentials: 'include',
-      body: formData,
-    });
+      const formData = new FormData();
+      formData.append('eventId', eventId);
 
-    if (!response.ok) {
-      console.error('Error creating event:', response.status);
-      // Handle error appropriately, e.g., display an error message to the user
-      return;
+      const response = await fetch('/api/events', {
+        method: 'POST',
+        headers: {
+          'X-Session-ID': sessionId,
+        },
+        credentials: 'include',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Event created successfully:', data);
+      
+    } catch (error) {
+      console.error('Error creating event:', error);
+    } finally {
+      setIsLoading(false);
     }
-
-    // Handle successful event creation
-    console.log('Event created successfully!');
   };
 
   return (
-    <button onClick={handleClick}>Checkout</button>
+    <button 
+      onClick={handleClick}
+      disabled={isLoading}
+      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+    >
+      {isLoading ? 'Processing...' : 'Checkout'}
+    </button>
   );
 };
 
