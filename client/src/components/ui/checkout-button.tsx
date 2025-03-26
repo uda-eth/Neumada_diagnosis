@@ -13,7 +13,9 @@ const CheckoutButton: React.FC<CheckoutButtonProps> = ({ eventId }) => {
       method: 'POST',
       headers: {
         'X-Session-ID': localStorage.getItem('maly_session_id') || '',
+        'Cache-Control': 'no-cache'
       },
+      credentials: 'include',
       body: formData,
     });
 
