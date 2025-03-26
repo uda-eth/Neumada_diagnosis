@@ -1036,7 +1036,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       // Filter out draft events that don't belong to the current user
       dbEvents = dbEvents.filter(event => {
         // If the event is not a draft, or if it's a draft created by the current user, include it
-        return !event.is_draft || (event.is_draft && event.creatorId === currentUserId);
+        return !event.isDraft || (event.isDraft && event.creatorId === currentUserId);
       });
       
       // Sort events by date
@@ -1084,7 +1084,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         const event = dbEvent[0];
         
         // Check if the event is a draft and if the current user is the creator
-        if (event.is_draft && event.creatorId !== currentUserId) {
+        if (event.isDraft && event.creatorId !== currentUserId) {
           return res.status(403).json({ error: "You don't have access to this draft event" });
         }
         
@@ -1120,19 +1120,19 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         title: req.body.title,
         description: req.body.description,
         location: req.body.location,
-        category: req.body.category,
+        category: req.body.category || 'Social',
         capacity: parseInt(req.body.capacity || '0'),
         price: parseFloat(req.body.price || '0'),
-        date: new Date(req.body.date),
+        date: new Date(req.body.date || new Date()),
         tags: req.body.tags ? JSON.parse(req.body.tags) : [],
-        image: req.file ? `/uploads/${req.file.filename}` : getEventImage(req.body.category),
+        image: req.file ? `/uploads/${req.file.filename}` : getEventImage(req.body.category || 'Social'),
         creatorId: currentUser.id,
-        is_draft: req.body.isDraft === 'true',
+        isDraft: req.body.isDraft === 'true',
         createdAt: new Date(),
-        city: req.body.city || req.body.location,
+        city: req.body.city || req.body.location || 'Mexico City',
       };
       
-      console.log(`Creating new ${eventData.is_draft ? 'draft' : 'published'} event:`, eventData.title);
+      console.log(`Creating new ${eventData.isDraft ? 'draft' : 'published'} event:`, eventData.title);
       
       // Save the event to the database
       const result = await db.insert(events).values(eventData).returning();
