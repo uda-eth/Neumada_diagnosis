@@ -81,8 +81,6 @@ const interests = [
 
 import { useUser } from "@/hooks/use-user";
 
-import { Button } from "../components/ui/button";
-
 const moods = [
   "Dating",
   "Networking",
