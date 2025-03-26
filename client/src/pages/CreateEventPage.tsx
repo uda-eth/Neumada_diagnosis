@@ -34,6 +34,7 @@ export default function CreateEventPage() {
   const { toast } = useToast();
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [eventImage, setEventImage] = useState<string | null>(null);
+  const [isDraft, setIsDraft] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(insertEventSchema),
@@ -71,21 +72,50 @@ export default function CreateEventPage() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const eventData = {
-        ...data,
-        image: eventImage,
-        tags: selectedTags,
-      };
-
-      // Here you would typically make an API call to save the event
-      console.log("Submitting event:", eventData);
-
+      // Create a FormData object for file uploads
+      const formData = new FormData();
+      
+      // Add all form fields to the FormData
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          formData.append(key, value.toString());
+        }
+      });
+      
+      // Add the selected tags
+      formData.append('tags', JSON.stringify(selectedTags));
+      
+      // Add the isDraft flag
+      formData.append('isDraft', isDraft.toString());
+      
+      // Add the image file if it exists
+      if (eventImage) {
+        // Convert data URL to a Blob
+        const imageFile = await fetch(eventImage).then(r => r.blob());
+        formData.append('image', imageFile);
+      }
+      
+      // Make the API call to create the event
+      const response = await fetch('/api/events', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
       toast({
         title: "Success",
-        description: "Event created successfully",
+        description: isDraft ? "Event saved as draft" : "Event published successfully",
       });
+      
+      // Redirect to the events page
       setLocation("/");
     } catch (error) {
+      console.error("Error creating event:", error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -275,19 +305,25 @@ export default function CreateEventPage() {
               <h3 className="text-sm font-medium">Publication Status</h3>
               <div className="flex gap-4">
                 <Button
-                  type="submit"
-                  form="event-form"
+                  type="button"
                   variant="outline"
                   className="flex-1 h-12 bg-white/5 border-white/10 hover:bg-white/10"
                   disabled={!eventImage || !form.formState.isValid}
+                  onClick={() => {
+                    setIsDraft(true);
+                    form.handleSubmit(onSubmit)();
+                  }}
                 >
                   Save as Draft
                 </Button>
                 <Button
-                  type="submit"
-                  form="event-form"
+                  type="button"
                   className="flex-1 h-12 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
                   disabled={!eventImage || !form.formState.isValid}
+                  onClick={() => {
+                    setIsDraft(false);
+                    form.handleSubmit(onSubmit)();
+                  }}
                 >
                   Publish Event
                 </Button>
@@ -313,10 +349,13 @@ export default function CreateEventPage() {
       <div className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-lg border-t border-white/10">
         <div className="container mx-auto max-w-2xl p-4">
           <Button
-            type="submit"
-            form="event-form"
+            type="button"
             className="w-full h-12 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white transition-all duration-200"
             disabled={!eventImage || !form.formState.isValid}
+            onClick={() => {
+              setIsDraft(false);
+              form.handleSubmit(onSubmit)();
+            }}
           >
             <Plus className="h-5 w-5 mr-2" />
             <span>Create Event</span>
