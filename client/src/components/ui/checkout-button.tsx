@@ -19,7 +19,10 @@ export function CheckoutButton({ eventId, price, className = '' }: CheckoutButto
   const isFreeEvent = Number(price) <= 0;
 
   const handleCheckout = async () => {
+    console.log("Checkout button clicked", { user, eventId, price });
+    
     if (!user) {
+      console.log("No user found in client state");
       toast({
         title: 'Authentication required',
         description: 'Please sign in to purchase tickets',

@@ -42,7 +42,10 @@ export function PaymentDialog({
   const formattedPrice = typeof price === 'number' ? `$${price.toFixed(2)}` : price;
 
   const handleCheckout = async () => {
+    console.log("Payment dialog checkout button clicked", { user, eventId, price });
+    
     if (!user) {
+      console.log("No user found in payment dialog");
       toast({
         title: 'Authentication required',
         description: 'Please sign in to purchase tickets',
