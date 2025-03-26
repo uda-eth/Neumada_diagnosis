@@ -6,9 +6,30 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronLeft, Plus, Loader2 } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { 
+  Popover, 
+  PopoverContent, 
+  PopoverTrigger 
+} from "@/components/ui/popover";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue, 
+} from "@/components/ui/select";
+import { 
+  CalendarIcon, 
+  ChevronLeft, 
+  Plus, 
+  Loader2,
+  ChevronsUpDown
+} from "lucide-react";
 import { z } from "zod";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { EVENT_CATEGORIES } from "@/lib/constants";
 import { useUser } from "@/hooks/use-user";
 
 // Define a simple schema for our form
@@ -19,7 +40,10 @@ const eventSchema = z.object({
   category: z.string().default("Social"),
   price: z.coerce.number().min(0).default(0),
   isPrivate: z.boolean().default(false),
-  date: z.string().default(() => new Date().toISOString()),
+  // Add a proper date validator to ensure valid dates
+  date: z.string()
+    .refine(val => !isNaN(Date.parse(val)), "Please enter a valid date")
+    .default(() => new Date().toISOString()),
 });
 
 // Define the form data type using the zod schema
@@ -77,8 +101,11 @@ export default function CreateEventPage() {
 
   // The main function to publish events
   const publishEvent = async (draft: boolean) => {
-    if (!form.formState.isValid) {
-      form.trigger(); // Trigger validation
+    // Manually trigger validation for all fields
+    const isValid = await form.trigger();
+    
+    if (!isValid) {
+      console.log("Form validation errors:", form.formState.errors);
       toast({
         variant: "destructive",
         title: "Validation Error",
@@ -277,6 +304,41 @@ export default function CreateEventPage() {
               />
               {form.formState.errors.location && (
                 <p className="text-red-500 text-xs">{form.formState.errors.location.message}</p>
+              )}
+            </div>
+
+            {/* Date Picker */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium">Event Date</h3>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full h-12 bg-white/5 border-white/10 hover:bg-white/10 justify-start text-left font-normal"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {form.watch("date") ? (
+                      format(new Date(form.watch("date")), "PPP")
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={form.watch("date") ? new Date(form.watch("date")) : undefined}
+                    onSelect={(date) => {
+                      if (date) {
+                        form.setValue("date", date.toISOString());
+                      }
+                    }}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              {form.formState.errors.date && (
+                <p className="text-red-500 text-xs">{form.formState.errors.date.message}</p>
               )}
             </div>
 
