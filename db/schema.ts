@@ -85,14 +85,19 @@ export const messages = pgTable("messages", {
 });
 
 // New table for user connections/follows
-export const userConnections = pgTable("user_connections", {
-  followerId: integer("follower_id").references(() => users.id),
-  followingId: integer("following_id").references(() => users.id),
-  status: text("status").default("pending"), // pending, accepted, declined
+export const connections = pgTable("connections", {
+  id: serial("id").primaryKey(),
+  requesterId: integer("requester_id").references(() => users.id).notNull(),
+  recipientId: integer("recipient_id").references(() => users.id).notNull(),
+  status: text("status").default("pending").notNull(), // pending, accepted, declined
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => {
   return {
-    pk: primaryKey({ columns: [table.followerId, table.followingId] }),
+    unique: {
+      fields: [table.requesterId, table.recipientId],
+      name: "unique_connection"
+    }
   };
 });
 

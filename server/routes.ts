@@ -1238,7 +1238,53 @@ export function registerRoutes(app: express.Application): { app: express.Applica
     }
   });
 
-  app.post('/api/messages/read-all/:userId', async (req: Request, res: Response) => {
+  // Connection management endpoints
+app.post('/api/connections/request', async (req: Request, res: Response) => {
+  try {
+    const { requesterId, recipientId } = req.body;
+    const connection = await sendConnectionRequest(requesterId, recipientId);
+    res.json(connection);
+  } catch (error) {
+    console.error('Error creating connection request:', error);
+    res.status(500).json({ error: 'Failed to create connection request' });
+  }
+});
+
+app.put('/api/connections/:connectionId', async (req: Request, res: Response) => {
+  try {
+    const { connectionId } = req.params;
+    const { status } = req.body;
+    const connection = await updateConnectionStatus(parseInt(connectionId), status);
+    res.json(connection);
+  } catch (error) {
+    console.error('Error updating connection:', error);
+    res.status(500).json({ error: 'Failed to update connection' });
+  }
+});
+
+app.get('/api/connections/:userId', async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const connections = await getUserConnections(parseInt(userId));
+    res.json(connections);
+  } catch (error) {
+    console.error('Error getting connections:', error);
+    res.status(500).json({ error: 'Failed to get connections' });
+  }
+});
+
+app.get('/api/connections/pending/:userId', async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const pendingRequests = await getPendingRequests(parseInt(userId));
+    res.json(pendingRequests);
+  } catch (error) {
+    console.error('Error getting pending requests:', error);
+    res.status(500).json({ error: 'Failed to get pending requests' });
+  }
+});
+
+app.post('/api/messages/read-all/:userId', async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
       const messages = await markAllMessagesAsRead(parseInt(userId));
