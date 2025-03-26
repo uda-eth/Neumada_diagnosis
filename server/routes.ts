@@ -11,7 +11,7 @@ import { WebSocketServer } from 'ws';
 import { sendMessage, getConversations, getMessages, markMessageAsRead, markAllMessagesAsRead } from './services/messagingService';
 import { db } from "../db";
 import { userCities, users, events, sessions } from "../db/schema";
-import { eq, ne, gte, lte } from "drizzle-orm";
+import { eq, ne, gte, lte, and } from "drizzle-orm";
 
 const categories = [
   "Retail",
@@ -827,16 +827,52 @@ function isAuthenticated(req: Request, res: Response, next: Function) {
 }
 
 // No redirect middleware - just returns authentication status
-function checkAuthentication(req: Request, res: Response) {
-  if (req.isAuthenticated()) {
-    // Return authentication status without redirect
+async function checkAuthentication(req: Request, res: Response) {
+  // Log diagnostic info
+  const sessionId = req.headers['x-session-id'] as string;
+  console.log("Session ID in /api/auth/check:", sessionId);
+
+  // First check if user is authenticated through passport session
+  if (req.isAuthenticated() && req.user) {
+    console.log("Auth check: User is authenticated via passport");
+    // Return authentication status with user data
     return res.json({ 
       authenticated: true,
       user: req.user
     });
   }
   
-  // Return unauthenticated status
+  // If not authenticated via passport, try with the provided session ID
+  if (sessionId) {
+    try {
+      // Find the user ID in the session
+      const sessionQuery = await db.select().from(sessions).where(eq(sessions.id, sessionId));
+      
+      if (sessionQuery.length > 0 && sessionQuery[0].userId) {
+        // Find the user by ID
+        const userId = sessionQuery[0].userId;
+        const userQuery = await db.select().from(users).where(eq(users.id, userId));
+        
+        if (userQuery.length > 0) {
+          const user = userQuery[0];
+          console.log("Auth check: User authenticated via session ID:", user.username);
+          
+          // Remove sensitive information
+          const { password, ...userWithoutPassword } = user as any;
+          
+          return res.json({
+            authenticated: true,
+            user: userWithoutPassword
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Auth check error with session ID:", err);
+    }
+  }
+  
+  // Return unauthenticated status if all methods fail
+  console.log("Auth check: User not authenticated");
   return res.json({ 
     authenticated: false,
     message: "Not logged in"
@@ -1330,6 +1366,59 @@ export function registerRoutes(app: express.Application): { app: express.Applica
   
   // Add authentication check endpoint
   app.get('/api/auth/check', checkAuthentication);
+  
+  // Add endpoint to get user by session ID
+  app.get('/api/user-by-session', async (req: Request, res: Response) => {
+    try {
+      const sessionId = req.headers['x-session-id'] as string;
+      console.log("User by session request for sessionID:", sessionId);
+      
+      if (!sessionId) {
+        return res.status(401).json({
+          error: "No session ID provided",
+          authenticated: false
+        });
+      }
+      
+      // Find the user ID in the session
+      const sessionQuery = await db.select().from(sessions).where(eq(sessions.id, sessionId));
+      
+      if (sessionQuery.length === 0 || !sessionQuery[0].userId) {
+        console.log("No user found in session:", sessionId);
+        return res.status(401).json({
+          error: "Session not found or invalid",
+          authenticated: false
+        });
+      }
+      
+      // Find the user by ID
+      const userId = sessionQuery[0].userId;
+      const userQuery = await db.select().from(users).where(eq(users.id, userId));
+      
+      if (userQuery.length === 0) {
+        console.log("User not found for ID:", userId);
+        return res.status(404).json({
+          error: "User not found",
+          authenticated: false
+        });
+      }
+      
+      // Remove sensitive information before returning user
+      const { password, ...userWithoutPassword } = userQuery[0] as any;
+      
+      console.log("User found by session ID:", userWithoutPassword.username);
+      return res.json({
+        ...userWithoutPassword,
+        authenticated: true
+      });
+    } catch (error) {
+      console.error("Error in user-by-session endpoint:", error);
+      return res.status(500).json({
+        error: "Server error",
+        authenticated: false
+      });
+    }
+  });
   
   return { app, httpServer };
 }
