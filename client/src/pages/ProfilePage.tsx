@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "wouter";
-import { useUser } from "@/hooks/useUser";
+import { useUser } from "@/hooks/use-user";
 import { Loader2 } from "lucide-react";
 
 interface ProfileData {
