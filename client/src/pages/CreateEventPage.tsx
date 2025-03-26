@@ -10,7 +10,6 @@ import { ChevronLeft, Plus } from "lucide-react";
 import { insertEventSchema } from "@db/schema";
 import type { z } from "zod";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useUser } from "@/hooks/use-user";
 
 // Define the form data type using the zod schema
 type FormData = z.infer<typeof insertEventSchema>;
@@ -30,48 +29,30 @@ const interestTags = [
   "Languages",
 ];
 
-const categories = [
-  "Social",
-  "Professional",
-  "Cultural",
-  "Sports",
-  "Dining",
-  "Festivals",
-  "Retail",
-  "Fashion",
-  "Tech",
-  "Educational"
-];
-
 export default function CreateEventPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const { user } = useUser();
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [isDraft, setIsDraft] = useState<boolean>(false);
   const [eventImage, setEventImage] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>("Social");
 
   const form = useForm<FormData>({
     resolver: zodResolver(insertEventSchema),
     defaultValues: {
       title: "",
       description: "",
-      location: user?.location || "",
-      city: user?.location || "",
-      date: new Date(),
-      price: "0",
+      location: "",
+      date: new Date().toISOString(),
+      startTime: "",
+      endTime: "",
+      price: 0,
       isPrivate: false,
       category: "Social", // Default category
       image: null,
       tags: [],
       image_url: null,
-      creatorId: user?.id || null,
-      capacity: 20,
-      ticketType: "free", // Required field
-      availableTickets: 100,
-      timeFrame: "This Week", // Required field
+      creatorId: null,
+      attendingCount: 0,
+      interestedCount: 0
     },
   });
 
@@ -82,89 +63,22 @@ export default function CreateEventPage() {
       reader.onloadend = () => {
         setEventImage(reader.result as string);
         // Also update the form data
-        form.setValue("image_url", reader.result as string);
+        form.setValue("image", reader.result as string);
       };
       reader.readAsDataURL(file);
     }
   };
 
   const onSubmit = async (data: FormData) => {
-    console.log("Form submit started");
     try {
-      setIsSubmitting(true);
-      
-      // Create FormData for multipart/form-data (for image upload)
-      const formData = new FormData();
-      
-      // Handle date conversion properly for the server
-      const formattedData = {
+      const eventData = {
         ...data,
-        // Convert Date to ISO string for API
-        date: data.date instanceof Date ? data.date.toISOString() : data.date,
-        // Make sure ticketType is correctly set based on price
-        ticketType: parseFloat(data.price?.toString() || '0') > 0 ? 'paid' : 'free'
+        image: eventImage,
+        tags: selectedTags,
       };
 
-      // Log all form data for debugging
-      console.log("Form data before submission:", formattedData);
-      
-      // Add all form fields to FormData
-      Object.entries(formattedData).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) {
-          // Handle arrays (like tags) by converting to JSON
-          if (Array.isArray(value)) {
-            formData.append(key, JSON.stringify(value));
-          } else {
-            formData.append(key, value.toString());
-          }
-        }
-      });
-      
-      console.log("FormData prepared, keys:", Array.from(formData.keys()));
-      
-      // Add the selected tags as JSON string
-      formData.append('tags', JSON.stringify(selectedTags));
-      
-      // Add category
-      formData.append('category', selectedCategory);
-      
-      // Add isDraft status based on state
-      formData.append('isDraft', isDraft.toString());
-      
-      // Ensure creatorId is included
-      if (user && user.id) {
-        formData.append('creatorId', user.id.toString());
-      }
-      
-      // If we have a Base64 image URL, convert it to a file and append
-      if (eventImage && eventImage.startsWith('data:image')) {
-        // Convert base64 to blob
-        const fetchResponse = await fetch(eventImage);
-        const blob = await fetchResponse.blob();
-        const file = new File([blob], "event-image.jpg", { type: "image/jpeg" });
-        formData.append('image', file);
-      }
-      
-      const formDataObj: Record<string, any> = {};
-      formData.forEach((value, key) => {
-        formDataObj[key] = value;
-      });
-      console.log("Submitting event:", formDataObj);
-      
-      // Make the API call
-      const response = await fetch('/api/events', {
-        method: 'POST',
-        body: formData,
-        // No Content-Type header - browser will set it for FormData with correct boundary
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create event');
-      }
-      
-      const createdEvent = await response.json();
-      console.log("Event created:", createdEvent);
+      // Here you would typically make an API call to save the event
+      console.log("Submitting event:", eventData);
 
       toast({
         title: "Success",
@@ -172,14 +86,11 @@ export default function CreateEventPage() {
       });
       setLocation("/");
     } catch (error) {
-      console.error("Error creating event:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create event",
+        description: "Failed to create event",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -204,11 +115,7 @@ export default function CreateEventPage() {
       </header>
 
       <ScrollArea className="flex-1" style={{ height: 'calc(100vh - 140px)' }}>
-        <form id="event-form" onSubmit={(e) => {
-            e.preventDefault();
-            console.log("Form submitted manually", form.getValues());
-            form.handleSubmit(onSubmit)(e);
-          }}>
+        <form id="event-form" onSubmit={form.handleSubmit(onSubmit)}>
           <div className="container mx-auto px-4 py-8 space-y-8 max-w-2xl">
             <div className="space-y-4">
               <p className="text-sm text-white/60">Let's get started!</p>
@@ -254,30 +161,6 @@ export default function CreateEventPage() {
                   placeholder="Fill in event details"
                 />
               </div>
-              
-              <div className="space-y-4">
-                <h3 className="text-sm font-medium">Event Category</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  {categories.map((category) => (
-                    <Button
-                      key={category}
-                      type="button"
-                      variant={selectedCategory === category ? "default" : "outline"}
-                      className={`h-10 text-sm ${
-                        selectedCategory === category
-                          ? ""
-                          : "bg-white/5 border-white/10 hover:bg-white/10"
-                      }`}
-                      onClick={() => {
-                        setSelectedCategory(category);
-                        form.setValue("category", category);
-                      }}
-                    >
-                      {category}
-                    </Button>
-                  ))}
-                </div>
-              </div>
             </div>
 
             <div className="space-y-4">
@@ -312,35 +195,15 @@ export default function CreateEventPage() {
                 <div>
                   <Input
                     type="time"
+                    {...form.register("startTime")}
                     className="bg-white/5 border-0 h-12"
-                    onChange={(e) => {
-                      const time = e.target.value;
-                      const currentDate = form.getValues("date");
-                      if (currentDate && time) {
-                        // Set the time component on the date
-                        const [hours, minutes] = time.split(':').map(Number);
-                        const newDate = new Date(currentDate);
-                        newDate.setHours(hours, minutes);
-                        form.setValue("date", newDate);
-                      }
-                    }}
                   />
                 </div>
                 <div>
                   <Input
                     type="time"
+                    {...form.register("endTime")}
                     className="bg-white/5 border-0 h-12"
-                    onChange={(e) => {
-                      const time = e.target.value;
-                      if (time) {
-                        // Create or update end date with this time
-                        const [hours, minutes] = time.split(':').map(Number);
-                        const endDate = form.getValues("endDate") || new Date(form.getValues("date"));
-                        const newEndDate = new Date(endDate);
-                        newEndDate.setHours(hours, minutes);
-                        form.setValue("endDate", newEndDate);
-                      }
-                    }}
                   />
                 </div>
               </div>
@@ -358,23 +221,23 @@ export default function CreateEventPage() {
               <div className="flex gap-4">
                 <Button
                   type="button"
-                  variant={form.watch("price") === "0" ? "default" : "outline"}
+                  variant={form.watch("price") === 0 ? "default" : "outline"}
                   className="flex-1 h-12"
-                  onClick={() => form.setValue("price", "0")}
+                  onClick={() => form.setValue("price", 0)}
                 >
                   Free
                 </Button>
                 <Button
                   type="button"
-                  variant={parseFloat(form.watch("price") || "0") > 0 ? "default" : "outline"}
+                  variant={form.watch("price") > 0 ? "default" : "outline"}
                   className="flex-1 h-12"
-                  onClick={() => form.setValue("price", "10")} // Set a default price
+                  onClick={() => form.setValue("price", 10)} // Set a default price instead of undefined
                 >
                   Paid
                 </Button>
               </div>
 
-              {parseFloat(form.watch("price") || "0") > 0 && (
+              {form.watch("price") > 0 && (
                 <div className="space-y-2">
                   <Input
                     type="number"
@@ -412,28 +275,19 @@ export default function CreateEventPage() {
               <h3 className="text-sm font-medium">Publication Status</h3>
               <div className="flex gap-4">
                 <Button
-                  type="button"
+                  type="submit"
+                  form="event-form"
                   variant="outline"
                   className="flex-1 h-12 bg-white/5 border-white/10 hover:bg-white/10"
-                  disabled={!eventImage || !form.watch("title") || !form.watch("description")}
-                  onClick={() => {
-                    console.log("Draft button clicked");
-                    setIsDraft(true);
-                    // Use the state variable in onSubmit
-                    form.handleSubmit(onSubmit)();
-                  }}
+                  disabled={!eventImage || !form.formState.isValid}
                 >
                   Save as Draft
                 </Button>
                 <Button
-                  type="button"
+                  type="submit"
+                  form="event-form"
                   className="flex-1 h-12 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
-                  disabled={!eventImage || !form.watch("title") || !form.watch("description")}
-                  onClick={() => {
-                    console.log("Publish button clicked");
-                    setIsDraft(false);
-                    form.handleSubmit(onSubmit)();
-                  }}
+                  disabled={!eventImage || !form.formState.isValid}
                 >
                   Publish Event
                 </Button>
@@ -459,14 +313,10 @@ export default function CreateEventPage() {
       <div className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-lg border-t border-white/10">
         <div className="container mx-auto max-w-2xl p-4">
           <Button
-            type="button"
+            type="submit"
+            form="event-form"
             className="w-full h-12 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white transition-all duration-200"
-            disabled={!eventImage || !form.watch("title") || !form.watch("description")}
-            onClick={() => {
-              console.log("Bottom Create Event button clicked");
-              setIsDraft(false);
-              form.handleSubmit(onSubmit)();
-            }}
+            disabled={!eventImage || !form.formState.isValid}
           >
             <Plus className="h-5 w-5 mr-2" />
             <span>Create Event</span>

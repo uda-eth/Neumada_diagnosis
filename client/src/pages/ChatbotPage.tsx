@@ -162,7 +162,19 @@ export default function ChatbotPage() {
                             : "bg-gradient-to-r from-purple-600 via-pink-600 to-red-500"
                         }`}
                       >
-                        {message.content}
+                        {message.role === 'assistant' && message.content.includes('1.') ? (
+                          <ol className="list-decimal list-inside space-y-2 text-sm">
+                            {message.content.split('\n')
+                              .filter(line => /^\d+\./.test(line))
+                              .map((line, index) => (
+                                <li key={index} className="pl-2">
+                                  {line.replace(/^\d+\.\s*/, '')}
+                                </li>
+                              ))}
+                          </ol>
+                        ) : (
+                          <p className="text-sm">{message.content}</p>
+                        )}
                       </div>
                     </motion.div>
                   ))}

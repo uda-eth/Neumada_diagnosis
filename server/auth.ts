@@ -641,29 +641,15 @@ export function setupAuth(app: Express) {
   });
 
   // Add endpoint for retrieving user by session ID (for webview compatibility)
-  app.get("/api/user-by-session", async (req, res) => {
-    // Try three approaches to get the user:
-    // 1. Use the session ID from the header
-    // 2. Use the session cookie directly
-    // 3. If authenticated, use req.user
-    
-    // Strategy 1: Header session ID
+  app.get("/api/user-by-session", (req, res) => {
     const sessionId = req.header('X-Session-ID');
     console.log("User by session request for sessionID:", sessionId);
-    
-    // Strategy 3: Check if already authenticated through passport
-    if (req.isAuthenticated() && req.user) {
-      console.log("User already authenticated in session, returning user data");
-      const user = req.user as any;
-      const { password, ...userWithoutPassword } = user;
-      return res.json(userWithoutPassword);
-    }
     
     if (!sessionId) {
       return res.status(400).send("No session ID provided");
     }
     
-    // Strategy 1 continued: Use the session store to look up the session
+    // Use the session store to look up the session
     const sessionStore = req.sessionStore as any;
     
     if (!sessionStore.get) {
@@ -671,30 +657,7 @@ export function setupAuth(app: Express) {
       return res.status(500).send("Session store error");
     }
     
-    // Strategy 2: Check the current session directly from cookie
-    // This is a fallback if the provided session ID doesn't work
-    if (req.session && req.session.passport && req.session.passport.user) {
-      const userId = req.session.passport.user;
-      console.log("Found user ID in cookie session:", userId);
-      
-      try {
-        const [user] = await db
-          .select()
-          .from(users)
-          .where(eq(users.id, userId))
-          .limit(1);
-        
-        if (user) {
-          console.log("User found from cookie session:", user.username);
-          const { password, ...userWithoutPassword } = user;
-          return res.json(userWithoutPassword);
-        }
-      } catch (error) {
-        console.error("Error getting user from cookie session:", error);
-      }
-    }
-    
-    // Continue with Strategy 1: Get session data from store
+    // Get session data from store
     sessionStore.get(sessionId, async (err: any, sessionData: any) => {
       if (err) {
         console.error("Error getting session:", err);
@@ -703,28 +666,6 @@ export function setupAuth(app: Express) {
       
       if (!sessionData || !sessionData.passport || !sessionData.passport.user) {
         console.log("No user found in session:", sessionId);
-        
-        // Special handling for the client-side cached user
-        // If client provides userId in the query, verify it exists
-        const cachedUserId = req.query.userId;
-        if (cachedUserId) {
-          try {
-            const [user] = await db
-              .select()
-              .from(users)
-              .where(eq(users.id, Number(cachedUserId)))
-              .limit(1);
-            
-            if (user) {
-              console.log("Found user from cached ID:", user.username);
-              const { password, ...userWithoutPassword } = user;
-              return res.json(userWithoutPassword);
-            }
-          } catch (error) {
-            console.error("Error getting user from cached ID:", error);
-          }
-        }
-        
         return res.status(401).send("Invalid or expired session");
       }
       

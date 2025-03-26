@@ -142,18 +142,8 @@ export function useUser() {
       if (!authStatus.authenticated && storedSessionId) {
         console.log("Cookie auth failed, trying stored session ID");
         
-        // Get cached user ID if available
-        const cachedUser = getCachedUser();
-        const cachedUserId = cachedUser?.id;
-        
-        // Build URL with user ID as query parameter if available
-        let userBySessionUrl = '/api/user-by-session';
-        if (cachedUserId) {
-          userBySessionUrl += `?userId=${cachedUserId}`;
-        }
-        
         // Try the user endpoint with the stored session ID
-        const response = await fetch(userBySessionUrl, {
+        const response = await fetch('/api/user-by-session', {
           credentials: 'include',
           cache: 'no-store',
           headers: { 
