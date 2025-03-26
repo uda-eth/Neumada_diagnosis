@@ -1,120 +1,123 @@
 
 import { useState, useEffect } from "react";
-import { useParams } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { useUser } from "@/hooks/use-user";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft, MapPin, Mail, Briefcase, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 interface ProfileData {
   id: number;
   username: string;
-  fullName?: string;
-  bio?: string;
-  location?: string;
-  interests?: string[];
-  profileImage?: string;
+  email: string;
+  fullName: string | null;
+  profileImage: string | null;
+  bio: string | null;
+  location: string | null;
+  interests: string[];
+  profession: string | null;
+  age: number | null;
 }
 
 export default function ProfilePage() {
+  const [, setLocation] = useLocation();
   const { username } = useParams();
   const { user: currentUser } = useUser();
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchProfileData() {
-      setLoading(true);
-      setError(null);
-      
+    const fetchProfileData = async () => {
       try {
-        // If no username provided, show current user's profile
-        const targetUsername = username || currentUser?.username;
-        if (!targetUsername) {
-          setError("No profile specified");
-          setLoading(false);
-          return;
-        }
-
-        const response = await fetch(`/api/users/${targetUsername}`);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch profile: ${response.statusText}`);
-        }
-
+        const response = await fetch(`/api/users/${username}`);
+        if (!response.ok) throw new Error('Failed to fetch profile data');
         const data = await response.json();
         setProfileData(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load profile");
+      } catch (error) {
+        console.error('Error fetching profile:', error);
       } finally {
         setLoading(false);
       }
-    }
+    };
 
     fetchProfileData();
-  }, [username, currentUser?.username]);
+  }, [username]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen text-red-500">
-        {error}
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
 
   if (!profileData) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        Profile not found
-      </div>
-    );
+    return <div>Profile not found</div>;
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-2xl mx-auto">
-        <div className="flex items-center gap-4">
-          {profileData.profileImage && (
-            <img 
-              src={profileData.profileImage}
-              alt={profileData.fullName || profileData.username}
-              className="w-24 h-24 rounded-full object-cover"
-            />
-          )}
-          <div>
-            <h1 className="text-2xl font-bold">{profileData.fullName || profileData.username}</h1>
-            {profileData.location && (
-              <p className="text-gray-600">{profileData.location}</p>
-            )}
-          </div>
-        </div>
-        
-        {profileData.bio && (
-          <p className="mt-6 text-gray-700">{profileData.bio}</p>
-        )}
+    <div className="min-h-screen bg-background p-4 md:p-8">
+      <Button
+        variant="ghost"
+        className="mb-6"
+        onClick={() => setLocation('/connect')}
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back to Connect
+      </Button>
 
-        {profileData.interests && profileData.interests.length > 0 && (
-          <div className="mt-6">
-            <h2 className="font-semibold mb-2">Interests</h2>
-            <div className="flex flex-wrap gap-2">
-              {profileData.interests.map((interest, index) => (
-                <span 
-                  key={index}
-                  className="px-3 py-1 bg-gray-100 rounded-full text-sm"
-                >
-                  {interest}
-                </span>
-              ))}
+      <Card className="max-w-3xl mx-auto">
+        <CardHeader className="relative">
+          <div className="flex items-start gap-6">
+            <Avatar className="h-24 w-24 border-2">
+              <AvatarImage src={profileData.profileImage || undefined} alt={profileData.username} />
+              <AvatarFallback>{profileData.username[0].toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold">{profileData.fullName || profileData.username}</h1>
+              {profileData.bio && (
+                <p className="text-muted-foreground">{profileData.bio}</p>
+              )}
+              <div className="flex flex-wrap gap-2">
+                {profileData.location && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <MapPin className="h-3 w-3" />
+                    {profileData.location}
+                  </Badge>
+                )}
+                {profileData.profession && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <Briefcase className="h-3 w-3" />
+                    {profileData.profession}
+                  </Badge>
+                )}
+                {profileData.age && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {profileData.age} years old
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
-        )}
-      </div>
+        </CardHeader>
+        <CardContent>
+          {profileData.interests && profileData.interests.length > 0 && (
+            <div className="mt-6">
+              <h2 className="text-lg font-semibold mb-3">Interests</h2>
+              <div className="flex flex-wrap gap-2">
+                {profileData.interests.map((interest, index) => (
+                  <Badge key={index} variant="outline">
+                    {interest}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
