@@ -76,16 +76,16 @@ export function setupAuth(app: Express) {
   
   const sessionSettings: session.SessionOptions = {
     secret: sessionSecret,
-    name: "maly_session", // Use a custom name instead of connect.sid
-    resave: true, // Force the session to be saved back to the store
-    rolling: true, // Force a cookie to be set on every response
-    saveUninitialized: true, // Changed to true to ensure session is always saved
+    name: "maly_session",
+    resave: false,
+    rolling: true,
+    saveUninitialized: false,
     cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true,
-      sameSite: 'none', // Changed from 'lax' to 'none' to work in all contexts including webview
+      sameSite: 'lax',
       path: '/',
-      secure: false // Will be updated based on environment
+      secure: process.env.NODE_ENV === 'production'
     },
     store: new MemoryStore({
       checkPeriod: 86400000, // 24 hours
@@ -272,7 +272,16 @@ export function setupAuth(app: Express) {
             console.error("Login after registration failed:", err);
             return next(err);
           }
-          return res.json(newUser);
+          req.session.save((err) => {
+            if (err) {
+              console.error("Session save error:", err);
+              return next(err);
+            }
+            return res.json({ 
+              user: newUser,
+              authenticated: true 
+            });
+          });
         });
       } catch (dbError) {
         console.error("Database error during registration:", dbError);
@@ -458,7 +467,10 @@ export function setupAuth(app: Express) {
           const { password, ...userWithoutPassword } = user as any;
           
           console.log("Login successful, session established");
-          return res.json(userWithoutPassword);
+          return res.json({
+            user: userWithoutPassword,
+            authenticated: true
+          });
         });
       });
     })(req, res, next);
