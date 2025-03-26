@@ -711,6 +711,16 @@ export const MOCK_EVENTS = DIGITAL_NOMAD_CITIES.reduce((acc, city) => {
   return acc;
 }, {} as Record<string, any[]>);
 
+// Ensure uploads directory exists
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// Create uploads directory if it doesn't exist
+if (!fs.existsSync('uploads')) {
+  fs.mkdirSync('uploads', { recursive: true });
+}
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/')
@@ -968,15 +978,28 @@ export function registerRoutes(app: express.Application): { app: express.Applica
   app.get("/api/users/:username", async (req, res) => {
     try {
       const { username } = req.params;
-      const user = Object.values(MOCK_USERS)
+      
+      // First, try to get user from the database
+      const dbUser = await db.select()
+        .from(users)
+        .where(eq(users.username, username))
+        .limit(1);
+      
+      if (dbUser && dbUser.length > 0) {
+        console.log("Found real user in database:", dbUser[0].username);
+        return res.json(dbUser[0]);
+      }
+      
+      // If not found in DB, fallback to mock data while we're developing
+      const mockUser = Object.values(MOCK_USERS)
         .flat()
         .find(u => u.username === username);
 
-      if (!user) {
+      if (!mockUser) {
         return res.status(404).json({ error: "User not found" });
       }
 
-      res.json(user);
+      res.json(mockUser);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ error: "Internal server error" });
