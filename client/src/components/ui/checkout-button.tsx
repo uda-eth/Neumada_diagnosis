@@ -20,7 +20,7 @@ export function CheckoutButton({ eventId, price, className = '' }: CheckoutButto
 
   const handleCheckout = async () => {
     console.log("Checkout button clicked", { user, eventId, price });
-    
+
     if (!user) {
       console.log("No user found in client state");
       toast({
@@ -41,23 +41,6 @@ export function CheckoutButton({ eventId, price, className = '' }: CheckoutButto
     }
 
     setIsLoading(true);
-    
-    try {
-      const response = await fetch('/api/checkout/create-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Include custom auth headers since we're having cookie issues
-          'x-username': user.username,
-          'x-session-id': 'temporary-session'
-        },
-        body: JSON.stringify({
-          eventId,
-          quantity: 1
-        })
-      });
-
-      const data = await response.json();
 
     try {
       // First verify authentication for checkout
@@ -71,30 +54,30 @@ export function CheckoutButton({ eventId, price, className = '' }: CheckoutButto
           username: user.username,
         }),
       });
-      
+
       if (!verifyAuthResponse.ok) {
         throw new Error('Authentication verification failed');
       }
-      
+
       const authData = await verifyAuthResponse.json();
-      
+
       if (!authData.authenticated) {
         throw new Error(authData.message || 'Authentication verification failed');
       }
-      
+
       console.log("Authentication verified for checkout, proceeding...");
-      
+
       // Now create the checkout session with auth headers
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       };
-      
+
       // Add custom auth headers from our verification
       headers['x-session-id'] = authData.sessionToken || localStorage.getItem('sessionId') || 'anonymous';
       headers['x-username'] = user.username;
-      
+
       console.log("Using session token for checkout:", headers['x-session-id']);
-      
+
       const response = await fetch('/api/checkout/create-session', {
         method: 'POST',
         headers,
@@ -132,8 +115,8 @@ export function CheckoutButton({ eventId, price, className = '' }: CheckoutButto
     }
   };
 
-  const buttonText = isFreeEvent 
-    ? 'Register for free' 
+  const buttonText = isFreeEvent
+    ? 'Register for free'
     : `Purchase tickets - ${typeof price === 'number' ? `$${price.toFixed(2)}` : price}`;
 
   return (
