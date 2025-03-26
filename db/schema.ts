@@ -52,6 +52,7 @@ export const events = pgTable("events", {
   createdAt: timestamp("created_at").defaultNow(),
   isPrivate: boolean("is_private").default(false),
   isBusinessEvent: boolean("is_business_event").default(false),
+  isDraft: boolean("is_draft").default(false), // Added for draft functionality
   tags: jsonb("tags").$type<string[]>().default([]),
   attendingCount: integer("attending_count").default(0),
   interestedCount: integer("interested_count").default(0),
