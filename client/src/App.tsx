@@ -3,6 +3,7 @@ import HomePage from "./pages/HomePage";
 import EventPage from "./pages/EventPage";
 import ProfilePage from "./pages/ProfilePage";
 import CreateEventPage from "./pages/CreateEventPage";
+import TestCreateEventPage from "./pages/TestCreateEventPage";
 import ChatbotPage from "./pages/ChatbotPage";
 import ConnectPage from "./pages/ConnectPage";
 import MessagesPage from "./pages/MessagesPage";
@@ -111,6 +112,7 @@ function AppContent() {
             <Route path="/profile/:username" component={ProfilePage} />
             <Route path="/profile" component={ProfilePage} />
             <Route path="/create" component={CreateEventPage} />
+            <Route path="/test-create" component={TestCreateEventPage} />
             <Route path="/companion" component={ChatbotPage} />
             <Route path="/connect" component={ConnectPage} />
             <Route path="/messages" component={MessagesPage} />
