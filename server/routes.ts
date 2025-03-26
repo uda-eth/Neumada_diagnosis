@@ -1278,8 +1278,8 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       const protocol = req.headers['x-forwarded-proto'] || 'http';
       const baseUrl = `${protocol}://${host}`;
       
-      const successUrl = `${baseUrl}/events/${eventId}?payment=success`;
-      const cancelUrl = `${baseUrl}/events/${eventId}?payment=canceled`;
+      const successUrl = `${baseUrl}/event/${eventId}?payment=success`;
+      const cancelUrl = `${baseUrl}/event/${eventId}?payment=canceled`;
 
       const session = await createCheckoutSession({
         eventId: parseInt(eventId.toString()),
@@ -1289,7 +1289,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         cancelUrl
       });
 
-      res.json({ sessionId: session.id, url: session.url });
+      res.json({ sessionId: session.sessionId, url: session.url });
     } catch (error) {
       console.error('Error creating checkout session:', error);
       res.status(500).json({ error: 'Failed to create checkout session' });
@@ -1306,14 +1306,17 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       }
       
       // Verify webhook signature using your webhook secret
-      // const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET as string;
-      // const event = stripe.webhooks.constructEvent(req.rawBody, sig, stripeWebhookSecret);
+      let event;
+      if (WEBHOOK_SECRET) {
+        event = stripe.webhooks.constructEvent(req.rawBody, sig, WEBHOOK_SECRET);
+      } else {
+        // For development without webhook secret
+        event = JSON.parse(req.body as any);
+      }
       
-      // For now, trust the webhook without verification during development
-      const event = JSON.parse(req.body as any);
-      const result = await handleStripeWebhook(event);
+      await handleStripeWebhook(event);
       
-      res.json(result);
+      res.json({ received: true });
     } catch (error) {
       console.error('Error handling Stripe webhook:', error);
       res.status(400).json({ error: 'Webhook error' });
