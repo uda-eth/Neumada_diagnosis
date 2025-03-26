@@ -132,8 +132,11 @@ export function useUser() {
       if (authStatus.authenticated && authStatus.user) {
         console.log("User authenticated via auth check:", authStatus.user.username);
         
-        // Cache the user data
+        // Cache the user data and session ID for future use
         localStorage.setItem('maly_user_data', JSON.stringify(authStatus.user));
+        if (authStatus.sessionId) {
+          localStorage.setItem('sessionId', authStatus.sessionId);
+        }
         
         return authStatus.user;
       }

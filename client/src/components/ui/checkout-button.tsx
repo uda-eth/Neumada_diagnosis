@@ -43,11 +43,21 @@ export function CheckoutButton({ eventId, price, className = '' }: CheckoutButto
     setIsLoading(true);
 
     try {
+      // Add custom auth headers since cookies aren't consistently working
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Add custom auth headers when we have a user but server auth might fail
+      if (user) {
+        console.log("Adding custom auth headers for user:", user.username);
+        headers['x-session-id'] = localStorage.getItem('sessionId') || 'anonymous';
+        headers['x-username'] = user.username;
+      }
+      
       const response = await fetch('/api/checkout/create-session', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           eventId,
           quantity: 1, // Default to 1 ticket
