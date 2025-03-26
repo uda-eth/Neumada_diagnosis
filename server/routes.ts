@@ -10,7 +10,7 @@ import { getEventImage } from './services/eventsService';
 import { WebSocketServer } from 'ws';
 import { sendMessage, getConversations, getMessages, markMessageAsRead, markAllMessagesAsRead } from './services/messagingService';
 import { db } from "../db";
-import { userCities, users } from "../db/schema";
+import { userCities, users, events } from "../db/schema";
 import { eq, ne, gte, lte } from "drizzle-orm";
 
 const categories = [
@@ -711,6 +711,16 @@ export const MOCK_EVENTS = DIGITAL_NOMAD_CITIES.reduce((acc, city) => {
   return acc;
 }, {} as Record<string, any[]>);
 
+// Ensure uploads directory exists
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// Create uploads directory if it doesn't exist
+if (!fs.existsSync('uploads')) {
+  fs.mkdirSync('uploads', { recursive: true });
+}
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/')
@@ -968,15 +978,28 @@ export function registerRoutes(app: express.Application): { app: express.Applica
   app.get("/api/users/:username", async (req, res) => {
     try {
       const { username } = req.params;
-      const user = Object.values(MOCK_USERS)
+      
+      // First, try to get user from the database
+      const dbUser = await db.select()
+        .from(users)
+        .where(eq(users.username, username))
+        .limit(1);
+      
+      if (dbUser && dbUser.length > 0) {
+        console.log("Found real user in database:", dbUser[0].username);
+        return res.json(dbUser[0]);
+      }
+      
+      // If not found in DB, fallback to mock data while we're developing
+      const mockUser = Object.values(MOCK_USERS)
         .flat()
         .find(u => u.username === username);
 
-      if (!user) {
+      if (!mockUser) {
         return res.status(404).json({ error: "User not found" });
       }
 
-      res.json(user);
+      res.json(mockUser);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ error: "Internal server error" });
@@ -997,16 +1020,48 @@ export function registerRoutes(app: express.Application): { app: express.Applica
   app.get("/api/events", async (req, res) => {
     try {
       const { location } = req.query;
+      const currentUserId = req.user?.id;
 
-      let filteredEvents = location && location !== 'all'
-        ? MOCK_EVENTS[location as string] || []
-        : Object.values(MOCK_EVENTS).flat();
+      // Query events from the database
+      let query = db.select().from(events);
+      
+      // Apply location filter if provided
+      if (location && location !== 'all') {
+        query = query.where(eq(events.location, location as string));
+      }
+      
+      // Get all events that match the criteria
+      let dbEvents = await query;
+      
+      // Filter out draft events that don't belong to the current user
+      dbEvents = dbEvents.filter(event => {
+        // If the event is not a draft, or if it's a draft created by the current user, include it
+        return !event.isDraft || (event.isDraft && event.creatorId === currentUserId);
+      });
+      
+      // Sort events by date
+      dbEvents.sort((a, b) => {
+        const dateA = new Date(a.date).getTime();
+        const dateB = new Date(b.date).getTime();
+        return dateA - dateB;
+      });
 
-      filteredEvents.sort((a, b) =>
-        new Date(a.date).getTime() - new Date(b.date).getTime()
-      );
+      // If we have no events in the database yet during development, fall back to mock data
+      if (dbEvents.length === 0) {
+        console.log("No events found in database, using mock data");
+        let mockEvents = location && location !== 'all'
+          ? MOCK_EVENTS[location as string] || []
+          : Object.values(MOCK_EVENTS).flat();
 
-      res.json(filteredEvents);
+        mockEvents.sort((a, b) =>
+          new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+        
+        return res.json(mockEvents);
+      }
+
+      console.log(`Found ${dbEvents.length} events in database`);
+      res.json(dbEvents);
     } catch (error) {
       console.error("Error fetching events:", error);
       res.status(500).json({ error: "Failed to fetch events" });
@@ -1016,14 +1071,36 @@ export function registerRoutes(app: express.Application): { app: express.Applica
   app.get("/api/events/:id", async (req, res) => {
     try {
       const { id } = req.params;
+      const eventId = parseInt(id);
+      const currentUserId = req.user?.id;
+      
+      // Try to get event from the database
+      const dbEvent = await db.select()
+        .from(events)
+        .where(eq(events.id, eventId))
+        .limit(1);
+      
+      if (dbEvent && dbEvent.length > 0) {
+        const event = dbEvent[0];
+        
+        // Check if the event is a draft and if the current user is the creator
+        if (event.isDraft && event.creatorId !== currentUserId) {
+          return res.status(403).json({ error: "You don't have access to this draft event" });
+        }
+        
+        console.log("Found event in database:", event.title);
+        return res.json(event);
+      }
+      
+      // If not found in database, fall back to mock data during development
       const allEvents = Object.values(MOCK_EVENTS).flat();
-      const event = allEvents.find(e => e.id === parseInt(id));
+      const mockEvent = allEvents.find(e => e.id === eventId);
 
-      if (!event) {
+      if (!mockEvent) {
         return res.status(404).json({ error: "Event not found" });
       }
 
-      res.json(event);
+      res.json(mockEvent);
     } catch (error) {
       console.error("Error fetching event:", error);
       res.status(500).json({ error: "Failed to fetch event" });
@@ -1032,16 +1109,40 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
   app.post("/api/events", upload.single('image'), async (req, res) => {
     try {
+      const currentUser = req.user;
+      
+      if (!currentUser) {
+        return res.status(401).json({ error: "You must be logged in to create events" });
+      }
+      
+      // Parse the incoming form data
       const eventData = {
-        ...req.body,
-        image: req.file ? `/uploads/${req.file.filename}` : getEventImage(req.body.category),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        attendingUsers: [],
-        interestedUsers: []
+        title: req.body.title,
+        description: req.body.description,
+        location: req.body.location,
+        category: req.body.category || 'Social',
+        capacity: parseInt(req.body.capacity || '0'),
+        price: parseFloat(req.body.price || '0'),
+        date: new Date(req.body.date || new Date()),
+        tags: req.body.tags ? JSON.parse(req.body.tags) : [],
+        image: req.file ? `/uploads/${req.file.filename}` : getEventImage(req.body.category || 'Social'),
+        creatorId: currentUser.id,
+        isDraft: req.body.isDraft === 'true',
+        createdAt: new Date(),
+        city: req.body.city || req.body.location || 'Mexico City',
       };
-
-      res.json(eventData);
+      
+      console.log(`Creating new ${eventData.isDraft ? 'draft' : 'published'} event:`, eventData.title);
+      
+      // Save the event to the database
+      const result = await db.insert(events).values(eventData).returning();
+      
+      if (result && result.length > 0) {
+        console.log(`Event saved to database with ID: ${result[0].id}`);
+        return res.json(result[0]);
+      } else {
+        throw new Error("Failed to save event to database");
+      }
     } catch (error) {
       console.error("Error creating event:", error);
       res.status(500).json({ error: "Failed to create event" });
