@@ -832,11 +832,18 @@ async function checkAuthentication(req: Request, res: Response) {
   const headerSessionId = req.headers['x-session-id'] as string;
   
   // Also check for session ID in cookies as a fallback
-  const cookieSessionId = req.cookies?.sessionId;
+  const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
 
   // Use header session ID first, then fall back to cookie
   const sessionId = headerSessionId || cookieSessionId;
   console.log("Session ID in /api/auth/check:", sessionId);
+  
+  // Debug session ID sources
+  console.log("Auth check session sources:", {
+    fromHeader: headerSessionId ? "yes" : "no",
+    fromCookie: cookieSessionId ? "yes" : "no",
+    finalSessionId: sessionId
+  });
 
   // First check if user is authenticated through passport session
   if (req.isAuthenticated() && req.user) {
@@ -1152,10 +1159,16 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
   app.post("/api/events", upload.single('image'), async (req, res) => {
     try {
-      // Get session ID from header
-      const sessionId = req.headers['x-session-id'] as string;
+      // Get session ID from all possible sources
+      const headerSessionId = req.headers['x-session-id'] as string;
+      const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
+      
+      // Use the first available session ID
+      const sessionId = headerSessionId || cookieSessionId;
+      console.log("Event creation using session ID:", sessionId);
       
       if (!sessionId) {
+        console.log("No session ID provided for event creation");
         return res.status(401).json({ error: "Authentication required" });
       }
 
@@ -1372,22 +1385,59 @@ export function registerRoutes(app: express.Application): { app: express.Applica
     path: '/ws'
   });
   
-  // Add authentication check endpoint - also check X-Session-ID header
-  app.get('/api/auth/check', (req, res) => {
-    // First try the X-Session-ID header if available
-    const sessionId = req.headers['x-session-id'] as string;
-    if (sessionId) {
-      req.headers['x-session-id'] = sessionId;
+  // Add authentication check endpoint that specifically looks for the session ID from various sources
+  app.get('/api/auth/check', async (req, res) => {
+    try {
+      // Check all possible sources for the session ID
+      const headerSessionId = req.headers['x-session-id'] as string;
+      const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
+      
+      // Also check localStorage - Passport may store it in 'maly_session_id'
+      console.log("Looking for session ID in request");
+      
+      // Use the first available session ID
+      const sessionId = headerSessionId || cookieSessionId;
+      console.log("Auth check using session ID:", sessionId);
+      
+      // If we don't have a session ID, use the regular auth flow
+      if (!sessionId) {
+        console.log("No session ID found, falling back to standard auth check");
+        return checkAuthentication(req, res);
+      }
+      
+      // Look up session directly if we have a session ID
+      const sessionQuery = await db.select().from(sessions).where(eq(sessions.id, sessionId));
+      
+      if (sessionQuery.length > 0 && sessionQuery[0].userId) {
+        // Get the user info from the database
+        const userId = sessionQuery[0].userId;
+        console.log("Found session in database with user ID:", userId);
+        
+        const userQuery = await db.select().from(users).where(eq(users.id, userId));
+        
+        if (userQuery.length > 0) {
+          const user = userQuery[0];
+          console.log("Auth check: User authenticated via session ID directly:", user.username);
+          
+          // Remove sensitive information
+          const { password, ...userWithoutPassword } = user as any;
+          
+          return res.json({
+            authenticated: true,
+            user: userWithoutPassword
+          });
+        }
+      }
+      
+      // Fall back to the standard authentication check if session lookup failed
+      return checkAuthentication(req, res);
+    } catch (error) {
+      console.error("Error in auth check endpoint:", error);
+      return res.status(500).json({
+        authenticated: false,
+        error: "Server error during authentication check"
+      });
     }
-    
-    // Always check session ID from storage
-    const storedSessionId = req.cookies?.sessionId;
-    if (storedSessionId && !sessionId) {
-      req.headers['x-session-id'] = storedSessionId;
-    }
-    
-    // Continue to the actual auth check
-    checkAuthentication(req, res);
   });
   
   // Add endpoint to get user by session ID

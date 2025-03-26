@@ -125,7 +125,13 @@ export function useUser() {
         'Pragma': 'no-cache'
       };
 
-      if (storedSessionId) {
+      // Always include the session ID if available - use maly_session_id as the key
+      const malySessionId = localStorage.getItem('maly_session_id');
+      if (malySessionId) {
+        console.log("Including maly_session_id in auth check:", malySessionId.substring(0, 5) + '...');
+        extraHeaders['X-Session-ID'] = malySessionId;
+      } else if (storedSessionId) {
+        console.log("Including storedSessionId in auth check:", storedSessionId.substring(0, 5) + '...');
         extraHeaders['X-Session-ID'] = storedSessionId;
       }
 
