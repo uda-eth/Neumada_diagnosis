@@ -1146,35 +1146,34 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
   app.post("/api/events", upload.single('image'), async (req, res) => {
     try {
-      // First check if user is in session (traditional method)
-      let currentUser = req.user;
+      // Get session ID from header
+      const sessionId = req.headers['x-session-id'] as string;
       
-      // If not found in session, check for X-Session-ID header
-      if (!currentUser) {
-        const sessionId = req.headers['x-session-id'] as string;
-        console.log("Received custom session ID header:", sessionId ? "yes" : "no");
-        
-        if (sessionId) {
-          // Try to find the user with the provided session ID
-          try {
-            // Find the user ID in the session
-            const sessionQuery = await db.select().from(sessions).where(eq(sessions.id, sessionId));
-            
-            if (sessionQuery.length > 0 && sessionQuery[0].userId) {
-              // Find the user by ID
-              const userId = sessionQuery[0].userId;
-              const userQuery = await db.select().from(users).where(eq(users.id, userId));
-              
-              if (userQuery.length > 0) {
-                currentUser = userQuery[0];
-                console.log("User authenticated via X-Session-ID header:", currentUser.username);
-              }
-            }
-          } catch (err) {
-            console.error("Error finding user by session ID:", err);
-          }
-        }
+      if (!sessionId) {
+        return res.status(401).json({ error: "Authentication required" });
       }
+
+      // Find session and associated user
+      const [session] = await db.select()
+        .from(sessions)
+        .where(eq(sessions.id, sessionId))
+        .limit(1);
+
+      if (!session?.userId) {
+        return res.status(401).json({ error: "Invalid session" });
+      }
+
+      // Get user details
+      const [currentUser] = await db.select()
+        .from(users)
+        .where(eq(users.id, session.userId))
+        .limit(1);
+
+      if (!currentUser) {
+        return res.status(401).json({ error: "User not found" });
+      }
+
+      console.log("User authenticated for event creation:", currentUser.username);
       
       // Final authentication check
       if (!currentUser) {
@@ -1226,14 +1225,17 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         price: price,
         date: new Date(req.body.date || new Date()),
         tags: tags,
-        image: req.file ? `/uploads/${req.file.filename}` : getEventImage(req.body.category || 'Social'),
+        image: req.file ? `/uploads/${req.file.filename}` : null,
+        image_url: !req.file ? getEventImage(req.body.category || 'Social') : null,
         creatorId: currentUser.id,
         isDraft: req.body.isDraft === 'true',
         isPrivate: req.body.isPrivate === 'true',
         createdAt: new Date(),
         city: req.body.city || req.body.location || 'Mexico City',
         attendingCount: 0,
-        interestedCount: 0
+        interestedCount: 0,
+        stripeProductId: null,
+        stripePriceId: null
       };
       
       console.log(`Creating new ${eventData.isDraft ? 'draft' : 'published'} event:`, eventData.title);
