@@ -260,21 +260,11 @@ export default function EventPage() {
               <p className="text-sm text-white/60">Price</p>
               <p className="text-xl font-semibold">${event.price || '0'}</p>
             </div>
-            <PaymentDialog
+            <CheckoutButton 
               eventId={event.id}
-              eventTitle={event.title}
-              eventDate={new Date(event.date)}
-              eventImage={event.image || undefined}
               price={event.price || 0}
-              capacity={event.capacity || 50}
-            >
-              <Button 
-                className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
-              >
-                <CreditCard className="mr-2 h-4 w-4" />
-                Get Tickets
-              </Button>
-            </PaymentDialog>
+              className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
+            />
           </div>
         </div>
 

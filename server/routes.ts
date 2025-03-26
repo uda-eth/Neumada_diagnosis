@@ -1262,10 +1262,18 @@ export function registerRoutes(app: express.Application): { app: express.Applica
   // Stripe payment routes
   app.post('/api/checkout/create-session', isAuthenticated, async (req: Request, res: Response) => {
     try {
+      console.log('Checkout session creation request received:', { 
+        body: req.body,
+        user: req.user,
+        headers: req.headers,
+        isAuthenticated: !!req.user
+      });
+      
       const { eventId, quantity = 1 } = req.body;
       const userId = req.user?.id;
       
       if (!userId) {
+        console.log('User not authenticated for checkout');
         return res.status(401).json({ error: 'You must be logged in to purchase tickets' });
       }
       
