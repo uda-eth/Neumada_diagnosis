@@ -172,8 +172,8 @@ export default function CreateEventPage() {
       // Make the API call with credentials
       console.log("Submitting event with isDraft =", draft);
       
-      // Get the sessionId from localStorage
-      const sessionId = localStorage.getItem('sessionId');
+      // Get the sessionId from localStorage - using the correct key 'maly_session_id'
+      const sessionId = localStorage.getItem('maly_session_id');
       console.log("Using sessionId for authentication:", sessionId ? "yes" : "no");
       
       const response = await fetch('/api/events', {

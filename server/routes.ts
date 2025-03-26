@@ -828,8 +828,14 @@ function isAuthenticated(req: Request, res: Response, next: Function) {
 
 // No redirect middleware - just returns authentication status
 async function checkAuthentication(req: Request, res: Response) {
-  // Log diagnostic info
-  const sessionId = req.headers['x-session-id'] as string;
+  // Check for session ID in headers (from the X-Session-ID header)
+  const headerSessionId = req.headers['x-session-id'] as string;
+  
+  // Also check for session ID in cookies as a fallback
+  const cookieSessionId = req.cookies?.sessionId;
+
+  // Use header session ID first, then fall back to cookie
+  const sessionId = headerSessionId || cookieSessionId;
   console.log("Session ID in /api/auth/check:", sessionId);
 
   // First check if user is authenticated through passport session
@@ -1366,8 +1372,23 @@ export function registerRoutes(app: express.Application): { app: express.Applica
     path: '/ws'
   });
   
-  // Add authentication check endpoint
-  app.get('/api/auth/check', checkAuthentication);
+  // Add authentication check endpoint - also check X-Session-ID header
+  app.get('/api/auth/check', (req, res) => {
+    // First try the X-Session-ID header if available
+    const sessionId = req.headers['x-session-id'] as string;
+    if (sessionId) {
+      req.headers['x-session-id'] = sessionId;
+    }
+    
+    // Always check session ID from storage
+    const storedSessionId = req.cookies?.sessionId;
+    if (storedSessionId && !sessionId) {
+      req.headers['x-session-id'] = storedSessionId;
+    }
+    
+    // Continue to the actual auth check
+    checkAuthentication(req, res);
+  });
   
   // Add endpoint to get user by session ID
   app.get('/api/user-by-session', async (req: Request, res: Response) => {

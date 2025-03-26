@@ -61,12 +61,16 @@ function AppContent() {
       // No user in client state, check server-side auth status
       try {
         console.log("Checking auth status from server...");
+        // Get the sessionId from localStorage
+        const sessionId = localStorage.getItem('maly_session_id');
+        
         const response = await fetch('/api/auth/check', { 
           credentials: 'include',
           cache: 'no-store', // Ensure we don't use cached results
           headers: { 
             'Cache-Control': 'no-store, no-cache, must-revalidate, private',
-            'Pragma': 'no-cache'
+            'Pragma': 'no-cache',
+            'X-Session-ID': sessionId || '' // Include the session ID in the header
           }
         });
         
