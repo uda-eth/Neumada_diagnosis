@@ -79,6 +79,8 @@ const interests = [
   "Fashion"
 ];
 
+import { useUser } from "@/hooks/use-user";
+
 const moods = [
   "Dating",
   "Networking",
