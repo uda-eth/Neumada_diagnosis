@@ -80,13 +80,17 @@ const interests = [
 ];
 
 import { useUser } from "@/hooks/use-user";
+import useConnections from "@/hooks/use-connections";
 
-const moods = [
+
+const moods2 = [
   "Dating",
+  "Friendship",
   "Networking",
-  "Parties",
-  "Adventure",
-  "Dining Out"
+  "Business",
+  "Events",
+  "Travel",
+  "Local",
 ];
 
 export function ConnectPage() {
@@ -96,33 +100,33 @@ export function ConnectPage() {
   const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
   const [isFiltersVisible, setIsFiltersVisible] = useState(false);
   const { toast } = useToast();
-const { sendRequest, connections } = useConnections(currentUser?.id || 0);
-
-const handleConnect = async (userId: number) => {
-  try {
-    await sendRequest(userId);
-    toast({
-      title: "Connection request sent",
-      description: "Your connection request has been sent successfully",
-    });
-  } catch (error) {
-    toast({
-      title: "Error",
-      description: "Failed to send connection request",
-      variant: "destructive",
-    });
-  }
-};
-
-const isConnected = (userId: number) => {
-  return connections.some(conn => 
-    (conn.requesterId === userId && conn.recipientId === currentUser?.id) ||
-    (conn.requesterId === currentUser?.id && conn.recipientId === userId)
-  );
-};
-
-  // Fetch real users from the API
   const { user: currentUser } = useUser();
+  const { sendRequest, connections } = useConnections(currentUser?.id || 0);
+
+
+  const handleConnect = async (userId: number) => {
+    try {
+      await sendRequest(userId);
+      toast({
+        title: "Connection request sent",
+        description: "Your connection request has been sent successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send connection request",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const isConnected = (userId: number) => {
+    return connections.some(conn =>
+      (conn.requesterId === userId && conn.recipientId === currentUser?.id) ||
+      (conn.requesterId === currentUser?.id && conn.recipientId === userId)
+    );
+  };
+
   const {
     data: users,
     isLoading,
@@ -131,9 +135,8 @@ const isConnected = (userId: number) => {
     queryKey: ['users', selectedCity, selectedInterests, selectedMoods, currentUser?.id],
     enabled: !!currentUser?.id,
     queryFn: async () => {
-      // Build query parameters
       const params = new URLSearchParams();
-      
+
       if (selectedCity !== 'all') {
         params.append('city', selectedCity);
       }
@@ -141,21 +144,21 @@ const isConnected = (userId: number) => {
       if (currentUser?.id) {
         params.append('currentUserId', currentUser.id.toString());
       }
-      
+
       selectedInterests.forEach(interest => {
         params.append('interests[]', interest);
       });
-      
+
       selectedMoods.forEach(mood => {
         params.append('moods[]', mood);
       });
-      
+
       const response = await fetch(`/api/users/browse?${params.toString()}`);
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch users');
       }
-      
+
       return response.json();
     }
   });
@@ -174,12 +177,11 @@ const isConnected = (userId: number) => {
     }
   }, [error, toast]);
 
-  // Filter the user results client-side for search terms
   const filteredUsers = users?.filter(user => {
-    const matchesSearch = !searchTerm || 
+    const matchesSearch = !searchTerm ||
       (user.fullName && user.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (user.username && user.username.toLowerCase().includes(searchTerm.toLowerCase()));
-    
+
     return matchesSearch;
   }) || [];
 
@@ -252,11 +254,11 @@ const isConnected = (userId: number) => {
           <div className="space-y-2">
             <h3 className="text-sm font-medium">Current Mood</h3>
             <div className="flex flex-wrap gap-2">
-              {moods.map((mood) => (
+              {moods2.map((mood) => (
                 <Badge
                   key={mood}
                   variant={selectedMoods.includes(mood) ? "default" : "outline"}
-                  className={`cursor-pointer ${selectedMoods.includes(mood) ? moodStyles[mood as keyof typeof moodStyles] : ''}`}
+                  className={`cursor-pointer ${selectedMoods.includes(mood) ? moodStyles[mood as keyof typeof moodStyles] || '' : ''}`}
                   onClick={() => toggleFilter(mood, 'moods')}
                 >
                   {mood}
@@ -269,7 +271,6 @@ const isConnected = (userId: number) => {
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 auto-rows-fr">
         {isLoading ? (
-          // Loading skeletons
           Array(6).fill(0).map((_, index) => (
             <Card key={index} className="overflow-hidden h-full">
               <CardContent className="p-0">
@@ -291,7 +292,6 @@ const isConnected = (userId: number) => {
             </Card>
           ))
         ) : filteredUsers.length > 0 ? (
-          // Real users from database
           filteredUsers.map((user) => (
             <Link key={user.id} href={`/profile/${user.username}`}>
               <Card className="overflow-hidden hover:bg-accent/5 transition-colors cursor-pointer group h-full">
@@ -362,7 +362,6 @@ const isConnected = (userId: number) => {
             </Link>
           ))
         ) : (
-          // No users found
           <div className="col-span-3 py-12 text-center">
             <p className="text-muted-foreground">No users found matching your criteria.</p>
             <p className="text-sm mt-2">Try adjusting your filters or search terms.</p>
@@ -386,30 +385,3 @@ const isConnected = (userId: number) => {
 }
 
 export default ConnectPage;
-  {/* Add this where you render your user cards */}
-  {users?.map((user) => (
-    <div key={user.id} className="p-4 border rounded-lg">
-      <img src={user.profileImage || '/default-avatar.png'} alt={user.username} className="w-20 h-20 rounded-full mb-2" />
-      <h3 className="font-semibold">{user.fullName}</h3>
-      <p className="text-sm text-gray-600">{user.location}</p>
-      {!isConnected(user.id) && user.id !== currentUser?.id && (
-        <Button 
-          onClick={() => handleConnect(user.id)}
-          className="mt-2"
-          size="sm"
-        >
-          Connect
-        </Button>
-      )}
-      {isConnected(user.id) && (
-        <Button 
-          disabled
-          className="mt-2"
-          size="sm"
-          variant="outline"
-        >
-          Connected
-        </Button>
-      )}
-    </div>
-  ))}
