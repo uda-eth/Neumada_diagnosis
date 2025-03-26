@@ -175,16 +175,14 @@ export const messageRelations = relations(messages, ({ one }) => ({
   }),
 }));
 
-export const userConnectionsRelations = relations(userConnections, ({ one }) => ({
-  follower: one(users, {
-    fields: [userConnections.followerId],
+export const connectionsRelations = relations(connections, ({ one }) => ({
+  requester: one(users, {
+    fields: [connections.requesterId],
     references: [users.id],
-    relationName: "following",
   }),
-  following: one(users, {
-    fields: [userConnections.followingId],
+  recipient: one(users, {
+    fields: [connections.recipientId],
     references: [users.id],
-    relationName: "followers",
   }),
 }));
 
