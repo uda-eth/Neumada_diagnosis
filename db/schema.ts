@@ -85,7 +85,7 @@ export const messages = pgTable("messages", {
 });
 
 // New table for user connections/follows
-export const connections = pgTable("connections", {
+export const userConnections = pgTable("user_connections", {
   id: serial("id").primaryKey(),
   requesterId: integer("requester_id").references(() => users.id).notNull(),
   recipientId: integer("recipient_id").references(() => users.id).notNull(),
@@ -100,6 +100,9 @@ export const connections = pgTable("connections", {
     }
   };
 });
+
+// Keep the old connections table for backward compatibility
+export const connections = userConnections;
 
 // Table for invitations/referrals
 export const invitations = pgTable("invitations", {
@@ -135,8 +138,16 @@ export const userRelations = relations(users, ({ many, one }) => ({
   participatingEvents: many(eventParticipants),
   sentMessages: many(messages, { relationName: "sentMessages" }),
   receivedMessages: many(messages, { relationName: "receivedMessages" }),
-  followers: many(userConnections, { relationName: "followers" }),
-  following: many(userConnections, { relationName: "following" }),
+  followers: many(userConnections, { 
+    fields: [users.id],
+    references: [userConnections.recipientId],
+    relationName: "followers" 
+  }),
+  following: many(userConnections, { 
+    fields: [users.id],
+    references: [userConnections.requesterId],
+    relationName: "following" 
+  }),
   sentInvitations: many(invitations, { relationName: "sentInvitations" }),
   referredBy: one(users, {
     fields: [users.referredBy],
