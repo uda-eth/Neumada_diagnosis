@@ -93,6 +93,13 @@ export function CheckoutButton({ eventId, price, className = '' }: CheckoutButto
         throw new Error(data.error || 'Failed to create checkout session');
       }
 
+      // Redirect to Stripe checkout URL
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
+
       // Redirect to Stripe Checkout
       if (data.url) {
         toast({
