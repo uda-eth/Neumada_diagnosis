@@ -902,10 +902,15 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       const interests = req.query['interests[]'] as string[] | string;
       const moods = req.query['moods[]'] as string[] | string;
       const name = req.query.name as string;
-      const currentUserId = req.user?.id;
+      const currentUserId = req.user?.id || req.query.currentUserId as string;
 
       // Database query to get real users
       let query = db.select().from(users);
+      
+      // Always exclude the current user from results
+      if (currentUserId) {
+        query = query.where(ne(users.id, parseInt(currentUserId.toString())));
+      }
       
       // Don't include the current user in the results
       if (currentUserId) {

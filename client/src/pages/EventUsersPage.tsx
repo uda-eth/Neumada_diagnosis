@@ -41,7 +41,7 @@ export default function EventUsersPage() {
             <div
               key={user.id}
               className="flex items-center gap-4 p-4 rounded-lg border hover:bg-accent/5 cursor-pointer"
-              onClick={() => setLocation(`/profile/${user.name.toLowerCase().replace(/\s+/g, "-")}`)}
+              onClick={() => setLocation(`/profile/${user.username}`)}
             >
               <Avatar className="h-12 w-12">
                 <AvatarImage src={user.image} alt={user.name} />

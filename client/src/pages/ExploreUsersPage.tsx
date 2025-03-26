@@ -47,7 +47,7 @@ export default function ExploreUsersPage() {
             <Card
               key={user.id}
               className="overflow-hidden hover:bg-accent/5 cursor-pointer"
-              onClick={() => setLocation(`/profile/${user.name.toLowerCase().replace(/\s+/g, "-")}`)}
+              onClick={() => setLocation(`/profile/${user.username}`)}
             >
               <div className="aspect-square relative">
                 <img

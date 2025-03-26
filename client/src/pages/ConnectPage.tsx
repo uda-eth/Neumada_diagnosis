@@ -79,6 +79,8 @@ const interests = [
   "Fashion"
 ];
 
+import { useUser } from "@/hooks/use-user";
+
 const moods = [
   "Dating",
   "Networking",
@@ -96,18 +98,23 @@ export function ConnectPage() {
   const { toast } = useToast();
 
   // Fetch real users from the API
+  const { user: currentUser } = useUser();
   const {
     data: users,
     isLoading,
     error
   } = useQuery<User[]>({
-    queryKey: ['users', selectedCity, selectedInterests, selectedMoods],
+    queryKey: ['users', selectedCity, selectedInterests, selectedMoods, currentUser?.id],
     queryFn: async () => {
       // Build query parameters
       const params = new URLSearchParams();
       
       if (selectedCity !== 'all') {
         params.append('city', selectedCity);
+      }
+
+      if (currentUser?.id) {
+        params.append('currentUserId', currentUser.id.toString());
       }
       
       selectedInterests.forEach(interest => {
