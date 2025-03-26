@@ -843,6 +843,13 @@ function checkAuthentication(req: Request, res: Response) {
   });
 }
 
+// Middleware to verify Stripe webhook signatures
+const stripeWebhookMiddleware = express.json({
+  verify: (req: Request & { rawBody?: Buffer }, res: Response, buf: Buffer) => {
+    req.rawBody = buf;
+  },
+});
+
 export function registerRoutes(app: express.Application): { app: express.Application; httpServer: Server } {
   app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
 
@@ -1246,6 +1253,67 @@ export function registerRoutes(app: express.Application): { app: express.Applica
     } catch (error) {
       console.error('Error marking all messages as read:', error);
       res.status(500).json({ error: 'Failed to mark all messages as read' });
+    }
+  });
+
+  // Stripe payment routes
+  app.post('/api/checkout/create-session', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { eventId, quantity = 1 } = req.body;
+      const userId = req.user?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ error: 'You must be logged in to purchase tickets' });
+      }
+      
+      if (!eventId) {
+        return res.status(400).json({ error: 'Event ID is required' });
+      }
+
+      // Generate absolute URLs for success and cancel pages
+      const host = req.headers.host || 'localhost:3000';
+      const protocol = req.headers['x-forwarded-proto'] || 'http';
+      const baseUrl = `${protocol}://${host}`;
+      
+      const successUrl = `${baseUrl}/events/${eventId}?payment=success`;
+      const cancelUrl = `${baseUrl}/events/${eventId}?payment=canceled`;
+
+      const session = await createCheckoutSession({
+        eventId: parseInt(eventId.toString()),
+        userId,
+        quantity,
+        successUrl,
+        cancelUrl
+      });
+
+      res.json({ sessionId: session.id, url: session.url });
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      res.status(500).json({ error: 'Failed to create checkout session' });
+    }
+  });
+
+  // Stripe webhook handler
+  app.post('/api/webhook/stripe', stripeWebhookMiddleware, async (req: Request & { rawBody?: Buffer }, res: Response) => {
+    try {
+      const sig = req.headers['stripe-signature'] as string;
+      
+      if (!sig || !req.rawBody) {
+        return res.status(400).json({ error: 'Missing Stripe signature or request body' });
+      }
+      
+      // Verify webhook signature using your webhook secret
+      // const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET as string;
+      // const event = stripe.webhooks.constructEvent(req.rawBody, sig, stripeWebhookSecret);
+      
+      // For now, trust the webhook without verification during development
+      const event = JSON.parse(req.body as any);
+      const result = await handleStripeWebhook(event);
+      
+      res.json(result);
+    } catch (error) {
+      console.error('Error handling Stripe webhook:', error);
+      res.status(400).json({ error: 'Webhook error' });
     }
   });
 

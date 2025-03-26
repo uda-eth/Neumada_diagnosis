@@ -1,13 +1,16 @@
-import { useParams, useLocation } from "wouter";
+import { useParams, useLocation, useSearch } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useUser } from "@/hooks/use-user";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, MessageSquare, UserPlus2 } from "lucide-react";
+import { ChevronLeft, MessageSquare, UserPlus2, CreditCard } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTranslation } from "@/lib/translations";
 import { z } from "zod";
+import { PaymentDialog } from "@/components/ui/payment-dialog";
+import { CheckoutButton } from "@/components/ui/checkout-button";
+import { useEffect } from "react";
 
 // Define the Event type with all fields
 const EventSchema = z.object({
@@ -43,9 +46,28 @@ const getFirstName = (fullName: string) => fullName?.split(' ')[0] || '';
 export default function EventPage() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
+  const search = useSearch();
+  const paymentStatus = new URLSearchParams(search).get('payment');
   const { user } = useUser();
   const { toast } = useToast();
   const { t } = useTranslation();
+  
+  // Show toast when payment is completed or canceled
+  useEffect(() => {
+    if (paymentStatus === 'success') {
+      toast({
+        title: 'Payment successful!',
+        description: 'Your ticket purchase was completed successfully.',
+        variant: 'default',
+      });
+    } else if (paymentStatus === 'canceled') {
+      toast({
+        title: 'Payment canceled',
+        description: 'Your ticket purchase was canceled.',
+        variant: 'destructive',
+      });
+    }
+  }, [paymentStatus, toast]);
 
   const { data: event, isLoading } = useQuery<Event>({
     queryKey: [`/api/events/${id}`],
@@ -236,14 +258,23 @@ export default function EventPage() {
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <p className="text-sm text-white/60">Price</p>
-              <p className="text-xl font-semibold">${event.price}</p>
+              <p className="text-xl font-semibold">${event.price || '0'}</p>
             </div>
-            <Button 
-              className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
-              onClick={() => setLocation(`/event/${event.id}/register`)}
+            <PaymentDialog
+              eventId={event.id}
+              eventTitle={event.title}
+              eventDate={new Date(event.date)}
+              eventImage={event.image || undefined}
+              price={event.price || 0}
+              capacity={event.capacity || 50}
             >
-              Get Tickets
-            </Button>
+              <Button 
+                className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
+              >
+                <CreditCard className="mr-2 h-4 w-4" />
+                Get Tickets
+              </Button>
+            </PaymentDialog>
           </div>
         </div>
 
@@ -301,13 +332,21 @@ export default function EventPage() {
       {user && user.id !== event.creatorId && (
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-black/80 backdrop-blur-lg border-t border-white/10">
           <div className="container mx-auto max-w-2xl">
-            <Button
-              className="w-full h-12"
-              onClick={() => participateMutation.mutate("attending")}
-              disabled={participateMutation.isPending}
-            >
-              {isPrivateEvent ? "Request Access" : `Buy Tickets • $${event.price}`}
-            </Button>
+            {isPrivateEvent ? (
+              <Button
+                className="w-full h-12"
+                onClick={() => participateMutation.mutate("attending")}
+                disabled={participateMutation.isPending}
+              >
+                Request Access
+              </Button>
+            ) : (
+              <CheckoutButton 
+                eventId={event.id} 
+                price={event.price || 0} 
+                className="h-12"
+              />
+            )}
           </div>
         </div>
       )}
