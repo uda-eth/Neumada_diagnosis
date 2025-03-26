@@ -1022,6 +1022,8 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       const { location } = req.query;
       const currentUserId = req.user?.id;
 
+      console.log("Fetching events with params:", { location, currentUserId });
+      
       // Query events from the database
       let query = db.select().from(events);
       
@@ -1032,6 +1034,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       
       // Get all events that match the criteria
       let dbEvents = await query;
+      console.log(`Found ${dbEvents.length} events in database before filtering`);
       
       // Filter out draft events that don't belong to the current user
       dbEvents = dbEvents.filter(event => {
@@ -1039,32 +1042,30 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         return !event.isDraft || (event.isDraft && event.creatorId === currentUserId);
       });
       
-      // Sort events by date
+      console.log(`After filtering drafts, ${dbEvents.length} events remain`);
+      
+      // Sort events by date (most recent first)
       dbEvents.sort((a, b) => {
         const dateA = new Date(a.date).getTime();
         const dateB = new Date(b.date).getTime();
-        return dateA - dateB;
+        return dateB - dateA; // Descending order (most recent first)
       });
 
-      // If we have no events in the database yet during development, fall back to mock data
+      // Check if we found any events
       if (dbEvents.length === 0) {
-        console.log("No events found in database, using mock data");
-        let mockEvents = location && location !== 'all'
-          ? MOCK_EVENTS[location as string] || []
-          : Object.values(MOCK_EVENTS).flat();
-
-        mockEvents.sort((a, b) =>
-          new Date(a.date).getTime() - new Date(b.date).getTime()
-        );
-        
-        return res.json(mockEvents);
+        console.log("No events found in database, using mock data temporarily");
+        // Return empty array instead of falling back to mock data
+        return res.json([]);
       }
 
-      console.log(`Found ${dbEvents.length} events in database`);
-      res.json(dbEvents);
+      console.log(`Returning ${dbEvents.length} events from database`);
+      return res.json(dbEvents);
     } catch (error) {
       console.error("Error fetching events:", error);
-      res.status(500).json({ error: "Failed to fetch events" });
+      res.status(500).json({ 
+        error: "Failed to fetch events",
+        details: error.message
+      });
     }
   });
 
@@ -1109,43 +1110,88 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
   app.post("/api/events", upload.single('image'), async (req, res) => {
     try {
+      // Check authentication
       const currentUser = req.user;
       
       if (!currentUser) {
         return res.status(401).json({ error: "You must be logged in to create events" });
       }
       
-      // Parse the incoming form data
+      console.log("Event creation request received from user:", currentUser.username);
+      console.log("Form data:", req.body);
+      console.log("File:", req.file);
+      
+      // Required field validation
+      if (!req.body.title || !req.body.description || !req.body.location) {
+        return res.status(400).json({ 
+          error: "Missing required fields",
+          details: "Title, description, and location are required"
+        });
+      }
+      
+      // Parse the incoming form data with proper validation
+      let tags = [];
+      try {
+        if (req.body.tags) {
+          tags = JSON.parse(req.body.tags);
+        }
+      } catch (e) {
+        console.warn("Failed to parse tags JSON:", e);
+        // Default to empty array if parsing fails
+      }
+      
+      // Process price (making sure it's a number)
+      let price = 0;
+      try {
+        price = parseFloat(req.body.price || '0');
+        if (isNaN(price)) price = 0;
+      } catch (e) {
+        console.warn("Invalid price format:", e);
+        price = 0;
+      }
+      
+      // Create event data object with all required fields from schema
       const eventData = {
         title: req.body.title,
         description: req.body.description,
         location: req.body.location,
         category: req.body.category || 'Social',
-        capacity: parseInt(req.body.capacity || '0'),
-        price: parseFloat(req.body.price || '0'),
+        ticketType: req.body.price && parseFloat(req.body.price) > 0 ? 'paid' : 'free',
+        capacity: parseInt(req.body.capacity || '10'),
+        price: price,
         date: new Date(req.body.date || new Date()),
-        tags: req.body.tags ? JSON.parse(req.body.tags) : [],
+        tags: tags,
         image: req.file ? `/uploads/${req.file.filename}` : getEventImage(req.body.category || 'Social'),
         creatorId: currentUser.id,
         isDraft: req.body.isDraft === 'true',
+        isPrivate: req.body.isPrivate === 'true',
         createdAt: new Date(),
         city: req.body.city || req.body.location || 'Mexico City',
+        attendingCount: 0,
+        interestedCount: 0
       };
       
       console.log(`Creating new ${eventData.isDraft ? 'draft' : 'published'} event:`, eventData.title);
       
-      // Save the event to the database
+      // Insert the event into the database
       const result = await db.insert(events).values(eventData).returning();
       
       if (result && result.length > 0) {
-        console.log(`Event saved to database with ID: ${result[0].id}`);
-        return res.json(result[0]);
+        console.log(`Event successfully saved to database with ID: ${result[0].id}`);
+        return res.status(201).json({
+          success: true,
+          message: eventData.isDraft ? "Event saved as draft" : "Event published successfully",
+          event: result[0]
+        });
       } else {
-        throw new Error("Failed to save event to database");
+        throw new Error("Database operation did not return an event ID");
       }
     } catch (error) {
       console.error("Error creating event:", error);
-      res.status(500).json({ error: "Failed to create event" });
+      res.status(500).json({ 
+        error: "Failed to create event", 
+        details: error.message || "Unknown database error" 
+      });
     }
   });
 
