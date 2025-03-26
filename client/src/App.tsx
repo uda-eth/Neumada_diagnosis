@@ -101,7 +101,6 @@ function AppContent() {
       {showLayout ? (
         <Layout>
           <Switch>
-            <Route path="/" component={HomePage} />
             <Route path="/event/onda-linda-festival" component={OndaLindaFestivalPage} />
             <Route path="/event/:id" component={EventPage} />
             <Route path="/profile/:username" component={ProfilePage} />
@@ -118,6 +117,7 @@ function AppContent() {
             <Route path="/translator" component={TranslatorPage} />
             <Route path="/profile-setup" component={ProfileGeneratorPage} />
             <Route path="/replit-profile" component={ReplitProfilePage} />
+            <Route path="/" component={HomePage} />
             <Route path="/:rest*">
               {() => <div className="text-center p-8">404 - Page Not Found</div>}
             </Route>
