@@ -469,18 +469,19 @@ export function setupAuth(app: Express) {
             console.log("Storing session ID in database:", sessionId);
             
             // Check if this session already exists in our db
-            const existingSession = await db.select()
+            const existingSessionsResult = await db.select()
               .from(sessions)
               .where(eq(sessions.id, sessionId))
               .limit(1);
               
-            if (existingSession.length === 0) {
+            if (existingSessionsResult.length === 0) {
               // Insert a new session record
               await db.insert(sessions).values({
                 id: sessionId,
                 userId: user.id,
                 expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-                createdAt: new Date()
+                createdAt: new Date(),
+                data: { username: user.username, email: user.email }
               });
               console.log("Session stored in database successfully");
             } else {
@@ -489,7 +490,8 @@ export function setupAuth(app: Express) {
                 .set({
                   userId: user.id,
                   expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-                  createdAt: new Date()
+                  updatedAt: new Date(),
+                  data: { username: user.username, email: user.email }
                 })
                 .where(eq(sessions.id, sessionId));
               console.log("Existing session updated in database");
@@ -690,7 +692,7 @@ export function setupAuth(app: Express) {
   });
 
   // Add endpoint for retrieving user by session ID (for webview compatibility)
-  app.get("/api/user-by-session", (req, res) => {
+  app.get("/api/user-by-session", async (req, res) => {
     const sessionId = req.header('X-Session-ID');
     console.log("User by session request for sessionID:", sessionId);
     
@@ -698,51 +700,105 @@ export function setupAuth(app: Express) {
       return res.status(400).send("No session ID provided");
     }
     
-    // Use the session store to look up the session
-    const sessionStore = req.sessionStore as any;
-    
-    if (!sessionStore.get) {
-      console.error("Session store missing get method");
-      return res.status(500).send("Session store error");
-    }
-    
-    // Get session data from store
-    sessionStore.get(sessionId, async (err: any, sessionData: any) => {
-      if (err) {
-        console.error("Error getting session:", err);
-        return res.status(500).send("Error retrieving session");
-      }
+    try {
+      // First, try to find the session in our database
+      const [dbSession] = await db.select()
+        .from(sessions)
+        .where(eq(sessions.id, sessionId))
+        .limit(1);
       
-      if (!sessionData || !sessionData.passport || !sessionData.passport.user) {
-        console.log("No user found in session:", sessionId);
-        return res.status(401).send("Invalid or expired session");
-      }
-      
-      const userId = sessionData.passport.user;
-      console.log("Found user ID in session:", userId);
-      
-      // Get user from database
-      try {
+      if (dbSession && dbSession.userId) {
+        console.log("Found session in database with user ID:", dbSession.userId);
+        
+        // Get user from database using the userId from our sessions table
         const [user] = await db
           .select()
           .from(users)
-          .where(eq(users.id, userId))
+          .where(eq(users.id, dbSession.userId))
           .limit(1);
         
-        if (!user) {
-          return res.status(404).send("User not found");
+        if (user) {
+          console.log("User found by session ID:", user.username);
+          
+          // Return user without sensitive data
+          const { password, ...userWithoutPassword } = user;
+          return res.json(userWithoutPassword);
+        }
+      }
+      
+      // If not found in our DB, try the session store as fallback
+      const sessionStore = req.sessionStore as any;
+      
+      if (!sessionStore.get) {
+        console.error("Session store missing get method");
+        return res.status(401).send("Invalid or expired session");
+      }
+      
+      // Get session data from store
+      sessionStore.get(sessionId, async (err: any, sessionData: any) => {
+        if (err) {
+          console.error("Error getting session:", err);
+          return res.status(500).send("Error retrieving session");
         }
         
-        console.log("User found by session ID:", user.username);
+        if (!sessionData || !sessionData.passport || !sessionData.passport.user) {
+          console.log("No user found in session:", sessionId);
+          return res.status(401).send("Invalid or expired session");
+        }
         
-        // Return user without sensitive data
-        const { password, ...userWithoutPassword } = user;
-        return res.json(userWithoutPassword);
-      } catch (dbError) {
-        console.error("Database error when finding user by session:", dbError);
-        return res.status(500).send("Error finding user");
-      }
-    });
+        const userId = sessionData.passport.user;
+        console.log("Found user ID in session store:", userId);
+        
+        // Get user from database
+        try {
+          const [user] = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, userId))
+            .limit(1);
+          
+          if (!user) {
+            return res.status(404).send("User not found");
+          }
+          
+          console.log("User found by session ID:", user.username);
+          
+          // Save this session in our database for future lookups
+          try {
+            await db.insert(sessions).values({
+              id: sessionId,
+              userId: user.id,
+              expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+              data: { username: user.username, email: user.email },
+              createdAt: new Date()
+            })
+            .onConflictDoUpdate({
+              target: sessions.id,
+              set: {
+                userId: user.id,
+                expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+                updatedAt: new Date(),
+                data: { username: user.username, email: user.email }
+              }
+            });
+            console.log("Session saved to database for future lookups");
+          } catch (saveErr) {
+            console.error("Error saving session to database:", saveErr);
+            // Continue anyway as we can still return the user
+          }
+          
+          // Return user without sensitive data
+          const { password, ...userWithoutPassword } = user;
+          return res.json(userWithoutPassword);
+        } catch (dbError) {
+          console.error("Database error when finding user by session:", dbError);
+          return res.status(500).send("Error finding user");
+        }
+      });
+    } catch (err) {
+      console.error("Error retrieving session by ID:", err);
+      return res.status(500).send("Error processing session");
+    }
   });
   
   // Add endpoint for verifying a cached user exists
