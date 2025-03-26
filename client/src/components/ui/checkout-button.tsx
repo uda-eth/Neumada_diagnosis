@@ -1,24 +1,26 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/lib/hooks/use-user';
+import { useUser } from '@/hooks/use-user';
+import { loadStripe } from '@stripe/stripe-js';
+
+const stripePromise = loadStripe(process.env.STRIPE_PUBLIC_KEY || '');
 
 interface CheckoutButtonProps {
   eventId: number;
-  price: number | string;
-  isFreeEvent?: boolean;
 }
 
-export function CheckoutButton({ eventId, price, isFreeEvent }: CheckoutButtonProps) {
-  const { user } = useUser();
-  const { toast } = useToast();
+export function CheckoutButton({ eventId }: CheckoutButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const { user } = useUser();
 
   const handleCheckout = async () => {
     if (!user) {
       toast({
-        title: "Authentication required",
-        description: "Please sign in to purchase tickets",
+        title: "Not authenticated",
+        description: "Please login to purchase tickets",
+        variant: "destructive"
       });
       return;
     }
@@ -26,13 +28,13 @@ export function CheckoutButton({ eventId, price, isFreeEvent }: CheckoutButtonPr
     setIsLoading(true);
 
     try {
-      // Create checkout session
+      const stripe = await stripePromise;
+      if (!stripe) throw new Error('Stripe failed to initialize');
+
       const response = await fetch('/api/checkout/create-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-username': user.username,
-          'x-session-id': 'temporary-session'
         },
         body: JSON.stringify({
           eventId,
@@ -40,41 +42,26 @@ export function CheckoutButton({ eventId, price, isFreeEvent }: CheckoutButtonPr
         })
       });
 
-      const data = await response.json();
+      const { sessionId } = await response.json();
+      const { error } = await stripe.redirectToCheckout({ sessionId });
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create checkout session');
-      }
-
-      // Redirect to Stripe checkout
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error('No checkout URL returned');
+      if (error) {
+        throw error;
       }
     } catch (error) {
-      console.error('Checkout error:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to process checkout",
-        variant: "destructive",
+        description: "Failed to initiate checkout",
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const buttonText = isFreeEvent 
-    ? 'Register for free' 
-    : `Purchase tickets - ${typeof price === 'number' ? `$${price.toFixed(2)}` : price}`;
-
   return (
-    <Button
-      onClick={handleCheckout}
-      disabled={isLoading}
-      className="w-full"
-    >
-      {isLoading ? "Processing..." : buttonText}
+    <Button onClick={handleCheckout} disabled={isLoading}>
+      {isLoading ? "Loading..." : "Get Tickets"}
     </Button>
   );
 }
