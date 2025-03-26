@@ -73,7 +73,7 @@ export function setupAuth(app: Express) {
   const sessionSecret = process.env.REPL_ID 
     ? `${process.env.REPL_ID}-maly-platform-key-${process.env.REPL_OWNER || 'default'}`
     : "maly-platform-local-development-secret-key";
-  
+
   const sessionSettings: session.SessionOptions = {
     secret: sessionSecret,
     name: "maly_session",
@@ -95,7 +95,7 @@ export function setupAuth(app: Express) {
 
   // Always trust the proxy in Replit environment
   app.set("trust proxy", 1);
-  
+
   // Detect Replit environment 
   const isReplit = !!process.env.REPL_ID;
   const isHTTPS = process.env.HTTPS === 'true';
@@ -118,10 +118,10 @@ export function setupAuth(app: Express) {
     new LocalStrategy(async (usernameOrEmail, password, done) => {
       try {
         console.log("Login attempt for usernameOrEmail:", usernameOrEmail);
-        
+
         // Check if the input is an email (contains @)
         const isEmail = usernameOrEmail.includes('@');
-        
+
         // Search by either username or email
         const [user] = await db
           .select()
@@ -202,7 +202,7 @@ export function setupAuth(app: Express) {
       if (password.length < 6) {
         return res.status(400).send("Password must be at least 6 characters long");
       }
-      
+
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
@@ -219,7 +219,7 @@ export function setupAuth(app: Express) {
       if (existingUsername) {
         return res.status(400).send("Username already exists");
       }
-      
+
       // Check if email already exists
       const [existingEmail] = await db
         .select()
@@ -292,7 +292,7 @@ export function setupAuth(app: Express) {
       next(error);
     }
   });
-  
+
   // Add a direct registration-with-redirect endpoint
   app.post("/api/register-redirect", async (req, res) => {
     try {
@@ -325,7 +325,7 @@ export function setupAuth(app: Express) {
       if (password.length < 6) {
         return res.redirect('/auth?error=Password+too+short');
       }
-      
+
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
@@ -342,7 +342,7 @@ export function setupAuth(app: Express) {
       if (existingUsername) {
         return res.redirect('/auth?error=Username+already+exists');
       }
-      
+
       // Check if email already exists
       const [existingEmail] = await db
         .select()
@@ -416,7 +416,7 @@ export function setupAuth(app: Express) {
               console.error("Session save error during redirect flow:", err);
               return res.redirect('/auth?error=Session+error');
             }
-            
+
             console.log("Registration successful, redirecting to homepage");
             return res.redirect('/');
           });
@@ -455,55 +455,64 @@ export function setupAuth(app: Express) {
           console.error("Login error:", err);
           return next(err);
         }
-        
+
         // Save session explicitly to ensure it's stored before responding
         req.session.save(async (err) => {
           if (err) {
             console.error("Session save error:", err);
             return next(err);
           }
-          
+
           // Store the session ID in our database for header-based authentication
-          try {
-            const sessionId = req.session.id;
-            console.log("Storing session ID in database:", sessionId);
-            
-            // Check if this session already exists in our db
-            const existingSessionsResult = await db.select()
-              .from(sessions)
-              .where(eq(sessions.id, sessionId))
-              .limit(1);
-              
-            if (existingSessionsResult.length === 0) {
-              // Insert a new session record
+            try {
+              const sessionId = req.session.id;
+              console.log("Storing session ID in database:", sessionId);
+
+              // Always create a new session
+              await db.delete(sessions).where(eq(sessions.userId, user.id));
+
               await db.insert(sessions).values({
                 id: sessionId,
                 userId: user.id,
                 expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
                 createdAt: new Date(),
-                data: { username: user.username, email: user.email }
-              });
-              console.log("Session stored in database successfully");
-            } else {
-              // Update the existing session
-              await db.update(sessions)
-                .set({
+                data: { 
+                  username: user.username, 
+                  email: user.email,
+                  lastLogin: new Date().toISOString()
+                }
+              }).onConflictDoUpdate({
+                target: sessions.id,
+                set: {
                   userId: user.id,
-                  expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+                  expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
                   updatedAt: new Date(),
-                  data: { username: user.username, email: user.email }
-                })
-                .where(eq(sessions.id, sessionId));
-              console.log("Existing session updated in database");
+                  data: { 
+                    username: user.username, 
+                    email: user.email,
+                    lastLogin: new Date().toISOString()
+                  }
+                }
+              });
+
+              console.log("Session stored in database successfully");
+
+              // Set cookie with proper settings
+              res.cookie('maly_session', sessionId, {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'strict',
+                maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+              });
+
+            } catch (dbError) {
+              console.error("Error storing session in database:", dbError);
+              return res.status(500).json({ error: "Failed to create session" });
             }
-          } catch (dbError) {
-            console.error("Error storing session in database:", dbError);
-            // Continue even if DB save fails - regular cookie-based auth will still work
-          }
-          
+
           // Sanitize the user object before sending it (remove password)
           const { password, ...userWithoutPassword } = user as any;
-          
+
           console.log("Login successful, session established");
           return res.json({
             user: userWithoutPassword,
@@ -514,7 +523,7 @@ export function setupAuth(app: Express) {
       });
     })(req, res, next);
   });
-  
+
   // Add a direct login-with-redirect endpoint for form submission
   app.post("/api/login-redirect", (req, res, next) => {
     const usernameOrEmail = req.body.username;
@@ -540,16 +549,16 @@ export function setupAuth(app: Express) {
           console.error("Login error during redirect flow:", err);
           return res.redirect('/auth?error=Authentication+failed');
         }
-        
+
         // Save session and redirect
         req.session.save((err) => {
           if (err) {
             console.error("Session save error during redirect flow:", err);
             return res.redirect('/auth?error=Session+error');
           }
-          
+
           console.log("Login successful, redirecting to homepage with session:", req.sessionID);
-          
+
           // Add a timestamp to break browser caching
           const timestamp = Date.now();
           return res.redirect(`/?sessionId=${req.sessionID}&ts=${timestamp}`);
@@ -561,20 +570,20 @@ export function setupAuth(app: Express) {
   app.post("/api/logout", (req, res) => {
     const username = req.user?.username;
     console.log("Logout attempt for user:", username);
-    
+
     req.logout((err) => {
       if (err) {
         console.error("Logout error:", err);
         return res.status(500).send("Logout failed");
       }
-      
+
       // Destroy the session completely for a clean logout
       req.session.destroy((err) => {
         if (err) {
           console.error("Session destroy error:", err);
           // Continue anyway as the user is already logged out
         }
-        
+
         // Clear the cookie on the client with compatible settings
         res.clearCookie('maly_session', {
           path: '/',
@@ -582,46 +591,46 @@ export function setupAuth(app: Express) {
           sameSite: 'none',
           secure: true // Required for sameSite: 'none'
         });
-        
+
         console.log("Logout successful for user:", username);
         res.json({ message: "Logged out successfully" });
       });
     });
   });
-  
+
   // Add a dedicated auth check endpoint
   app.get("/api/auth/check", (req, res) => {
     // Add cache-control headers to prevent caching of auth status
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     res.set('Expires', '-1');
     res.set('Pragma', 'no-cache');
-    
+
     // Force the session to touch to update cookies and expirations
     if (req.session) {
       // @ts-ignore - Custom property for tracking session state
       req.session.initialized = true;
-      
+
       // Force session save to ensure cookie is set
       req.session.save();
     }
-    
+
     // Log session ID for debugging
     console.log("Session ID in /api/auth/check:", req.sessionID);
-    
+
     // Check if user is authenticated
     if (req.isAuthenticated() && req.user) {
       const user = req.user;
       console.log("Auth check: User authenticated:", user.username);
-      
+
       // Update session with timestamp
       if (req.session) {
         // @ts-ignore - Custom property for tracking session state
         req.session.lastAccess = Date.now();
       }
-      
+
       // Return user info without sensitive data
       const { password, ...userWithoutPassword } = user as any;
-      
+
       res.json({
         authenticated: true,
         user: userWithoutPassword,
@@ -639,18 +648,18 @@ export function setupAuth(app: Express) {
   app.get("/api/user", (req, res) => {
     // Log session ID for debugging
     console.log("Session ID in /api/user:", req.sessionID);
-    
+
     // Check authentication directly rather than trying to reload the session
     if (req.isAuthenticated() && req.user) {
       const user = req.user;
       console.log("Authenticated user request:", user.username);
-      
+
       // Sanitize user object to remove sensitive info (like password)
       const { password, ...userWithoutPassword } = user as any;
-      
+
       return res.json(userWithoutPassword);
     }
-    
+
     console.log("Unauthenticated user request");
     res.status(401).send("Not authenticated");
   });
@@ -664,26 +673,26 @@ export function setupAuth(app: Express) {
     try {
       const userId = req.user?.id;
       const updatedFields = req.body;
-      
+
       // Remove sensitive fields that shouldn't be updated directly
       const { password, id, ...safeFields } = updatedFields;
-      
+
       // Process arrays
       if (safeFields.interests && Array.isArray(safeFields.interests)) {
         safeFields.interests = safeFields.interests.length > 0 ? safeFields.interests : null;
       }
-      
+
       if (safeFields.currentMoods && Array.isArray(safeFields.currentMoods)) {
         safeFields.currentMoods = safeFields.currentMoods.length > 0 ? safeFields.currentMoods : null;
       }
-      
+
       // Update the user
       const [updatedUser] = await db
         .update(users)
         .set(safeFields)
         .where(eq(users.id, userId))
         .returning();
-      
+
       res.json(updatedUser);
     } catch (error) {
       console.error("Profile update error:", error);
@@ -695,60 +704,60 @@ export function setupAuth(app: Express) {
   app.get("/api/user-by-session", async (req, res) => {
     const sessionId = req.header('X-Session-ID');
     console.log("User by session request for sessionID:", sessionId);
-    
+
     if (!sessionId) {
       return res.status(400).send("No session ID provided");
     }
-    
+
     try {
       // First, try to find the session in our database
       const [dbSession] = await db.select()
         .from(sessions)
         .where(eq(sessions.id, sessionId))
         .limit(1);
-      
+
       if (dbSession && dbSession.userId) {
         console.log("Found session in database with user ID:", dbSession.userId);
-        
+
         // Get user from database using the userId from our sessions table
         const [user] = await db
           .select()
           .from(users)
           .where(eq(users.id, dbSession.userId))
           .limit(1);
-        
+
         if (user) {
           console.log("User found by session ID:", user.username);
-          
+
           // Return user without sensitive data
           const { password, ...userWithoutPassword } = user;
           return res.json(userWithoutPassword);
         }
       }
-      
+
       // If not found in our DB, try the session store as fallback
       const sessionStore = req.sessionStore as any;
-      
+
       if (!sessionStore.get) {
         console.error("Session store missing get method");
         return res.status(401).send("Invalid or expired session");
       }
-      
+
       // Get session data from store
       sessionStore.get(sessionId, async (err: any, sessionData: any) => {
         if (err) {
           console.error("Error getting session:", err);
           return res.status(500).send("Error retrieving session");
         }
-        
+
         if (!sessionData || !sessionData.passport || !sessionData.passport.user) {
           console.log("No user found in session:", sessionId);
           return res.status(401).send("Invalid or expired session");
         }
-        
+
         const userId = sessionData.passport.user;
         console.log("Found user ID in session store:", userId);
-        
+
         // Get user from database
         try {
           const [user] = await db
@@ -756,13 +765,13 @@ export function setupAuth(app: Express) {
             .from(users)
             .where(eq(users.id, userId))
             .limit(1);
-          
+
           if (!user) {
             return res.status(404).send("User not found");
           }
-          
+
           console.log("User found by session ID:", user.username);
-          
+
           // Save this session in our database for future lookups
           try {
             await db.insert(sessions).values({
@@ -786,7 +795,7 @@ export function setupAuth(app: Express) {
             console.error("Error saving session to database:", saveErr);
             // Continue anyway as we can still return the user
           }
-          
+
           // Return user without sensitive data
           const { password, ...userWithoutPassword } = user;
           return res.json(userWithoutPassword);
@@ -800,15 +809,15 @@ export function setupAuth(app: Express) {
       return res.status(500).send("Error processing session");
     }
   });
-  
+
   // Add endpoint for verifying a cached user exists
   app.post("/api/verify-user", async (req, res) => {
     const { userId } = req.body;
-    
+
     if (!userId) {
       return res.status(400).send("No user ID provided");
     }
-    
+
     try {
       // Get user from database to verify they exist
       const [user] = await db
@@ -816,11 +825,11 @@ export function setupAuth(app: Express) {
         .from(users)
         .where(eq(users.id, userId))
         .limit(1);
-      
+
       if (!user) {
         return res.status(404).send("User not found");
       }
-      
+
       console.log("User verified exists:", user.username);
       return res.status(200).send({ valid: true });
     } catch (dbError) {
@@ -833,7 +842,7 @@ export function setupAuth(app: Express) {
   app.get("/api/replit-info", (req, res) => {
     // Check if we're running in a Replit environment
     const isReplitEnv = process.env.REPL_ID && process.env.REPL_OWNER;
-    
+
     if (isReplitEnv) {
       res.json({
         isReplit: true,
