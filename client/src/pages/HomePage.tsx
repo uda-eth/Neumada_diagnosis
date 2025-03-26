@@ -111,7 +111,7 @@ const AvatarImage = ({ src, alt }: { src: string; alt: string }) => {
 
 export default function HomePage() {
   const { t } = useTranslation();
-  const [selectedCity, setSelectedCity] = useState("Mexico City");
+  const [selectedCity, setSelectedCity] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>([]);
@@ -262,6 +262,7 @@ export default function HomePage() {
                     <SelectValue placeholder="Select city" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="all">All Locations</SelectItem>
                     {DIGITAL_NOMAD_CITIES.map((city) => (
                       <SelectItem key={city} value={city}>
                         {city}

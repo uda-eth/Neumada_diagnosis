@@ -1076,9 +1076,12 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       // Query events from the database
       let query = db.select().from(events);
       
-      // Apply location filter if provided
-      if (location && location !== 'all') {
+      // Apply location filter if provided and not 'all'
+      if (location && location !== 'all' && location !== '') {
+        console.log(`Filtering events by location: ${location}`);
         query = query.where(eq(events.location, location as string));
+      } else {
+        console.log("No location filter applied, showing all events");
       }
       
       // Get all events that match the criteria
