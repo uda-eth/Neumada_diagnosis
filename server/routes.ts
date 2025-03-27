@@ -830,14 +830,14 @@ function isAuthenticated(req: Request, res: Response, next: Function) {
 async function checkAuthentication(req: Request, res: Response) {
   // Check for session ID in headers (from the X-Session-ID header)
   const headerSessionId = req.headers['x-session-id'] as string;
-  
+
   // Also check for session ID in cookies as a fallback
   const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
 
   // Use header session ID first, then fall back to cookie
   const sessionId = headerSessionId || cookieSessionId;
   console.log("Session ID in /api/auth/check:", sessionId);
-  
+
   // Debug session ID sources
   console.log("Auth check session sources:", {
     fromHeader: headerSessionId ? "yes" : "no",
@@ -854,25 +854,25 @@ async function checkAuthentication(req: Request, res: Response) {
       user: req.user
     });
   }
-  
+
   // If not authenticated via passport, try with the provided session ID
   if (sessionId) {
     try {
       // Find the user ID in the session
       const sessionQuery = await db.select().from(sessions).where(eq(sessions.id, sessionId));
-      
+
       if (sessionQuery.length > 0 && sessionQuery[0].userId) {
         // Find the user by ID
         const userId = sessionQuery[0].userId;
         const userQuery = await db.select().from(users).where(eq(users.id, userId));
-        
+
         if (userQuery.length > 0) {
           const user = userQuery[0];
           console.log("Auth check: User authenticated via session ID:", user.username);
-          
+
           // Remove sensitive information
           const { password, ...userWithoutPassword } = user as any;
-          
+
           return res.json({
             authenticated: true,
             user: userWithoutPassword
@@ -883,7 +883,7 @@ async function checkAuthentication(req: Request, res: Response) {
       console.error("Auth check error with session ID:", err);
     }
   }
-  
+
   // Return unauthenticated status if all methods fail
   console.log("Auth check: User not authenticated");
   return res.json({ 
@@ -901,7 +901,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
   app.post("/api/suggest-city", async (req: Request, res: Response) => {
     try {
       const { city, email, reason } = req.body;
-      
+
       if (!city || !email) {
         return res.status(400).json({ 
           success: false, 
@@ -910,7 +910,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       }
 
       console.log(`City suggestion received: ${city}, Email: ${email}, Reason: ${reason || 'Not provided'}`);
-      
+
       // Save the suggestion to the database using the userCities table
       // We set isActive to false so these suggestions won't be displayed in the UI
       try {
@@ -955,37 +955,37 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
       // Database query to get real users
       let query = db.select().from(users);
-      
+
       // Always exclude the current user from results
       if (currentUserId) {
         query = query.where(ne(users.id, parseInt(currentUserId.toString())));
       }
-      
+
       // Don't include the current user in the results
       if (currentUserId) {
         query = query.where(ne(users.id, currentUserId));
       }
-      
+
       // Apply filters to query
       if (city && city !== 'all') {
         query = query.where(eq(users.location, city));
       }
-      
+
       if (gender && gender !== 'all') {
         query = query.where(eq(users.gender, gender));
       }
-      
+
       if (minAge !== undefined) {
         query = query.where(gte(users.age, minAge));
       }
-      
+
       if (maxAge !== undefined) {
         query = query.where(lte(users.age, maxAge));
       }
-      
+
       // Get all users with the applied filters
       let dbUsers = await query;
-      
+
       // Further filtering that's harder to do at the DB level
       if (interests) {
         const interestArray = Array.isArray(interests) ? interests : [interests];
@@ -995,7 +995,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
           )
         );
       }
-      
+
       if (moods) {
         const moodArray = Array.isArray(moods) ? moods : [moods];
         dbUsers = dbUsers.filter(user => 
@@ -1004,7 +1004,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
           )
         );
       }
-      
+
       if (name) {
         const lowercaseName = name.toLowerCase();
         dbUsers = dbUsers.filter(user =>
@@ -1039,18 +1039,18 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         console.log("Returning current user profile:", currentUser.username);
         return res.json(currentUser);
       }
-      
+
       // If username is provided, get from database
       const dbUser = await db.select()
         .from(users)
         .where(eq(users.username, username || ''))
         .limit(1);
-      
+
       if (dbUser && dbUser.length > 0) {
         console.log("Found real user in database:", dbUser[0].username);
         return res.json(dbUser[0]);
       }
-      
+
       // If not found in DB, fallback to mock data while we're developing
       const mockUser = Object.values(MOCK_USERS)
         .flat()
@@ -1084,10 +1084,10 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       const currentUserId = req.user?.id;
 
       console.log("Fetching events with params:", { location, currentUserId });
-      
+
       // Query events from the database
       let query = db.select().from(events);
-      
+
       // Apply location filter if provided and not 'all'
       if (location && location !== 'all' && location !== '') {
         console.log(`Filtering events by location: ${location}`);
@@ -1095,19 +1095,19 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       } else {
         console.log("No location filter applied, showing all events");
       }
-      
+
       // Get all events that match the criteria
       let dbEvents = await query;
       console.log(`Found ${dbEvents.length} events in database before filtering`);
-      
+
       // Filter out draft events that don't belong to the current user
       dbEvents = dbEvents.filter(event => {
         // If the event is not a draft, or if it's a draft created by the current user, include it
         return !event.isDraft || (event.isDraft && event.creatorId === currentUserId);
       });
-      
+
       console.log(`After filtering drafts, ${dbEvents.length} events remain`);
-      
+
       // Sort events by date (most recent first)
       dbEvents.sort((a, b) => {
         const dateA = new Date(a.date).getTime();
@@ -1138,25 +1138,25 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       const { id } = req.params;
       const eventId = parseInt(id);
       const currentUserId = req.user?.id;
-      
+
       // Try to get event from the database
       const dbEvent = await db.select()
         .from(events)
         .where(eq(events.id, eventId))
         .limit(1);
-      
+
       if (dbEvent && dbEvent.length > 0) {
         const event = dbEvent[0];
-        
+
         // Check if the event is a draft and if the current user is the creator
         if (event.isDraft && event.creatorId !== currentUserId) {
           return res.status(403).json({ error: "You don't have access to this draft event" });
         }
-        
+
         console.log("Found event in database:", event.title);
         return res.json(event);
       }
-      
+
       // If not found in database, fall back to mock data during development
       const allEvents = Object.values(MOCK_EVENTS).flat();
       const mockEvent = allEvents.find(e => e.id === eventId);
@@ -1177,11 +1177,11 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       // Get session ID from all possible sources
       const headerSessionId = req.headers['x-session-id'] as string;
       const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
-      
+
       // Use the first available session ID
       const sessionId = headerSessionId || cookieSessionId;
       console.log("Event creation using session ID:", sessionId);
-      
+
       if (!sessionId) {
         console.log("No session ID provided for event creation");
         return res.status(401).json({ error: "Authentication required" });
@@ -1208,17 +1208,17 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       }
 
       console.log("User authenticated for event creation:", currentUser.username);
-      
+
       // Final authentication check
       if (!currentUser) {
         console.log("Authentication failed via all methods");
         return res.status(401).json({ error: "You must be logged in to create events" });
       }
-      
+
       console.log("Event creation request received from user:", currentUser.username);
       console.log("Form data:", req.body);
       console.log("File:", req.file);
-      
+
       // Required field validation
       if (!req.body.title || !req.body.description || !req.body.location) {
         return res.status(400).json({ 
@@ -1226,7 +1226,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
           details: "Title, description, and location are required"
         });
       }
-      
+
       // Parse the incoming form data with proper validation
       let tags = [];
       try {
@@ -1237,7 +1237,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         console.warn("Failed to parse tags JSON:", e);
         // Default to empty array if parsing fails
       }
-      
+
       // Process price (making sure it's a number)
       let price = 0;
       try {
@@ -1247,7 +1247,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         console.warn("Invalid price format:", e);
         price = 0;
       }
-      
+
       // Create event data object with all required fields from schema
       const eventData = {
         title: req.body.title,
@@ -1271,12 +1271,12 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         stripeProductId: null,
         stripePriceId: null
       };
-      
+
       console.log(`Creating new ${eventData.isDraft ? 'draft' : 'published'} event:`, eventData.title);
-      
+
       // Insert the event into the database
       const result = await db.insert(events).values(eventData).returning();
-      
+
       if (result && result.length > 0) {
         console.log(`Event successfully saved to database with ID: ${result[0].id}`);
         return res.status(201).json({
@@ -1343,12 +1343,12 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       res.json(message);
     } catch (error) {
       console.error('Error sending message:', error);
-      
+
       // Return appropriate error status for connection-related errors
       if (error instanceof Error && error.message.includes('Users must be connected')) {
         return res.status(403).json({ error: error.message });
       }
-      
+
       res.status(500).json({ error: 'Failed to send message' });
     }
   });
@@ -1360,12 +1360,12 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       res.json(conversations);
     } catch (error) {
       console.error('Error getting conversations:', error);
-      
+
       // Return appropriate error status for connection-related errors
       if (error instanceof Error && error.message.includes('No user connections found')) {
         return res.status(200).json([]); // Return empty array instead of error for no connections
       }
-      
+
       res.status(500).json({ error: 'Failed to get conversations' });
     }
   });
@@ -1377,12 +1377,12 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       res.json(messages);
     } catch (error) {
       console.error('Error getting messages:', error);
-      
+
       // Return appropriate error status for connection-related errors
       if (error instanceof Error && error.message.includes('Users must be connected')) {
         return res.status(403).json({ error: error.message });
       }
-      
+
       res.status(500).json({ error: 'Failed to get messages' });
     }
   });
@@ -1417,16 +1417,42 @@ export function registerRoutes(app: express.Application): { app: express.Applica
     server: httpServer,
     path: '/ws'
   });
-  
-  // Store active connections by user ID
-  const activeConnections = new Map<number, WebSocket>();
-  
+
+  // Store active connections and their ping states
+  const activeConnections = new Map<number, {
+    ws: WebSocket;
+    isAlive: boolean;
+    pingTimeout?: NodeJS.Timeout;
+  }>();
+
+  // Ping interval (30 seconds)
+  const PING_INTERVAL = 30000;
+  const CONNECTION_TIMEOUT = 35000;
+
+  function heartbeat(userId: number) {
+    if (activeConnections.has(userId)) {
+      const connection = activeConnections.get(userId)!;
+      connection.isAlive = true;
+
+      // Reset ping timeout
+      if (connection.pingTimeout) {
+        clearTimeout(connection.pingTimeout);
+      }
+
+      connection.pingTimeout = setTimeout(() => {
+        console.log(`Connection timeout for user ${userId}`);
+        connection.ws.terminate();
+        activeConnections.delete(userId);
+      }, CONNECTION_TIMEOUT);
+    }
+  }
+
   // Handle WebSocket connections
   wss.on('connection', (ws, req) => {
     // Extract user ID from URL path: /ws/chat/:userId
     const urlPath = req.url || '';
     const match = urlPath.match(/\/chat\/(\d+)/);
-    
+
     if (!match) {
       console.log('Invalid WebSocket connection path:', urlPath);
       ws.send(JSON.stringify({
@@ -1436,25 +1462,25 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       ws.close();
       return;
     }
-    
+
     const userId = parseInt(match[1], 10);
     console.log(`WebSocket connection established for user ${userId}`);
-    
+
     // Store the connection
-    activeConnections.set(userId, ws);
-    
+    activeConnections.set(userId, { ws, isAlive: true });
+
     // Send a welcome message to confirm successful connection
     ws.send(JSON.stringify({
       type: 'connected',
       message: `Connected as user ${userId}`
     }));
-    
+
     // Handle messages
     ws.on('message', async (message) => {
       try {
         const data = JSON.parse(message.toString());
         console.log(`WebSocket message received from user ${userId}:`, JSON.stringify(data));
-        
+
         // Validate message structure
         if (!data.senderId || !data.receiverId || !data.content) {
           console.error('Invalid message format:', data);
@@ -1464,7 +1490,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
           }));
           return;
         }
-        
+
         // Store the message in the database (this already checks for connection status)
         try {
           const newMessage = await sendMessage({
@@ -1472,18 +1498,18 @@ export function registerRoutes(app: express.Application): { app: express.Applica
             receiverId: data.receiverId,
             content: data.content
           });
-          
+
           console.log(`Message stored in database:`, JSON.stringify(newMessage[0]));
-          
+
           // Send the message to the recipient if they're connected
           const recipientWs = activeConnections.get(data.receiverId);
-          if (recipientWs && recipientWs.readyState === WebSocket.OPEN) {
+          if (recipientWs && recipientWs.ws.readyState === WebSocket.OPEN) {
             console.log(`Sending message to recipient ${data.receiverId}`);
-            recipientWs.send(JSON.stringify(newMessage[0]));
+            recipientWs.ws.send(JSON.stringify(newMessage[0]));
           } else {
             console.log(`Recipient ${data.receiverId} not connected or socket not open`);
           }
-          
+
           // Send confirmation back to sender
           console.log(`Sending confirmation to sender ${data.senderId}`);
           ws.send(JSON.stringify({
@@ -1508,73 +1534,84 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         }));
       }
     });
-    
+
     // Handle connection errors
     ws.on('error', (error) => {
       console.error(`WebSocket error for user ${userId}:`, error);
     });
-    
+
     // Send a ping every 30 seconds to keep connection alive
     const pingInterval = setInterval(() => {
       if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'ping' }));
+        ws.ping(); // Use ws.ping() instead of sending a custom ping message
+        heartbeat(userId);
       } else {
         clearInterval(pingInterval);
       }
-    }, 30000);
-    
+    }, PING_INTERVAL);
+
     // Handle disconnection
     ws.on('close', () => {
       console.log(`WebSocket connection closed for user ${userId}`);
       activeConnections.delete(userId);
       clearInterval(pingInterval);
     });
+
+    // Handle pong
+    ws.on('pong', () => {
+      console.log(`Pong received from user ${userId}`);
+      heartbeat(userId);
+    });
+
+    // Initial heartbeat
+    heartbeat(userId);
+
   });
-  
+
   // Add authentication check endpoint that specifically looks for the session ID from various sources
   app.get('/api/auth/check', async (req, res) => {
     try {
       // Check all possible sources for the session ID
       const headerSessionId = req.headers['x-session-id'] as string;
       const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
-      
+
       // Also check localStorage - Passport may store it in 'maly_session_id'
       console.log("Looking for session ID in request");
-      
+
       // Use the first available session ID
       const sessionId = headerSessionId || cookieSessionId;
       console.log("Auth check using session ID:", sessionId);
-      
+
       // If we don't have a session ID, use the regular auth flow
       if (!sessionId) {
         console.log("No session ID found, falling back to standard auth check");
         return checkAuthentication(req, res);
       }
-      
+
       // Look up session directly if we have a session ID
       const sessionQuery = await db.select().from(sessions).where(eq(sessions.id, sessionId));
-      
+
       if (sessionQuery.length > 0 && sessionQuery[0].userId) {
         // Get the user info from the database
         const userId = sessionQuery[0].userId;
         console.log("Found session in database with user ID:", userId);
-        
+
         const userQuery = await db.select().from(users).where(eq(users.id, userId));
-        
+
         if (userQuery.length > 0) {
           const user = userQuery[0];
           console.log("Auth check: User authenticated via session ID directly:", user.username);
-          
+
           // Remove sensitive information
           const { password, ...userWithoutPassword } = user as any;
-          
+
           return res.json({
             authenticated: true,
             user: userWithoutPassword
           });
         }
       }
-      
+
       // Fall back to the standard authentication check if session lookup failed
       return checkAuthentication(req, res);
     } catch (error) {
@@ -1585,23 +1622,23 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       });
     }
   });
-  
+
   // Add endpoint to get user by session ID
   app.get('/api/user-by-session', async (req: Request, res: Response) => {
     try {
       const sessionId = req.headers['x-session-id'] as string;
       console.log("User by session request for sessionID:", sessionId);
-      
+
       if (!sessionId) {
         return res.status(401).json({
           error: "No session ID provided",
           authenticated: false
         });
       }
-      
+
       // Find the user ID in the session
       const sessionQuery = await db.select().from(sessions).where(eq(sessions.id, sessionId));
-      
+
       if (sessionQuery.length === 0 || !sessionQuery[0].userId) {
         console.log("No user found in session:", sessionId);
         return res.status(401).json({
@@ -1609,11 +1646,11 @@ export function registerRoutes(app: express.Application): { app: express.Applica
           authenticated: false
         });
       }
-      
+
       // Find the user by ID
       const userId = sessionQuery[0].userId;
       const userQuery = await db.select().from(users).where(eq(users.id, userId));
-      
+
       if (userQuery.length === 0) {
         console.log("User not found for ID:", userId);
         return res.status(404).json({
@@ -1621,10 +1658,10 @@ export function registerRoutes(app: express.Application): { app: express.Applica
           authenticated: false
         });
       }
-      
+
       // Remove sensitive information before returning user
       const { password, ...userWithoutPassword } = userQuery[0] as any;
-      
+
       console.log("User found by session ID:", userWithoutPassword.username);
       return res.json({
         ...userWithoutPassword,
@@ -1638,12 +1675,12 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       });
     }
   });
-  
+
   // Get user profile by ID
   app.get('/api/users/profile/:userId', async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
-      
+
       // Find the user by ID
       const user = await db.query.users.findFirst({
         where: eq(users.id, parseInt(userId)),
@@ -1659,11 +1696,11 @@ export function registerRoutes(app: express.Application): { app: express.Applica
           profession: true
         }
       });
-      
+
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
-      
+
       res.json(user);
     } catch (error) {
       console.error('Error fetching user profile:', error);
@@ -1672,18 +1709,18 @@ export function registerRoutes(app: express.Application): { app: express.Applica
   });
 
   // Connection related endpoints
-  
+
   // Send a connection request
   app.post('/api/connections/request', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const currentUser = req.user as Express.User;
-      
+
       const { targetUserId } = req.body;
-      
+
       if (!targetUserId) {
         return res.status(400).json({ error: 'Target user ID is required' });
       }
-      
+
       // Check if request already exists
       const existingConnection = await db.query.userConnections.findFirst({
         where: and(
@@ -1691,14 +1728,14 @@ export function registerRoutes(app: express.Application): { app: express.Applica
           eq(userConnections.followingId, targetUserId)
         )
       });
-      
+
       if (existingConnection) {
         return res.status(400).json({ 
           error: 'Connection request already exists', 
           status: existingConnection.status 
         });
       }
-      
+
       // Create new connection request
       const newConnection = await db.insert(userConnections).values({
         followerId: currentUser.id,
@@ -1706,7 +1743,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         status: 'pending',
         createdAt: new Date()
       }).returning();
-      
+
       res.status(201).json({
         message: 'Connection request sent successfully',
         connection: newConnection[0]
@@ -1716,12 +1753,12 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       res.status(500).json({ error: 'Failed to send connection request' });
     }
   });
-  
+
   // Get pending connection requests (received by current user)
   app.get('/api/connections/pending', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const currentUser = req.user as Express.User;
-      
+
       // Get all pending requests where the current user is the target
       const pendingRequests = await db.query.userConnections.findMany({
         where: and(
@@ -1732,14 +1769,14 @@ export function registerRoutes(app: express.Application): { app: express.Applica
           follower: true
         }
       });
-      
+
       // Format the response
       const formattedRequests = pendingRequests.map(request => {
         if (!request.follower) {
           console.error('Missing follower data in connection request:', request);
           return null;
         }
-        
+
         return {
           id: request.follower.id,
           username: request.follower.username,
@@ -1756,26 +1793,26 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         requestDate: Date | null;
         status: string;
       }>;
-      
+
       res.json(formattedRequests);
     } catch (error) {
       console.error('Error fetching pending connection requests:', error);
       res.status(500).json({ error: 'Failed to fetch pending connection requests' });
     }
   });
-  
+
   // Accept or decline a connection request
   app.put('/api/connections/:userId', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const currentUser = req.user as Express.User;
-      
+
       const { userId } = req.params;
       const { status } = req.body;
-      
+
       if (!status || (status !== 'accepted' && status !== 'declined')) {
         return res.status(400).json({ error: 'Valid status (accepted or declined) is required' });
       }
-      
+
       // Update the connection status
       const updatedConnection = await db
         .update(userConnections)
@@ -1788,11 +1825,11 @@ export function registerRoutes(app: express.Application): { app: express.Applica
           )
         )
         .returning();
-      
+
       if (!updatedConnection || updatedConnection.length === 0) {
         return res.status(404).json({ error: 'Connection request not found' });
       }
-      
+
       res.json({
         message: `Connection request ${status}`,
         connection: updatedConnection[0]
@@ -1802,12 +1839,12 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       res.status(500).json({ error: 'Failed to update connection request' });
     }
   });
-  
+
   // Get all connections (accepted only)
   app.get('/api/connections', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const currentUser = req.user as Express.User;
-      
+
       // Get connections where current user is either follower or following
       const connections = await db.query.userConnections.findMany({
         where: and(
@@ -1822,17 +1859,17 @@ export function registerRoutes(app: express.Application): { app: express.Applica
           following: true
         }
       });
-      
+
       // Format the response to show the other user in each connection
       const formattedConnections = connections.map(connection => {
         const isFollower = connection.followerId === currentUser.id;
         const otherUser = isFollower ? connection.following : connection.follower;
-        
+
         if (!otherUser) {
           console.error('Missing related user data in connection:', connection);
           return null;
         }
-        
+
         return {
           id: otherUser.id,
           username: otherUser.username,
@@ -1849,22 +1886,22 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         connectionDate: Date | null;
         connectionType: string;
       }>;
-      
+
       res.json(formattedConnections);
     } catch (error) {
       console.error('Error fetching connections:', error);
       res.status(500).json({ error: 'Failed to fetch connections' });
     }
   });
-  
+
   // Check connection status between current user and another user
   app.get('/api/connections/status/:userId', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const currentUser = req.user as Express.User;
-      
+
       const { userId } = req.params;
       const targetUserId = parseInt(userId);
-      
+
       // Check outgoing connection (current user -> target user)
       const outgoingConnection = await db.query.userConnections.findFirst({
         where: and(
@@ -1872,7 +1909,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
           eq(userConnections.followingId, targetUserId)
         )
       });
-      
+
       // Check incoming connection (target user -> current user)
       const incomingConnection = await db.query.userConnections.findFirst({
         where: and(
@@ -1880,7 +1917,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
           eq(userConnections.followingId, currentUser.id)
         )
       });
-      
+
       res.json({
         outgoing: outgoingConnection ? {
           status: outgoingConnection.status,
@@ -1896,6 +1933,46 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       res.status(500).json({ error: 'Failed to check connection status' });
     }
   });
-  
+
+  // Check connection status between current user and another user
+  app.get('/api/connections/status/:userId', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const currentUser = req.user as Express.User;
+
+      const { userId } = req.params;
+      const targetUserId = parseInt(userId);
+
+      // Check outgoing connection (current user -> target user)
+      const outgoingConnection = await db.query.userConnections.findFirst({
+        where: and(
+          eq(userConnections.followerId, currentUser.id),
+          eq(userConnections.followingId, targetUserId)
+        )
+      });
+
+      // Check incoming connection (target user -> current user)
+      const incomingConnection = await db.query.userConnections.findFirst({
+        where: and(
+          eq(userConnections.followerId, targetUserId),
+          eq(userConnections.followingId, currentUser.id)
+        )
+      });
+
+      res.json({
+        outgoing: outgoingConnection ? {
+          status: outgoingConnection.status,
+          date: outgoingConnection.createdAt
+        } : null,
+        incoming: incomingConnection ? {
+          status: incomingConnection.status,
+          date: incomingConnection.createdAt
+        } : null
+      });
+    } catch (error) {
+      console.error('Error checking connection status:', error);
+      res.status(500).json({ error: 'Failed to check connection status' });
+    }
+  });
+
   return { app, httpServer };
 }

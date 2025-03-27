@@ -40,6 +40,9 @@ interface MessagesState {
   error: string | null;
   socketConnected: boolean;
   currentSocket: WebSocket | null;
+  reconnectAttempts: number;
+  maxReconnectAttempts: number;
+  reconnectTimeout: NodeJS.Timeout | null;
   fetchConversations: (userId: number) => Promise<void>;
   fetchMessages: (userId: number, otherId: number) => Promise<void>;
   sendMessage: (params: { senderId: number; receiverId: number; content: string }) => Promise<void>;
@@ -56,6 +59,9 @@ export const useMessages = create<MessagesState>((set, get) => ({
   error: null,
   socketConnected: false,
   currentSocket: null,
+  reconnectAttempts: 0,
+  maxReconnectAttempts: 5, // Maximum reconnection attempts
+  reconnectTimeout: null,
 
   fetchConversations: async (userId: number) => {
     try {
@@ -79,13 +85,13 @@ export const useMessages = create<MessagesState>((set, get) => ({
     try {
       set({ loading: true, error: null });
       const response = await fetch(`/api/messages/${userId}/${otherId}`);
-      
+
       if (!response.ok) {
         // Check if this is a 403 (Forbidden) due to not being connected
         if (response.status === 403) {
           throw new Error("Users must be connected to view messages");
         }
-        
+
         // For other errors
         const errorData = await response.json().catch(() => null);
         if (errorData && errorData.error) {
@@ -94,15 +100,15 @@ export const useMessages = create<MessagesState>((set, get) => ({
           throw new Error(`Error fetching messages: ${response.statusText}`);
         }
       }
-      
+
       const data = await response.json();
       set({ messages: data, loading: false });
     } catch (error) {
       console.error('Error fetching messages:', error);
-      
+
       // Provide more user-friendly error message
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch messages';
-      
+
       set({ 
         error: errorMessage.includes('Users must be connected') 
           ? 'You need to connect with this user before exchanging messages'
@@ -115,7 +121,7 @@ export const useMessages = create<MessagesState>((set, get) => ({
   sendMessage: async ({ senderId, receiverId, content }) => {
     try {
       set({ loading: true, error: null });
-      
+
       // If WebSocket is connected, send the message through WebSocket
       const { currentSocket, socketConnected } = get();
       if (currentSocket && socketConnected) {
@@ -125,32 +131,32 @@ export const useMessages = create<MessagesState>((set, get) => ({
           const timeout = setTimeout(() => {
             reject(new Error("Timeout waiting for message confirmation"));
           }, 5000);
-          
+
           // Store original onmessage handler
           const originalOnMessage = currentSocket.onmessage;
-          
+
           // Set temporary handler to look for our confirmation
           currentSocket.onmessage = (event) => {
             try {
               const data = JSON.parse(event.data);
-              
+
               // If this is a confirmation for our message or an error
               if (data.type === 'confirmation' || data.type === 'error') {
                 // Clear timeout
                 clearTimeout(timeout);
-                
+
                 // Restore original handler
                 currentSocket.onmessage = originalOnMessage;
-                
+
                 // If error, reject with error message
                 if (data.type === 'error') {
                   reject(new Error(data.message));
                   return;
                 }
-                
+
                 // Otherwise resolve with the confirmed message
                 resolve(data.message);
-                
+
                 // Also process the message with the original handler
                 if (originalOnMessage) {
                   originalOnMessage.call(currentSocket, event);
@@ -168,7 +174,7 @@ export const useMessages = create<MessagesState>((set, get) => ({
               reject(error);
             }
           };
-          
+
           // Send the message
           currentSocket.send(JSON.stringify({
             senderId,
@@ -176,7 +182,7 @@ export const useMessages = create<MessagesState>((set, get) => ({
             content
           }));
         });
-        
+
         try {
           // Wait for confirmation or error
           await messagePromise;
@@ -185,10 +191,10 @@ export const useMessages = create<MessagesState>((set, get) => ({
           console.error('WebSocket message error:', error);
           throw error; // rethrow to be caught by the outer catch
         }
-        
+
         return;
       }
-      
+
       // Otherwise, fall back to REST API
       const response = await fetch('/api/messages', {
         method: 'POST',
@@ -201,7 +207,7 @@ export const useMessages = create<MessagesState>((set, get) => ({
           content
         })
       });
-      
+
       if (!response.ok) {
         // Try to get more detailed error
         const errorData = await response.json().catch(() => null);
@@ -210,21 +216,21 @@ export const useMessages = create<MessagesState>((set, get) => ({
         }
         throw new Error(`Error sending message: ${response.statusText}`);
       }
-      
+
       const newMessage = await response.json();
-      
+
       // Update the messages and conversations state with the new message
       const { messages, conversations } = get();
       set({
         messages: [...messages, ...newMessage],
         loading: false
       });
-      
+
       // Update conversations if applicable
       const existingConvIndex = conversations.findIndex(
         c => c.user.id === receiverId
       );
-      
+
       if (existingConvIndex !== -1) {
         const updatedConversations = [...conversations];
         updatedConversations[existingConvIndex] = {
@@ -235,7 +241,7 @@ export const useMessages = create<MessagesState>((set, get) => ({
       }
     } catch (error) {
       console.error('Error sending message:', error);
-      
+
       // Provide a more user-friendly error message based on the error content
       let errorMessage = 'Failed to send message';
       if (error instanceof Error) {
@@ -245,7 +251,7 @@ export const useMessages = create<MessagesState>((set, get) => ({
           errorMessage = error.message;
         }
       }
-      
+
       set({ 
         error: errorMessage, 
         loading: false 
@@ -259,19 +265,19 @@ export const useMessages = create<MessagesState>((set, get) => ({
       const response = await fetch(`/api/messages/${messageId}/read`, {
         method: 'POST'
       });
-      
+
       if (!response.ok) {
         throw new Error(`Error marking message as read: ${response.statusText}`);
       }
-      
+
       const updatedMessage = await response.json();
-      
+
       // Update the message in the state
       const { messages } = get();
       const updatedMessages = messages.map(msg => 
         msg.id === messageId ? { ...msg, isRead: true } : msg
       );
-      
+
       set({ messages: updatedMessages, loading: false });
     } catch (error) {
       console.error('Error marking message as read:', error);
@@ -288,23 +294,23 @@ export const useMessages = create<MessagesState>((set, get) => ({
       const response = await fetch(`/api/messages/read-all/${userId}`, {
         method: 'POST'
       });
-      
+
       if (!response.ok) {
         throw new Error(`Error marking all messages as read: ${response.statusText}`);
       }
-      
+
       // Update the messages state to mark all as read
       const { messages, conversations } = get();
       const updatedMessages = messages.map(msg => 
         msg.receiverId === userId && !msg.isRead ? { ...msg, isRead: true } : msg
       );
-      
+
       // Update unread counts in conversations
       const updatedConversations = conversations.map(conv => ({
         ...conv,
         unreadCount: 0
       }));
-      
+
       set({ 
         messages: updatedMessages, 
         conversations: updatedConversations,
@@ -320,144 +326,169 @@ export const useMessages = create<MessagesState>((set, get) => ({
   },
 
   connectSocket: (userId: number) => {
-    // Close any existing connection
-    const { currentSocket } = get();
-    if (currentSocket) {
-      currentSocket.close();
+    const { maxReconnectAttempts, reconnectAttempts, reconnectTimeout } = get();
+
+    if (reconnectAttempts >= maxReconnectAttempts) {
+      console.error('Max reconnection attempts reached');
+      set({ 
+        error: 'Unable to establish connection after multiple attempts',
+        loading: false 
+      });
+      return;
     }
-    
-    try {
-      // Connect to WebSocket server
-      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${wsProtocol}//${window.location.host}/ws/chat/${userId}`;
-      console.log(`Connecting to WebSocket at ${wsUrl}`);
-      
-      const socket = new WebSocket(wsUrl);
-      
-      // Set a connection timeout
-      const connectionTimeout = setTimeout(() => {
-        if (socket.readyState !== WebSocket.OPEN) {
-          console.error('WebSocket connection timeout');
-          socket.close();
-          set({ 
-            socketConnected: false, 
-            error: 'WebSocket connection timeout. Please try again.' 
-          });
+
+    set({ loading: true });
+
+    let wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    let wsHost = window.location.host;
+    const socket = new WebSocket(`${wsProtocol}//${wsHost}/ws/chat/${userId}`);
+
+    // Set a connection timeout
+    const connectionTimeout = setTimeout(() => {
+      if (socket.readyState !== WebSocket.OPEN) {
+        socket.close();
+        console.log('Connection timeout, attempting reconnect...');
+      }
+    }, 10000);
+
+    socket.onopen = () => {
+      console.log('WebSocket connected');
+      clearTimeout(connectionTimeout);
+      set({ 
+        socketConnected: true, 
+        loading: false, 
+        currentSocket: socket,
+        reconnectAttempts: 0,
+        error: null,
+        reconnectTimeout: null
+      });
+
+      // Start ping interval
+      const pingInterval = setInterval(() => {
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify({ type: 'ping' }));
+        } else {
+          clearInterval(pingInterval);
         }
-      }, 10000); // 10 second timeout
-      
-      socket.onopen = () => {
-        console.log('WebSocket connection established');
-        clearTimeout(connectionTimeout);
-        set({ socketConnected: true, currentSocket: socket, error: null });
-      };
-      
-      socket.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          console.log('WebSocket message received:', data);
-          
-          // Handle ping messages (keep-alive)
-          if (data.type === 'ping') {
-            // Just acknowledge ping, no state change needed
-            console.log('Received ping from server');
-            return;
-          }
-          
-          // Handle connection confirmation
-          if (data.type === 'connected') {
-            console.log('Connection confirmed:', data.message);
-            set({ error: null });
-            return;
-          }
-          
-          // Handle confirmation messages
-          if (data.type === 'confirmation') {
-            console.log('Message confirmation received:', data.message);
-            // Add the sent message to the state
-            const { messages, conversations } = get();
-            set({ messages: [...messages, data.message] });
-            
-            // Update conversations if needed
-            const existingConvIndex = conversations.findIndex(
-              c => c.user.id === data.message.receiverId
-            );
-            
-            if (existingConvIndex !== -1) {
-              const updatedConversations = [...conversations];
-              updatedConversations[existingConvIndex] = {
-                ...updatedConversations[existingConvIndex],
-                lastMessage: data.message
-              };
-              set({ conversations: updatedConversations });
-            }
-            
-            return;
-          }
-          
-          // Handle error messages
-          if (data.type === 'error') {
-            console.error('WebSocket error message:', data.message);
-            set({ error: data.message });
-            return;
-          }
-          
-          // Handle new message (message without a type is a direct message)
-          console.log('New direct message received:', data);
-          const { messages, conversations, fetchConversations } = get();
-          
-          // Add the new message to the state
-          set({ messages: [...messages, data] });
-          
-          // No longer call showNotification here - will be handled by component
-          // Instead, emit an event that components can listen to
-          document.dispatchEvent(new CustomEvent('new-message', { detail: data }));
-          
-          // Refresh conversations to show the latest message
-          fetchConversations(userId);
-        } catch (error) {
-          console.error('Error processing WebSocket message:', error);
+      }, 25000);
+
+      socket.addEventListener('close', () => {
+        clearInterval(pingInterval);
+      });
+    };
+
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        console.log('WebSocket message received:', data);
+
+        // Handle ping messages (keep-alive)
+        if (data.type === 'ping') {
+          // Just acknowledge ping, no state change needed
+          console.log('Received ping from server');
+          return;
         }
-      };
-      
-      socket.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        clearTimeout(connectionTimeout);
+
+        // Handle connection confirmation
+        if (data.type === 'connected') {
+          console.log('Connection confirmed:', data.message);
+          set({ error: null });
+          return;
+        }
+
+        // Handle confirmation messages
+        if (data.type === 'confirmation') {
+          console.log('Message confirmation received:', data.message);
+          // Add the sent message to the state
+          const { messages, conversations } = get();
+          set({ messages: [...messages, data.message] });
+
+          // Update conversations if needed
+          const existingConvIndex = conversations.findIndex(
+            c => c.user.id === data.message.receiverId
+          );
+
+          if (existingConvIndex !== -1) {
+            const updatedConversations = [...conversations];
+            updatedConversations[existingConvIndex] = {
+              ...updatedConversations[existingConvIndex],
+              lastMessage: data.message
+            };
+            set({ conversations: updatedConversations });
+          }
+
+          return;
+        }
+
+        // Handle error messages
+        if (data.type === 'error') {
+          console.error('WebSocket error message:', data.message);
+          set({ error: data.message });
+          return;
+        }
+
+        // Handle new message (message without a type is a direct message)
+        console.log('New direct message received:', data);
+        const { messages, conversations, fetchConversations } = get();
+
+        // Add the new message to the state
+        set({ messages: [...messages, data] });
+
+        // No longer call showNotification here - will be handled by component
+        // Instead, emit an event that components can listen to
+        document.dispatchEvent(new CustomEvent('new-message', { detail: data }));
+
+        // Refresh conversations to show the latest message
+        fetchConversations(userId);
+      } catch (error) {
+        console.error('Error processing WebSocket message:', error);
+      }
+    };
+
+    socket.onclose = (event) => {
+      console.log(`WebSocket disconnected: ${event.code} ${event.reason}`);
+      const { reconnectAttempts, maxReconnectAttempts, reconnectTimeout } = get();
+
+      if (reconnectAttempts < maxReconnectAttempts) {
+        clearTimeout(reconnectTimeout);
+        const timeout = Math.min(1000 * Math.pow(2, reconnectAttempts), 10000);
+        console.log(`Attempting reconnect in ${timeout}ms`);
+
+        const reconnectTimeout = setTimeout(() => {
+          set(state => ({ 
+            reconnectAttempts: state.reconnectAttempts + 1,
+            socketConnected: false,
+            currentSocket: null,
+            error: null
+          }));
+          get().connectSocket(userId);
+        }, timeout);
+
+        set({ reconnectTimeout });
+      } else {
         set({ 
           socketConnected: false, 
-          error: 'WebSocket connection error. Please refresh the page and try again.' 
+          currentSocket: null,
+          error: 'Connection lost. Please refresh the page to reconnect.',
+          reconnectAttempts: 0,
+          reconnectTimeout: null
         });
-      };
-      
-      socket.onclose = (event) => {
-        console.log(`WebSocket connection closed: ${event.code} ${event.reason}`);
-        clearTimeout(connectionTimeout);
-        set({ socketConnected: false, currentSocket: null });
-        
-        // If this wasn't a normal closure, attempt to reconnect after a delay
-        if (event.code !== 1000) {
-          console.log('Abnormal closure, attempting reconnect in 5 seconds...');
-          setTimeout(() => {
-            console.log('Attempting to reconnect WebSocket...');
-            get().connectSocket(userId);
-          }, 5000);
-        }
-      };
-    } catch (error) {
-      console.error('Error creating WebSocket connection:', error);
-      set({ 
-        socketConnected: false, 
-        error: 'Failed to create WebSocket connection. Please refresh the page.' 
-      });
-    }
+      }
+    };
+
+    socket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      set({ error: 'WebSocket connection failed', loading: false });
+    };
   },
 
   disconnectSocket: () => {
-    const { currentSocket } = get();
+    const { currentSocket, reconnectTimeout } = get();
     if (currentSocket) {
       currentSocket.close();
-      set({ socketConnected: false, currentSocket: null });
+      set({ socketConnected: false, currentSocket: null, reconnectAttempts: 0, reconnectTimeout: null});
     }
+    clearTimeout(reconnectTimeout);
   }
 }));
 
@@ -468,10 +499,10 @@ export function useMessageNotifications() {
   const showNotification = (message: Message) => {
     // Don't show notifications for messages sent by the current user
     if (user && message.senderId === user.id) return;
-    
+
     // Construct a better title using the sender's name if available
     const senderName = message.sender?.fullName || `User ${message.senderId}`;
-    
+
     toast({
       title: `New message from ${senderName}`,
       description: message.content.slice(0, 50) + (message.content.length > 50 ? '...' : ''),
