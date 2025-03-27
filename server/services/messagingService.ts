@@ -1,23 +1,72 @@
-import { db } from '@db';
-import { messages, users } from '@db/schema';
-import { eq, and, desc, or } from 'drizzle-orm';
-import type { Message } from '@db/schema';
+import { db } from "../../db";
+import { 
+  messages, 
+  users, 
+  userConnections, 
+  Message, 
+  NewMessage 
+} from "../../db/schema";
+import { eq, and, or, desc, asc } from "drizzle-orm";
 
-export interface SendMessageParams {
+// Send a message (only between connected users)
+export async function sendMessage({ senderId, receiverId, content }: {
   senderId: number;
   receiverId: number;
   content: string;
-}
+}) {
+  // Check if users are connected
+  const connectionExists = await db.query.userConnections.findFirst({
+    where: or(
+      and(
+        eq(userConnections.followerId, senderId),
+        eq(userConnections.followingId, receiverId),
+        eq(userConnections.status, "accepted")
+      ),
+      and(
+        eq(userConnections.followerId, receiverId),
+        eq(userConnections.followingId, senderId),
+        eq(userConnections.status, "accepted")
+      )
+    )
+  });
 
-export async function sendMessage({ senderId, receiverId, content }: SendMessageParams) {
-  return await db.insert(messages).values({
+  if (!connectionExists) {
+    throw new Error("Users must be connected to send messages");
+  }
+
+  // Create the message
+  const newMessage: NewMessage = {
     senderId,
     receiverId,
     content,
-    isRead: false,
-  }).returning();
+    createdAt: new Date(),
+    isRead: false
+  };
+
+  const result = await db.insert(messages).values(newMessage).returning();
+  
+  // Get sender info for notification purposes
+  const sender = await db.query.users.findFirst({
+    where: eq(users.id, senderId),
+    columns: {
+      id: true,
+      fullName: true,
+      profileImage: true
+    }
+  });
+
+  // Return the message with sender info without modifying result directly
+  if (result.length > 0 && sender) {
+    return [{
+      ...result[0],
+      sender
+    }];
+  }
+
+  return result;
 }
 
+// Get conversations for a user
 export async function getConversations(userId: number) {
   // Get all messages where user is either sender or receiver
   const userMessages = await db.query.messages.findMany({
@@ -25,59 +74,113 @@ export async function getConversations(userId: number) {
       eq(messages.senderId, userId),
       eq(messages.receiverId, userId)
     ),
+    orderBy: [desc(messages.createdAt)],
     with: {
       sender: {
         columns: {
           id: true,
           fullName: true,
-          profileImage: true,
-          status: true
+          username: true,
+          profileImage: true
         }
       },
       receiver: {
         columns: {
           id: true,
           fullName: true,
-          profileImage: true,
-          status: true
+          username: true,
+          profileImage: true
         }
       }
-    },
-    orderBy: desc(messages.createdAt),
-  });
-
-  // Group messages by conversation
-  const conversations = new Map();
-
-  userMessages.forEach(message => {
-    const otherId = message.senderId === userId ? message.receiverId : message.senderId;
-    if (!conversations.has(otherId)) {
-      conversations.set(otherId, {
-        user: message.senderId === userId ? {
-          id: message.receiver.id,
-          name: message.receiver.fullName,
-          image: message.receiver.profileImage,
-          status: message.receiver.status
-        } : {
-          id: message.sender.id,
-          name: message.sender.fullName,
-          image: message.sender.profileImage,
-          status: message.sender.status
-        },
-        lastMessage: message,
-      });
     }
   });
 
-  return Array.from(conversations.values());
+  // Group messages by conversation partner
+  const conversationMap = new Map<number, {
+    user: {
+      id: number;
+      name: string | null;
+      username?: string;
+      image: string | null;
+    };
+    lastMessage: Message;
+    messages: Message[];
+  }>();
+
+  for (const message of userMessages) {
+    // Determine if user is sender or receiver
+    const isUserSender = message.senderId === userId;
+    const partnerId = isUserSender ? message.receiverId : message.senderId;
+    
+    // Skip if any IDs are null
+    if (partnerId === null) continue;
+    
+    // Get partner info
+    const partner = isUserSender ? message.receiver : message.sender;
+    
+    if (!partner) continue;
+
+    if (!conversationMap.has(partnerId)) {
+      conversationMap.set(partnerId, {
+        user: {
+          id: partnerId,
+          name: partner.fullName,
+          username: partner.username,
+          image: partner.profileImage
+        },
+        lastMessage: message,
+        messages: [message]
+      });
+    } else {
+      const conversation = conversationMap.get(partnerId)!;
+      conversation.messages.push(message);
+      
+      // Update last message if this one is newer
+      const msgDate = message.createdAt ? new Date(message.createdAt) : new Date();
+      const lastMsgDate = conversation.lastMessage.createdAt ? new Date(conversation.lastMessage.createdAt) : new Date();
+      
+      if (msgDate > lastMsgDate) {
+        conversation.lastMessage = message;
+      }
+    }
+  }
+
+  // Convert map to array and format for client
+  const conversations = Array.from(conversationMap.values()).map(conv => {
+    // Calculate unread count
+    const unreadCount = conv.messages.filter(
+      msg => msg.receiverId === userId && !msg.isRead
+    ).length;
+
+    return {
+      user: conv.user,
+      lastMessage: conv.lastMessage,
+      unreadCount
+    };
+  });
+
+  // Sort by last message date (newest first)
+  return conversations.sort((a, b) => {
+    const dateA = a.lastMessage.createdAt ? new Date(a.lastMessage.createdAt) : new Date();
+    const dateB = b.lastMessage.createdAt ? new Date(b.lastMessage.createdAt) : new Date();
+    return dateB.getTime() - dateA.getTime();
+  });
 }
 
+// Get messages between two users
 export async function getMessages(userId: number, otherId: number) {
-  return await db.query.messages.findMany({
+  return db.query.messages.findMany({
     where: or(
-      and(eq(messages.senderId, userId), eq(messages.receiverId, otherId)),
-      and(eq(messages.senderId, otherId), eq(messages.receiverId, userId))
+      and(
+        eq(messages.senderId, userId),
+        eq(messages.receiverId, otherId)
+      ),
+      and(
+        eq(messages.senderId, otherId),
+        eq(messages.receiverId, userId)
+      )
     ),
+    orderBy: [asc(messages.createdAt)],
     with: {
       sender: {
         columns: {
@@ -93,21 +196,28 @@ export async function getMessages(userId: number, otherId: number) {
           profileImage: true
         }
       }
-    },
-    orderBy: desc(messages.createdAt),
+    }
   });
 }
 
+// Mark a message as read
 export async function markMessageAsRead(messageId: number) {
-  return await db.update(messages)
+  await db
+    .update(messages)
     .set({ isRead: true })
-    .where(eq(messages.id, messageId))
-    .returning();
+    .where(eq(messages.id, messageId));
+  
+  // Return the updated message
+  return db.query.messages.findFirst({
+    where: eq(messages.id, messageId)
+  });
 }
 
+// Mark all messages as read for a user
 export async function markAllMessagesAsRead(userId: number) {
-  return await db.update(messages)
+  // Only mark messages where user is the receiver
+  return db
+    .update(messages)
     .set({ isRead: true })
-    .where(eq(messages.receiverId, userId))
-    .returning();
+    .where(eq(messages.receiverId, userId));
 }

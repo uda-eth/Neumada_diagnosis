@@ -1400,6 +1400,72 @@ export function registerRoutes(app: express.Application): { app: express.Applica
     path: '/ws'
   });
   
+  // Store active connections by user ID
+  const activeConnections = new Map<number, any>();
+  
+  // Handle WebSocket connections
+  wss.on('connection', (ws, req) => {
+    // Extract user ID from URL path: /ws/chat/:userId
+    const urlPath = req.url || '';
+    const match = urlPath.match(/\/chat\/(\d+)/);
+    
+    if (!match) {
+      console.log('Invalid WebSocket connection path:', urlPath);
+      ws.close();
+      return;
+    }
+    
+    const userId = parseInt(match[1], 10);
+    console.log(`WebSocket connection established for user ${userId}`);
+    
+    // Store the connection
+    activeConnections.set(userId, ws);
+    
+    // Handle messages
+    ws.on('message', async (message) => {
+      try {
+        const data = JSON.parse(message.toString());
+        
+        // Validate message structure
+        if (!data.senderId || !data.receiverId || !data.content) {
+          console.error('Invalid message format:', data);
+          return;
+        }
+        
+        // Store the message in the database
+        const newMessage = await sendMessage({
+          senderId: data.senderId,
+          receiverId: data.receiverId,
+          content: data.content
+        });
+        
+        // Send the message to the recipient if they're connected
+        const recipientWs = activeConnections.get(data.receiverId);
+        if (recipientWs && recipientWs.readyState === WebSocket.OPEN) {
+          recipientWs.send(JSON.stringify(newMessage[0]));
+        }
+        
+        // Send confirmation back to sender
+        ws.send(JSON.stringify({
+          type: 'confirmation',
+          message: newMessage[0]
+        }));
+      } catch (error) {
+        console.error('Error processing WebSocket message:', error);
+        ws.send(JSON.stringify({
+          type: 'error',
+          message: error instanceof Error ? error.message : 'An error occurred'
+        }));
+      }
+    });
+    
+    // Handle disconnection
+    ws.on('close', () => {
+      console.log(`WebSocket connection closed for user ${userId}`);
+      activeConnections.delete(userId);
+    });
+  });
+  
   // Add authentication check endpoint that specifically looks for the session ID from various sources
   app.get('/api/auth/check', async (req, res) => {
     try {
@@ -1505,6 +1571,38 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         error: "Server error",
         authenticated: false
       });
+    }
+  });
+  
+  // Get user profile by ID
+  app.get('/api/users/profile/:userId', async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      
+      // Find the user by ID
+      const user = await db.query.users.findFirst({
+        where: eq(users.id, parseInt(userId)),
+        columns: {
+          id: true,
+          username: true,
+          fullName: true,
+          profileImage: true,
+          bio: true,
+          location: true,
+          interests: true,
+          currentMoods: true,
+          profession: true
+        }
+      });
+      
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      res.json(user);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      res.status(500).json({ error: 'Failed to fetch user profile' });
     }
   });
 
