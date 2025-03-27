@@ -49,6 +49,17 @@ export default function EventPage() {
 
   const { data: event, isLoading } = useQuery<Event>({
     queryKey: [`/api/events/${id}`],
+    queryFn: async () => {
+      const response = await fetch(`/api/events/${id}`, {
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error fetching event: ${response.status}`);
+      }
+      
+      return response.json();
+    },
   });
 
   const participateMutation = useMutation({
