@@ -39,6 +39,29 @@ async function handleRequest(
       return { ok: false, message };
     }
 
+    // For login and authentication endpoints, capture the session ID if returned
+    if (url === '/api/login' || url === '/api/register' || url === '/api/auth/check') {
+      try {
+        const data = await response.json();
+        
+        // If the response contains a sessionId, store it in localStorage
+        if (data && data.sessionId) {
+          console.log("Storing session ID from server response:", data.sessionId);
+          localStorage.setItem('maly_session_id', data.sessionId);
+        }
+        
+        // Store user data if included in the response
+        if (data && data.user) {
+          localStorage.setItem('maly_user_data', JSON.stringify(data.user));
+        }
+        
+        return { ok: true };
+      } catch (parseError) {
+        console.warn("Error parsing JSON response:", parseError);
+        return { ok: true }; // Still succeed even if parsing fails
+      }
+    }
+
     return { ok: true };
   } catch (e: any) {
     return { ok: false, message: e.toString() };
@@ -102,7 +125,13 @@ export function useUser() {
         'Pragma': 'no-cache'
       };
 
-      if (storedSessionId) {
+      // Always include the session ID if available - use maly_session_id as the key
+      const malySessionId = localStorage.getItem('maly_session_id');
+      if (malySessionId) {
+        console.log("Including maly_session_id in auth check:", malySessionId.substring(0, 5) + '...');
+        extraHeaders['X-Session-ID'] = malySessionId;
+      } else if (storedSessionId) {
+        console.log("Including storedSessionId in auth check:", storedSessionId.substring(0, 5) + '...');
         extraHeaders['X-Session-ID'] = storedSessionId;
       }
 

@@ -124,6 +124,16 @@ export const userCities = pgTable("user_cities", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Table for sessions
+export const sessions = pgTable("sessions", {
+  id: text("id").primaryKey(), // Session ID
+  userId: integer("user_id").references(() => users.id),
+  expiresAt: timestamp("expires_at").notNull(),
+  data: jsonb("data"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const userRelations = relations(users, ({ many, one }) => ({
   createdEvents: many(events),

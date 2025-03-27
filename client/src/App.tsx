@@ -3,6 +3,7 @@ import HomePage from "./pages/HomePage";
 import EventPage from "./pages/EventPage";
 import ProfilePage from "./pages/ProfilePage";
 import CreateEventPage from "./pages/CreateEventPage";
+import TestCreateEventPage from "./pages/TestCreateEventPage";
 import ChatbotPage from "./pages/ChatbotPage";
 import ConnectPage from "./pages/ConnectPage";
 import MessagesPage from "./pages/MessagesPage";
@@ -61,12 +62,16 @@ function AppContent() {
       // No user in client state, check server-side auth status
       try {
         console.log("Checking auth status from server...");
+        // Get the sessionId from localStorage
+        const sessionId = localStorage.getItem('maly_session_id');
+        
         const response = await fetch('/api/auth/check', { 
           credentials: 'include',
           cache: 'no-store', // Ensure we don't use cached results
           headers: { 
             'Cache-Control': 'no-store, no-cache, must-revalidate, private',
-            'Pragma': 'no-cache'
+            'Pragma': 'no-cache',
+            'X-Session-ID': sessionId || '' // Include the session ID in the header
           }
         });
         
@@ -107,6 +112,7 @@ function AppContent() {
             <Route path="/profile/:username" component={ProfilePage} />
             <Route path="/profile" component={ProfilePage} />
             <Route path="/create" component={CreateEventPage} />
+            <Route path="/test-create" component={TestCreateEventPage} />
             <Route path="/companion" component={ChatbotPage} />
             <Route path="/connect" component={ConnectPage} />
             <Route path="/messages" component={MessagesPage} />

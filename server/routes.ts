@@ -10,8 +10,8 @@ import { getEventImage } from './services/eventsService';
 import { WebSocketServer } from 'ws';
 import { sendMessage, getConversations, getMessages, markMessageAsRead, markAllMessagesAsRead } from './services/messagingService';
 import { db } from "../db";
-import { userCities, users, events } from "../db/schema";
-import { eq, ne, gte, lte } from "drizzle-orm";
+import { userCities, users, events, sessions } from "../db/schema";
+import { eq, ne, gte, lte, and } from "drizzle-orm";
 
 const categories = [
   "Retail",
@@ -827,16 +827,65 @@ function isAuthenticated(req: Request, res: Response, next: Function) {
 }
 
 // No redirect middleware - just returns authentication status
-function checkAuthentication(req: Request, res: Response) {
-  if (req.isAuthenticated()) {
-    // Return authentication status without redirect
+async function checkAuthentication(req: Request, res: Response) {
+  // Check for session ID in headers (from the X-Session-ID header)
+  const headerSessionId = req.headers['x-session-id'] as string;
+  
+  // Also check for session ID in cookies as a fallback
+  const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
+
+  // Use header session ID first, then fall back to cookie
+  const sessionId = headerSessionId || cookieSessionId;
+  console.log("Session ID in /api/auth/check:", sessionId);
+  
+  // Debug session ID sources
+  console.log("Auth check session sources:", {
+    fromHeader: headerSessionId ? "yes" : "no",
+    fromCookie: cookieSessionId ? "yes" : "no",
+    finalSessionId: sessionId
+  });
+
+  // First check if user is authenticated through passport session
+  if (req.isAuthenticated() && req.user) {
+    console.log("Auth check: User is authenticated via passport");
+    // Return authentication status with user data
     return res.json({ 
       authenticated: true,
       user: req.user
     });
   }
   
-  // Return unauthenticated status
+  // If not authenticated via passport, try with the provided session ID
+  if (sessionId) {
+    try {
+      // Find the user ID in the session
+      const sessionQuery = await db.select().from(sessions).where(eq(sessions.id, sessionId));
+      
+      if (sessionQuery.length > 0 && sessionQuery[0].userId) {
+        // Find the user by ID
+        const userId = sessionQuery[0].userId;
+        const userQuery = await db.select().from(users).where(eq(users.id, userId));
+        
+        if (userQuery.length > 0) {
+          const user = userQuery[0];
+          console.log("Auth check: User authenticated via session ID:", user.username);
+          
+          // Remove sensitive information
+          const { password, ...userWithoutPassword } = user as any;
+          
+          return res.json({
+            authenticated: true,
+            user: userWithoutPassword
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Auth check error with session ID:", err);
+    }
+  }
+  
+  // Return unauthenticated status if all methods fail
+  console.log("Auth check: User not authenticated");
   return res.json({ 
     authenticated: false,
     message: "Not logged in"
@@ -1027,16 +1076,22 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       const { location } = req.query;
       const currentUserId = req.user?.id;
 
+      console.log("Fetching events with params:", { location, currentUserId });
+      
       // Query events from the database
       let query = db.select().from(events);
       
-      // Apply location filter if provided
-      if (location && location !== 'all') {
+      // Apply location filter if provided and not 'all'
+      if (location && location !== 'all' && location !== '') {
+        console.log(`Filtering events by location: ${location}`);
         query = query.where(eq(events.location, location as string));
+      } else {
+        console.log("No location filter applied, showing all events");
       }
       
       // Get all events that match the criteria
       let dbEvents = await query;
+      console.log(`Found ${dbEvents.length} events in database before filtering`);
       
       // Filter out draft events that don't belong to the current user
       dbEvents = dbEvents.filter(event => {
@@ -1044,32 +1099,30 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         return !event.isDraft || (event.isDraft && event.creatorId === currentUserId);
       });
       
-      // Sort events by date
+      console.log(`After filtering drafts, ${dbEvents.length} events remain`);
+      
+      // Sort events by date (most recent first)
       dbEvents.sort((a, b) => {
         const dateA = new Date(a.date).getTime();
         const dateB = new Date(b.date).getTime();
-        return dateA - dateB;
+        return dateB - dateA; // Descending order (most recent first)
       });
 
-      // If we have no events in the database yet during development, fall back to mock data
+      // Check if we found any events
       if (dbEvents.length === 0) {
-        console.log("No events found in database, using mock data");
-        let mockEvents = location && location !== 'all'
-          ? MOCK_EVENTS[location as string] || []
-          : Object.values(MOCK_EVENTS).flat();
-
-        mockEvents.sort((a, b) =>
-          new Date(a.date).getTime() - new Date(b.date).getTime()
-        );
-        
-        return res.json(mockEvents);
+        console.log("No events found in database, using mock data temporarily");
+        // Return empty array instead of falling back to mock data
+        return res.json([]);
       }
 
-      console.log(`Found ${dbEvents.length} events in database`);
-      res.json(dbEvents);
+      console.log(`Returning ${dbEvents.length} events from database`);
+      return res.json(dbEvents);
     } catch (error) {
       console.error("Error fetching events:", error);
-      res.status(500).json({ error: "Failed to fetch events" });
+      res.status(500).json({ 
+        error: "Failed to fetch events",
+        details: error.message
+      });
     }
   });
 
@@ -1114,43 +1167,125 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
   app.post("/api/events", upload.single('image'), async (req, res) => {
     try {
-      const currentUser = req.user;
+      // Get session ID from all possible sources
+      const headerSessionId = req.headers['x-session-id'] as string;
+      const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
       
+      // Use the first available session ID
+      const sessionId = headerSessionId || cookieSessionId;
+      console.log("Event creation using session ID:", sessionId);
+      
+      if (!sessionId) {
+        console.log("No session ID provided for event creation");
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      // Find session and associated user
+      const [session] = await db.select()
+        .from(sessions)
+        .where(eq(sessions.id, sessionId))
+        .limit(1);
+
+      if (!session?.userId) {
+        return res.status(401).json({ error: "Invalid session" });
+      }
+
+      // Get user details
+      const [currentUser] = await db.select()
+        .from(users)
+        .where(eq(users.id, session.userId))
+        .limit(1);
+
       if (!currentUser) {
+        return res.status(401).json({ error: "User not found" });
+      }
+
+      console.log("User authenticated for event creation:", currentUser.username);
+      
+      // Final authentication check
+      if (!currentUser) {
+        console.log("Authentication failed via all methods");
         return res.status(401).json({ error: "You must be logged in to create events" });
       }
       
-      // Parse the incoming form data
+      console.log("Event creation request received from user:", currentUser.username);
+      console.log("Form data:", req.body);
+      console.log("File:", req.file);
+      
+      // Required field validation
+      if (!req.body.title || !req.body.description || !req.body.location) {
+        return res.status(400).json({ 
+          error: "Missing required fields",
+          details: "Title, description, and location are required"
+        });
+      }
+      
+      // Parse the incoming form data with proper validation
+      let tags = [];
+      try {
+        if (req.body.tags) {
+          tags = JSON.parse(req.body.tags);
+        }
+      } catch (e) {
+        console.warn("Failed to parse tags JSON:", e);
+        // Default to empty array if parsing fails
+      }
+      
+      // Process price (making sure it's a number)
+      let price = 0;
+      try {
+        price = parseFloat(req.body.price || '0');
+        if (isNaN(price)) price = 0;
+      } catch (e) {
+        console.warn("Invalid price format:", e);
+        price = 0;
+      }
+      
+      // Create event data object with all required fields from schema
       const eventData = {
         title: req.body.title,
         description: req.body.description,
         location: req.body.location,
         category: req.body.category || 'Social',
-        capacity: parseInt(req.body.capacity || '0'),
-        price: parseFloat(req.body.price || '0'),
+        ticketType: req.body.price && parseFloat(req.body.price) > 0 ? 'paid' : 'free',
+        capacity: parseInt(req.body.capacity || '10'),
+        price: price,
         date: new Date(req.body.date || new Date()),
-        tags: req.body.tags ? JSON.parse(req.body.tags) : [],
+        tags: tags,
         image: req.file ? `/uploads/${req.file.filename}` : getEventImage(req.body.category || 'Social'),
+        image_url: req.file ? `/uploads/${req.file.filename}` : getEventImage(req.body.category || 'Social'),
         creatorId: currentUser.id,
         isDraft: req.body.isDraft === 'true',
+        isPrivate: req.body.isPrivate === 'true',
         createdAt: new Date(),
         city: req.body.city || req.body.location || 'Mexico City',
+        attendingCount: 0,
+        interestedCount: 0,
+        stripeProductId: null,
+        stripePriceId: null
       };
       
       console.log(`Creating new ${eventData.isDraft ? 'draft' : 'published'} event:`, eventData.title);
       
-      // Save the event to the database
+      // Insert the event into the database
       const result = await db.insert(events).values(eventData).returning();
       
       if (result && result.length > 0) {
-        console.log(`Event saved to database with ID: ${result[0].id}`);
-        return res.json(result[0]);
+        console.log(`Event successfully saved to database with ID: ${result[0].id}`);
+        return res.status(201).json({
+          success: true,
+          message: eventData.isDraft ? "Event saved as draft" : "Event published successfully",
+          event: result[0]
+        });
       } else {
-        throw new Error("Failed to save event to database");
+        throw new Error("Database operation did not return an event ID");
       }
     } catch (error) {
       console.error("Error creating event:", error);
-      res.status(500).json({ error: "Failed to create event" });
+      res.status(500).json({ 
+        error: "Failed to create event", 
+        details: error.message || "Unknown database error" 
+      });
     }
   });
 
@@ -1258,8 +1393,113 @@ export function registerRoutes(app: express.Application): { app: express.Applica
     path: '/ws'
   });
   
-  // Add authentication check endpoint
-  app.get('/api/auth/check', checkAuthentication);
+  // Add authentication check endpoint that specifically looks for the session ID from various sources
+  app.get('/api/auth/check', async (req, res) => {
+    try {
+      // Check all possible sources for the session ID
+      const headerSessionId = req.headers['x-session-id'] as string;
+      const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
+      
+      // Also check localStorage - Passport may store it in 'maly_session_id'
+      console.log("Looking for session ID in request");
+      
+      // Use the first available session ID
+      const sessionId = headerSessionId || cookieSessionId;
+      console.log("Auth check using session ID:", sessionId);
+      
+      // If we don't have a session ID, use the regular auth flow
+      if (!sessionId) {
+        console.log("No session ID found, falling back to standard auth check");
+        return checkAuthentication(req, res);
+      }
+      
+      // Look up session directly if we have a session ID
+      const sessionQuery = await db.select().from(sessions).where(eq(sessions.id, sessionId));
+      
+      if (sessionQuery.length > 0 && sessionQuery[0].userId) {
+        // Get the user info from the database
+        const userId = sessionQuery[0].userId;
+        console.log("Found session in database with user ID:", userId);
+        
+        const userQuery = await db.select().from(users).where(eq(users.id, userId));
+        
+        if (userQuery.length > 0) {
+          const user = userQuery[0];
+          console.log("Auth check: User authenticated via session ID directly:", user.username);
+          
+          // Remove sensitive information
+          const { password, ...userWithoutPassword } = user as any;
+          
+          return res.json({
+            authenticated: true,
+            user: userWithoutPassword
+          });
+        }
+      }
+      
+      // Fall back to the standard authentication check if session lookup failed
+      return checkAuthentication(req, res);
+    } catch (error) {
+      console.error("Error in auth check endpoint:", error);
+      return res.status(500).json({
+        authenticated: false,
+        error: "Server error during authentication check"
+      });
+    }
+  });
+  
+  // Add endpoint to get user by session ID
+  app.get('/api/user-by-session', async (req: Request, res: Response) => {
+    try {
+      const sessionId = req.headers['x-session-id'] as string;
+      console.log("User by session request for sessionID:", sessionId);
+      
+      if (!sessionId) {
+        return res.status(401).json({
+          error: "No session ID provided",
+          authenticated: false
+        });
+      }
+      
+      // Find the user ID in the session
+      const sessionQuery = await db.select().from(sessions).where(eq(sessions.id, sessionId));
+      
+      if (sessionQuery.length === 0 || !sessionQuery[0].userId) {
+        console.log("No user found in session:", sessionId);
+        return res.status(401).json({
+          error: "Session not found or invalid",
+          authenticated: false
+        });
+      }
+      
+      // Find the user by ID
+      const userId = sessionQuery[0].userId;
+      const userQuery = await db.select().from(users).where(eq(users.id, userId));
+      
+      if (userQuery.length === 0) {
+        console.log("User not found for ID:", userId);
+        return res.status(404).json({
+          error: "User not found",
+          authenticated: false
+        });
+      }
+      
+      // Remove sensitive information before returning user
+      const { password, ...userWithoutPassword } = userQuery[0] as any;
+      
+      console.log("User found by session ID:", userWithoutPassword.username);
+      return res.json({
+        ...userWithoutPassword,
+        authenticated: true
+      });
+    } catch (error) {
+      console.error("Error in user-by-session endpoint:", error);
+      return res.status(500).json({
+        error: "Server error",
+        authenticated: false
+      });
+    }
+  });
   
   return { app, httpServer };
 }
