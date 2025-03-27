@@ -7,7 +7,7 @@ import { handleChatMessage } from './chat';
 import { findMatches } from './services/matchingService';
 import { translateMessage } from './services/translationService';
 import { getEventImage } from './services/eventsService';
-import { WebSocketServer } from 'ws';
+import { WebSocketServer, WebSocket } from 'ws';
 import { sendMessage, getConversations, getMessages, markMessageAsRead, markAllMessagesAsRead } from './services/messagingService';
 import { db } from "../db";
 import { userCities, users, events, sessions, userConnections } from "../db/schema";
@@ -1419,7 +1419,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
   });
   
   // Store active connections by user ID
-  const activeConnections = new Map<number, any>();
+  const activeConnections = new Map<number, WebSocket>();
   
   // Handle WebSocket connections
   wss.on('connection', (ws, req) => {
@@ -1429,6 +1429,10 @@ export function registerRoutes(app: express.Application): { app: express.Applica
     
     if (!match) {
       console.log('Invalid WebSocket connection path:', urlPath);
+      ws.send(JSON.stringify({
+        type: 'error',
+        message: 'Invalid connection path. Expected format: /ws/chat/:userId'
+      }));
       ws.close();
       return;
     }
@@ -1439,10 +1443,17 @@ export function registerRoutes(app: express.Application): { app: express.Applica
     // Store the connection
     activeConnections.set(userId, ws);
     
+    // Send a welcome message to confirm successful connection
+    ws.send(JSON.stringify({
+      type: 'connected',
+      message: `Connected as user ${userId}`
+    }));
+    
     // Handle messages
     ws.on('message', async (message) => {
       try {
         const data = JSON.parse(message.toString());
+        console.log(`WebSocket message received from user ${userId}:`, JSON.stringify(data));
         
         // Validate message structure
         if (!data.senderId || !data.receiverId || !data.content) {
@@ -1462,13 +1473,19 @@ export function registerRoutes(app: express.Application): { app: express.Applica
             content: data.content
           });
           
+          console.log(`Message stored in database:`, JSON.stringify(newMessage[0]));
+          
           // Send the message to the recipient if they're connected
           const recipientWs = activeConnections.get(data.receiverId);
           if (recipientWs && recipientWs.readyState === WebSocket.OPEN) {
+            console.log(`Sending message to recipient ${data.receiverId}`);
             recipientWs.send(JSON.stringify(newMessage[0]));
+          } else {
+            console.log(`Recipient ${data.receiverId} not connected or socket not open`);
           }
           
           // Send confirmation back to sender
+          console.log(`Sending confirmation to sender ${data.senderId}`);
           ws.send(JSON.stringify({
             type: 'confirmation',
             message: newMessage[0]
@@ -1492,10 +1509,25 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       }
     });
     
+    // Handle connection errors
+    ws.on('error', (error) => {
+      console.error(`WebSocket error for user ${userId}:`, error);
+    });
+    
+    // Send a ping every 30 seconds to keep connection alive
+    const pingInterval = setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'ping' }));
+      } else {
+        clearInterval(pingInterval);
+      }
+    }, 30000);
+    
     // Handle disconnection
     ws.on('close', () => {
       console.log(`WebSocket connection closed for user ${userId}`);
       activeConnections.delete(userId);
+      clearInterval(pingInterval);
     });
   });
   

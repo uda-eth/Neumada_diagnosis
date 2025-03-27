@@ -326,77 +326,130 @@ export const useMessages = create<MessagesState>((set, get) => ({
       currentSocket.close();
     }
     
-    // Connect to WebSocket server
-    const socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws/chat/${userId}`);
-    
-    socket.onopen = () => {
-      console.log('WebSocket connection established');
-      set({ socketConnected: true, currentSocket: socket });
-    };
-    
-    socket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        
-        // Handle confirmation messages
-        if (data.type === 'confirmation') {
-          // Add the sent message to the state
-          const { messages, conversations } = get();
-          set({ messages: [...messages, data.message] });
+    try {
+      // Connect to WebSocket server
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${wsProtocol}//${window.location.host}/ws/chat/${userId}`;
+      console.log(`Connecting to WebSocket at ${wsUrl}`);
+      
+      const socket = new WebSocket(wsUrl);
+      
+      // Set a connection timeout
+      const connectionTimeout = setTimeout(() => {
+        if (socket.readyState !== WebSocket.OPEN) {
+          console.error('WebSocket connection timeout');
+          socket.close();
+          set({ 
+            socketConnected: false, 
+            error: 'WebSocket connection timeout. Please try again.' 
+          });
+        }
+      }, 10000); // 10 second timeout
+      
+      socket.onopen = () => {
+        console.log('WebSocket connection established');
+        clearTimeout(connectionTimeout);
+        set({ socketConnected: true, currentSocket: socket, error: null });
+      };
+      
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('WebSocket message received:', data);
           
-          // Update conversations if needed
-          const existingConvIndex = conversations.findIndex(
-            c => c.user.id === data.message.receiverId
-          );
-          
-          if (existingConvIndex !== -1) {
-            const updatedConversations = [...conversations];
-            updatedConversations[existingConvIndex] = {
-              ...updatedConversations[existingConvIndex],
-              lastMessage: data.message
-            };
-            set({ conversations: updatedConversations });
+          // Handle ping messages (keep-alive)
+          if (data.type === 'ping') {
+            // Just acknowledge ping, no state change needed
+            console.log('Received ping from server');
+            return;
           }
           
-          return;
+          // Handle connection confirmation
+          if (data.type === 'connected') {
+            console.log('Connection confirmed:', data.message);
+            set({ error: null });
+            return;
+          }
+          
+          // Handle confirmation messages
+          if (data.type === 'confirmation') {
+            console.log('Message confirmation received:', data.message);
+            // Add the sent message to the state
+            const { messages, conversations } = get();
+            set({ messages: [...messages, data.message] });
+            
+            // Update conversations if needed
+            const existingConvIndex = conversations.findIndex(
+              c => c.user.id === data.message.receiverId
+            );
+            
+            if (existingConvIndex !== -1) {
+              const updatedConversations = [...conversations];
+              updatedConversations[existingConvIndex] = {
+                ...updatedConversations[existingConvIndex],
+                lastMessage: data.message
+              };
+              set({ conversations: updatedConversations });
+            }
+            
+            return;
+          }
+          
+          // Handle error messages
+          if (data.type === 'error') {
+            console.error('WebSocket error message:', data.message);
+            set({ error: data.message });
+            return;
+          }
+          
+          // Handle new message (message without a type is a direct message)
+          console.log('New direct message received:', data);
+          const { messages, conversations, fetchConversations } = get();
+          
+          // Add the new message to the state
+          set({ messages: [...messages, data] });
+          
+          // No longer call showNotification here - will be handled by component
+          // Instead, emit an event that components can listen to
+          document.dispatchEvent(new CustomEvent('new-message', { detail: data }));
+          
+          // Refresh conversations to show the latest message
+          fetchConversations(userId);
+        } catch (error) {
+          console.error('Error processing WebSocket message:', error);
         }
+      };
+      
+      socket.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        clearTimeout(connectionTimeout);
+        set({ 
+          socketConnected: false, 
+          error: 'WebSocket connection error. Please refresh the page and try again.' 
+        });
+      };
+      
+      socket.onclose = (event) => {
+        console.log(`WebSocket connection closed: ${event.code} ${event.reason}`);
+        clearTimeout(connectionTimeout);
+        set({ socketConnected: false, currentSocket: null });
         
-        // Handle error messages
-        if (data.type === 'error') {
-          console.error('WebSocket error:', data.message);
-          set({ error: data.message });
-          return;
+        // If this wasn't a normal closure, attempt to reconnect after a delay
+        if (event.code !== 1000) {
+          console.log('Abnormal closure, attempting reconnect in 5 seconds...');
+          setTimeout(() => {
+            console.log('Attempting to reconnect WebSocket...');
+            get().connectSocket(userId);
+          }, 5000);
         }
-        
-        // Handle new message
-        const { messages, conversations, fetchConversations } = get();
-        
-        // Add the new message to the state
-        set({ messages: [...messages, data] });
-        
-        // No longer call showNotification here - will be handled by component
-        // Instead, emit an event that components can listen to
-        document.dispatchEvent(new CustomEvent('new-message', { detail: data }));
-        
-        // Refresh conversations to show the latest message
-        fetchConversations(userId);
-      } catch (error) {
-        console.error('Error processing WebSocket message:', error);
-      }
-    };
-    
-    socket.onerror = (error) => {
-      console.error('WebSocket error:', error);
+      };
+    } catch (error) {
+      console.error('Error creating WebSocket connection:', error);
       set({ 
         socketConnected: false, 
-        error: 'WebSocket connection error' 
+        error: 'Failed to create WebSocket connection. Please refresh the page.' 
       });
-    };
-    
-    socket.onclose = () => {
-      console.log('WebSocket connection closed');
-      set({ socketConnected: false, currentSocket: null });
-    };
+    }
   },
 
   disconnectSocket: () => {
