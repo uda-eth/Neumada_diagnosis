@@ -322,12 +322,32 @@ export default function EventPage() {
               <p className="text-sm text-white/60">Price</p>
               <p className="text-xl font-semibold">${event.price}</p>
             </div>
-            <Button 
-              className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
-              onClick={() => setLocation(`/event/${event.id}/register`)}
-            >
-              Get Tickets
-            </Button>
+            {event.price > 0 ? (
+              <Button 
+                className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
+                onClick={() => setLocation(`/event/${event.id}/register`)}
+              >
+                Get Tickets
+              </Button>
+            ) : (
+              <div className="flex flex-col gap-4 w-full">
+                <Button 
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                  onClick={() => handleParticipationChange('attending')}
+                  disabled={participateMutation.isPending}
+                >
+                  {userStatus === 'attending' ? "I'm attending ✓" : "I'll be attending"}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full border-gray-600 text-white hover:bg-gray-800"
+                  onClick={() => handleParticipationChange('interested')}
+                  disabled={participateMutation.isPending}
+                >
+                  {userStatus === 'interested' ? "I'm interested ✓" : "I'm interested"}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
         
