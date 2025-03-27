@@ -577,7 +577,7 @@ export default function HomePage() {
                                     className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      setLocation(`/event/${event.id}/register`);
+                                      setLocation(`/events/${event.id}/register`);
                                     }}
                                   >
                                     Get Tickets
@@ -710,7 +710,7 @@ export default function HomePage() {
                                     className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      setLocation(`/event/${event.id}/register`);
+                                      setLocation(`/events/${event.id}/register`);
                                     }}
                                   >
                                     Get Tickets
@@ -859,7 +859,7 @@ export default function HomePage() {
                   <>Submit Suggestion</>
                 )}
               </Button>            </DialogFooter>
-          </form>
+                    </form>
         </DialogContent>
       </Dialog>
     </div>
