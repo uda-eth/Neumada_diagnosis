@@ -190,7 +190,7 @@ export default function EventPage() {
     setLocation(`/event/${id}/users?type=${type}`);
   };
   
-  const handleParticipationChange = (status: ParticipationStatus) => {
+  const handleParticipationChange = async (status: ParticipationStatus) => {
     if (!user) {
       toast({
         variant: "destructive",
@@ -200,10 +200,32 @@ export default function EventPage() {
       setLocation('/auth');
       return;
     }
+
+    // Get the current session ID
+    const sessionId = localStorage.getItem('maly_session_id');
     
+    if (!sessionId) {
+      toast({
+        variant: "destructive",
+        title: "Authentication error",
+        description: "Please try signing in again",
+      });
+      setLocation('/auth');
+      return;
+    }
+
     // Toggle status if already in that state
     const newStatus = userStatus === status ? 'not_attending' : status;
-    participateMutation.mutate(newStatus);
+    
+    try {
+      await participateMutation.mutateAsync(newStatus);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update participation status. Please try again.",
+      });
+    }
   };
 
   return (
