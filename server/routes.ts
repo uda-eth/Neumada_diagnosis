@@ -1032,11 +1032,18 @@ export function registerRoutes(app: express.Application): { app: express.Applica
   app.get("/api/users/:username", async (req, res) => {
     try {
       const { username } = req.params;
+      const currentUser = req.user;
+
+      // If username is undefined/null and user is logged in, return current user
+      if ((!username || username === 'undefined') && currentUser) {
+        console.log("Returning current user profile:", currentUser.username);
+        return res.json(currentUser);
+      }
       
-      // First, try to get user from the database
+      // If username is provided, get from database
       const dbUser = await db.select()
         .from(users)
-        .where(eq(users.username, username))
+        .where(eq(users.username, username || ''))
         .limit(1);
       
       if (dbUser && dbUser.length > 0) {
