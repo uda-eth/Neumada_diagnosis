@@ -144,6 +144,19 @@ export default function EventPage() {
     },
   });
 
+  const handleParticipate = async (status: ParticipationStatus) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to participate in events",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    participateMutation.mutate(status);
+  };
+
   if (isLoading || !event) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black text-white/60">
@@ -333,7 +346,7 @@ export default function EventPage() {
               <div className="flex flex-col gap-4 w-full">
                 <Button 
                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
-                  onClick={() => handleParticipationChange('attending')}
+                  onClick={() => handleParticipate('attending')}
                   disabled={participateMutation.isPending}
                 >
                   {userStatus === 'attending' ? "I'm attending ✓" : "I'll be attending"}
@@ -341,11 +354,21 @@ export default function EventPage() {
                 <Button 
                   variant="outline" 
                   className="w-full border-gray-600 text-white hover:bg-gray-800"
-                  onClick={() => handleParticipationChange('interested')}
+                  onClick={() => handleParticipate('interested')}
                   disabled={participateMutation.isPending}
                 >
                   {userStatus === 'interested' ? "I'm interested ✓" : "I'm interested"}
                 </Button>
+                {userStatus !== 'not_attending' && (
+                  <Button 
+                    variant="destructive" 
+                    className="w-full"
+                    onClick={() => handleParticipate('not_attending')}
+                    disabled={participateMutation.isPending}
+                  >
+                    Cancel Participation
+                  </Button>
+                )}
               </div>
             )}
           </div>
