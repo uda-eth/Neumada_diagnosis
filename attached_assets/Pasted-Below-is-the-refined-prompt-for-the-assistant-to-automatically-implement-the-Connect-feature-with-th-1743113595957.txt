@@ -1,0 +1,46 @@
+Below is the refined prompt for the assistant to automatically implement the Connect feature with the desired user flow:
+
+---
+
+**Refined Prompt for Implementing the Connect Feature**
+
+Implement a Connect feature that enables users to send and manage connection requests. The user flow is as follows:
+
+1. **Send Connection Request:**  
+   - When User 1 clicks on User 2's profile in the Connect page, User 1 can send a connection request to User 2.
+   - Record the request in the database with proper authentication.
+
+2. **View Incoming Requests:**  
+   - User 2 will have an "Incoming Connect Requests" tab where they can view all pending connection requests.
+   - Each request should display relevant information about User 1.
+
+3. **Accept or Decline Request:**  
+   - Within the "Incoming Connect Requests" tab, User 2 can choose to either accept or decline each connection request.
+   - If User 2 accepts the request, update the database so that both User 1 and User 2 become connected.
+
+4. **Display Connections:**  
+   - Once connected, both users should appear in each other's "Connections" tab.
+
+**Implementation Requirements:**
+
+- **Data Models:**  
+  - Create or update necessary data models (e.g., connectionRequests, connections) to store request statuses and established connections.
+  
+- **API Endpoints:**  
+  - Implement endpoints for sending connection requests, fetching incoming requests, and accepting/declining requests.
+  
+- **UI Integration:**  
+  - Build the UI for the Connect page, "Incoming Connect Requests" tab, and "Connections" tab.
+  - Include buttons for sending requests and for accepting or declining requests.
+  
+- **Real-Time Feedback:**  
+  - Ensure that changes (like a request being accepted) update the UI automatically.
+  
+- **Automatic Execution:**  
+  - Execute all changes directly in the codebase. Do not simply provide instructions—make the necessary code modifications, ensuring they integrate with our existing TypeScript project.
+  
+- **Testing and Debugging:**  
+  - Provide clear inline comments and step-by-step instructions for running and testing the feature.
+  - Verify that after implementation, the feature works as described, with users seeing incoming requests and correct updates to their connections list.
+
+Implement these changes automatically and ensure that the Connect feature functions as described above.
