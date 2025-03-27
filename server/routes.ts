@@ -1343,6 +1343,12 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       res.json(message);
     } catch (error) {
       console.error('Error sending message:', error);
+      
+      // Return appropriate error status for connection-related errors
+      if (error instanceof Error && error.message.includes('Users must be connected')) {
+        return res.status(403).json({ error: error.message });
+      }
+      
       res.status(500).json({ error: 'Failed to send message' });
     }
   });
@@ -1354,6 +1360,12 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       res.json(conversations);
     } catch (error) {
       console.error('Error getting conversations:', error);
+      
+      // Return appropriate error status for connection-related errors
+      if (error instanceof Error && error.message.includes('No user connections found')) {
+        return res.status(200).json([]); // Return empty array instead of error for no connections
+      }
+      
       res.status(500).json({ error: 'Failed to get conversations' });
     }
   });
@@ -1365,6 +1377,12 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       res.json(messages);
     } catch (error) {
       console.error('Error getting messages:', error);
+      
+      // Return appropriate error status for connection-related errors
+      if (error instanceof Error && error.message.includes('Users must be connected')) {
+        return res.status(403).json({ error: error.message });
+      }
+      
       res.status(500).json({ error: 'Failed to get messages' });
     }
   });
@@ -1429,27 +1447,42 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         // Validate message structure
         if (!data.senderId || !data.receiverId || !data.content) {
           console.error('Invalid message format:', data);
+          ws.send(JSON.stringify({
+            type: 'error',
+            message: 'Invalid message format. Required fields: senderId, receiverId, content'
+          }));
           return;
         }
         
-        // Store the message in the database
-        const newMessage = await sendMessage({
-          senderId: data.senderId,
-          receiverId: data.receiverId,
-          content: data.content
-        });
-        
-        // Send the message to the recipient if they're connected
-        const recipientWs = activeConnections.get(data.receiverId);
-        if (recipientWs && recipientWs.readyState === WebSocket.OPEN) {
-          recipientWs.send(JSON.stringify(newMessage[0]));
+        // Store the message in the database (this already checks for connection status)
+        try {
+          const newMessage = await sendMessage({
+            senderId: data.senderId,
+            receiverId: data.receiverId,
+            content: data.content
+          });
+          
+          // Send the message to the recipient if they're connected
+          const recipientWs = activeConnections.get(data.receiverId);
+          if (recipientWs && recipientWs.readyState === WebSocket.OPEN) {
+            recipientWs.send(JSON.stringify(newMessage[0]));
+          }
+          
+          // Send confirmation back to sender
+          ws.send(JSON.stringify({
+            type: 'confirmation',
+            message: newMessage[0]
+          }));
+        } catch (error) {
+          // If error is "Users must be connected", send a better error message
+          const errorMessage = error instanceof Error ? error.message : 'Failed to send message';
+          ws.send(JSON.stringify({
+            type: 'error',
+            message: errorMessage
+          }));
+          console.error('Error sending message via WebSocket:', errorMessage);
+          return;
         }
-        
-        // Send confirmation back to sender
-        ws.send(JSON.stringify({
-          type: 'confirmation',
-          message: newMessage[0]
-        }));
       } catch (error) {
         console.error('Error processing WebSocket message:', error);
         ws.send(JSON.stringify({

@@ -79,15 +79,34 @@ export const useMessages = create<MessagesState>((set, get) => ({
     try {
       set({ loading: true, error: null });
       const response = await fetch(`/api/messages/${userId}/${otherId}`);
+      
       if (!response.ok) {
-        throw new Error(`Error fetching messages: ${response.statusText}`);
+        // Check if this is a 403 (Forbidden) due to not being connected
+        if (response.status === 403) {
+          throw new Error("Users must be connected to view messages");
+        }
+        
+        // For other errors
+        const errorData = await response.json().catch(() => null);
+        if (errorData && errorData.error) {
+          throw new Error(errorData.error);
+        } else {
+          throw new Error(`Error fetching messages: ${response.statusText}`);
+        }
       }
+      
       const data = await response.json();
       set({ messages: data, loading: false });
     } catch (error) {
       console.error('Error fetching messages:', error);
+      
+      // Provide more user-friendly error message
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch messages';
+      
       set({ 
-        error: error instanceof Error ? error.message : 'Failed to fetch messages', 
+        error: errorMessage.includes('Users must be connected') 
+          ? 'You need to connect with this user before exchanging messages'
+          : errorMessage,
         loading: false 
       });
     }
@@ -100,11 +119,73 @@ export const useMessages = create<MessagesState>((set, get) => ({
       // If WebSocket is connected, send the message through WebSocket
       const { currentSocket, socketConnected } = get();
       if (currentSocket && socketConnected) {
-        currentSocket.send(JSON.stringify({
-          senderId,
-          receiverId,
-          content
-        }));
+        // Create a promise that resolves when we receive a confirmation or error
+        const messagePromise = new Promise((resolve, reject) => {
+          // Set a timeout to reject if no response received within 5 seconds
+          const timeout = setTimeout(() => {
+            reject(new Error("Timeout waiting for message confirmation"));
+          }, 5000);
+          
+          // Store original onmessage handler
+          const originalOnMessage = currentSocket.onmessage;
+          
+          // Set temporary handler to look for our confirmation
+          currentSocket.onmessage = (event) => {
+            try {
+              const data = JSON.parse(event.data);
+              
+              // If this is a confirmation for our message or an error
+              if (data.type === 'confirmation' || data.type === 'error') {
+                // Clear timeout
+                clearTimeout(timeout);
+                
+                // Restore original handler
+                currentSocket.onmessage = originalOnMessage;
+                
+                // If error, reject with error message
+                if (data.type === 'error') {
+                  reject(new Error(data.message));
+                  return;
+                }
+                
+                // Otherwise resolve with the confirmed message
+                resolve(data.message);
+                
+                // Also process the message with the original handler
+                if (originalOnMessage) {
+                  originalOnMessage.call(currentSocket, event);
+                }
+              } else {
+                // For other messages, just use the original handler
+                if (originalOnMessage) {
+                  originalOnMessage.call(currentSocket, event);
+                }
+              }
+            } catch (error) {
+              // For parsing errors, restore handler and reject
+              currentSocket.onmessage = originalOnMessage;
+              clearTimeout(timeout);
+              reject(error);
+            }
+          };
+          
+          // Send the message
+          currentSocket.send(JSON.stringify({
+            senderId,
+            receiverId,
+            content
+          }));
+        });
+        
+        try {
+          // Wait for confirmation or error
+          await messagePromise;
+          set({ loading: false });
+        } catch (error) {
+          console.error('WebSocket message error:', error);
+          throw error; // rethrow to be caught by the outer catch
+        }
+        
         return;
       }
       
@@ -122,6 +203,11 @@ export const useMessages = create<MessagesState>((set, get) => ({
       });
       
       if (!response.ok) {
+        // Try to get more detailed error
+        const errorData = await response.json().catch(() => null);
+        if (errorData && errorData.error) {
+          throw new Error(errorData.error);
+        }
         throw new Error(`Error sending message: ${response.statusText}`);
       }
       
@@ -149,8 +235,19 @@ export const useMessages = create<MessagesState>((set, get) => ({
       }
     } catch (error) {
       console.error('Error sending message:', error);
+      
+      // Provide a more user-friendly error message based on the error content
+      let errorMessage = 'Failed to send message';
+      if (error instanceof Error) {
+        if (error.message.includes('Users must be connected')) {
+          errorMessage = 'You need to connect with this user before exchanging messages';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       set({ 
-        error: error instanceof Error ? error.message : 'Failed to send message', 
+        error: errorMessage, 
         loading: false 
       });
     }

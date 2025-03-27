@@ -68,6 +68,34 @@ export async function sendMessage({ senderId, receiverId, content }: {
 
 // Get conversations for a user
 export async function getConversations(userId: number) {
+  // Get all connected users
+  const connections = await db.query.userConnections.findMany({
+    where: or(
+      and(
+        eq(userConnections.followerId, userId),
+        eq(userConnections.status, "accepted")
+      ),
+      and(
+        eq(userConnections.followingId, userId),
+        eq(userConnections.status, "accepted")
+      )
+    ),
+    with: {
+      follower: true,
+      following: true
+    }
+  });
+  
+  // Extract all connected user IDs
+  const connectedUserIds = new Set<number>();
+  connections.forEach(conn => {
+    if (conn.followerId === userId && conn.followingId) {
+      connectedUserIds.add(conn.followingId);
+    } else if (conn.followingId === userId && conn.followerId) {
+      connectedUserIds.add(conn.followerId);
+    }
+  });
+  
   // Get all messages where user is either sender or receiver
   const userMessages = await db.query.messages.findMany({
     where: or(
@@ -114,6 +142,9 @@ export async function getConversations(userId: number) {
     
     // Skip if any IDs are null
     if (partnerId === null) continue;
+    
+    // Only include conversations with connected users
+    if (!connectedUserIds.has(partnerId)) continue;
     
     // Get partner info
     const partner = isUserSender ? message.receiver : message.sender;
@@ -169,6 +200,26 @@ export async function getConversations(userId: number) {
 
 // Get messages between two users
 export async function getMessages(userId: number, otherId: number) {
+  // Check if users are connected
+  const connectionExists = await db.query.userConnections.findFirst({
+    where: or(
+      and(
+        eq(userConnections.followerId, userId),
+        eq(userConnections.followingId, otherId),
+        eq(userConnections.status, "accepted")
+      ),
+      and(
+        eq(userConnections.followerId, otherId),
+        eq(userConnections.followingId, userId),
+        eq(userConnections.status, "accepted")
+      )
+    )
+  });
+
+  if (!connectionExists) {
+    throw new Error("Users must be connected to view messages");
+  }
+
   return db.query.messages.findMany({
     where: or(
       and(

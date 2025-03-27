@@ -17,6 +17,7 @@ export default function ChatPage() {
   const { user } = useUser();
   const [otherUser, setOtherUser] = useState<any>(null);
   const [messageText, setMessageText] = useState('');
+  const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'not-connected'>('checking');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { 
     messages, 
@@ -30,30 +31,52 @@ export default function ChatPage() {
     socketConnected
   } = useMessages();
   
-  // Fetch other user details
+  // Fetch other user details and check connection status
   useEffect(() => {
-    if (!match || !params?.id) return;
+    if (!match || !params?.id || !user?.id) return;
     
-    const fetchUserDetails = async () => {
+    const fetchUserDetailsAndConnection = async () => {
       try {
-        const response = await fetch(`/api/users/profile/${params.id}`);
-        if (response.ok) {
-          const userData = await response.json();
+        // Fetch user profile
+        const profileResponse = await fetch(`/api/users/profile/${params.id}`);
+        if (profileResponse.ok) {
+          const userData = await profileResponse.json();
           setOtherUser(userData);
         } else {
           console.error('Failed to fetch user details');
+          throw new Error('Could not retrieve user information');
+        }
+        
+        // Check connection status between users
+        const connectionResponse = await fetch(`/api/connections/status/${params.id}`);
+        if (connectionResponse.ok) {
+          const connectionData = await connectionResponse.json();
+          
+          // Check if there's an accepted connection in either direction
+          const hasOutgoingAccepted = connectionData.outgoing && connectionData.outgoing.status === 'accepted';
+          const hasIncomingAccepted = connectionData.incoming && connectionData.incoming.status === 'accepted';
+          
+          if (hasOutgoingAccepted || hasIncomingAccepted) {
+            setConnectionStatus('connected');
+          } else {
+            setConnectionStatus('not-connected');
+          }
+        } else {
+          console.error('Failed to check connection status');
+          setConnectionStatus('not-connected');
         }
       } catch (error) {
-        console.error('Error fetching user details:', error);
+        console.error('Error fetching user details or connection status:', error);
+        setConnectionStatus('not-connected');
       }
     };
     
-    fetchUserDetails();
-  }, [match, params?.id]);
+    fetchUserDetailsAndConnection();
+  }, [match, params?.id, user?.id]);
   
-  // Fetch messages and connect to websocket
+  // Fetch messages and connect to websocket only if users are connected
   useEffect(() => {
-    if (!user?.id || !params?.id) return;
+    if (!user?.id || !params?.id || connectionStatus !== 'connected') return;
     
     const otherId = parseInt(params.id);
     fetchMessages(user.id, otherId);
@@ -62,7 +85,7 @@ export default function ChatPage() {
     return () => {
       disconnectSocket();
     };
-  }, [user?.id, params?.id, fetchMessages, connectSocket, disconnectSocket]);
+  }, [user?.id, params?.id, connectionStatus, fetchMessages, connectSocket, disconnectSocket]);
   
   // Mark unread messages as read
   useEffect(() => {
@@ -201,7 +224,7 @@ export default function ChatPage() {
                   {otherUser.fullName || otherUser.username || 'User'}
                 </CardTitle>
                 <p className="text-xs text-muted-foreground">
-                  {socketConnected ? 'Online' : 'Offline'}
+                  {connectionStatus === 'connected' ? (socketConnected ? 'Online' : 'Offline') : 'Not Connected'}
                 </p>
               </div>
             </div>
@@ -218,112 +241,149 @@ export default function ChatPage() {
         </CardHeader>
         
         <div className="flex flex-col h-[60vh]">
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {loading && messages.length === 0 ? (
-              <div className="space-y-4">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className={`flex ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`flex gap-3 ${i % 2 === 0 ? 'flex-row-reverse' : 'flex-row'}`}>
-                      <Skeleton className="h-8 w-8 rounded-full" />
-                      <Skeleton className={`h-16 w-56 rounded-lg ${i % 2 === 0 ? 'rounded-tr-none' : 'rounded-tl-none'}`} />
-                    </div>
-                  </div>
-                ))}
+          {connectionStatus === 'checking' ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <Skeleton className="h-12 w-12 mx-auto mb-4 rounded-full" />
+                <Skeleton className="h-6 w-32 mx-auto" />
+                <Skeleton className="h-4 w-48 mx-auto mt-2" />
               </div>
-            ) : error ? (
-              <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                  <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium">Unable to load messages</h3>
-                  <p className="text-sm text-gray-500 mt-2">{error}</p>
+            </div>
+          ) : connectionStatus === 'not-connected' ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center max-w-md mx-auto">
+                <AlertCircle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+                <h3 className="text-lg font-medium">Connection Required</h3>
+                <p className="text-sm text-gray-500 mt-2 mb-6">
+                  You need to establish a connection with this user before you can exchange messages. Connect with them first and try again.
+                </p>
+                <div className="flex flex-col sm:flex-row justify-center gap-3">
+                  <Button 
+                    onClick={() => setLocation(`/profile/${otherUser?.username || params?.id}`)} 
+                    className="flex-1"
+                  >
+                    View Profile
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setLocation('/inbox')}
+                    className="flex-1"
+                  >
+                    Back to Inbox
+                  </Button>
                 </div>
               </div>
-            ) : messages.length === 0 ? (
-              <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                  <SendIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium">No messages yet</h3>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Send a message to start a conversation
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <>
-                {messages.map((message, index) => {
-                  const isCurrentUser = message.senderId === user.id;
-                  const dateHeader = formatMessageDate(message, index);
-                  
-                  return (
-                    <React.Fragment key={message.id}>
-                      {dateHeader && (
-                        <div className="flex justify-center my-4">
-                          <div className="px-3 py-1 bg-muted rounded-full text-xs">
-                            {dateHeader}
-                          </div>
-                        </div>
-                      )}
-                      <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`flex gap-3 max-w-[80%] ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}>
-                          {!isCurrentUser && (
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={message.sender?.profileImage || undefined} alt={message.sender?.fullName || 'User'} />
-                              <AvatarFallback>
-                                {message.sender?.fullName?.[0] || 'U'}
-                              </AvatarFallback>
-                            </Avatar>
-                          )}
-                          <div>
-                            <div className={`px-4 py-2 rounded-lg ${isCurrentUser 
-                              ? 'bg-primary text-primary-foreground rounded-tr-none' 
-                              : 'bg-muted rounded-tl-none'
-                            }`}>
-                              {message.content}
-                            </div>
-                            <div className={`flex items-center text-xs text-muted-foreground mt-1 ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
-                              {formatTime(message.createdAt)}
-                              {renderMessageStatus(message)}
-                            </div>
-                          </div>
-                          {isCurrentUser && (
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={user.profileImage || undefined} alt={user.fullName || 'You'} />
-                              <AvatarFallback>
-                                {user.fullName?.[0] || user.username?.[0] || 'Y'}
-                              </AvatarFallback>
-                            </Avatar>
-                          )}
+            </div>
+          ) : (
+            <>
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {loading && messages.length === 0 ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <div key={i} className={`flex ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`flex gap-3 ${i % 2 === 0 ? 'flex-row-reverse' : 'flex-row'}`}>
+                          <Skeleton className="h-8 w-8 rounded-full" />
+                          <Skeleton className={`h-16 w-56 rounded-lg ${i % 2 === 0 ? 'rounded-tr-none' : 'rounded-tl-none'}`} />
                         </div>
                       </div>
-                    </React.Fragment>
-                  );
-                })}
-                <div ref={messagesEndRef} />
-              </>
-            )}
-          </div>
-          
-          <div className="p-4 border-t">
-            <form onSubmit={handleSendMessage} className="flex items-end gap-2">
-              <div className="flex-1">
-                <Textarea 
-                  placeholder="Type a message..."
-                  value={messageText}
-                  onChange={(e) => setMessageText(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  className="min-h-[80px] resize-none"
-                />
+                    ))}
+                  </div>
+                ) : error ? (
+                  <div className="flex items-center justify-center h-full">
+                    <div className="text-center">
+                      <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium">Unable to load messages</h3>
+                      <p className="text-sm text-gray-500 mt-2">{error}</p>
+                    </div>
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="flex items-center justify-center h-full">
+                    <div className="text-center">
+                      <SendIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium">No messages yet</h3>
+                      <p className="text-sm text-gray-500 mt-2">
+                        Send a message to start a conversation
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {messages.map((message, index) => {
+                      const isCurrentUser = message.senderId === user.id;
+                      const dateHeader = formatMessageDate(message, index);
+                      
+                      return (
+                        <React.Fragment key={message.id}>
+                          {dateHeader && (
+                            <div className="flex justify-center my-4">
+                              <div className="px-3 py-1 bg-muted rounded-full text-xs">
+                                {dateHeader}
+                              </div>
+                            </div>
+                          )}
+                          <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`flex gap-3 max-w-[80%] ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}>
+                              {!isCurrentUser && (
+                                <Avatar className="h-8 w-8">
+                                  <AvatarImage src={message.sender?.profileImage || undefined} alt={message.sender?.fullName || 'User'} />
+                                  <AvatarFallback>
+                                    {message.sender?.fullName?.[0] || 'U'}
+                                  </AvatarFallback>
+                                </Avatar>
+                              )}
+                              <div>
+                                <div className={`px-4 py-2 rounded-lg ${isCurrentUser 
+                                  ? 'bg-primary text-primary-foreground rounded-tr-none' 
+                                  : 'bg-muted rounded-tl-none'
+                                }`}>
+                                  {message.content}
+                                </div>
+                                <div className={`flex items-center text-xs text-muted-foreground mt-1 ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
+                                  {formatTime(message.createdAt)}
+                                  {renderMessageStatus(message)}
+                                </div>
+                              </div>
+                              {isCurrentUser && (
+                                <Avatar className="h-8 w-8">
+                                  <AvatarImage src={user.profileImage || undefined} alt={user.fullName || 'You'} />
+                                  <AvatarFallback>
+                                    {user.fullName?.[0] || user.username?.[0] || 'Y'}
+                                  </AvatarFallback>
+                                </Avatar>
+                              )}
+                            </div>
+                          </div>
+                        </React.Fragment>
+                      );
+                    })}
+                    <div ref={messagesEndRef} />
+                  </>
+                )}
               </div>
-              <Button 
-                type="submit" 
-                disabled={!messageText.trim() || loading}
-                className="h-10"
-              >
-                <SendIcon className="h-4 w-4 mr-2" />
-                Send
-              </Button>
-            </form>
-          </div>
+              
+              <div className="p-4 border-t">
+                <form onSubmit={handleSendMessage} className="flex items-end gap-2">
+                  <div className="flex-1">
+                    <Textarea 
+                      placeholder="Type a message..."
+                      value={messageText}
+                      onChange={(e) => setMessageText(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      className="min-h-[80px] resize-none"
+                    />
+                  </div>
+                  <Button 
+                    type="submit" 
+                    disabled={!messageText.trim() || loading}
+                    className="h-10"
+                  >
+                    <SendIcon className="h-4 w-4 mr-2" />
+                    Send
+                  </Button>
+                </form>
+              </div>
+            </>
+          )}
         </div>
       </Card>
     </div>
