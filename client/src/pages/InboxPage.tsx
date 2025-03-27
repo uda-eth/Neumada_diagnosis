@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { useUser } from '@/hooks/use-user';
-import { useMessages, Conversation } from '@/hooks/use-messages';
+import { useMessages, Conversation, useMessageNotifications } from '@/hooks/use-messages';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -16,14 +16,36 @@ export default function InboxPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredConversations, setFilteredConversations] = useState<Conversation[]>([]);
   const { user } = useUser();
-  const { conversations, loading, error, fetchConversations, markAllAsRead } = useMessages();
+  const { conversations, loading, error, fetchConversations, markAllAsRead, connectSocket } = useMessages();
+  const { showNotification } = useMessageNotifications();
   const [, setLocation] = useLocation();
 
   useEffect(() => {
     if (user?.id) {
       fetchConversations(user.id);
+      connectSocket(user.id);
     }
-  }, [user, fetchConversations]);
+  }, [user, fetchConversations, connectSocket]);
+  
+  // Listen for new message events
+  useEffect(() => {
+    const handleNewMessage = (event: CustomEvent) => {
+      const message = event.detail;
+      showNotification(message);
+      // Refresh conversations when receiving a new message
+      if (user?.id) {
+        fetchConversations(user.id);
+      }
+    };
+    
+    // Add event listener for new message notifications
+    document.addEventListener('new-message', handleNewMessage as EventListener);
+    
+    // Clean up
+    return () => {
+      document.removeEventListener('new-message', handleNewMessage as EventListener);
+    };
+  }, [showNotification, fetchConversations, user]);
 
   useEffect(() => {
     setFilteredConversations(

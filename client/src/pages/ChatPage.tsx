@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useRoute, useLocation } from 'wouter';
 import { useUser } from '@/hooks/use-user';
-import { useMessages, Message } from '@/hooks/use-messages';
+import { useMessages, Message, useMessageNotifications } from '@/hooks/use-messages';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,7 @@ export default function ChatPage() {
   const [messageText, setMessageText] = useState('');
   const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'not-connected'>('checking');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { showNotification } = useMessageNotifications();
   const { 
     messages, 
     loading, 
@@ -104,6 +105,22 @@ export default function ChatPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+  
+  // Listen for new message events
+  useEffect(() => {
+    const handleNewMessage = (event: CustomEvent) => {
+      const message = event.detail;
+      showNotification(message);
+    };
+    
+    // Add event listener for new message notifications
+    document.addEventListener('new-message', handleNewMessage as EventListener);
+    
+    // Clean up
+    return () => {
+      document.removeEventListener('new-message', handleNewMessage as EventListener);
+    };
+  }, [showNotification]);
   
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();

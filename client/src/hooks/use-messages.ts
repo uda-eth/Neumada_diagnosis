@@ -328,7 +328,6 @@ export const useMessages = create<MessagesState>((set, get) => ({
     
     // Connect to WebSocket server
     const socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws/chat/${userId}`);
-    const { showNotification } = useMessageNotifications();
     
     socket.onopen = () => {
       console.log('WebSocket connection established');
@@ -375,8 +374,9 @@ export const useMessages = create<MessagesState>((set, get) => ({
         // Add the new message to the state
         set({ messages: [...messages, data] });
         
-        // Show notification for new messages
-        showNotification(data);
+        // No longer call showNotification here - will be handled by component
+        // Instead, emit an event that components can listen to
+        document.dispatchEvent(new CustomEvent('new-message', { detail: data }));
         
         // Refresh conversations to show the latest message
         fetchConversations(userId);
