@@ -7,6 +7,7 @@ export async function createApp() {
   const app = express();
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
+  app.use('/uploads', express.static('uploads'));
 
   // Add CORS headers for development
   app.use((req, res, next) => {
