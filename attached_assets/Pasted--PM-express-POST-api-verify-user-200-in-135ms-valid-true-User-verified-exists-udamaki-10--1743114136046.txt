@@ -1,0 +1,35 @@
+ PM [express] POST /api/verify-user 200 in 135ms :: {"valid":true}
+User verified exists: udamaki
+10:21:30 PM [express] POST /api/verify-user 200 in 128ms :: {"valid":true}
+Session ID in /api/auth/check: 1oa-4XlUbtAateUFr20gHoELINNWvDB7
+Auth check: User not authenticated
+10:21:31 PM [express] GET /api/auth/check 200 in 1ms :: {"authenticated":false,"message":"Not logged …
+Session ID in /api/auth/check: 1oa-4XlUbtAateUFr20gHoELINNWvDB7
+Auth check: User not authenticated
+10:21:31 PM [express] GET /api/auth/check 200 in 1ms :: {"authenticated":false,"message":"Not logged …
+Session ID in /api/auth/check: 1oa-4XlUbtAateUFr20gHoELINNWvDB7
+Auth check: User not authenticated
+10:21:31 PM [express] GET /api/auth/check 200 in 0ms :: {"authenticated":false,"message":"Not logged …
+Session ID in /api/auth/check: 1oa-4XlUbtAateUFr20gHoELINNWvDB7
+Auth check: User not authenticated
+10:21:31 PM [express] GET /api/auth/check 200 in 1ms :: {"authenticated":false,"message":"Not logged …
+Session ID in /api/auth/check: 1oa-4XlUbtAateUFr20gHoELINNWvDB7
+Auth check: User not authenticated
+10:21:31 PM [express] GET /api/auth/check 200 in 0ms :: {"authenticated":false,"message":"Not logged …
+Found real user in database: zeno
+10:21:31 PM [express] GET /api/users/zeno 304 in 144ms :: {"id":25,"username":"zeno","email":"1zenqui…
+User verified exists: udamaki
+10:21:32 PM [express] POST /api/verify-user 200 in 131ms :: {"valid":true}
+User verified exists: udamaki
+10:21:32 PM [express] POST /api/verify-user 200 in 134ms :: {"valid":true}
+Found real user in database: zeno
+10:21:32 PM [express] GET /api/users/zeno 304 in 131ms :: {"id":25,"username":"zeno","email":"1zenqui…
+User verified exists: udamaki
+10:21:32 PM [express] POST /api/verify-user 200 in 655ms :: {"valid":true}
+User verified exists: udamaki
+10:21:32 PM [express] POST /api/verify-user 200 in 667ms :: {"valid":true}
+User verified exists: udamaki
+10:21:32 PM [express] POST /api/verify-user 200 in 692ms :: {"valid":true}
+10:21:32 PM [express] GET /api/connections/status/25 401 in 1ms :: {"message":"Not authenticated"}
+10:21:34 PM [express] GET /api/connections/status/25 401 in 1ms :: {"message":"Not authenticated"}
+10:21:35 PM [express] POST /api/connections/request 401 in 1ms :: {"message":"Not authenticated"}

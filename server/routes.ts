@@ -1504,13 +1504,9 @@ export function registerRoutes(app: express.Application): { app: express.Applica
   // Connection related endpoints
   
   // Send a connection request
-  app.post('/api/connections/request', async (req: Request, res: Response) => {
+  app.post('/api/connections/request', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const currentUser = req.user as Express.User | undefined;
-      
-      if (!currentUser) {
-        return res.status(401).json({ message: 'Not authenticated' });
-      }
+      const currentUser = req.user as Express.User;
       
       const { targetUserId } = req.body;
       
@@ -1552,13 +1548,9 @@ export function registerRoutes(app: express.Application): { app: express.Applica
   });
   
   // Get pending connection requests (received by current user)
-  app.get('/api/connections/pending', async (req: Request, res: Response) => {
+  app.get('/api/connections/pending', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const currentUser = req.user as Express.User | undefined;
-      
-      if (!currentUser) {
-        return res.status(401).json({ message: 'Not authenticated' });
-      }
+      const currentUser = req.user as Express.User;
       
       // Get all pending requests where the current user is the target
       const pendingRequests = await db.query.userConnections.findMany({
@@ -1572,14 +1564,28 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       });
       
       // Format the response
-      const formattedRequests = pendingRequests.map(request => ({
-        id: request.follower.id,
-        username: request.follower.username,
-        fullName: request.follower.fullName,
-        profileImage: request.follower.profileImage,
-        requestDate: request.createdAt,
-        status: request.status
-      }));
+      const formattedRequests = pendingRequests.map(request => {
+        if (!request.follower) {
+          console.error('Missing follower data in connection request:', request);
+          return null;
+        }
+        
+        return {
+          id: request.follower.id,
+          username: request.follower.username,
+          fullName: request.follower.fullName,
+          profileImage: request.follower.profileImage,
+          requestDate: request.createdAt,
+          status: request.status
+        };
+      }).filter(Boolean) as Array<{
+        id: number;
+        username: string;
+        fullName: string | null;
+        profileImage: string | null;
+        requestDate: Date | null;
+        status: string;
+      }>;
       
       res.json(formattedRequests);
     } catch (error) {
@@ -1589,13 +1595,9 @@ export function registerRoutes(app: express.Application): { app: express.Applica
   });
   
   // Accept or decline a connection request
-  app.put('/api/connections/:userId', async (req: Request, res: Response) => {
+  app.put('/api/connections/:userId', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const currentUser = req.user as Express.User | undefined;
-      
-      if (!currentUser) {
-        return res.status(401).json({ message: 'Not authenticated' });
-      }
+      const currentUser = req.user as Express.User;
       
       const { userId } = req.params;
       const { status } = req.body;
@@ -1632,13 +1634,9 @@ export function registerRoutes(app: express.Application): { app: express.Applica
   });
   
   // Get all connections (accepted only)
-  app.get('/api/connections', async (req: Request, res: Response) => {
+  app.get('/api/connections', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const currentUser = req.user as Express.User | undefined;
-      
-      if (!currentUser) {
-        return res.status(401).json({ message: 'Not authenticated' });
-      }
+      const currentUser = req.user as Express.User;
       
       // Get connections where current user is either follower or following
       const connections = await db.query.userConnections.findMany({
@@ -1660,6 +1658,11 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         const isFollower = connection.followerId === currentUser.id;
         const otherUser = isFollower ? connection.following : connection.follower;
         
+        if (!otherUser) {
+          console.error('Missing related user data in connection:', connection);
+          return null;
+        }
+        
         return {
           id: otherUser.id,
           username: otherUser.username,
@@ -1668,7 +1671,14 @@ export function registerRoutes(app: express.Application): { app: express.Applica
           connectionDate: connection.createdAt,
           connectionType: isFollower ? 'following' : 'follower'
         };
-      });
+      }).filter(Boolean) as Array<{
+        id: number;
+        username: string;
+        fullName: string | null;
+        profileImage: string | null;
+        connectionDate: Date | null;
+        connectionType: string;
+      }>;
       
       res.json(formattedConnections);
     } catch (error) {
@@ -1678,13 +1688,9 @@ export function registerRoutes(app: express.Application): { app: express.Applica
   });
   
   // Check connection status between current user and another user
-  app.get('/api/connections/status/:userId', async (req: Request, res: Response) => {
+  app.get('/api/connections/status/:userId', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const currentUser = req.user as Express.User | undefined;
-      
-      if (!currentUser) {
-        return res.status(401).json({ message: 'Not authenticated' });
-      }
+      const currentUser = req.user as Express.User;
       
       const { userId } = req.params;
       const targetUserId = parseInt(userId);
