@@ -123,20 +123,20 @@ export default function HomePage() {
   const [showCitySuggestDialog, setShowCitySuggestDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { refreshUser } = useUser();
-  
+
   // Handle session parameters when coming from login redirect
   useEffect(() => {
     // Parse URL parameters for session information
     const urlParams = new URLSearchParams(window.location.search);
     const sessionId = urlParams.get('sessionId');
-    
+
     if (sessionId) {
       console.log("Detected session parameter, refreshing user data");
-      
+
       // Refresh user data to ensure we're using the new session
       refreshUser().then(userData => {
         console.log("User data refreshed successfully:", userData?.username);
-        
+
         // Remove the query params from URL without triggering a page reload
         const cleanUrl = window.location.pathname;
         window.history.replaceState({}, document.title, cleanUrl);
@@ -221,13 +221,13 @@ export default function HomePage() {
         });
         // Success! Close the dialog first to prevent UI issues
         setShowCitySuggestDialog(false);
-        
+
         // Then clear the form fields (for next time the dialog opens)
         setTimeout(() => {
           const cityInput = form.querySelector('#city') as HTMLInputElement;
           const emailInput = form.querySelector('#email') as HTMLInputElement;
           const reasonInput = form.querySelector('#reason') as HTMLTextAreaElement;
-          
+
           if (cityInput) cityInput.value = '';
           if (emailInput) emailInput.value = '';
           if (reasonInput) reasonInput.value = '';
@@ -511,7 +511,11 @@ export default function HomePage() {
                     <Card
                       key={event.id}
                       className="bg-card border-border hover:bg-accent/50 transition-colors cursor-pointer overflow-hidden"
-                      onClick={() => setLocation(`/event/${event.id}`)}
+                      onClick={() => {
+                        if (event.id) {
+                          setLocation(`/events/${event.id}`);
+                        }
+                      }}
                     >
                       <CardContent className="p-0">
                         <div className="flex flex-col md:flex-row">
@@ -640,7 +644,11 @@ export default function HomePage() {
                     <Card
                       key={event.id}
                       className="bg-card border-border hover:bg-accent/50 transition-colors cursor-pointer overflow-hidden"
-                      onClick={() => setLocation(`/event/${event.id}`)}
+                      onClick={() => {
+                        if (event.id) {
+                          setLocation(`/events/${event.id}`);
+                        }
+                      }}
                     >
                       <CardContent className="p-0">
                         <div className="flex flex-col md:flex-row">
@@ -850,8 +858,7 @@ export default function HomePage() {
                 ) : (
                   <>Submit Suggestion</>
                 )}
-              </Button>
-            </DialogFooter>
+              </Button>            </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
