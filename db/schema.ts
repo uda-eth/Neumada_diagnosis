@@ -124,9 +124,6 @@ export const userCities = pgTable("user_cities", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-import { integer, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
-import { users } from "./users";
-
 export const sessions = pgTable("sessions", {
   id: text("id").primaryKey(),
   userId: integer("user_id").references(() => users.id),
