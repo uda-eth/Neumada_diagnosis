@@ -10,8 +10,8 @@ import { getEventImage } from './services/eventsService';
 import { WebSocketServer } from 'ws';
 import { sendMessage, getConversations, getMessages, markMessageAsRead, markAllMessagesAsRead } from './services/messagingService';
 import { db } from "../db";
-import { userCities, users, events, sessions } from "../db/schema";
-import { eq, ne, gte, lte, and } from "drizzle-orm";
+import { userCities, users, events, sessions, userConnections } from "../db/schema";
+import { eq, ne, gte, lte, and, or } from "drizzle-orm";
 
 const categories = [
   "Retail",
@@ -1498,6 +1498,226 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         error: "Server error",
         authenticated: false
       });
+    }
+  });
+
+  // Connection related endpoints
+  
+  // Send a connection request
+  app.post('/api/connections/request', async (req: Request, res: Response) => {
+    try {
+      const currentUser = req.user as Express.User | undefined;
+      
+      if (!currentUser) {
+        return res.status(401).json({ message: 'Not authenticated' });
+      }
+      
+      const { targetUserId } = req.body;
+      
+      if (!targetUserId) {
+        return res.status(400).json({ error: 'Target user ID is required' });
+      }
+      
+      // Check if request already exists
+      const existingConnection = await db.query.userConnections.findFirst({
+        where: and(
+          eq(userConnections.followerId, currentUser.id),
+          eq(userConnections.followingId, targetUserId)
+        )
+      });
+      
+      if (existingConnection) {
+        return res.status(400).json({ 
+          error: 'Connection request already exists', 
+          status: existingConnection.status 
+        });
+      }
+      
+      // Create new connection request
+      const newConnection = await db.insert(userConnections).values({
+        followerId: currentUser.id,
+        followingId: targetUserId,
+        status: 'pending',
+        createdAt: new Date()
+      }).returning();
+      
+      res.status(201).json({
+        message: 'Connection request sent successfully',
+        connection: newConnection[0]
+      });
+    } catch (error) {
+      console.error('Error sending connection request:', error);
+      res.status(500).json({ error: 'Failed to send connection request' });
+    }
+  });
+  
+  // Get pending connection requests (received by current user)
+  app.get('/api/connections/pending', async (req: Request, res: Response) => {
+    try {
+      const currentUser = req.user as Express.User | undefined;
+      
+      if (!currentUser) {
+        return res.status(401).json({ message: 'Not authenticated' });
+      }
+      
+      // Get all pending requests where the current user is the target
+      const pendingRequests = await db.query.userConnections.findMany({
+        where: and(
+          eq(userConnections.followingId, currentUser.id),
+          eq(userConnections.status, 'pending')
+        ),
+        with: {
+          follower: true
+        }
+      });
+      
+      // Format the response
+      const formattedRequests = pendingRequests.map(request => ({
+        id: request.follower.id,
+        username: request.follower.username,
+        fullName: request.follower.fullName,
+        profileImage: request.follower.profileImage,
+        requestDate: request.createdAt,
+        status: request.status
+      }));
+      
+      res.json(formattedRequests);
+    } catch (error) {
+      console.error('Error fetching pending connection requests:', error);
+      res.status(500).json({ error: 'Failed to fetch pending connection requests' });
+    }
+  });
+  
+  // Accept or decline a connection request
+  app.put('/api/connections/:userId', async (req: Request, res: Response) => {
+    try {
+      const currentUser = req.user as Express.User | undefined;
+      
+      if (!currentUser) {
+        return res.status(401).json({ message: 'Not authenticated' });
+      }
+      
+      const { userId } = req.params;
+      const { status } = req.body;
+      
+      if (!status || (status !== 'accepted' && status !== 'declined')) {
+        return res.status(400).json({ error: 'Valid status (accepted or declined) is required' });
+      }
+      
+      // Update the connection status
+      const updatedConnection = await db
+        .update(userConnections)
+        .set({ status })
+        .where(
+          and(
+            eq(userConnections.followerId, parseInt(userId)),
+            eq(userConnections.followingId, currentUser.id),
+            eq(userConnections.status, 'pending')
+          )
+        )
+        .returning();
+      
+      if (!updatedConnection || updatedConnection.length === 0) {
+        return res.status(404).json({ error: 'Connection request not found' });
+      }
+      
+      res.json({
+        message: `Connection request ${status}`,
+        connection: updatedConnection[0]
+      });
+    } catch (error) {
+      console.error('Error updating connection request:', error);
+      res.status(500).json({ error: 'Failed to update connection request' });
+    }
+  });
+  
+  // Get all connections (accepted only)
+  app.get('/api/connections', async (req: Request, res: Response) => {
+    try {
+      const currentUser = req.user as Express.User | undefined;
+      
+      if (!currentUser) {
+        return res.status(401).json({ message: 'Not authenticated' });
+      }
+      
+      // Get connections where current user is either follower or following
+      const connections = await db.query.userConnections.findMany({
+        where: and(
+          or(
+            eq(userConnections.followerId, currentUser.id),
+            eq(userConnections.followingId, currentUser.id)
+          ),
+          eq(userConnections.status, 'accepted')
+        ),
+        with: {
+          follower: true,
+          following: true
+        }
+      });
+      
+      // Format the response to show the other user in each connection
+      const formattedConnections = connections.map(connection => {
+        const isFollower = connection.followerId === currentUser.id;
+        const otherUser = isFollower ? connection.following : connection.follower;
+        
+        return {
+          id: otherUser.id,
+          username: otherUser.username,
+          fullName: otherUser.fullName,
+          profileImage: otherUser.profileImage,
+          connectionDate: connection.createdAt,
+          connectionType: isFollower ? 'following' : 'follower'
+        };
+      });
+      
+      res.json(formattedConnections);
+    } catch (error) {
+      console.error('Error fetching connections:', error);
+      res.status(500).json({ error: 'Failed to fetch connections' });
+    }
+  });
+  
+  // Check connection status between current user and another user
+  app.get('/api/connections/status/:userId', async (req: Request, res: Response) => {
+    try {
+      const currentUser = req.user as Express.User | undefined;
+      
+      if (!currentUser) {
+        return res.status(401).json({ message: 'Not authenticated' });
+      }
+      
+      const { userId } = req.params;
+      const targetUserId = parseInt(userId);
+      
+      // Check outgoing connection (current user -> target user)
+      const outgoingConnection = await db.query.userConnections.findFirst({
+        where: and(
+          eq(userConnections.followerId, currentUser.id),
+          eq(userConnections.followingId, targetUserId)
+        )
+      });
+      
+      // Check incoming connection (target user -> current user)
+      const incomingConnection = await db.query.userConnections.findFirst({
+        where: and(
+          eq(userConnections.followerId, targetUserId),
+          eq(userConnections.followingId, currentUser.id)
+        )
+      });
+      
+      res.json({
+        outgoing: outgoingConnection ? {
+          status: outgoingConnection.status,
+          date: outgoingConnection.createdAt
+        } : null,
+        incoming: incomingConnection ? {
+          status: incomingConnection.status,
+          date: incomingConnection.createdAt
+        } : null
+      });
+    } catch (error) {
+      console.error('Error checking connection status:', error);
+      res.status(500).json({ error: 'Failed to check connection status' });
     }
   });
   

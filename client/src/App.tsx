@@ -6,6 +6,7 @@ import CreateEventPage from "./pages/CreateEventPage";
 import TestCreateEventPage from "./pages/TestCreateEventPage";
 import ChatbotPage from "./pages/ChatbotPage";
 import ConnectPage from "./pages/ConnectPage";
+import ConnectionsPage from "./pages/ConnectionsPage";
 import MessagesPage from "./pages/MessagesPage";
 import ChatPage from "./pages/ChatPage";
 import SettingsPage from "./pages/SettingsPage";
@@ -115,6 +116,7 @@ function AppContent() {
             <Route path="/test-create" component={TestCreateEventPage} />
             <Route path="/companion" component={ChatbotPage} />
             <Route path="/connect" component={ConnectPage} />
+            <Route path="/connections" component={ConnectionsPage} />
             <Route path="/messages" component={MessagesPage} />
             <Route path="/chat/:username" component={ChatPage} />
             <Route path="/settings" component={SettingsPage} />
