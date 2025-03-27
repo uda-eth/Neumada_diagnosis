@@ -10,7 +10,7 @@ import { getEventImage } from './services/eventsService';
 import { WebSocketServer } from 'ws';
 import { sendMessage, getConversations, getMessages, markMessageAsRead, markAllMessagesAsRead } from './services/messagingService';
 import { db } from "../db";
-import { userCities, users, events, sessions, userConnections } from "../db/schema";
+import { userCities, users, events, sessions, userConnections, eventParticipants } from "../db/schema";
 import { eq, ne, gte, lte, and, or } from "drizzle-orm";
 
 const categories = [
@@ -1296,20 +1296,156 @@ export function registerRoutes(app: express.Application): { app: express.Applica
     }
   });
 
+  app.get("/api/events/:eventId/participation/status", async (req, res) => {
+    try {
+      const { eventId } = req.params;
+      const userId = req.user?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ error: "You must be logged in to view participation status" });
+      }
+      
+      // Check if user has a participation record
+      const participation = await db.select()
+        .from(eventParticipants)
+        .where(
+          and(
+            eq(eventParticipants.eventId, parseInt(eventId)),
+            eq(eventParticipants.userId, userId)
+          )
+        )
+        .limit(1);
+      
+      if (participation.length === 0) {
+        return res.status(404).json({ status: 'not_attending' });
+      }
+      
+      res.json({ status: participation[0].status });
+    } catch (error) {
+      console.error("Error fetching participation status:", error);
+      res.status(500).json({ error: "Failed to fetch participation status" });
+    }
+  });
+
   app.post("/api/events/:eventId/participate", async (req, res) => {
     try {
       const { eventId } = req.params;
       const { status } = req.body;
+      const userId = req.user?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ error: "You must be logged in to participate in events" });
+      }
 
-      const mockParticipation = {
-        id: Math.floor(Math.random() * 1000),
-        eventId: parseInt(eventId),
-        status,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+      if (!['attending', 'interested', 'not_attending'].includes(status)) {
+        return res.status(400).json({ error: "Invalid status. Must be 'attending', 'interested', or 'not_attending'" });
+      }
 
-      res.json(mockParticipation);
+      // Get the event
+      const event = await db.select().from(events).where(eq(events.id, parseInt(eventId))).limit(1);
+      
+      if (!event.length) {
+        return res.status(404).json({ error: "Event not found" });
+      }
+      
+      // Check if user already has a participation record
+      const existingParticipation = await db.select()
+        .from(eventParticipants)
+        .where(
+          and(
+            eq(eventParticipants.eventId, parseInt(eventId)),
+            eq(eventParticipants.userId, userId)
+          )
+        )
+        .limit(1);
+
+      let result;
+      
+      if (existingParticipation.length > 0) {
+        const oldStatus = existingParticipation[0].status;
+        
+        // Update the existing record
+        if (status === 'not_attending') {
+          // If changing to not attending, delete the record instead
+          await db.delete(eventParticipants)
+            .where(
+              and(
+                eq(eventParticipants.eventId, parseInt(eventId)),
+                eq(eventParticipants.userId, userId)
+              )
+            );
+          
+          result = { status: 'not_attending', message: "Participation removed" };
+        } else {
+          // Update the status
+          result = await db.update(eventParticipants)
+            .set({ status })
+            .where(
+              and(
+                eq(eventParticipants.eventId, parseInt(eventId)),
+                eq(eventParticipants.userId, userId)
+              )
+            )
+            .returning();
+        }
+        
+        // Update count on the event
+        if (oldStatus !== status) {
+          // Decrement the old status count if it was 'attending' or 'interested'
+          if (oldStatus === 'attending') {
+            await db.update(events)
+              .set({ attendingCount: event[0].attendingCount - 1 })
+              .where(eq(events.id, parseInt(eventId)));
+          } else if (oldStatus === 'interested') {
+            await db.update(events)
+              .set({ interestedCount: event[0].interestedCount - 1 })
+              .where(eq(events.id, parseInt(eventId)));
+          }
+          
+          // Increment the new status count if it's 'attending' or 'interested'
+          if (status === 'attending') {
+            await db.update(events)
+              .set({ attendingCount: event[0].attendingCount + 1 })
+              .where(eq(events.id, parseInt(eventId)));
+          } else if (status === 'interested') {
+            await db.update(events)
+              .set({ interestedCount: event[0].interestedCount + 1 })
+              .where(eq(events.id, parseInt(eventId)));
+          }
+        }
+      } else if (status !== 'not_attending') {
+        // Create a new participation record if the status is not 'not_attending'
+        result = await db.insert(eventParticipants)
+          .values({
+            eventId: parseInt(eventId),
+            userId,
+            status,
+            ticketQuantity: 1,
+          })
+          .returning();
+        
+        // Increment the appropriate count
+        if (status === 'attending') {
+          await db.update(events)
+            .set({ attendingCount: event[0].attendingCount + 1 })
+            .where(eq(events.id, parseInt(eventId)));
+        } else if (status === 'interested') {
+          await db.update(events)
+            .set({ interestedCount: event[0].interestedCount + 1 })
+            .where(eq(events.id, parseInt(eventId)));
+        }
+      } else {
+        // If status is 'not_attending' and no record exists, nothing to do
+        result = { status: 'not_attending', message: "User was not participating in this event" };
+      }
+
+      // Get the updated event
+      const updatedEvent = await db.select().from(events).where(eq(events.id, parseInt(eventId))).limit(1);
+      
+      res.json({
+        participation: result,
+        event: updatedEvent[0]
+      });
     } catch (error) {
       console.error("Error updating participation:", error);
       res.status(500).json({ error: "Failed to update participation" });

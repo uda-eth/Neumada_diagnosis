@@ -1,13 +1,14 @@
 import { useParams, useLocation } from "wouter";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@/hooks/use-user";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, MessageSquare, UserPlus2 } from "lucide-react";
+import { ChevronLeft, MessageSquare, UserPlus2, Star, Users } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTranslation } from "@/lib/translations";
 import { z } from "zod";
+import { useEffect, useState } from "react";
 
 // Define the Event type with all fields
 const EventSchema = z.object({
@@ -30,6 +31,9 @@ const EventSchema = z.object({
 
 type Event = z.infer<typeof EventSchema>;
 
+// Define participation status types
+type ParticipationStatus = 'attending' | 'interested' | 'not_attending';
+
 // Type for attendee/interested user
 interface EventUser {
   id: number;
@@ -46,6 +50,8 @@ export default function EventPage() {
   const { user } = useUser();
   const { toast } = useToast();
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const [userStatus, setUserStatus] = useState<ParticipationStatus>('not_attending');
 
   const { data: event, isLoading } = useQuery<Event>({
     queryKey: [`/api/events/${id}`],
@@ -61,23 +67,73 @@ export default function EventPage() {
       return response.json();
     },
   });
+  
+  // Fetch user's participation status for this event
+  const { data: participationData } = useQuery({
+    queryKey: [`/api/events/${id}/participation`, user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      
+      try {
+        const response = await fetch(`/api/events/${id}/participation/status`, {
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            return { status: 'not_attending' as ParticipationStatus };
+          }
+          throw new Error(`Error fetching participation status: ${response.status}`);
+        }
+        
+        return response.json();
+      } catch (error) {
+        console.error("Error fetching participation status:", error);
+        return { status: 'not_attending' as ParticipationStatus };
+      }
+    },
+    enabled: !!user, // Only run if user is logged in
+  });
+  
+  // Update user participation status when data is fetched
+  useEffect(() => {
+    if (participationData) {
+      setUserStatus(participationData.status || 'not_attending');
+    }
+  }, [participationData]);
 
   const participateMutation = useMutation({
-    mutationFn: async (status: string) => {
+    mutationFn: async (status: ParticipationStatus) => {
       const response = await fetch(`/api/events/${id}/participate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
         credentials: "include",
       });
-      if (!response.ok) throw new Error("Failed to update participation");
+      
+      if (!response.ok) throw new Error("Failed to update participation status");
+      
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      // Update local state
+      setUserStatus(variables);
+      
+      // Show success message
+      const messages = {
+        attending: "You are now attending this event!",
+        interested: "You are now interested in this event",
+        not_attending: "You are no longer participating in this event"
+      };
+      
       toast({
         title: "Success",
-        description: "Successfully updated participation status",
+        description: messages[variables],
       });
+      
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: [`/api/events/${id}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/events/${id}/participation`, user?.id] });
     },
     onError: () => {
       toast({
@@ -97,9 +153,10 @@ export default function EventPage() {
   }
 
   const isPrivateEvent = !event.price;
-  const attendingCount = event.attendingCount || Math.floor(Math.random() * 30 + 5);
-  const interestedCount = event.interestedCount || Math.floor(Math.random() * 50 + 10);
+  const attendingCount = event.attendingCount || 0;
+  const interestedCount = event.interestedCount || 0;
 
+  // Use actual data if available, or a placeholder set
   const attendingUsers: EventUser[] = Array.from({ length: Math.min(attendingCount, 5) }, (_, i) => ({
     id: i,
     name: `User ${i + 1}`,
@@ -118,6 +175,22 @@ export default function EventPage() {
 
   const handleViewAllUsers = (type: 'attending' | 'interested') => {
     setLocation(`/event/${id}/users?type=${type}`);
+  };
+  
+  const handleParticipationChange = (status: ParticipationStatus) => {
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Sign in required",
+        description: "Please sign in to participate in events",
+      });
+      setLocation('/auth');
+      return;
+    }
+    
+    // Toggle status if already in that state
+    const newStatus = userStatus === status ? 'not_attending' : status;
+    participateMutation.mutate(newStatus);
   };
 
   return (
@@ -257,6 +330,30 @@ export default function EventPage() {
             </Button>
           </div>
         </div>
+        
+        {/* Interested and Attending Buttons */}
+        {user && user.id !== event.creatorId && (
+          <div className="mt-6 flex gap-4">
+            <Button
+              variant={userStatus === 'interested' ? "default" : "outline"}
+              className={`flex-1 ${userStatus === 'interested' ? 'bg-blue-700 hover:bg-blue-800' : ''}`}
+              onClick={() => handleParticipationChange('interested')}
+              disabled={participateMutation.isPending}
+            >
+              <Star className="h-4 w-4 mr-2" />
+              {userStatus === 'interested' ? 'Interested ✓' : 'Interested'}
+            </Button>
+            <Button
+              variant={userStatus === 'attending' ? "default" : "outline"}
+              className={`flex-1 ${userStatus === 'attending' ? 'bg-green-700 hover:bg-green-800' : ''}`}
+              onClick={() => handleParticipationChange('attending')}
+              disabled={participateMutation.isPending}
+            >
+              <Users className="h-4 w-4 mr-2" />
+              {userStatus === 'attending' ? 'Attending ✓' : 'Attending'}
+            </Button>
+          </div>
+        )}
 
         {/* Description */}
         <div className="space-y-2">
@@ -309,12 +406,12 @@ export default function EventPage() {
       </div>
 
       {/* Bottom Actions */}
-      {user && user.id !== event.creatorId && (
+      {user && user.id !== event.creatorId && event.price && (
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-black/80 backdrop-blur-lg border-t border-white/10">
           <div className="container mx-auto max-w-2xl">
             <Button
               className="w-full h-12"
-              onClick={() => participateMutation.mutate("attending")}
+              onClick={() => setLocation(`/event/${id}/tickets`)}
               disabled={participateMutation.isPending}
             >
               {isPrivateEvent ? "Request Access" : `Buy Tickets • $${event.price}`}
