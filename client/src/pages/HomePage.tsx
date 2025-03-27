@@ -513,7 +513,7 @@ export default function HomePage() {
                       className="bg-card border-border hover:bg-accent/50 transition-colors cursor-pointer overflow-hidden"
                       onClick={() => {
                         if (event.id) {
-                          setLocation(`/events/${event.id}`);
+                          setLocation(`/event/${event.id}`);
                         }
                       }}
                     >
@@ -577,7 +577,7 @@ export default function HomePage() {
                                     className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      setLocation(`/events/${event.id}/register`);
+                                      setLocation(`/event/${event.id}/register`);
                                     }}
                                   >
                                     Get Tickets
@@ -646,7 +646,7 @@ export default function HomePage() {
                       className="bg-card border-border hover:bg-accent/50 transition-colors cursor-pointer overflow-hidden"
                       onClick={() => {
                         if (event.id) {
-                          setLocation(`/events/${event.id}`);
+                          setLocation(`/event/${event.id}`);
                         }
                       }}
                     >
@@ -710,7 +710,7 @@ export default function HomePage() {
                                     className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      setLocation(`/events/${event.id}/register`);
+                                      setLocation(`/event/${event.id}/register`);
                                     }}
                                   >
                                     Get Tickets
