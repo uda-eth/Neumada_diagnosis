@@ -66,19 +66,14 @@ export default function EditProfilePage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false); // Add loading state
   const router = useRouter(); // Initialize useRouter
-const [, setLocation] = useLocation(); // For navigation
+  const [location, setLocation] = useState(''); //Corrected this line
 
   // For demo, use first member as current user
   const currentUser = members[0];
 
   // Handle back navigation
   const handleBack = () => {
-    if (history.state?.prev) {
-      setLocation(history.state.prev);
-    } else {
-      // Fallback to profile page if no previous page
-      setLocation('/profile');
-    }
+    router.push('/profile'); //Directly push to profile page
   };
 
   const form = useForm<ProfileFormValues>({
