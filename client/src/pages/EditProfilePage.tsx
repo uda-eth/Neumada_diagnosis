@@ -66,9 +66,20 @@ export default function EditProfilePage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false); // Add loading state
   const router = useRouter(); // Initialize useRouter
+const [, setLocation] = useLocation(); // For navigation
 
   // For demo, use first member as current user
   const currentUser = members[0];
+
+  // Handle back navigation
+  const handleBack = () => {
+    if (history.state?.prev) {
+      setLocation(history.state.prev);
+    } else {
+      // Fallback to profile page if no previous page
+      setLocation('/profile');
+    }
+  };
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -323,7 +334,7 @@ export default function EditProfilePage() {
               <Button type="submit" size="lg" className="interactive-hover" disabled={isLoading}> {/* Disable button while loading */}
                 {isLoading ? "Saving..." : "Save Changes"} {/* Show loading indicator */}
               </Button>
-              <Button type="button" variant="outline" size="lg" className="glass-hover" onClick={() => router.back()}> {/* Use router.back() for navigation */}
+              <Button type="button" variant="outline" size="lg" className="glass-hover" onClick={handleBack}>
                 Cancel
               </Button>
             </div>
