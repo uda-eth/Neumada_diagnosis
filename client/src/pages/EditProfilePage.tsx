@@ -63,6 +63,7 @@ export default function EditProfilePage() {
   const { toast } = useToast();
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false); // Add loading state
 
   // For demo, use first member as current user
   const currentUser = members[0];
@@ -92,20 +93,32 @@ export default function EditProfilePage() {
   };
 
   const onSubmit = async (data: ProfileFormValues) => {
+    setIsLoading(true); // Set loading state to true
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Simulate API call with error handling
+      const response = await new Promise((resolve, reject) => {
+          setTimeout(() => {
+              // Simulate a potential profile not found error
+              if (Math.random() < 0.2) { // 20% chance of error
+                  reject(new Error("Profile not found"));
+              } else {
+                  resolve(true); // Simulate successful update
+              }
+          }, 1000);
+      });
 
       toast({
         title: "Profile Updated",
         description: "Your profile has been successfully updated.",
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to update profile. Please try again.",
+        description: error.message, // Display specific error message
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false); // Set loading state to false regardless of success or failure
     }
   };
 
@@ -305,8 +318,8 @@ export default function EditProfilePage() {
             </div>
 
             <div className="flex gap-4">
-              <Button type="submit" size="lg" className="interactive-hover">
-                Save Changes
+              <Button type="submit" size="lg" className="interactive-hover" disabled={isLoading}> {/* Disable button while loading */}
+                {isLoading ? "Saving..." : "Save Changes"} {/* Show loading indicator */}
               </Button>
               <Button type="button" variant="outline" size="lg" className="glass-hover">
                 Cancel
