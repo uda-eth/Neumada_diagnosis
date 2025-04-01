@@ -77,15 +77,15 @@ export function setupAuth(app: Express) {
   const sessionSettings: session.SessionOptions = {
     secret: sessionSecret,
     name: "maly_session",
-    resave: false,
+    resave: true,
     rolling: true,
-    saveUninitialized: false,
+    saveUninitialized: true,
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: 'none',
       path: '/',
-      secure: process.env.NODE_ENV === 'production'
+      secure: true
     },
     store: new MemoryStore({
       checkPeriod: 86400000, // 24 hours
@@ -599,19 +599,48 @@ export function setupAuth(app: Express) {
   });
 
   // Add a dedicated auth check endpoint
-  app.get("/api/auth/check", (req, res) => {
+  app.get("/api/auth/check", async (req, res) => {
     // Add cache-control headers to prevent caching of auth status
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     res.set('Expires', '-1');
     res.set('Pragma', 'no-cache');
 
-    // Force the session to touch to update cookies and expirations
-    if (req.session) {
-      // @ts-ignore - Custom property for tracking session state
-      req.session.initialized = true;
+    const sessionId = req.header('X-Session-ID') || req.sessionID;
 
-      // Force session save to ensure cookie is set
-      req.session.save();
+    // Check for existing session in database first
+    if (sessionId) {
+      const [dbSession] = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.id, sessionId))
+        .limit(1);
+
+      if (dbSession && dbSession.userId) {
+        const [user] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, dbSession.userId))
+          .limit(1);
+
+        if (user) {
+          const { password, ...userWithoutPassword } = user;
+          return res.json({
+            authenticated: true,
+            user: userWithoutPassword,
+            sessionId: sessionId
+          });
+        }
+      }
+    }
+
+    // Fallback to checking session authentication
+    if (req.isAuthenticated() && req.user) {
+      const { password, ...userWithoutPassword } = req.user;
+      return res.json({
+        authenticated: true,
+        user: userWithoutPassword,
+        sessionId: req.sessionID
+      });
     }
 
     // Log session ID for debugging
