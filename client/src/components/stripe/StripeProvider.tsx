@@ -14,6 +14,7 @@ export default function StripeProvider({ children }: StripeProviderProps) {
   const [publishableKey, setPublishableKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null); // Added clientSecret state
 
   useEffect(() => {
     // Fetch publishable key from server
@@ -21,13 +22,13 @@ export default function StripeProvider({ children }: StripeProviderProps) {
       try {
         setLoading(true);
         const response = await fetch('/api/stripe/config');
-        
+
         if (!response.ok) {
           throw new Error('Failed to load Stripe configuration');
         }
 
         const { publishableKey } = await response.json();
-        
+
         if (!publishableKey) {
           throw new Error('Stripe publishable key is missing');
         }
@@ -35,6 +36,13 @@ export default function StripeProvider({ children }: StripeProviderProps) {
         setPublishableKey(publishableKey);
         // Initialize stripePromise once we have the key
         stripePromise = loadStripe(publishableKey);
+        // Create setup intent to get clientSecret
+        const setupResponse = await fetch('/api/stripe/create-setup-intent');
+        if (!setupResponse.ok) {
+          throw new Error('Failed to create setup intent');
+        }
+        const { clientSecret } = await setupResponse.json();
+        setClientSecret(clientSecret);
       } catch (error) {
         console.error('Error loading Stripe configuration:', error);
         setError(error instanceof Error ? error.message : 'Failed to load Stripe configuration');
@@ -55,7 +63,7 @@ export default function StripeProvider({ children }: StripeProviderProps) {
     );
   }
 
-  if (error || !stripePromise) {
+  if (error || !stripePromise || !clientSecret) { // Check for clientSecret
     return (
       <div className="text-center p-4 text-red-500">
         <p>There was a problem loading the payment system.</p>
@@ -66,7 +74,7 @@ export default function StripeProvider({ children }: StripeProviderProps) {
   }
 
   return (
-    <Elements stripe={stripePromise}>
+    <Elements stripe={stripePromise} options={{ clientSecret }}> {/* Pass clientSecret to options */}
       {children}
     </Elements>
   );

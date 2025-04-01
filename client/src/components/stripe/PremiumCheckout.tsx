@@ -12,11 +12,42 @@ interface PremiumCheckoutProps {
 
 // Wrapper component that handles the Stripe initialization
 export function PremiumCheckout({ onSuccess, onCancel }: PremiumCheckoutProps) {
+  const [error, setError] = useState<Error | null>(null);
+
+  if (error) {
+    return (
+      <Card className="p-6 bg-black/40 backdrop-blur-md border border-white/10">
+        <div className="text-center text-red-500">
+          <p className="font-medium">Payment system error</p>
+          <p className="text-sm mt-2">{error.message}</p>
+          <Button variant="outline" className="mt-4" onClick={() => setError(null)}>
+            Try Again
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
   return (
-    <StripeProvider>
-      <PremiumCheckoutContent onSuccess={onSuccess} onCancel={onCancel} />
-    </StripeProvider>
+    <ErrorBoundary onError={(error) => setError(error)}>
+      <StripeProvider>
+        <PremiumCheckoutContent onSuccess={onSuccess} onCancel={onCancel} />
+      </StripeProvider>
+    </ErrorBoundary>
   );
+}
+
+class ErrorBoundary extends React.Component<{
+  children: React.ReactNode;
+  onError: (error: Error) => void;
+}> {
+  componentDidCatch(error: Error) {
+    this.props.onError(error);
+  }
+
+  render() {
+    return this.props.children;
+  }
 }
 
 // Internal component that handles the checkout logic

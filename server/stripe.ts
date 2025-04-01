@@ -293,14 +293,20 @@ export async function createSetupIntent(req: Request, res: Response) {
     // Get or create Stripe customer
     const customerId = await getOrCreateCustomer(userId);
     
-    // Create a setup intent
+    // Create a setup intent with automatic payment methods
     const setupIntent = await stripeClient.setupIntents.create({
       customer: customerId,
       payment_method_types: ['card'],
+      usage: 'on_session',
     });
+    
+    if (!setupIntent.client_secret) {
+      throw new Error('Failed to generate client secret');
+    }
     
     res.status(200).json({
       clientSecret: setupIntent.client_secret,
+      setupIntentId: setupIntent.id,
     });
   } catch (error: any) {
     console.error('Error creating setup intent:', error);
