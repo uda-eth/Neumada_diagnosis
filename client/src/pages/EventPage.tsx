@@ -104,9 +104,13 @@ export default function EventPage() {
 
   const participateMutation = useMutation({
     mutationFn: async (status: ParticipationStatus) => {
+      const sessionId = localStorage.getItem('maly_session_id');
       const response = await fetch(`/api/events/${id}/participate`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "X-Session-ID": sessionId || ''
+        },
         body: JSON.stringify({ status }),
         credentials: "include",
       });
@@ -145,16 +149,28 @@ export default function EventPage() {
   });
 
   const handleParticipate = async (status: ParticipationStatus) => {
-    if (!user) {
+    const sessionId = localStorage.getItem('maly_session_id');
+    
+    if (!user || !sessionId) {
       toast({
         title: "Authentication Required",
         description: "Please log in to participate in events",
         variant: "destructive"
       });
+      setLocation('/auth');
       return;
     }
 
-    participateMutation.mutate(status);
+    try {
+      await participateMutation.mutateAsync(status);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update participation status. Please try logging in again.",
+      });
+      setLocation('/auth');
+    }
   };
 
   if (isLoading || !event) {
