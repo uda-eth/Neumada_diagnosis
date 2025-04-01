@@ -892,6 +892,16 @@ async function checkAuthentication(req: Request, res: Response) {
   });
 }
 
+import { 
+  createPaymentIntent, 
+  createSubscription, 
+  getSubscription, 
+  cancelSubscription, 
+  handleStripeWebhook, 
+  createSetupIntent, 
+  getPublishableKey 
+} from './stripe';
+
 export function registerRoutes(app: express.Application): { app: express.Application; httpServer: Server } {
   app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
 
@@ -2109,6 +2119,29 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       res.status(500).json({ error: 'Failed to check connection status' });
     }
   });
+
+  // ============== Stripe Payment Routes ==============
+
+  // Get Stripe publishable key
+  app.get('/api/stripe/config', getPublishableKey);
+
+  // Create a payment intent for one-time payments
+  app.post('/api/stripe/create-payment-intent', isAuthenticated, createPaymentIntent);
+  
+  // Create a subscription for the user
+  app.post('/api/stripe/create-subscription', isAuthenticated, createSubscription);
+  
+  // Get current subscription status
+  app.get('/api/stripe/subscription', isAuthenticated, getSubscription);
+  
+  // Cancel subscription
+  app.post('/api/stripe/cancel-subscription', isAuthenticated, cancelSubscription);
+  
+  // Create a setup intent for saving payment methods
+  app.post('/api/stripe/create-setup-intent', isAuthenticated, createSetupIntent);
+  
+  // Webhook endpoint to handle Stripe events
+  app.post('/api/stripe/webhook', express.raw({type: 'application/json'}), handleStripeWebhook);
 
   return { app, httpServer };
 }

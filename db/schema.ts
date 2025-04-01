@@ -28,6 +28,9 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow(),
   lastActive: timestamp("last_active"), // For showing active users
   isPremium: boolean("is_premium").default(false), // For premium features
+  premiumSince: timestamp("premium_since"), // When user became premium
+  stripeCustomerId: text("stripe_customer_id"), // For Stripe integration
+  stripeSubscriptionId: text("stripe_subscription_id"), // For Stripe subscription
   preferredLanguage: text("preferred_language").default("en"), // Language preference
   referralCode: text("referral_code").unique(), // For referral system
   referredBy: integer("referred_by"), // Will set up relation later to avoid circular dep

@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronLeft, Crown, Star, Shield, Gift, Zap, MessageSquare } from "lucide-react";
+import { PremiumCheckout } from "@/components/stripe/PremiumCheckout";
+import { useToast } from "@/hooks/use-toast";
 
 const features = [
   {
@@ -38,6 +41,25 @@ const features = [
 
 export default function PremiumPage() {
   const [, setLocation] = useLocation();
+  const [showCheckout, setShowCheckout] = useState(false);
+  const { toast } = useToast();
+
+  const handleSuccess = () => {
+    setShowCheckout(false);
+    toast({
+      title: "Welcome to Premium!",
+      description: "Your premium subscription is now active. Enjoy all the benefits!",
+    });
+    
+    // Refresh the page or user data to reflect premium status
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
+  };
+
+  const handleCancel = () => {
+    setShowCheckout(false);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -62,55 +84,63 @@ export default function PremiumPage() {
 
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold mb-4">
-              Unlock the World with Maly Premium
-            </h2>
-            <p className="text-muted-foreground text-lg">
-              Maximize your Maly experience for less than $1/day
-            </p>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2 mb-8">
-            {features.map((feature, index) => (
-              <Card key={index} className="bg-card hover:bg-accent/5 transition-colors">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="p-2 rounded-lg bg-accent/10">
-                      <feature.icon className="w-6 h-6 text-purple-400" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-2">{feature.title}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {feature.description}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          <div className="text-center">
-            <div className="inline-block rounded-lg bg-card p-8 mb-6">
-              <div className="text-4xl font-bold mb-2">$29</div>
-              <div className="text-muted-foreground">per month</div>
+          {showCheckout ? (
+            <div className="mb-8">
+              <PremiumCheckout 
+                onSuccess={handleSuccess} 
+                onCancel={handleCancel} 
+              />
             </div>
+          ) : (
+            <>
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold mb-4">
+                  Unlock the World with Maly Premium
+                </h2>
+                <p className="text-muted-foreground text-lg">
+                  Maximize your Maly experience for less than $1/day
+                </p>
+              </div>
 
-            <div className="flex justify-center">
-              <Button 
-                size="lg"
-                className="bg-gradient-to-r from-purple-900 via-purple-800 to-black hover:from-purple-800 hover:via-purple-700 hover:to-gray-900 text-white border-0 px-8"
-                onClick={() => {
-                  // TODO: Implement subscription flow
-                  console.log("Subscribe clicked");
-                }}
-              >
-                <Crown className="w-5 h-5 mr-2" />
-                Get Premium Now
-              </Button>
-            </div>
-          </div>
+              <div className="grid gap-6 md:grid-cols-2 mb-8">
+                {features.map((feature, index) => (
+                  <Card key={index} className="bg-card hover:bg-accent/5 transition-colors">
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <div className="p-2 rounded-lg bg-accent/10">
+                          <feature.icon className="w-6 h-6 text-purple-400" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold mb-2">{feature.title}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {feature.description}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              <div className="text-center">
+                <div className="inline-block rounded-lg bg-card p-8 mb-6">
+                  <div className="text-4xl font-bold mb-2">$29</div>
+                  <div className="text-muted-foreground">per month</div>
+                </div>
+
+                <div className="flex justify-center">
+                  <Button 
+                    size="lg"
+                    className="bg-gradient-to-r from-purple-900 via-purple-800 to-black hover:from-purple-800 hover:via-purple-700 hover:to-gray-900 text-white border-0 px-8"
+                    onClick={() => setShowCheckout(true)}
+                  >
+                    <Crown className="w-5 h-5 mr-2" />
+                    Get Premium Now
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </main>
     </div>
