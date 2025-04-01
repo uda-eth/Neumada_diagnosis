@@ -2123,7 +2123,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
   // ============== Stripe Payment Routes ==============
 
   // Get Stripe publishable key
-  app.get('/api/stripe/config', getPublishableKey);
+  app.get('/api/stripe/config', isAuthenticated, getPublishableKey);
 
   // Create a payment intent for one-time payments
   app.post('/api/stripe/create-payment-intent', isAuthenticated, createPaymentIntent);

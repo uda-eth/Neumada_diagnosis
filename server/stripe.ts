@@ -316,7 +316,21 @@ export async function createSetupIntent(req: Request, res: Response) {
 
 // Get publishable key
 export async function getPublishableKey(req: Request, res: Response) {
-  res.status(200).json({
-    publishableKey: process.env.STRIPE_PUBLISHABLE_KEY
-  });
+  try {
+    const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
+    
+    if (!publishableKey) {
+      throw new Error('Stripe publishable key not configured');
+    }
+
+    res.setHeader('Content-Type', 'application/json');
+    res.status(200).json({
+      publishableKey
+    });
+  } catch (error) {
+    console.error('Error getting publishable key:', error);
+    res.status(500).json({ 
+      error: error instanceof Error ? error.message : 'Failed to get Stripe configuration' 
+    });
+  }
 }
