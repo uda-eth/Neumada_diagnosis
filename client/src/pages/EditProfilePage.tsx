@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { MapPin, Upload } from "lucide-react";
 import { members } from "@/lib/members-data";
 import { DIGITAL_NOMAD_CITIES } from "@/lib/constants";
+import { useRouter } from 'next/router'; // Add useRouter for navigation
 
 const profileSchema = z.object({
   fullName: z.string().min(2, "Name must be at least 2 characters"),
@@ -64,6 +65,7 @@ export default function EditProfilePage() {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false); // Add loading state
+  const router = useRouter(); // Initialize useRouter
 
   // For demo, use first member as current user
   const currentUser = members[0];
@@ -321,7 +323,7 @@ export default function EditProfilePage() {
               <Button type="submit" size="lg" className="interactive-hover" disabled={isLoading}> {/* Disable button while loading */}
                 {isLoading ? "Saving..." : "Save Changes"} {/* Show loading indicator */}
               </Button>
-              <Button type="button" variant="outline" size="lg" className="glass-hover">
+              <Button type="button" variant="outline" size="lg" className="glass-hover" onClick={() => router.back()}> {/* Use router.back() for navigation */}
                 Cancel
               </Button>
             </div>
