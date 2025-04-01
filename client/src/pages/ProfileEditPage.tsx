@@ -396,18 +396,9 @@ export default function ProfileEditPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Born</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Where were you born?" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {DIGITAL_NOMAD_CITIES.map(city => (
-                              <SelectItem key={city} value={city}>{city}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <Input {...field} placeholder="Where were you born?" className="bg-white/5 border-white/10" />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -419,18 +410,9 @@ export default function ProfileEditPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Raised</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Where were you raised?" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {DIGITAL_NOMAD_CITIES.map(city => (
-                              <SelectItem key={city} value={city}>{city}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <Input {...field} placeholder="Where were you raised?" className="bg-white/5 border-white/10" />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -442,18 +424,9 @@ export default function ProfileEditPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Lived</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="A meaningful place you've lived" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {DIGITAL_NOMAD_CITIES.map(city => (
-                              <SelectItem key={city} value={city}>{city}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <Input {...field} placeholder="A meaningful place you've lived" className="bg-white/5 border-white/10" />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -468,18 +441,9 @@ export default function ProfileEditPage() {
                           <Globe className="w-4 h-4" />
                           Upcoming
                         </FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Where are you going next?" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {DIGITAL_NOMAD_CITIES.map(city => (
-                              <SelectItem key={city} value={city}>{city}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <Input {...field} placeholder="Where are you going next?" className="bg-white/5 border-white/10" />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
