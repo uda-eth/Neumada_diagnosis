@@ -714,8 +714,13 @@ export function setupAuth(app: Express) {
 
       const userId = sessionQuery[0].userId;
 
+    } catch (err) {
+      console.error("Session verification error:", err);
+      return res.status(401).json({ error: "Session verification failed" });
+    }
+
     try {
-      const userId = req.user?.id;
+      const userId = sessionQuery[0].userId;
       const updatedFields = req.body;
 
       // Remove sensitive fields that shouldn't be updated directly
