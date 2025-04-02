@@ -320,7 +320,7 @@ export async function getPublishableKey(req: Request, res: Response) {
     const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
     
     if (!publishableKey) {
-      throw new Error('Stripe publishable key not configured');
+      throw new Error('STRIPE_PUBLISHABLE_KEY not found in environment variables');
     }
 
     res.setHeader('Content-Type', 'application/json');
