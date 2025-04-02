@@ -1310,11 +1310,11 @@ export function registerRoutes(app: express.Application): { app: express.Applica
     try {
       const { eventId } = req.params;
       const userId = req.user?.id;
-      
+
       if (!userId) {
         return res.status(401).json({ error: "You must be logged in to view participation status" });
       }
-      
+
       // Check if user has a participation record
       const participation = await db.select()
         .from(eventParticipants)
@@ -1325,11 +1325,11 @@ export function registerRoutes(app: express.Application): { app: express.Applica
           )
         )
         .limit(1);
-      
+
       if (participation.length === 0) {
         return res.status(404).json({ status: 'not_attending' });
       }
-      
+
       res.json({ status: participation[0].status });
     } catch (error) {
       console.error("Error fetching participation status:", error);
@@ -1342,7 +1342,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       const { eventId } = req.params;
       const { status } = req.body;
       const userId = req.user?.id;
-      
+
       if (!userId) {
         return res.status(401).json({ error: "You must be logged in to participate in events" });
       }
@@ -1353,11 +1353,11 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
       // Get the event
       const event = await db.select().from(events).where(eq(events.id, parseInt(eventId))).limit(1);
-      
+
       if (!event.length) {
         return res.status(404).json({ error: "Event not found" });
       }
-      
+
       // Check if user already has a participation record
       const existingParticipation = await db.select()
         .from(eventParticipants)
@@ -1370,10 +1370,10 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         .limit(1);
 
       let result;
-      
+
       if (existingParticipation.length > 0) {
         const oldStatus = existingParticipation[0].status;
-        
+
         // Update the existing record
         if (status === 'not_attending') {
           // If changing to not attending, delete the record instead
@@ -1384,7 +1384,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
                 eq(eventParticipants.userId, userId)
               )
             );
-          
+
           result = { status: 'not_attending', message: "Participation removed" };
         } else {
           // Update the status
@@ -1398,7 +1398,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
             )
             .returning();
         }
-        
+
         // Update count on the event
         if (oldStatus !== status) {
           // Decrement the old status count if it was 'attending' or 'interested'
@@ -1411,7 +1411,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
               .set({ interestedCount: event[0].interestedCount - 1 })
               .where(eq(events.id, parseInt(eventId)));
           }
-          
+
           // Increment the new status count if it's 'attending' or 'interested'
           if (status === 'attending') {
             await db.update(events)
@@ -1433,7 +1433,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
             ticketQuantity: 1,
           })
           .returning();
-        
+
         // Increment the appropriate count
         if (status === 'attending') {
           await db.update(events)
@@ -1451,7 +1451,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
       // Get the updated event
       const updatedEvent = await db.select().from(events).where(eq(events.id, parseInt(eventId))).limit(1);
-      
+
       res.json({
         participation: result,
         event: updatedEvent[0]
@@ -2123,23 +2123,23 @@ export function registerRoutes(app: express.Application): { app: express.Applica
   // ============== Stripe Payment Routes ==============
 
   // Get Stripe publishable key
-  app.get('/api/stripe/config', isAuthenticated, getPublishableKey);
+  app.get('/api/stripe/config', express.json(), getPublishableKey);
 
   // Create a payment intent for one-time payments
   app.post('/api/stripe/create-payment-intent', isAuthenticated, createPaymentIntent);
-  
+
   // Create a subscription for the user
   app.post('/api/stripe/create-subscription', isAuthenticated, createSubscription);
-  
+
   // Get current subscription status
   app.get('/api/stripe/subscription', isAuthenticated, getSubscription);
-  
+
   // Cancel subscription
   app.post('/api/stripe/cancel-subscription', isAuthenticated, cancelSubscription);
-  
+
   // Create a setup intent for saving payment methods
   app.post('/api/stripe/create-setup-intent', isAuthenticated, createSetupIntent);
-  
+
   // Webhook endpoint to handle Stripe events
   app.post('/api/stripe/webhook', express.raw({type: 'application/json'}), handleStripeWebhook);
 

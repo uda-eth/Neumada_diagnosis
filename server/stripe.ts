@@ -317,21 +317,24 @@ export async function createSetupIntent(req: Request, res: Response) {
 // Get publishable key
 export async function getPublishableKey(req: Request, res: Response) {
   try {
+    // Ensure we're only using the publishable key, never the secret key
     const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
     
     if (!publishableKey) {
       return res.status(400).json({
-        error: 'STRIPE_PUBLISHABLE_KEY not found in environment variables'
+        error: 'Stripe publishable key not configured'
       });
     }
 
-    return res.status(200).json({
-      publishableKey
-    });
+    // Ensure proper headers are set
+    res.setHeader('Content-Type', 'application/json');
+    return res.json({ publishableKey });
   } catch (error) {
     console.error('Error getting publishable key:', error);
+    // Ensure error response is also JSON
+    res.setHeader('Content-Type', 'application/json');
     return res.status(500).json({ 
-      error: error instanceof Error ? error.message : 'Failed to get Stripe configuration' 
+      error: 'Failed to get Stripe configuration'
     });
   }
 }
