@@ -11,7 +11,7 @@ const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 export async function createPaymentIntent(req: Request, res: Response) {
   try {
     const { amount, currency = 'usd', paymentMethodType = 'card' } = req.body;
-    
+
     // Validate amount
     if (!amount || amount <= 0) {
       return res.status(400).json({ error: 'Invalid amount' });
@@ -45,18 +45,18 @@ export async function getOrCreateCustomer(userId: number) {
   try {
     // Get user from database
     const userResult = await db.select().from(users).where(eq(users.id, userId));
-    
+
     if (!userResult.length) {
       throw new Error('User not found');
     }
-    
+
     const user = userResult[0];
-    
+
     // If user already has a Stripe customer ID, return it
     if (user.stripeCustomerId) {
       return user.stripeCustomerId;
     }
-    
+
     // Otherwise, create a new Stripe customer
     const customer = await stripeClient.customers.create({
       email: user.email,
@@ -65,12 +65,12 @@ export async function getOrCreateCustomer(userId: number) {
         userId: user.id.toString()
       }
     });
-    
+
     // Update user with Stripe customer ID
     await db.update(users)
       .set({ stripeCustomerId: customer.id })
       .where(eq(users.id, userId));
-    
+
     return customer.id;
   } catch (error) {
     console.error('Error creating/retrieving Stripe customer:', error);
@@ -86,29 +86,29 @@ export async function createSubscription(req: Request, res: Response) {
     }
 
     const userId = req.user.id;
-    
+
     // Get or create Stripe customer
     const customerId = await getOrCreateCustomer(userId);
-    
+
     // Get payment method ID from the request
     const { paymentMethodId } = req.body;
-    
+
     if (!paymentMethodId) {
       return res.status(400).json({ error: 'Payment method ID is required' });
     }
-    
+
     // Attach payment method to customer
     await stripeClient.paymentMethods.attach(paymentMethodId, {
       customer: customerId,
     });
-    
+
     // Set as default payment method
     await stripeClient.customers.update(customerId, {
       invoice_settings: {
         default_payment_method: paymentMethodId,
       },
     });
-    
+
     // Create the subscription
     // Replace "price_xxxx" with your actual price ID from Stripe dashboard
     const subscription = await stripeClient.subscriptions.create({
@@ -116,7 +116,7 @@ export async function createSubscription(req: Request, res: Response) {
       items: [{ price: 'price_premium_monthly' }], // This price ID needs to be created in Stripe dashboard
       expand: ['latest_invoice.payment_intent'],
     });
-    
+
     // Update user as premium in database
     await db.update(users)
       .set({ 
@@ -125,7 +125,7 @@ export async function createSubscription(req: Request, res: Response) {
         stripeSubscriptionId: subscription.id
       })
       .where(eq(users.id, userId));
-    
+
     res.status(200).json({
       subscriptionId: subscription.id,
       status: subscription.status,
@@ -144,16 +144,16 @@ export async function getSubscription(req: Request, res: Response) {
     }
 
     const userId = req.user.id;
-    
+
     // Get user from database
     const userResult = await db.select().from(users).where(eq(users.id, userId));
-    
+
     if (!userResult.length) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
+
     const user = userResult[0];
-    
+
     // If user doesn't have a subscription, return null
     if (!user.stripeSubscriptionId) {
       return res.status(200).json({ 
@@ -161,10 +161,10 @@ export async function getSubscription(req: Request, res: Response) {
         isPremium: false
       });
     }
-    
+
     // Get subscription details from Stripe
     const subscription = await stripeClient.subscriptions.retrieve(user.stripeSubscriptionId);
-    
+
     res.status(200).json({
       subscription: {
         id: subscription.id,
@@ -187,27 +187,27 @@ export async function cancelSubscription(req: Request, res: Response) {
     }
 
     const userId = req.user.id;
-    
+
     // Get user from database
     const userResult = await db.select().from(users).where(eq(users.id, userId));
-    
+
     if (!userResult.length) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
+
     const user = userResult[0];
-    
+
     // If user doesn't have a subscription, return error
     if (!user.stripeSubscriptionId) {
       return res.status(400).json({ error: 'No active subscription found' });
     }
-    
+
     // Cancel subscription in Stripe (at period end)
     const subscription = await stripeClient.subscriptions.update(
       user.stripeSubscriptionId,
       { cancel_at_period_end: true }
     );
-    
+
     res.status(200).json({
       subscriptionId: subscription.id,
       status: subscription.status,
@@ -222,11 +222,11 @@ export async function cancelSubscription(req: Request, res: Response) {
 // Stripe webhook handler
 export async function handleStripeWebhook(req: Request, res: Response) {
   const sig = req.headers['stripe-signature'] as string;
-  
+
   if (!sig) {
     return res.status(400).json({ error: 'Missing Stripe signature' });
   }
-  
+
   try {
     // This would require setting up a webhook secret in Stripe dashboard
     // and setting STRIPE_WEBHOOK_SECRET as an environment variable
@@ -235,7 +235,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
       sig,
       process.env.STRIPE_WEBHOOK_SECRET || ''
     );
-    
+
     // Handle different event types
     switch (event.type) {
       case 'customer.subscription.created':
@@ -248,12 +248,12 @@ export async function handleStripeWebhook(req: Request, res: Response) {
         // Handle subscription canceled or expired
         const subscription = event.data.object as Stripe.Subscription;
         const customerMetadata = subscription.customer as string;
-        
+
         // Find user with this customer ID
         const userResult = await db.select()
           .from(users)
           .where(eq(users.stripeCustomerId, customerMetadata));
-        
+
         if (userResult.length) {
           // Update user as not premium
           await db.update(users)
@@ -273,7 +273,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
       default:
         console.log(`Unhandled event type: ${event.type}`);
     }
-    
+
     res.status(200).json({ received: true });
   } catch (error: any) {
     console.error('Error handling Stripe webhook:', error);
@@ -289,21 +289,21 @@ export async function createSetupIntent(req: Request, res: Response) {
     }
 
     const userId = req.user.id;
-    
+
     // Get or create Stripe customer
     const customerId = await getOrCreateCustomer(userId);
-    
+
     // Create a setup intent with automatic payment methods
     const setupIntent = await stripeClient.setupIntents.create({
       customer: customerId,
       payment_method_types: ['card'],
       usage: 'on_session',
     });
-    
+
     if (!setupIntent.client_secret) {
       throw new Error('Failed to generate client secret');
     }
-    
+
     res.status(200).json({
       clientSecret: setupIntent.client_secret,
       setupIntentId: setupIntent.id,
@@ -319,7 +319,7 @@ export async function getPublishableKey(req: Request, res: Response) {
   try {
     // Ensure we're only using the publishable key, never the secret key
     const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
-    
+
     if (!publishableKey) {
       return res.status(400).json({
         error: 'Stripe publishable key not configured'
@@ -336,5 +336,21 @@ export async function getPublishableKey(req: Request, res: Response) {
     return res.status(500).json({ 
       error: 'Failed to get Stripe configuration'
     });
+  }
+}
+
+export async function handleStripeConfig(req: Request, res: Response) {
+  try {
+    const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
+    if (!publishableKey) {
+      console.error('STRIPE_PUBLISHABLE_KEY not found in environment variables');
+      res.status(500).json({ error: 'Stripe configuration error' });
+      return;
+    }
+    res.setHeader('Content-Type', 'application/json');
+    res.json({ publishableKey });
+  } catch (error) {
+    console.error('Error in Stripe config endpoint:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 }
