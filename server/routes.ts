@@ -2122,26 +2122,36 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
   // ============== Stripe Payment Routes ==============
 
-  // Get Stripe publishable key
-  app.get('/api/stripe/config', express.json(), getPublishableKey);
+  // Get Stripe publishable key - no auth required since key is public
+  app.get('/api/stripe/config', getPublishableKey);
+
+  // Protect payment routes with authentication
+  const stripeRouter = express.Router();
+  stripeRouter.use(isAuthenticated);
 
   // Create a payment intent for one-time payments
-  app.post('/api/stripe/create-payment-intent', isAuthenticated, createPaymentIntent);
+  stripeRouter.post('/create-payment-intent', createPaymentIntent);
 
   // Create a subscription for the user
-  app.post('/api/stripe/create-subscription', isAuthenticated, createSubscription);
+  stripeRouter.post('/create-subscription', createSubscription);
 
   // Get current subscription status
-  app.get('/api/stripe/subscription', isAuthenticated, getSubscription);
+  stripeRouter.get('/subscription', getSubscription);
 
   // Cancel subscription
-  app.post('/api/stripe/cancel-subscription', isAuthenticated, cancelSubscription);
+  stripeRouter.post('/cancel-subscription', cancelSubscription);
 
   // Create a setup intent for saving payment methods
-  app.post('/api/stripe/create-setup-intent', isAuthenticated, createSetupIntent);
+  stripeRouter.post('/create-setup-intent', createSetupIntent);
 
-  // Webhook endpoint to handle Stripe events
-  app.post('/api/stripe/webhook', express.raw({type: 'application/json'}), handleStripeWebhook);
+  // Mount Stripe routes
+  app.use('/api/stripe', stripeRouter);
+
+  // Webhook endpoint to handle Stripe events - separate from auth routes
+  app.post('/api/stripe/webhook', 
+    express.raw({type: 'application/json'}),
+    handleStripeWebhook
+  );
 
   return { app, httpServer };
 }
