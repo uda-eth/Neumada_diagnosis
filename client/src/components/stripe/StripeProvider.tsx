@@ -22,12 +22,17 @@ export default function StripeProvider({ children }: StripeProviderProps) {
       try {
         setLoading(true);
         const response = await fetch('/api/stripe/config');
+        const data = await response.json();
 
         if (!response.ok) {
-          throw new Error('Failed to load Stripe configuration');
+          throw new Error(data.error || 'Failed to load Stripe configuration');
         }
 
-        const { publishableKey } = await response.json();
+        if (!data.publishableKey) {
+          throw new Error('No publishable key returned from server');
+        }
+
+        const { publishableKey } = data;
 
         if (!publishableKey) {
           throw new Error('Stripe publishable key is missing');

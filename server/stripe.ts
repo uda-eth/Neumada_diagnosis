@@ -320,16 +320,17 @@ export async function getPublishableKey(req: Request, res: Response) {
     const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
     
     if (!publishableKey) {
-      throw new Error('STRIPE_PUBLISHABLE_KEY not found in environment variables');
+      return res.status(400).json({
+        error: 'STRIPE_PUBLISHABLE_KEY not found in environment variables'
+      });
     }
 
-    res.setHeader('Content-Type', 'application/json');
-    res.status(200).json({
+    return res.status(200).json({
       publishableKey
     });
   } catch (error) {
     console.error('Error getting publishable key:', error);
-    res.status(500).json({ 
+    return res.status(500).json({ 
       error: error instanceof Error ? error.message : 'Failed to get Stripe configuration' 
     });
   }
