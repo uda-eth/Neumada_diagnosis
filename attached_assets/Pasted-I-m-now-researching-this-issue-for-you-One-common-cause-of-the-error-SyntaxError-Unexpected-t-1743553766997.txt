@@ -1,0 +1,35 @@
+I'm now researching this issue for you. One common cause of the error
+
+```
+SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+```
+
+is that the endpoint you’re calling isn’t returning JSON as expected—instead, it’s returning an HTML error page. This can happen for a few reasons:
+
+1. **Incorrect URL or Missing Route:**  
+   If the `/api/stripe/config` endpoint isn’t correctly set up or the URL is mistyped, your fetch call might be hitting a fallback error page (which is HTML). Double-check that your endpoint exists and is reachable.
+
+2. **Server-side Errors:**  
+   If there’s an error in your server logic (for example, if the environment variable `STRIPE_PUBLISHABLE_KEY` isn’t set correctly), your server might return an HTML error page. Check your server logs and ensure that your endpoint returns a proper JSON response with the correct Content-Type header (i.e., `application/json`).
+
+3. **Deployment Issues on Replit:**  
+   Sometimes, Replit might serve an HTML page (such as a custom error page) if the request fails. Verify that your secret environment variable is correctly set in your Replit project (named `STRIPE_PUBLISHABLE_KEY`) and that your server code correctly accesses it.
+
+Here are a few steps to troubleshoot and resolve the issue:
+
+- **Validate the Endpoint:**  
+  Use tools like Postman or cURL to manually hit your `/api/stripe/config` endpoint and ensure it returns a JSON object (e.g., `{ "publishableKey": "pk_test_..." }`) rather than HTML.
+
+- **Check Server Response Headers:**  
+  Ensure that your endpoint sets `Content-Type: application/json`. If it’s not set, the client might try to parse an HTML response as JSON.
+
+- **Review Environment Variables:**  
+  Confirm that `STRIPE_PUBLISHABLE_KEY` is correctly defined in your Replit secrets. If this variable is missing or misnamed, your endpoint might throw an error and return an HTML error page.
+
+- **Examine Server Logs:**  
+  Look at the logs for your `/api/stripe/config` route. There may be an error indicating why it failed (e.g., missing environment variable, syntax error, etc.).
+
+- **Error Handling:**  
+  Enhance your client-side fetch logic to log the raw response when JSON parsing fails. This can help you see if you’re receiving HTML (which might include an error message from the server).
+
+By ensuring that your server endpoint is correctly implemented and that the Replit secret is properly set, you should be able to avoid this HTML response error. Let me know if you’d like me to automatically implement specific changes or further investigate any part of your code!
