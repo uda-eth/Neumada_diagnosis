@@ -2144,22 +2144,21 @@ export function registerRoutes(app: express.Application): { app: express.Applica
   // Create a setup intent for saving payment methods
   stripeRouter.post('/create-setup-intent', createSetupIntent);
 
-  // Import checkout and webhook handlers
-  import { createCheckoutSession, getCheckoutSession } from './checkout';
-  import { handleWebhook } from './stripe-webhook';
-
-  // Add checkout session routes
-  stripeRouter.post('/create-checkout-session', createCheckoutSession);
-  stripeRouter.get('/checkout-session/:sessionId', getCheckoutSession);
-
   // Mount Stripe routes
   app.use('/api/stripe', stripeRouter);
 
   // Webhook endpoint to handle Stripe events - separate from auth routes
   app.post('/api/stripe/webhook', 
     express.raw({type: 'application/json'}),
-    handleWebhook
+    handleStripeWebhook
   );
+
+  return { app, httpServer };
+}
+
+// Import checkout and webhook handlers
+import { createCheckoutSession, getCheckoutSession } from './checkout';
+import { handleWebhook as handleStripeWebhook } from './stripe-webhook';
 
   return { app, httpServer };
 }
