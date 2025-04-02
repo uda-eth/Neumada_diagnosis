@@ -25,6 +25,8 @@ import { QueryProvider } from "./lib/query-provider";
 import { UserProvider } from "./lib/user-provider";
 import { useUser } from "@/hooks/use-user";
 import { useEffect } from "react";
+import { CheckoutSuccess } from './components/stripe'; // Added import
+
 
 function AppContent() {
   const [location, setLocation] = useLocation();
@@ -35,7 +37,7 @@ function AppContent() {
     // Check if we have a session parameter in the URL - if so, we're coming from a login redirect
     const urlParams = new URLSearchParams(window.location.search);
     const sessionId = urlParams.get('sessionId');
-    
+
     const checkAuth = async () => {
       // If there's a sessionId in the URL, we're coming back from a login redirect.
       // Clean up the URL but don't redirect immediately - wait for user data to load
@@ -48,24 +50,24 @@ function AppContent() {
         window.history.replaceState({}, document.title, url.toString());
         return; // Skip further checks on first render to give sessionId time to work
       }
-    
+
       // Skip check if we're already on the auth page or during loading
       if (location.startsWith('/auth') || isLoading) {
         return;
       }
-      
+
       // If user data is already loaded, no need to check the server
       if (user) {
         console.log("User already loaded in client state:", user.username);
         return;
       }
-      
+
       // No user in client state, check server-side auth status
       try {
         console.log("Checking auth status from server...");
         // Get the sessionId from localStorage
         const sessionId = localStorage.getItem('maly_session_id');
-        
+
         const response = await fetch('/api/auth/check', { 
           credentials: 'include',
           cache: 'no-store', // Ensure we don't use cached results
@@ -75,10 +77,10 @@ function AppContent() {
             'X-Session-ID': sessionId || '' // Include the session ID in the header
           }
         });
-        
+
         if (response.ok) {
           const authData = await response.json();
-          
+
           if (!authData.authenticated) {
             console.log("Server reports not authenticated, redirecting to login");
             setLocation('/auth');
@@ -95,7 +97,7 @@ function AppContent() {
         setLocation('/auth');
       }
     };
-    
+
     checkAuth();
   }, [user, isLoading, location, setLocation]);
 
@@ -129,6 +131,7 @@ function AppContent() {
             <Route path="/:rest*">
               {() => <div className="text-center p-8">404 - Page Not Found</div>}
             </Route>
+            <Route path="/event/:eventId/success" element={<CheckoutSuccess />} /> {/* Added route */}
           </Switch>
         </Layout>
       ) : (
