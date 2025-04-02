@@ -1,0 +1,47 @@
+Below is a refined technical prompt that incorporates the official Stripe documentation for building an automatic fulfillment system using Checkout Sessions, webhooks, and a redirect landing page. This prompt instructs the assistant to automatically implement the solution with error handling and idempotency:
+
+---
+
+**Refined Technical Prompt for Implementing Automatic Fulfillment with Stripe Checkout Sessions**
+
+Implement an automated fulfillment system for our Stripe integration based on the official Stripe documentation. The goal is to ensure that when a customer completes a payment using Checkout Sessions, our system automatically fulfills their order (e.g., grants access to a service or triggers shipment of goods) reliably and only once per session.
+
+**Actionable Steps:**
+
+1. **Create a Fulfillment Function (`fulfill_checkout`):**
+   - **Purpose:** Retrieve the Checkout Session (with `line_items` expanded), verify its payment status, and perform order fulfillment.
+   - **Requirements:**
+     - Accept a Checkout Session ID as an argument.
+     - Use the Stripe API to retrieve the session and expand `line_items`.
+     - Check that the `payment_status` is not `unpaid`.
+     - Ensure the function is idempotent by preventing duplicate fulfillments (i.e., if the session has already been fulfilled, do nothing).
+     - Record or log fulfillment status for future reference.
+
+2. **Implement a Webhook Event Handler:**
+   - **Endpoint:** Create a secure webhook endpoint (e.g., `/webhook`) that listens for Stripe events.
+   - **Events to Handle:**  
+     - `checkout.session.completed`  
+     - `checkout.session.async_payment_succeeded`  
+   - **Action:** When these events are received, extract the Checkout Session ID and call the `fulfill_checkout` function.
+   - **Security:**  
+     - Verify webhook signatures using your webhook secret.
+     - Return appropriate HTTP status codes based on the outcome (e.g., 200 on success, 400 on errors).
+
+3. **Configure a Redirect Landing Page:**
+   - **Purpose:** After checkout, redirect customers to a landing page that includes the Checkout Session ID in the URL (using `{CHECKOUT_SESSION_ID}`).
+   - **Action:** On this page, extract the session ID from the URL and trigger the `fulfill_checkout` function if it hasn’t been completed yet.
+   - **User Feedback:** Display details from the fulfillment process (e.g., confirmation of access or shipping details).
+
+4. **Error Handling and Testing:**
+   - **Error Boundaries:** Ensure all functions include robust error handling to catch and log failures without causing duplicate fulfillments.
+   - **Testing:**  
+     - Use the Stripe CLI to simulate webhook events (e.g., via `stripe listen --forward-to localhost:4242/webhook`) and verify that your fulfillment function behaves as expected.
+     - Test the entire flow—from Checkout to redirection and webhook processing—ensuring that fulfillment occurs only once per payment.
+
+5. **Security and Best Practices:**
+   - Securely manage your Stripe API keys and webhook secret.
+   - Follow Stripe’s best practices to handle delayed payment methods (e.g., ACH direct debit) and potential duplicate webhook deliveries.
+
+Automatically implement these changes in the codebase using Node.js/TypeScript (or your chosen backend language), and verify that the automatic fulfillment system functions correctly with webhooks and the redirect landing page. Provide code snippets, inline comments, and testing instructions as needed.
+
+---
