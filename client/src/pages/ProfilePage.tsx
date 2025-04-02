@@ -42,6 +42,9 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // If we're at /profile (without a username), we want to show the current user's profile
+  const targetUsername = username || currentUser?.username;
 
   // Get the connection status between current user and profile user
   const {
@@ -129,7 +132,15 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const response = await fetch(`/api/users/${username}`);
+        // If we have no username to look up, use the current user data directly
+        if (!targetUsername && currentUser) {
+          setProfileData(currentUser as ProfileData);
+          setLoading(false);
+          return;
+        }
+        
+        // Otherwise fetch the profile from the API
+        const response = await fetch(`/api/users/${targetUsername}`);
         if (!response.ok) throw new Error('Failed to fetch profile data');
         const data = await response.json();
         setProfileData(data);
@@ -140,8 +151,10 @@ export default function ProfilePage() {
       }
     };
 
-    fetchProfileData();
-  }, [username]);
+    if (currentUser || targetUsername) {
+      fetchProfileData();
+    }
+  }, [targetUsername, currentUser]);
 
   if (loading) {
     return (
@@ -176,6 +189,17 @@ export default function ProfilePage() {
             <div className="space-y-2 flex-1">
               <div className="flex justify-between items-start">
                 <h1 className="text-2xl font-bold">{profileData.fullName || profileData.username}</h1>
+                
+                {/* Edit Profile button - only show if viewing own profile */}
+                {currentUser && profileData.id === currentUser.id && (
+                  <Button 
+                    variant="outline"
+                    className="gap-2"
+                    onClick={() => setLocation('/profile-edit')}
+                  >
+                    Edit Profile
+                  </Button>
+                )}
                 
                 {/* Connection Button - only show if viewing profile of other user and user is logged in */}
                 {currentUser && profileData.id !== currentUser.id && (
