@@ -110,8 +110,8 @@ function AppContent() {
             <Route path="/" component={HomePage} />
             <Route path="/event/onda-linda-festival" component={OndaLindaFestivalPage} />
             <Route path="/event/:id" component={EventPage} />
-            <Route path="/profile/:username" component={ProfilePage} />
             <Route path="/profile" component={ProfilePage} />
+            <Route path="/profile/:username" component={ProfilePage} />
             <Route path="/create" component={CreateEventPage} />
             <Route path="/test-create" component={TestCreateEventPage} />
             <Route path="/companion" component={ChatbotPage} />

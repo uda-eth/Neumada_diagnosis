@@ -44,7 +44,12 @@ export default function ProfilePage() {
   const queryClient = useQueryClient();
   
   // If we're at /profile (without a username), we want to show the current user's profile
-  const targetUsername = username || currentUser?.username;
+  // And redirect to /profile/{username} for proper routing
+  useEffect(() => {
+    if (!username && currentUser?.username) {
+      setLocation(`/profile/${currentUser.username}`);
+    }
+  }, [username, currentUser, setLocation]);
 
   // Get the connection status between current user and profile user
   const {
@@ -133,17 +138,19 @@ export default function ProfilePage() {
     const fetchProfileData = async () => {
       try {
         // If we have no username to look up, use the current user data directly
-        if (!targetUsername && currentUser) {
+        if (!username && currentUser) {
           setProfileData(currentUser as ProfileData);
           setLoading(false);
           return;
         }
         
         // Otherwise fetch the profile from the API
-        const response = await fetch(`/api/users/${targetUsername}`);
-        if (!response.ok) throw new Error('Failed to fetch profile data');
-        const data = await response.json();
-        setProfileData(data);
+        if (username) {
+          const response = await fetch(`/api/users/${username}`);
+          if (!response.ok) throw new Error('Failed to fetch profile data');
+          const data = await response.json();
+          setProfileData(data);
+        }
       } catch (error) {
         console.error('Error fetching profile:', error);
       } finally {
@@ -151,10 +158,10 @@ export default function ProfilePage() {
       }
     };
 
-    if (currentUser || targetUsername) {
+    if (username || currentUser) {
       fetchProfileData();
     }
-  }, [targetUsername, currentUser]);
+  }, [username, currentUser]);
 
   if (loading) {
     return (

@@ -159,8 +159,8 @@ export default function ProfileEditPage() {
         description: "Your profile has been successfully updated.",
       });
       
-      // Redirect to profile page
-      setLocation("/profile");
+      // Redirect to profile page with username
+      setLocation(`/profile/${user?.username}`);
     } catch (error) {
       toast({
         title: "Error",
@@ -181,7 +181,7 @@ export default function ProfileEditPage() {
               variant="ghost"
               size="icon"
               className="text-muted-foreground hover:text-foreground hover:bg-accent"
-              onClick={() => setLocation("/profile")}
+              onClick={() => setLocation(`/profile/${user?.username}`)}
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
@@ -511,7 +511,7 @@ export default function ProfileEditPage() {
               <div className="flex justify-end space-x-4">
                 <Button 
                   variant="outline" 
-                  onClick={() => setLocation("/profile")}
+                  onClick={() => setLocation(`/profile/${user?.username}`)}
                 >
                   Cancel
                 </Button>
