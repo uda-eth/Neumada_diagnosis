@@ -72,6 +72,8 @@ export const eventParticipants = pgTable("event_participants", {
   paymentStatus: text("payment_status").default("pending"), // pending, completed, refunded
   paymentIntentId: text("payment_intent_id"), // For Stripe integration
   checkInStatus: boolean("check_in_status").default(false), // For event check-in
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const messages = pgTable("messages", {
