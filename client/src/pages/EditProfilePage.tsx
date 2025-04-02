@@ -101,32 +101,42 @@ export default function EditProfilePage() {
   };
 
   const onSubmit = async (data: ProfileFormValues) => {
-    setIsLoading(true); // Set loading state to true
+    setIsLoading(true);
     try {
-      // Simulate API call with error handling
-      const response = await new Promise((resolve, reject) => {
-          setTimeout(() => {
-              // Simulate a potential profile not found error
-              if (Math.random() < 0.2) { // 20% chance of error
-                  reject(new Error("Profile not found"));
-              } else {
-                  resolve(true); // Simulate successful update
-              }
-          }, 1000);
+      const response = await fetch('/api/profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Include session ID from localStorage if it exists
+          ...(localStorage.getItem('maly_session_id') && {
+            'X-Session-ID': localStorage.getItem('maly_session_id')
+          })
+        },
+        credentials: 'include', // Important for auth
+        body: JSON.stringify(data)
       });
 
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+
+      const result = await response.json();
+      
       toast({
         title: "Profile Updated",
         description: "Your profile has been successfully updated.",
       });
+      
+      // Refresh the page to show updated data
+      window.location.reload();
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message, // Display specific error message
+        description: error.message,
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false); // Set loading state to false regardless of success or failure
+      setIsLoading(false);
     }
   };
 
