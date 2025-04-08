@@ -1,3 +1,4 @@
+
 {
   "name": "rest-express",
   "version": "1.0.0",
@@ -53,7 +54,7 @@
     "@tanstack/eslint-plugin-query": "^5.20.1",
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^14.2.1",
-    "@testing-library/react-hooks": "^8.0.1",
+    "@testing-library/react-hooks": "^7.0.2",
     "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.17",
