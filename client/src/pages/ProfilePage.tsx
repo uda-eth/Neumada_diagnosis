@@ -42,6 +42,14 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // If we're at /profile (without a username), we want to show the current user's profile
+  // And redirect to /profile/{username} for proper routing
+  useEffect(() => {
+    if (!username && currentUser?.username) {
+      setLocation(`/profile/${currentUser.username}`);
+    }
+  }, [username, currentUser, setLocation]);
 
   // Get the connection status between current user and profile user
   const {
@@ -129,10 +137,20 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const response = await fetch(`/api/users/${username}`);
-        if (!response.ok) throw new Error('Failed to fetch profile data');
-        const data = await response.json();
-        setProfileData(data);
+        // If we have no username to look up, use the current user data directly
+        if (!username && currentUser) {
+          setProfileData(currentUser as ProfileData);
+          setLoading(false);
+          return;
+        }
+        
+        // Otherwise fetch the profile from the API
+        if (username) {
+          const response = await fetch(`/api/users/${username}`);
+          if (!response.ok) throw new Error('Failed to fetch profile data');
+          const data = await response.json();
+          setProfileData(data);
+        }
       } catch (error) {
         console.error('Error fetching profile:', error);
       } finally {
@@ -140,8 +158,10 @@ export default function ProfilePage() {
       }
     };
 
-    fetchProfileData();
-  }, [username]);
+    if (username || currentUser) {
+      fetchProfileData();
+    }
+  }, [username, currentUser]);
 
   if (loading) {
     return (
@@ -176,6 +196,17 @@ export default function ProfilePage() {
             <div className="space-y-2 flex-1">
               <div className="flex justify-between items-start">
                 <h1 className="text-2xl font-bold">{profileData.fullName || profileData.username}</h1>
+                
+                {/* Edit Profile button - only show if viewing own profile */}
+                {currentUser && profileData.id === currentUser.id && (
+                  <Button 
+                    variant="outline"
+                    className="gap-2"
+                    onClick={() => setLocation('/profile-edit')}
+                  >
+                    Edit Profile
+                  </Button>
+                )}
                 
                 {/* Connection Button - only show if viewing profile of other user and user is logged in */}
                 {currentUser && profileData.id !== currentUser.id && (

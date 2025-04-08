@@ -1705,59 +1705,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
   });
 
   // Add authentication check endpoint that specifically looks for the session ID from various sources
-  app.get('/api/auth/check', async (req, res) => {
-    try {
-      // Check all possible sources for the session ID
-      const headerSessionId = req.headers['x-session-id'] as string;
-      const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
-
-      // Also check localStorage - Passport may store it in 'maly_session_id'
-      console.log("Looking for session ID in request");
-
-      // Use the first available session ID
-      const sessionId = headerSessionId || cookieSessionId;
-      console.log("Auth check using session ID:", sessionId);
-
-      // If we don't have a session ID, use the regular auth flow
-      if (!sessionId) {
-        console.log("No session ID found, falling back to standard auth check");
-        return checkAuthentication(req, res);
-      }
-
-      // Look up session directly if we have a session ID
-      const sessionQuery = await db.select().from(sessions).where(eq(sessions.id, sessionId));
-
-      if (sessionQuery.length > 0 && sessionQuery[0].userId) {
-        // Get the user info from the database
-        const userId = sessionQuery[0].userId;
-        console.log("Found session in database with user ID:", userId);
-
-        const userQuery = await db.select().from(users).where(eq(users.id, userId));
-
-        if (userQuery.length > 0) {
-          const user = userQuery[0];
-          console.log("Auth check: User authenticated via session ID directly:", user.username);
-
-          // Remove sensitive information
-          const { password, ...userWithoutPassword } = user as any;
-
-          return res.json({
-            authenticated: true,
-            user: userWithoutPassword
-          });
-        }
-      }
-
-      // Fall back to the standard authentication check if session lookup failed
-      return checkAuthentication(req, res);
-    } catch (error) {
-      console.error("Error in auth check endpoint:", error);
-      return res.status(500).json({
-        authenticated: false,
-        error: "Server error during authentication check"
-      });
-    }
-  });
+// Auth check endpoint is now defined in server/auth.ts to avoid duplicate routes
 
   // Add endpoint to get user by session ID
   app.get('/api/user-by-session', async (req: Request, res: Response) => {
@@ -2109,6 +2057,155 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       res.status(500).json({ error: 'Failed to check connection status' });
     }
   });
+// Event participation API endpoints
+
+// Get a user's participation status for an event
+app.get('/api/events/:eventId/participation/status', isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const currentUser = req.user as Express.User;
+    const { eventId } = req.params;
+    
+    // Find current participation status for this user and event
+    const participationRecord = await db.query.eventParticipants.findFirst({
+      where: and(
+        eq(eventParticipants.userId, currentUser.id),
+        eq(eventParticipants.eventId, parseInt(eventId))
+      )
+    });
+    
+    if (!participationRecord) {
+      return res.json({ status: 'not_participating' });
+    }
+    
+    return res.json({ status: participationRecord.status });
+  } catch (error) {
+    console.error('Error getting participation status:', error);
+    res.status(500).json({ error: 'Failed to get participation status' });
+  }
+});
+
+// Update a user's participation status for an event
+app.post('/api/events/:eventId/participate', isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const currentUser = req.user as Express.User;
+    const { eventId } = req.params;
+    const { status } = req.body;
+    
+    // Validate status
+    if (!status || !['interested', 'attending', 'not_participating'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status value. Must be "interested", "attending", or "not_participating".' });
+    }
+    
+    // Find the event to make sure it exists
+    const event = await db.query.events.findFirst({
+      where: eq(events.id, parseInt(eventId))
+    });
+    
+    if (!event) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+    
+    // Find current participation record if any
+    const existingRecord = await db.query.eventParticipants.findFirst({
+      where: and(
+        eq(eventParticipants.userId, currentUser.id),
+        eq(eventParticipants.eventId, parseInt(eventId))
+      )
+    });
+    
+    // Handle removal of participation (not_participating)
+    if (status === 'not_participating') {
+      if (existingRecord) {
+        // Decrement appropriate counter based on previous status
+        if (existingRecord.status === 'interested') {
+          await db.update(events)
+            .set({ interestedCount: Math.max((event.interestedCount || 0) - 1, 0) })
+            .where(eq(events.id, parseInt(eventId)));
+        } else if (existingRecord.status === 'attending') {
+          await db.update(events)
+            .set({ attendingCount: Math.max((event.attendingCount || 0) - 1, 0) })
+            .where(eq(events.id, parseInt(eventId)));
+        }
+        
+        // Delete the record
+        await db.delete(eventParticipants)
+          .where(and(
+            eq(eventParticipants.userId, currentUser.id),
+            eq(eventParticipants.eventId, parseInt(eventId))
+          ));
+        
+        return res.json({ status: 'not_participating' });
+      } else {
+        // No record to delete
+        return res.json({ status: 'not_participating' });
+      }
+    }
+    
+    // Handle adding or updating participation status
+    if (existingRecord) {
+      // Update existing record if status changed
+      if (existingRecord.status !== status) {
+        // First decrement the counter for the old status
+        if (existingRecord.status === 'interested') {
+          await db.update(events)
+            .set({ interestedCount: Math.max((event.interestedCount || 0) - 1, 0) })
+            .where(eq(events.id, parseInt(eventId)));
+        } else if (existingRecord.status === 'attending') {
+          await db.update(events)
+            .set({ attendingCount: Math.max((event.attendingCount || 0) - 1, 0) })
+            .where(eq(events.id, parseInt(eventId)));
+        }
+        
+        // Increment counter for the new status
+        if (status === 'interested') {
+          await db.update(events)
+            .set({ interestedCount: (event.interestedCount || 0) + 1 })
+            .where(eq(events.id, parseInt(eventId)));
+        } else if (status === 'attending') {
+          await db.update(events)
+            .set({ attendingCount: (event.attendingCount || 0) + 1 })
+            .where(eq(events.id, parseInt(eventId)));
+        }
+        
+        // Update the record
+        await db.update(eventParticipants)
+          .set({ 
+            status,
+            // Use the column directly instead of a property name
+            [eventParticipants.updatedAt.name]: new Date()
+          })
+          .where(and(
+            eq(eventParticipants.userId, currentUser.id),
+            eq(eventParticipants.eventId, parseInt(eventId))
+          ));
+      }
+    } else {
+      // Create new record with proper field names from the schema
+      await db.insert(eventParticipants).values({
+        [eventParticipants.userId.name]: currentUser.id,
+        [eventParticipants.eventId.name]: parseInt(eventId),
+        [eventParticipants.status.name]: status,
+        [eventParticipants.createdAt.name]: new Date()
+      });
+      
+      // Increment the counter for the new status
+      if (status === 'interested') {
+        await db.update(events)
+          .set({ interestedCount: (event.interestedCount || 0) + 1 })
+          .where(eq(events.id, parseInt(eventId)));
+      } else if (status === 'attending') {
+        await db.update(events)
+          .set({ attendingCount: (event.attendingCount || 0) + 1 })
+          .where(eq(events.id, parseInt(eventId)));
+      }
+    }
+    
+    return res.json({ status });
+  } catch (error) {
+    console.error('Error updating participation status:', error);
+    res.status(500).json({ error: 'Failed to update participation status' });
+  }
+});
 
   return { app, httpServer };
 }

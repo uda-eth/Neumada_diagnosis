@@ -257,12 +257,12 @@ export function useUser() {
       
       return userData;
     },
-    // Improve refresh behavior with more aggressive settings
-    staleTime: 0, // No stale time - always fetch fresh data
-    refetchOnWindowFocus: true,
+    // More conservative refresh settings to reduce API calls
+    staleTime: 60 * 1000, // 1 minute stale time
+    refetchOnWindowFocus: false, 
     refetchOnMount: true,
     refetchOnReconnect: true,
-    retry: 3, // Try more times
+    retry: 1, // Only retry once to reduce server load
     retryDelay: 1000, // Wait 1 second between retries
     // Force a refresh when there's a sessionId parameter
     enabled: true

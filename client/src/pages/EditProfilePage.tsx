@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { MapPin, Upload } from "lucide-react";
 import { members } from "@/lib/members-data";
 import { DIGITAL_NOMAD_CITIES } from "@/lib/constants";
+import { useRouter } from 'next/router'; // Add useRouter for navigation
 
 const profileSchema = z.object({
   fullName: z.string().min(2, "Name must be at least 2 characters"),
@@ -63,9 +64,17 @@ export default function EditProfilePage() {
   const { toast } = useToast();
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false); // Add loading state
+  const router = useRouter(); // Initialize useRouter
+  const [location, setLocation] = useState(''); //Corrected this line
 
   // For demo, use first member as current user
   const currentUser = members[0];
+
+  // Handle back navigation
+  const handleBack = () => {
+    router.push('/profile'); //Directly push to profile page
+  };
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -92,20 +101,42 @@ export default function EditProfilePage() {
   };
 
   const onSubmit = async (data: ProfileFormValues) => {
+    setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch('/api/profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Include session ID from localStorage if it exists
+          ...(localStorage.getItem('maly_session_id') && {
+            'X-Session-ID': localStorage.getItem('maly_session_id')
+          })
+        },
+        credentials: 'include', // Important for auth
+        body: JSON.stringify(data)
+      });
 
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+
+      const result = await response.json();
+      
       toast({
         title: "Profile Updated",
         description: "Your profile has been successfully updated.",
       });
-    } catch (error) {
+      
+      // Refresh the page to show updated data
+      window.location.reload();
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to update profile. Please try again.",
+        description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -305,10 +336,10 @@ export default function EditProfilePage() {
             </div>
 
             <div className="flex gap-4">
-              <Button type="submit" size="lg" className="interactive-hover">
-                Save Changes
+              <Button type="submit" size="lg" className="interactive-hover" disabled={isLoading}> {/* Disable button while loading */}
+                {isLoading ? "Saving..." : "Save Changes"} {/* Show loading indicator */}
               </Button>
-              <Button type="button" variant="outline" size="lg" className="glass-hover">
+              <Button type="button" variant="outline" size="lg" className="glass-hover" onClick={handleBack}>
                 Cancel
               </Button>
             </div>

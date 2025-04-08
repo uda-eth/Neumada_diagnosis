@@ -159,8 +159,8 @@ export default function ProfileEditPage() {
         description: "Your profile has been successfully updated.",
       });
       
-      // Redirect to profile page
-      setLocation("/profile");
+      // Redirect to profile page with username
+      setLocation(`/profile/${user?.username}`);
     } catch (error) {
       toast({
         title: "Error",
@@ -181,7 +181,7 @@ export default function ProfileEditPage() {
               variant="ghost"
               size="icon"
               className="text-muted-foreground hover:text-foreground hover:bg-accent"
-              onClick={() => setLocation("/profile")}
+              onClick={() => setLocation(`/profile/${user?.username}`)}
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
@@ -396,18 +396,9 @@ export default function ProfileEditPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Born</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Where were you born?" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {DIGITAL_NOMAD_CITIES.map(city => (
-                              <SelectItem key={city} value={city}>{city}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <Input {...field} placeholder="Where were you born?" className="bg-white/5 border-white/10" />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -419,18 +410,9 @@ export default function ProfileEditPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Raised</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Where were you raised?" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {DIGITAL_NOMAD_CITIES.map(city => (
-                              <SelectItem key={city} value={city}>{city}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <Input {...field} placeholder="Where were you raised?" className="bg-white/5 border-white/10" />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -442,18 +424,9 @@ export default function ProfileEditPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Lived</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="A meaningful place you've lived" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {DIGITAL_NOMAD_CITIES.map(city => (
-                              <SelectItem key={city} value={city}>{city}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <Input {...field} placeholder="A meaningful place you've lived" className="bg-white/5 border-white/10" />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -468,18 +441,9 @@ export default function ProfileEditPage() {
                           <Globe className="w-4 h-4" />
                           Upcoming
                         </FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Where are you going next?" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {DIGITAL_NOMAD_CITIES.map(city => (
-                              <SelectItem key={city} value={city}>{city}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <Input {...field} placeholder="Where are you going next?" className="bg-white/5 border-white/10" />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -547,7 +511,7 @@ export default function ProfileEditPage() {
               <div className="flex justify-end space-x-4">
                 <Button 
                   variant="outline" 
-                  onClick={() => setLocation("/profile")}
+                  onClick={() => setLocation(`/profile/${user?.username}`)}
                 >
                   Cancel
                 </Button>

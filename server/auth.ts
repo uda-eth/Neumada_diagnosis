@@ -77,15 +77,15 @@ export function setupAuth(app: Express) {
   const sessionSettings: session.SessionOptions = {
     secret: sessionSecret,
     name: "maly_session",
-    resave: false,
+    resave: true,
     rolling: true,
-    saveUninitialized: false,
+    saveUninitialized: true,
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: 'none',
       path: '/',
-      secure: process.env.NODE_ENV === 'production'
+      secure: true
     },
     store: new MemoryStore({
       checkPeriod: 86400000, // 24 hours
@@ -599,19 +599,51 @@ export function setupAuth(app: Express) {
   });
 
   // Add a dedicated auth check endpoint
-  app.get("/api/auth/check", (req, res) => {
+  app.get("/api/auth/check", async (req, res) => {
     // Add cache-control headers to prevent caching of auth status
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     res.set('Expires', '-1');
     res.set('Pragma', 'no-cache');
+    
+    // Use a more aggressive cache policy to reduce duplicate calls
+    res.set('Cache-Control', 'private, max-age=60');
+    
+    const sessionId = req.header('X-Session-ID') || req.sessionID;
 
-    // Force the session to touch to update cookies and expirations
-    if (req.session) {
-      // @ts-ignore - Custom property for tracking session state
-      req.session.initialized = true;
+    // Check for existing session in database first
+    if (sessionId) {
+      const [dbSession] = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.id, sessionId))
+        .limit(1);
 
-      // Force session save to ensure cookie is set
-      req.session.save();
+      if (dbSession && dbSession.userId) {
+        const [user] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, dbSession.userId))
+          .limit(1);
+
+        if (user) {
+          const { password, ...userWithoutPassword } = user;
+          return res.json({
+            authenticated: true,
+            user: userWithoutPassword,
+            sessionId: sessionId
+          });
+        }
+      }
+    }
+
+    // Fallback to checking session authentication
+    if (req.isAuthenticated() && req.user) {
+      const { password, ...userWithoutPassword } = req.user;
+      return res.json({
+        authenticated: true,
+        user: userWithoutPassword,
+        sessionId: req.sessionID
+      });
     }
 
     // Log session ID for debugging
@@ -666,12 +698,49 @@ export function setupAuth(app: Express) {
 
   // Add endpoint for updating user profiles
   app.post("/api/profile", async (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).send("Not authenticated");
-    }
+    // Get session ID from header or cookie
+    const headerSessionId = req.headers['x-session-id'] as string;
+    const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
+    const sessionId = headerSessionId || cookieSessionId;
 
     try {
-      const userId = req.user?.id;
+      if (!sessionId) {
+        return res.status(401).json({ error: "Not authenticated - No session ID" });
+      }
+
+      // Find the session and associated user
+      const sessionQuery = await db.select().from(sessions).where(eq(sessions.id, sessionId));
+      
+      if (!sessionQuery.length || !sessionQuery[0].userId) {
+        return res.status(401).json({ error: "Invalid session" });
+      }
+
+      const userId = sessionQuery[0].userId;
+
+    } catch (err) {
+      console.error("Session verification error:", err);
+      return res.status(401).json({ error: "Session verification failed" });
+    }
+
+    // Get user ID from previous block
+    let userId;
+    try {
+      // We need to get the sessionId and userId again since they're only available in the previous try block
+      const headerSessionId = req.headers['x-session-id'] as string;
+      const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
+      const sessionId = headerSessionId || cookieSessionId;
+      
+      if (!sessionId) {
+        return res.status(401).json({ error: "Not authenticated - No session ID" });
+      }
+      
+      const sessionQuery = await db.select().from(sessions).where(eq(sessions.id, sessionId));
+      if (!sessionQuery.length || !sessionQuery[0].userId) {
+        return res.status(401).json({ error: "Invalid session" });
+      }
+      
+      userId = sessionQuery[0].userId;
+      
       const updatedFields = req.body;
 
       // Remove sensitive fields that shouldn't be updated directly
@@ -700,115 +769,7 @@ export function setupAuth(app: Express) {
     }
   });
 
-  // Add endpoint for retrieving user by session ID (for webview compatibility)
-  app.get("/api/user-by-session", async (req, res) => {
-    const sessionId = req.header('X-Session-ID');
-    console.log("User by session request for sessionID:", sessionId);
-
-    if (!sessionId) {
-      return res.status(400).send("No session ID provided");
-    }
-
-    try {
-      // First, try to find the session in our database
-      const [dbSession] = await db.select()
-        .from(sessions)
-        .where(eq(sessions.id, sessionId))
-        .limit(1);
-
-      if (dbSession && dbSession.userId) {
-        console.log("Found session in database with user ID:", dbSession.userId);
-
-        // Get user from database using the userId from our sessions table
-        const [user] = await db
-          .select()
-          .from(users)
-          .where(eq(users.id, dbSession.userId))
-          .limit(1);
-
-        if (user) {
-          console.log("User found by session ID:", user.username);
-
-          // Return user without sensitive data
-          const { password, ...userWithoutPassword } = user;
-          return res.json(userWithoutPassword);
-        }
-      }
-
-      // If not found in our DB, try the session store as fallback
-      const sessionStore = req.sessionStore as any;
-
-      if (!sessionStore.get) {
-        console.error("Session store missing get method");
-        return res.status(401).send("Invalid or expired session");
-      }
-
-      // Get session data from store
-      sessionStore.get(sessionId, async (err: any, sessionData: any) => {
-        if (err) {
-          console.error("Error getting session:", err);
-          return res.status(500).send("Error retrieving session");
-        }
-
-        if (!sessionData || !sessionData.passport || !sessionData.passport.user) {
-          console.log("No user found in session:", sessionId);
-          return res.status(401).send("Invalid or expired session");
-        }
-
-        const userId = sessionData.passport.user;
-        console.log("Found user ID in session store:", userId);
-
-        // Get user from database
-        try {
-          const [user] = await db
-            .select()
-            .from(users)
-            .where(eq(users.id, userId))
-            .limit(1);
-
-          if (!user) {
-            return res.status(404).send("User not found");
-          }
-
-          console.log("User found by session ID:", user.username);
-
-          // Save this session in our database for future lookups
-          try {
-            await db.insert(sessions).values({
-              id: sessionId,
-              userId: user.id,
-              expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-              data: { username: user.username, email: user.email },
-              createdAt: new Date()
-            })
-            .onConflictDoUpdate({
-              target: sessions.id,
-              set: {
-                userId: user.id,
-                expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-                updatedAt: new Date(),
-                data: { username: user.username, email: user.email }
-              }
-            });
-            console.log("Session saved to database for future lookups");
-          } catch (saveErr) {
-            console.error("Error saving session to database:", saveErr);
-            // Continue anyway as we can still return the user
-          }
-
-          // Return user without sensitive data
-          const { password, ...userWithoutPassword } = user;
-          return res.json(userWithoutPassword);
-        } catch (dbError) {
-          console.error("Database error when finding user by session:", dbError);
-          return res.status(500).send("Error finding user");
-        }
-      });
-    } catch (err) {
-      console.error("Error retrieving session by ID:", err);
-      return res.status(500).send("Error processing session");
-    }
-  });
+  // User-by-session endpoint is defined in server/routes.ts to avoid duplication
 
   // Add endpoint for verifying a cached user exists
   app.post("/api/verify-user", async (req, res) => {

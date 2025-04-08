@@ -59,33 +59,33 @@ export default function EventPage() {
       const response = await fetch(`/api/events/${id}`, {
         credentials: 'include'
       });
-      
+
       if (!response.ok) {
         throw new Error(`Error fetching event: ${response.status}`);
       }
-      
+
       return response.json();
     },
   });
-  
+
   // Fetch user's participation status for this event
   const { data: participationData } = useQuery({
     queryKey: [`/api/events/${id}/participation`, user?.id],
     queryFn: async () => {
       if (!user) return null;
-      
+
       try {
         const response = await fetch(`/api/events/${id}/participation/status`, {
           credentials: 'include'
         });
-        
+
         if (!response.ok) {
           if (response.status === 404) {
             return { status: 'not_attending' as ParticipationStatus };
           }
           throw new Error(`Error fetching participation status: ${response.status}`);
         }
-        
+
         return response.json();
       } catch (error) {
         console.error("Error fetching participation status:", error);
@@ -94,7 +94,7 @@ export default function EventPage() {
     },
     enabled: !!user, // Only run if user is logged in
   });
-  
+
   // Update user participation status when data is fetched
   useEffect(() => {
     if (participationData) {
@@ -104,33 +104,37 @@ export default function EventPage() {
 
   const participateMutation = useMutation({
     mutationFn: async (status: ParticipationStatus) => {
+      const sessionId = localStorage.getItem('maly_session_id');
       const response = await fetch(`/api/events/${id}/participate`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "X-Session-ID": sessionId || ''
+        },
         body: JSON.stringify({ status }),
         credentials: "include",
       });
-      
+
       if (!response.ok) throw new Error("Failed to update participation status");
-      
+
       return response.json();
     },
     onSuccess: (data, variables) => {
       // Update local state
       setUserStatus(variables);
-      
+
       // Show success message
       const messages = {
         attending: "You are now attending this event!",
         interested: "You are now interested in this event",
         not_attending: "You are no longer participating in this event"
       };
-      
+
       toast({
         title: "Success",
         description: messages[variables],
       });
-      
+
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: [`/api/events/${id}`] });
       queryClient.invalidateQueries({ queryKey: [`/api/events/${id}/participation`, user?.id] });
@@ -145,17 +149,51 @@ export default function EventPage() {
   });
 
   const handleParticipate = async (status: ParticipationStatus) => {
-    if (!user) {
+    const sessionId = localStorage.getItem('maly_session_id');
+
+    if (!user || !sessionId) {
       toast({
         title: "Authentication Required",
         description: "Please log in to participate in events",
         variant: "destructive"
       });
+      setLocation('/auth');
       return;
     }
 
-    participateMutation.mutate(status);
+    try {
+      await participateMutation.mutateAsync(status);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update participation status. Please try logging in again.",
+      });
+      setLocation('/auth');
+    }
   };
+
+  const handleLogout = async () => {
+    try {
+      // Clear local storage
+      localStorage.removeItem('maly_session_id');
+      localStorage.removeItem('maly_user_data');
+
+      // Call server logout endpoint
+      await logout();
+
+      // Clear client-side state
+      queryClient.clear();
+
+      // Redirect to auth page
+      setLocation("/auth");
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Force redirect to auth even if logout fails
+      setLocation("/auth");
+    }
+  };
+
 
   if (isLoading || !event) {
     return (
@@ -189,7 +227,7 @@ export default function EventPage() {
   const handleViewAllUsers = (type: 'attending' | 'interested') => {
     setLocation(`/event/${id}/users?type=${type}`);
   };
-  
+
   const handleParticipationChange = async (status: ParticipationStatus) => {
     if (!user) {
       toast({
@@ -203,7 +241,7 @@ export default function EventPage() {
 
     // Get the current session ID
     const sessionId = localStorage.getItem('maly_session_id');
-    
+
     if (!sessionId) {
       toast({
         variant: "destructive",
@@ -216,7 +254,7 @@ export default function EventPage() {
 
     // Toggle status if already in that state
     const newStatus = userStatus === status ? 'not_attending' : status;
-    
+
     try {
       await participateMutation.mutateAsync(newStatus);
     } catch (error) {
@@ -395,7 +433,7 @@ export default function EventPage() {
             )}
           </div>
         </div>
-        
+
         {/* Interested and Attending Buttons */}
         {user && user.id !== event.creatorId && (
           <div className="mt-6 flex gap-4">
