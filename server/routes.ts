@@ -1211,9 +1211,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         return res.status(401).json({ error: "Session not found" });
       }
 
-      const session = sessionQuery[0];
-      
-      if (!session.userId) {
+      if (!sessionQuery[0].userId) {
         console.error("Session found but no user ID:", sessionId);
         return res.status(401).json({ error: "Invalid session - no user ID" });
       }
