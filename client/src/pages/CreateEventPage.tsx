@@ -171,6 +171,12 @@ export default function CreateEventPage() {
       // Make the API call with credentials
       console.log("Submitting event");
       
+      // Get the current user ID from the user object
+      if (user?.id) {
+        formData.append('userId', user.id.toString());
+        console.log("Adding userId to form data:", user.id);
+      }
+      
       // Get the sessionId from localStorage - using the correct key 'maly_session_id'
       const sessionId = localStorage.getItem('maly_session_id');
       console.log("Using sessionId for authentication:", sessionId ? "yes" : "no");
@@ -181,6 +187,8 @@ export default function CreateEventPage() {
         headers: {
           // Include session ID in custom header
           'X-Session-ID': sessionId || '',
+          // Include user ID in header
+          'X-User-ID': user?.id?.toString() || '',
         },
         credentials: 'include', // Include credentials like cookies
       });

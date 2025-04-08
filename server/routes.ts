@@ -1210,6 +1210,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
         if (sessionId) {
           console.log("Trying to authenticate via session ID:", sessionId);
+          console.log("Event creation using session ID:", sessionId);
 
           try {
             const sessionQuery = await db
@@ -1219,15 +1220,22 @@ export function registerRoutes(app: express.Application): { app: express.Applica
               .limit(1);
 
             if (sessionQuery.length > 0 && sessionQuery[0].userId) {
+              const userId = sessionQuery[0].userId;
+              console.log("Found userId in session:", userId);
+              
               const [user] = await db.select()
                 .from(users)
-                .where(eq(users.id, sessionQuery[0].userId))
+                .where(eq(users.id, userId))
                 .limit(1);
 
               if (user) {
                 currentUser = user;
                 console.log("User authenticated via session ID for event creation:", user.username);
+              } else {
+                console.log("No user found with ID from session:", userId);
               }
+            } else {
+              console.log("No session found with ID:", sessionId);
             }
           } catch (err) {
             console.error("Error checking session:", err);
