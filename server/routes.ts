@@ -1100,13 +1100,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       let dbEvents = await query;
       console.log(`Found ${dbEvents.length} events in database before filtering`);
 
-      // Filter out draft events that don't belong to the current user
-      dbEvents = dbEvents.filter(event => {
-        // If the event is not a draft, or if it's a draft created by the current user, include it
-        return !event.isDraft || (event.isDraft && event.creatorId === currentUserId);
-      });
-
-      console.log(`After filtering drafts, ${dbEvents.length} events remain`);
+      console.log(`Found ${dbEvents.length} events to display`);
 
       // Sort events by date (most recent first)
       dbEvents.sort((a, b) => {
@@ -1287,7 +1281,6 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         image: req.file ? `/uploads/${req.file.filename}` : getEventImage(req.body.category || 'Social'),
         image_url: req.file ? `/uploads/${req.file.filename}` : getEventImage(req.body.category || 'Social'),
         creatorId: currentUser.id,
-        isDraft: req.body.isDraft === 'true',
         isPrivate: req.body.isPrivate === 'true',
         createdAt: new Date(),
         city: req.body.city || req.body.location || 'Mexico City',
@@ -1297,7 +1290,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         stripePriceId: null
       };
 
-      console.log(`Creating new ${eventData.isDraft ? 'draft' : 'published'} event:`, eventData.title);
+      console.log(`Creating new event:`, eventData.title);
 
       // Insert the event into the database
       const result = await db.insert(events).values(eventData).returning();
@@ -1306,7 +1299,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         console.log(`Event successfully saved to database with ID: ${result[0].id}`);
         return res.status(201).json({
           success: true,
-          message: eventData.isDraft ? "Event saved as draft" : "Event published successfully",
+          message: "Event published successfully",
           event: result[0]
         });
       } else {

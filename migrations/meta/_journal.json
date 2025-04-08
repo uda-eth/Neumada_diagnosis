@@ -1,1 +1,2 @@
-{"version":"7","dialect":"postgresql","entries":[{"idx":0,"when":1709774400000,"tag":"0001_add_is_draft","name":"add_is_draft"}]}
+
+{"version":"7","dialect":"postgresql","entries":[{"idx":0,"when":1709774400000,"tag":"0001_add_is_draft","name":"add_is_draft"},{"idx":1,"when":1712795000000,"tag":"0002_remove_is_draft","name":"remove_is_draft"}]}
