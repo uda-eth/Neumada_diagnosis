@@ -100,7 +100,7 @@ export default function CreateEventPage() {
   };
 
   // The main function to publish events
-  const publishEvent = async (draft: boolean) => {
+  const publishEvent = async () => {
     // Manually trigger validation for all fields and log current form values
     console.log("Current form values:", form.getValues());
     
@@ -157,9 +157,8 @@ export default function CreateEventPage() {
       formData.append('tags', JSON.stringify(selectedTags));
       console.log("Added tags:", selectedTags);
       
-      // Add the isDraft flag
-      formData.append('isDraft', draft.toString());
-      console.log("Added isDraft flag:", draft);
+      // Add the isDraft flag (always false since we removed draft functionality)
+      formData.append('isDraft', 'false');
       
       // Add the image file if it exists
       if (selectedFile) {
@@ -170,7 +169,7 @@ export default function CreateEventPage() {
       }
       
       // Make the API call with credentials
-      console.log("Submitting event with isDraft =", draft);
+      console.log("Submitting event");
       
       // Get the sessionId from localStorage - using the correct key 'maly_session_id'
       const sessionId = localStorage.getItem('maly_session_id');
@@ -196,7 +195,7 @@ export default function CreateEventPage() {
       
       toast({
         title: "Success",
-        description: draft ? "Event saved as draft" : "Event published successfully"
+        description: "Event published successfully"
       });
       
       // Redirect back to the main page
@@ -436,19 +435,9 @@ export default function CreateEventPage() {
               </div>
             </div>
 
-            {/* Publication Status Toggle */}
+            {/* Publication Button */}
             <div className="space-y-4">
-              <h3 className="text-sm font-medium">Publication Status</h3>
               <div className="flex gap-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1 h-12 bg-white/5 border-white/10 hover:bg-white/10"
-                  disabled={loading}
-                  onClick={() => publishEvent(true)}
-                >
-                  Save as Draft
-                </Button>
                 <Button
                   type="button"
                   className="flex-1 h-12 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
@@ -481,7 +470,7 @@ export default function CreateEventPage() {
             type="button"
             className="w-full h-12 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white transition-all duration-200"
             disabled={loading}
-            onClick={() => publishEvent(false)}
+            onClick={() => publishEvent()}
           >
             <Plus className="h-5 w-5 mr-2" />
             <span>{loading ? "Creating..." : "Create Event"}</span>
