@@ -1,0 +1,47 @@
+Refined Prompt for Linking Event Host to Event Show Page
+
+We're encountering an issue where the event show page is failing to load the event host’s information – for example, a request to /api/users/5 is returning a 404 ("User not found"). The intended functionality is:
+
+The event object should have a valid host (creator) linked through its persistent user ID.
+
+On the event show page, the host’s name and profile picture should appear at the bottom.
+
+There should be buttons or options enabling the user to send a connection request or message the host.
+
+Action Items:
+
+Ensure Correct Host Linking on Event Creation:
+
+Verify that when an event is created, the creator's user ID (creatorId) is correctly set and references a valid user record in the users table.
+
+Remove any reliance on transient session IDs for host validation—use the persistent user ID only.
+
+Fix the Event Show Endpoint:
+
+Update the event show API endpoint so it reliably retrieves the event host’s details using the stored creatorId.
+
+If a GET request (e.g., /api/users/5) returns a 404 for the event host, investigate why the user record isn’t found—ensure the correct user ID is being stored and queried.
+
+Update the Event Show Page UI:
+
+Modify the UI to display the event host’s profile:
+
+Show the host’s profile picture.
+
+Display the host’s name.
+
+Provide actionable buttons like "Send Connection Request" and "Message."
+
+Ensure that if host data isn’t found, a friendly fallback or error message is shown.
+
+Testing and Validation:
+
+After making these changes, test the full event show flow:
+
+Create an event and confirm that the event host (creator) information is correctly linked.
+
+Verify that the event show page displays the host’s details.
+
+Ensure that connection request and messaging functionalities work as expected when interacting with the event host.
+
+Please automatically implement these changes so that the event host is always properly linked and displayed on the event page, relying solely on a persistent user ID rather than session IDs.
