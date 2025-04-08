@@ -1,0 +1,45 @@
+Below is the refined technical prompt that not only addresses the WebSocket connection failures but also instructs the removal of the unnecessary sessions id sequence from the database schema. The correct sessions table schema is provided for reference:
+
+---
+
+**Refined Technical Prompt for Fixing WebSocket Connection Failures & Removing Unnecessary Sessions ID Sequence**
+
+We're experiencing persistent WebSocket connection failures that prevent users from accessing their inbox messages. The logs indicate repeated deserialization of the same user and excessive authentication checks, which may be contributing to the instability. Additionally, our database currently includes an unnecessary sessions id sequence. Since we already set up the sessions table with a text primary key, the sequence is not needed.
+
+**Action Items:**
+
+1. **Investigate WebSocket Stability:**
+   - **Authentication & Deserialization:**  
+     - Analyze the repeated `/api/auth/check` calls and user deserialization to determine if they are triggering the WebSocket disconnections.
+     - Ensure that the session re-validation or deserialization logic does not interfere with the WebSocket's persistent connection.
+   - **Connection Health:**  
+     - Implement or verify a proper keepalive (ping/pong) mechanism.
+     - Review the WebSocket server configuration and middleware for efficient authentication handling.
+
+2. **Optimize and Stabilize the WebSocket:**
+   - Reduce redundant authentication checks that might be overloading the connection.
+   - Enhance error handling in the reconnection logic to prevent constant disconnections (error code 1006) and reconnection loops.
+
+3. **Remove Unnecessary Sessions ID Sequence:**
+   - Update the database schema to eliminate the sessions id sequence, as it is not needed when using a text primary key.
+   - Replace the current sessions table definition with the following correct schema provided by our co-developer:
+
+   ```typescript
+   export const sessions = pgTable("sessions", {
+     id: text("id").primaryKey(), // Session ID
+     userId: integer("user_id").references(() => users.id),
+     expiresAt: timestamp("expires_at").notNull(),
+     data: jsonb("data"),
+     createdAt: timestamp("created_at").defaultNow(),
+     updatedAt: timestamp("updated_at").defaultNow(),
+   });
+   ```
+
+4. **Testing and Verification:**
+   - Ensure that the WebSocket connection remains stable after these changes.
+   - Verify that the inbox messages load without interruption and that real-time messaging functions correctly.
+   - Confirm that the sessions table no longer utilizes an unnecessary sequence, and that session management continues to work as expected.
+
+Please automatically implement these changes in the codebase and verify that the WebSocket connection remains stable and that the sessions table has been updated accordingly. Include any necessary code modifications, configuration updates, and detailed testing instructions.
+
+---

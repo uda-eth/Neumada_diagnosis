@@ -183,13 +183,22 @@ export default function ConnectionsPage() {
                             {connection.connectionType === "following" ? "You follow" : "Follows you"}
                           </p>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setLocation(`/profile/${connection.username}`)}
-                        >
-                          View
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setLocation(`/chat/${connection.id}`)}
+                          >
+                            Message
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setLocation(`/profile/${connection.username}`)}
+                          >
+                            View
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

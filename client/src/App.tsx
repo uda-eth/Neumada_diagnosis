@@ -77,7 +77,7 @@ function AppContent() {
             <Route path="/connect" component={ConnectPage} />
             <Route path="/connections" component={ConnectionsPage} />
             <Route path="/messages" component={MessagesPage} />
-            <Route path="/chat/:username" component={ChatPage} />
+            <Route path="/chat/:id" component={ChatPage} />
             <Route path="/settings" component={SettingsPage} />
             <Route path="/premium" component={PremiumPage} />
             <Route path="/inbox" component={InboxPage} />
