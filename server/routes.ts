@@ -417,7 +417,7 @@ const newEvents = {
         { id: 1048, name: "Jessica Jones", image: "/attached_assets/profile-image-39.jpg" },
         { id: 1049, name: "William Green", image: "/attached_assets/profile-image-40.jpg" },
         { id: 1050, name: "Amanda Brown", image: "/attached_assets/profile-image-41.jpg" },
-        { id: 1051 name: "Robert White", image: "/attached_assets/profile-image-42.jpg" },
+        { id: 1051, name: "Robert White", image: "/attached_assets/profile-image-42.jpg" },
         { id: 1052, name: "Ashley Black", image: "/attached_assets/profile-image-43.jpg" },
         { id: 1053, name: "William Jones", image: "/attached_assets/profile-image-44.jpg" },
         { id: 1054, name: "Amanda White", image: "/attached_assets/profile-image-45.jpg" },

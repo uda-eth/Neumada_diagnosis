@@ -617,47 +617,64 @@ export function setupAuth(app: Express) {
     });
   });
 
+  // Create a simple in-memory cache for auth checks to reduce database load
+  const authCache = new Map<string, {
+    userId: number;
+    user: any;
+    expires: number;
+  }>();
+
+  // Cache session checks for 5 minutes
+  const AUTH_CACHE_TTL = 5 * 60 * 1000;
+  
+  // Cleanup expired cache entries periodically
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, value] of authCache.entries()) {
+      if (value.expires < now) {
+        authCache.delete(key);
+      }
+    }
+  }, 60 * 1000); // Run cleanup every minute
+
   // Add a dedicated auth check endpoint
   app.get("/api/auth/check", async (req, res) => {
-    // Add cache-control headers to prevent caching of auth status
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-    res.set('Expires', '-1');
-    res.set('Pragma', 'no-cache');
-    
-    // Use a more aggressive cache policy to reduce duplicate calls
-    res.set('Cache-Control', 'private, max-age=60');
+    // Set proper cache headers - allow browser to cache for 5 minutes
+    res.set('Cache-Control', 'private, max-age=300');
     
     const sessionId = req.header('X-Session-ID') || req.sessionID;
+    const now = Date.now();
 
-    // Check for existing session in database first
-    if (sessionId) {
-      const [dbSession] = await db
-        .select()
-        .from(sessions)
-        .where(eq(sessions.id, sessionId))
-        .limit(1);
-
-      if (dbSession && dbSession.userId) {
-        const [user] = await db
-          .select()
-          .from(users)
-          .where(eq(users.id, dbSession.userId))
-          .limit(1);
-
-        if (user) {
-          const { password, ...userWithoutPassword } = user;
-          return res.json({
-            authenticated: true,
-            user: userWithoutPassword,
-            sessionId: sessionId
-          });
-        }
+    // Skip DB lookup if we have a recent cache entry
+    if (sessionId && authCache.has(sessionId)) {
+      const cachedAuth = authCache.get(sessionId);
+      if (cachedAuth && cachedAuth.expires > now) {
+        return res.json({
+          authenticated: true,
+          user: cachedAuth.user,
+          sessionId: sessionId,
+          fromCache: true
+        });
       }
     }
 
-    // Fallback to checking session authentication
+    // If user is authenticated through Passport, use that
     if (req.isAuthenticated() && req.user) {
-      const { password, ...userWithoutPassword } = req.user;
+      const user = req.user;
+      console.log("Auth check: User authenticated via passport:", user.username);
+      
+      // Return user info without sensitive data
+      const { password, ...userWithoutPassword } = user as any;
+
+      // Cache the result
+      if (sessionId) {
+        authCache.set(sessionId, {
+          userId: user.id,
+          user: userWithoutPassword,
+          expires: now + AUTH_CACHE_TTL
+        });
+      }
+
       return res.json({
         authenticated: true,
         user: userWithoutPassword,
@@ -665,35 +682,50 @@ export function setupAuth(app: Express) {
       });
     }
 
-    // Log session ID for debugging
-    console.log("Session ID in /api/auth/check:", req.sessionID);
+    // Check for existing session in database if not authenticated via passport
+    if (sessionId) {
+      try {
+        const [dbSession] = await db
+          .select()
+          .from(sessions)
+          .where(eq(sessions.id, sessionId))
+          .limit(1);
 
-    // Check if user is authenticated
-    if (req.isAuthenticated() && req.user) {
-      const user = req.user;
-      console.log("Auth check: User authenticated:", user.username);
+        if (dbSession && dbSession.userId) {
+          const [user] = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, dbSession.userId))
+            .limit(1);
 
-      // Update session with timestamp
-      if (req.session) {
-        // @ts-ignore - Custom property for tracking session state
-        req.session.lastAccess = Date.now();
+          if (user) {
+            const { password, ...userWithoutPassword } = user;
+            
+            // Cache the result
+            authCache.set(sessionId, {
+              userId: user.id,
+              user: userWithoutPassword,
+              expires: now + AUTH_CACHE_TTL
+            });
+            
+            return res.json({
+              authenticated: true,
+              user: userWithoutPassword,
+              sessionId: sessionId
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Database error during auth check:", error);
       }
-
-      // Return user info without sensitive data
-      const { password, ...userWithoutPassword } = user as any;
-
-      res.json({
-        authenticated: true,
-        user: userWithoutPassword,
-        sessionId: req.sessionID
-      });
-    } else {
-      console.log("Auth check: User not authenticated");
-      res.json({
-        authenticated: false,
-        message: "Not logged in"
-      });
     }
+
+    // If we get here, user is not authenticated
+    console.log("Auth check: User not authenticated");
+    return res.json({
+      authenticated: false,
+      message: "Not logged in"
+    });
   });
 
   app.get("/api/user", (req, res) => {

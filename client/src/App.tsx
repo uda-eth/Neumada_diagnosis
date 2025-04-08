@@ -44,16 +44,21 @@ function AppContent() {
       url.searchParams.delete('sessionId');
       url.searchParams.delete('ts');
       window.history.replaceState({}, document.title, url.toString());
-      return; // Skip further checks to give sessionId time to work
+      
+      // Store session ID in localStorage and skip further checks
+      localStorage.setItem('maly_session_id', sessionId);
+      return;
     }
     
+    // Don't perform redundant auth checks - defer to the Layout component
     // Skip check if we're already on the auth page or during loading
     if (location.startsWith('/auth') || isLoading) {
       return;
     }
     
-    // If user is not loaded and we've finished loading, redirect to auth
-    if (!user && !isLoading) {
+    // Quick check for cached user data without making API calls
+    const cachedUser = localStorage.getItem('maly_user_data');
+    if (!user && !isLoading && !cachedUser) {
       setLocation('/auth');
     }
   }, [user, isLoading, location, setLocation]);

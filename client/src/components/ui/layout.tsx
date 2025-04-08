@@ -46,16 +46,20 @@ export function Layout({ children }: LayoutProps) {
   // Monitor authentication state and redirect if needed
   useEffect(() => {
     const checkAuthState = async () => {
-      // Refetch to ensure we have the latest auth state
-      await refreshUser(); // Use refreshUser for more thorough refresh
-      
       // Don't redirect if we're already on the auth page
       if (location === '/auth') {
         setAuthChecked(true);
         return;
       }
       
-      // If we've checked auth and user is null (and not loading), redirect to auth page
+      // Only refresh user data when necessary (not authenticated and not already checking)
+      if (!user && !isLoading && !authChecked) {
+        console.log("Auth check needed - getting user data");
+        // Using refetchUser instead of refreshUser for a less intensive check
+        await refetchUser();
+      }
+      
+      // If we've checked auth and user is still null (and not loading), redirect to auth page
       if (!isLoading && !user && !authChecked) {
         console.log("No authenticated user detected, redirecting to auth page");
         setLocation('/auth');
@@ -66,7 +70,9 @@ export function Layout({ children }: LayoutProps) {
     };
     
     checkAuthState();
-  }, [user, isLoading, location, setLocation, refetchUser, refreshUser]);
+    
+    // Remove refreshUser from dependencies to prevent unnecessary reruns
+  }, [user, isLoading, location, setLocation, refetchUser, authChecked]);
 
   const handleLogout = async () => {
     await logout();

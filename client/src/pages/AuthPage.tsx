@@ -47,31 +47,22 @@ export default function AuthPage() {
   
   // If user is already logged in, redirect to home page
   useEffect(() => {
-    async function checkAndRedirect() {
+    // Use cached data first instead of making an API call
+    const cachedUser = localStorage.getItem('maly_user_data');
+    if (cachedUser) {
       try {
-        // Check auth status via server endpoint with cache busting
-        const response = await fetch('/api/auth/check', {
-          credentials: 'include',
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-store, no-cache, must-revalidate, private',
-            'Pragma': 'no-cache'
-          }
-        });
-        
-        if (response.ok) {
-          const authStatus = await response.json();
-          if (authStatus.authenticated) {
-            console.log("User already authenticated, redirecting to homepage");
-            setLocation("/");
-          }
-        }
-      } catch (error) {
-        console.error("Auth check error:", error);
+        // Check if cached user data exists and is valid JSON
+        JSON.parse(cachedUser);
+        console.log("Cached user found, redirecting to homepage");
+        setLocation("/");
+        return;
+      } catch (e) {
+        // Invalid JSON in cache, will continue with normal flow
+        localStorage.removeItem('maly_user_data');
       }
     }
     
-    // If we already have user data, redirect without making another request
+    // If we already have user data in the React state, redirect without making another request
     if (user) {
       console.log("User found in state, redirecting to homepage");
       setLocation("/");
