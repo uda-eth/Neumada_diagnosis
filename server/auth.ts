@@ -717,15 +717,15 @@ export function setupAuth(app: Express) {
 
   // Add endpoint for updating user profiles
   app.post("/api/profile", async (req, res) => {
-    // Get session ID from header or cookie
-    const headerSessionId = req.headers['x-session-id'] as string;
-    const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
-    const sessionId = headerSessionId || cookieSessionId;
-
     try {
-      if (!sessionId) {
-        return res.status(401).json({ error: "Not authenticated - No session ID" });
-      }
+      // Check if user is authenticated through Passport
+      if (req.isAuthenticated() && req.user) {
+        // Use the authenticated user object directly
+        const userId = (req.user as any).id;
+        
+        if (!userId) {
+          return res.status(401).json({ error: "Not authenticated - Invalid user" });
+        }
 
       // Find the session and associated user
       const sessionQuery = await db.select().from(sessions).where(eq(sessions.id, sessionId));

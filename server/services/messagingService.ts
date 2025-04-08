@@ -44,7 +44,7 @@ export async function sendMessage({ senderId, receiverId, content }: {
   };
 
   const result = await db.insert(messages).values(newMessage).returning();
-  
+
   // Get sender info for notification purposes
   const sender = await db.query.users.findFirst({
     where: eq(users.id, senderId),
@@ -85,7 +85,7 @@ export async function getConversations(userId: number) {
       following: true
     }
   });
-  
+
   // Extract all connected user IDs
   const connectedUserIds = new Set<number>();
   connections.forEach(conn => {
@@ -95,7 +95,7 @@ export async function getConversations(userId: number) {
       connectedUserIds.add(conn.followerId);
     }
   });
-  
+
   // Get all messages where user is either sender or receiver
   const userMessages = await db.query.messages.findMany({
     where: or(
@@ -139,16 +139,16 @@ export async function getConversations(userId: number) {
     // Determine if user is sender or receiver
     const isUserSender = message.senderId === userId;
     const partnerId = isUserSender ? message.receiverId : message.senderId;
-    
+
     // Skip if any IDs are null
     if (partnerId === null) continue;
-    
+
     // Only include conversations with connected users
     if (!connectedUserIds.has(partnerId)) continue;
-    
+
     // Get partner info
     const partner = isUserSender ? message.receiver : message.sender;
-    
+
     if (!partner) continue;
 
     if (!conversationMap.has(partnerId)) {
@@ -165,11 +165,11 @@ export async function getConversations(userId: number) {
     } else {
       const conversation = conversationMap.get(partnerId)!;
       conversation.messages.push(message);
-      
+
       // Update last message if this one is newer
       const msgDate = message.createdAt ? new Date(message.createdAt) : new Date();
       const lastMsgDate = conversation.lastMessage.createdAt ? new Date(conversation.lastMessage.createdAt) : new Date();
-      
+
       if (msgDate > lastMsgDate) {
         conversation.lastMessage = message;
       }
@@ -257,7 +257,7 @@ export async function markMessageAsRead(messageId: number) {
     .update(messages)
     .set({ isRead: true })
     .where(eq(messages.id, messageId));
-  
+
   // Return the updated message
   return db.query.messages.findFirst({
     where: eq(messages.id, messageId)

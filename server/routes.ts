@@ -417,7 +417,7 @@ const newEvents = {
         { id: 1048, name: "Jessica Jones", image: "/attached_assets/profile-image-39.jpg" },
         { id: 1049, name: "William Green", image: "/attached_assets/profile-image-40.jpg" },
         { id: 1050, name: "Amanda Brown", image: "/attached_assets/profile-image-41.jpg" },
-        { id: 1051, name: "Robert White", image: "/attached_assets/profile-image-42.jpg" },
+        { id: 1051 name: "Robert White", image: "/attached_assets/profile-image-42.jpg" },
         { id: 1052, name: "Ashley Black", image: "/attached_assets/profile-image-43.jpg" },
         { id: 1053, name: "William Jones", image: "/attached_assets/profile-image-44.jpg" },
         { id: 1054, name: "Amanda White", image: "/attached_assets/profile-image-45.jpg" },
@@ -1170,36 +1170,36 @@ export function registerRoutes(app: express.Application): { app: express.Applica
     try {
       // First try to get user from session (standard auth flow)
       let currentUser = null;
-      
+
       // Method 1: Check if user is authenticated via passport
       if (req.isAuthenticated() && req.user) {
         currentUser = req.user;
         console.log("User authenticated via passport for event creation:", currentUser.username);
       } 
-      
+
       // Method 2: Check session from various sources if passport auth fails
       if (!currentUser) {
         const headerSessionId = req.headers['x-session-id'] as string;
         const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
         const querySessionId = req.query.sessionId as string;
         const sessionId = headerSessionId || cookieSessionId || querySessionId;
-        
+
         if (sessionId) {
           console.log("Trying to authenticate via session ID:", sessionId);
-          
+
           try {
             const sessionQuery = await db
               .select()
               .from(sessions)
               .where(eq(sessions.id, sessionId))
               .limit(1);
-            
+
             if (sessionQuery.length > 0 && sessionQuery[0].userId) {
               const [user] = await db.select()
                 .from(users)
                 .where(eq(users.id, sessionQuery[0].userId))
                 .limit(1);
-                
+
               if (user) {
                 currentUser = user;
                 console.log("User authenticated via session ID for event creation:", user.username);
@@ -1210,18 +1210,18 @@ export function registerRoutes(app: express.Application): { app: express.Applica
           }
         }
       }
-      
+
       // Method 3: Allow using userId directly as a fallback for testing
       if (!currentUser && req.body.userId) {
         const userId = parseInt(req.body.userId);
         console.log("Trying to authenticate via direct userId:", userId);
-        
+
         try {
           const [user] = await db.select()
             .from(users)
             .where(eq(users.id, userId))
             .limit(1);
-            
+
           if (user) {
             currentUser = user;
             console.log("User authenticated via direct userId for event creation:", user.username);
@@ -1230,7 +1230,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
           console.error("Error checking user by ID:", err);
         }
       }
-      
+
       // If still no authenticated user, return error
       if (!currentUser) {
         console.error("Unable to authenticate user for event creation");
@@ -1329,11 +1329,11 @@ export function registerRoutes(app: express.Application): { app: express.Applica
     try {
       const { eventId } = req.params;
       const userId = req.user?.id;
-      
+
       if (!userId) {
         return res.status(401).json({ error: "You must be logged in to view participation status" });
       }
-      
+
       // Check if user has a participation record
       const participation = await db.select()
         .from(eventParticipants)
@@ -1344,11 +1344,11 @@ export function registerRoutes(app: express.Application): { app: express.Applica
           )
         )
         .limit(1);
-      
+
       if (participation.length === 0) {
         return res.status(404).json({ status: 'not_attending' });
       }
-      
+
       res.json({ status: participation[0].status });
     } catch (error) {
       console.error("Error fetching participation status:", error);
@@ -1361,7 +1361,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       const { eventId } = req.params;
       const { status } = req.body;
       const userId = req.user?.id;
-      
+
       if (!userId) {
         return res.status(401).json({ error: "You must be logged in to participate in events" });
       }
@@ -1372,11 +1372,11 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
       // Get the event
       const event = await db.select().from(events).where(eq(events.id, parseInt(eventId))).limit(1);
-      
+
       if (!event.length) {
         return res.status(404).json({ error: "Event not found" });
       }
-      
+
       // Check if user already has a participation record
       const existingParticipation = await db.select()
         .from(eventParticipants)
@@ -1389,10 +1389,10 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         .limit(1);
 
       let result;
-      
+
       if (existingParticipation.length > 0) {
         const oldStatus = existingParticipation[0].status;
-        
+
         // Update the existing record
         if (status === 'not_attending') {
           // If changing to not attending, delete the record instead
@@ -1403,7 +1403,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
                 eq(eventParticipants.userId, userId)
               )
             );
-          
+
           result = { status: 'not_attending', message: "Participation removed" };
         } else {
           // Update the status
@@ -1417,7 +1417,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
             )
             .returning();
         }
-        
+
         // Update count on the event
         if (oldStatus !== status) {
           // Decrement the old status count if it was 'attending' or 'interested'
@@ -1430,7 +1430,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
               .set({ interestedCount: event[0].interestedCount - 1 })
               .where(eq(events.id, parseInt(eventId)));
           }
-          
+
           // Increment the new status count if it's 'attending' or 'interested'
           if (status === 'attending') {
             await db.update(events)
@@ -1452,7 +1452,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
             ticketQuantity: 1,
           })
           .returning();
-        
+
         // Increment the appropriate count
         if (status === 'attending') {
           await db.update(events)
@@ -1470,7 +1470,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
       // Get the updated event
       const updatedEvent = await db.select().from(events).where(eq(events.id, parseInt(eventId))).limit(1);
-      
+
       res.json({
         participation: result,
         event: updatedEvent[0]
@@ -1811,7 +1811,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       });
 
       if (!user) {
-        return res.status(404).json({ error: 'User not found' });
+        return resstatus(404).json({ error: 'User not found' });
       }
 
       res.json(user);
@@ -2093,7 +2093,7 @@ app.get('/api/events/:eventId/participation/status', isAuthenticated, async (req
   try {
     const currentUser = req.user as Express.User;
     const { eventId } = req.params;
-    
+
     // Find current participation status for this user and event
     const participationRecord = await db.query.eventParticipants.findFirst({
       where: and(
@@ -2101,11 +2101,11 @@ app.get('/api/events/:eventId/participation/status', isAuthenticated, async (req
         eq(eventParticipants.eventId, parseInt(eventId))
       )
     });
-    
+
     if (!participationRecord) {
       return res.json({ status: 'not_participating' });
     }
-    
+
     return res.json({ status: participationRecord.status });
   } catch (error) {
     console.error('Error getting participation status:', error);
@@ -2119,21 +2119,21 @@ app.post('/api/events/:eventId/participate', isAuthenticated, async (req: Reques
     const currentUser = req.user as Express.User;
     const { eventId } = req.params;
     const { status } = req.body;
-    
+
     // Validate status
     if (!status || !['interested', 'attending', 'not_participating'].includes(status)) {
       return res.status(400).json({ error: 'Invalid status value. Must be "interested", "attending", or "not_participating".' });
     }
-    
+
     // Find the event to make sure it exists
     const event = await db.query.events.findFirst({
       where: eq(events.id, parseInt(eventId))
     });
-    
+
     if (!event) {
       return res.status(404).json({ error: 'Event not found' });
     }
-    
+
     // Find current participation record if any
     const existingRecord = await db.query.eventParticipants.findFirst({
       where: and(
@@ -2141,7 +2141,7 @@ app.post('/api/events/:eventId/participate', isAuthenticated, async (req: Reques
         eq(eventParticipants.eventId, parseInt(eventId))
       )
     });
-    
+
     // Handle removal of participation (not_participating)
     if (status === 'not_participating') {
       if (existingRecord) {
@@ -2155,21 +2155,21 @@ app.post('/api/events/:eventId/participate', isAuthenticated, async (req: Reques
             .set({ attendingCount: Math.max((event.attendingCount || 0) - 1, 0) })
             .where(eq(events.id, parseInt(eventId)));
         }
-        
+
         // Delete the record
         await db.delete(eventParticipants)
           .where(and(
             eq(eventParticipants.userId, currentUser.id),
             eq(eventParticipants.eventId, parseInt(eventId))
           ));
-        
+
         return res.json({ status: 'not_participating' });
       } else {
         // No record to delete
         return res.json({ status: 'not_participating' });
       }
     }
-    
+
     // Handle adding or updating participation status
     if (existingRecord) {
       // Update existing record if status changed
@@ -2184,7 +2184,7 @@ app.post('/api/events/:eventId/participate', isAuthenticated, async (req: Reques
             .set({ attendingCount: Math.max((event.attendingCount || 0) - 1, 0) })
             .where(eq(events.id, parseInt(eventId)));
         }
-        
+
         // Increment counter for the new status
         if (status === 'interested') {
           await db.update(events)
@@ -2195,7 +2195,7 @@ app.post('/api/events/:eventId/participate', isAuthenticated, async (req: Reques
             .set({ attendingCount: (event.attendingCount || 0) + 1 })
             .where(eq(events.id, parseInt(eventId)));
         }
-        
+
         // Update the record
         await db.update(eventParticipants)
           .set({ 
@@ -2216,7 +2216,7 @@ app.post('/api/events/:eventId/participate', isAuthenticated, async (req: Reques
         [eventParticipants.status.name]: status,
         [eventParticipants.createdAt.name]: new Date()
       });
-      
+
       // Increment the counter for the new status
       if (status === 'interested') {
         await db.update(events)
@@ -2228,7 +2228,7 @@ app.post('/api/events/:eventId/participate', isAuthenticated, async (req: Reques
           .where(eq(events.id, parseInt(eventId)));
       }
     }
-    
+
     return res.json({ status });
   } catch (error) {
     console.error('Error updating participation status:', error);
