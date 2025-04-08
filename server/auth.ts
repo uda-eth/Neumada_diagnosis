@@ -468,14 +468,22 @@ export function setupAuth(app: Express) {
               const sessionId = req.session.id;
               console.log("Storing session ID in database:", sessionId);
 
-              // Always create a new session
-              await db.delete(sessions).where(eq(sessions.userId, user.id));
+              // Delete any expired sessions for this user
+              await db.delete(sessions)
+                .where(
+                  or(
+                    eq(sessions.userId, user.id),
+                    lte(sessions.expiresAt, new Date())
+                  )
+                );
 
+              // Create new session
               await db.insert(sessions).values({
                 id: sessionId,
                 userId: user.id,
                 expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
                 createdAt: new Date(),
+                updatedAt: new Date(),
                 data: { 
                   username: user.username, 
                   email: user.email,
@@ -494,6 +502,17 @@ export function setupAuth(app: Express) {
                   }
                 }
               });
+
+              // Validate session was created
+              const sessionCheck = await db.select()
+                .from(sessions)
+                .where(eq(sessions.id, sessionId))
+                .limit(1);
+
+              if (!sessionCheck.length) {
+                console.error("Failed to create session:", sessionId);
+                return res.status(500).json({ error: "Failed to create session" });
+              }
 
               console.log("Session stored in database successfully");
 

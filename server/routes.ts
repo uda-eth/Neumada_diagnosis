@@ -1177,9 +1177,10 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       // Get session ID from all possible sources
       const headerSessionId = req.headers['x-session-id'] as string;
       const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
+      const querySessionId = req.query.sessionId as string;
 
       // Use the first available session ID
-      const sessionId = headerSessionId || cookieSessionId;
+      const sessionId = headerSessionId || cookieSessionId || querySessionId;
       console.log("Event creation using session ID:", sessionId);
 
       if (!sessionId) {
@@ -1188,9 +1189,22 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       }
 
       // Find session and associated user with more detailed error handling
-      const sessionQuery = await db.select()
+      const sessionQuery = await db
+        .select()
         .from(sessions)
-        .where(eq(sessions.id, sessionId));
+        .where(eq(sessions.id, sessionId))
+        .limit(1);
+
+      if (!sessionQuery.length) {
+        console.error("No session found with ID:", sessionId);
+        return res.status(401).json({ error: "Invalid session" });
+      }
+
+      const session = sessionQuery[0];
+      if (!session.userId) {
+        console.error("Session exists but has no user ID:", sessionId);
+        return res.status(401).json({ error: "Invalid session - no user ID associated" });
+      }
 
       if (!sessionQuery || sessionQuery.length === 0) {
         console.error("No session found for ID:", sessionId);
