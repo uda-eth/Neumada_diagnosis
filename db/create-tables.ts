@@ -143,6 +143,17 @@ async function main() {
       )
     `);
 
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS sessions (
+        id TEXT PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        expires_at TIMESTAMP NOT NULL,
+        data JSONB,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+
     // After all tables are created, add self-reference for users
     await db.execute(sql`
       ALTER TABLE users 
