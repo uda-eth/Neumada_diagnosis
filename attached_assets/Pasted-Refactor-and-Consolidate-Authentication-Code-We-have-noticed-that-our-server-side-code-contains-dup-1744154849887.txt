@@ -1,0 +1,53 @@
+Refactor and Consolidate Authentication Code
+
+We have noticed that our server-side code contains duplicated authentication functions—some are located within the routes file while others are in the (overly long) auth file. We need to remove these duplicates, enforce the DRY (Don't Repeat Yourself) principle, and create a centralized, maintainable authentication module.
+
+Your Task:
+
+Identify and Isolate Duplicates:
+
+Analyze the current routes file and the auth file to locate all instances of authentication logic (e.g., session checks, user verification via session ID or headers).
+
+List and compare functions that are duplicated across these files.
+
+Create a Centralized Authentication Module:
+
+Extract all common authentication functionality (such as session validation, user lookup, and error handling) into one dedicated module (e.g., auth.middleware.ts or auth.helpers.ts).
+
+Ensure that this module exposes clearly defined functions or middleware for verifying the user's authentication state.
+
+Remove the duplicated auth functions from both the routes and auth files, then update those files to reference the new centralized module.
+
+Refactor the Routes File:
+
+Remove any inline authentication code from the routes file.
+
+Replace inline checks with calls to the centralized authentication middleware/functions.
+
+Ensure that routes that require authentication (e.g., event creation, connection requests, participation endpoints) use the new auth middleware consistently.
+
+Simplify the Auth File:
+
+If the auth file is overly long, refactor it by splitting it into logical sections (e.g., one file for Passport setup, one for helper functions, and one for middleware).
+
+Remove any obsolete or redundant code related to authentication, ensuring that only the required logic remains and is well-documented.
+
+Testing and Verification:
+
+Verify that all endpoints still enforce authentication properly using the new centralized logic.
+
+Ensure that error messages and logged outputs remain useful for debugging.
+
+Update or write new tests if necessary to confirm that authentication works consistently across routes.
+
+Expected Outcomes:
+
+A new, single authentication module that centralizes all auth functions.
+
+The routes file is leaner, without any inline or duplicated authentication logic.
+
+The auth file(s) are refactored into clear, maintainable segments.
+
+Consistent error handling and reduced code redundancy in all endpoints relying on authentication.
+
+Automatically implement these changes, refactor the duplicated code, and update the project files accordingly. Ensure that the refactored solution is well-documented with inline comments and that all authentication-related endpoints continue functioning as expected.
