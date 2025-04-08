@@ -1187,14 +1187,27 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         return res.status(401).json({ error: "Authentication required" });
       }
 
-      // Find session and associated user
-      const [session] = await db.select()
+      // Find session and associated user with more detailed error handling
+      const sessionQuery = await db.select()
         .from(sessions)
-        .where(eq(sessions.id, sessionId))
-        .limit(1);
+        .where(eq(sessions.id, sessionId));
 
-      if (!session?.userId) {
-        return res.status(401).json({ error: "Invalid session" });
+      if (!sessionQuery || sessionQuery.length === 0) {
+        console.error("No session found for ID:", sessionId);
+        return res.status(401).json({ error: "Session not found" });
+      }
+
+      const session = sessionQuery[0];
+      
+      if (!session.userId) {
+        console.error("Session found but no user ID:", sessionId);
+        return res.status(401).json({ error: "Invalid session - no user ID" });
+      }
+
+      // Check if session is expired
+      if (session.expiresAt && new Date(session.expiresAt) < new Date()) {
+        console.error("Session expired:", sessionId);
+        return res.status(401).json({ error: "Session expired" });
       }
 
       // Get user details
