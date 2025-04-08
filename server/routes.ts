@@ -1095,16 +1095,16 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
   app.post("/api/events", upload.single('image'), async (req, res) => {
     try {
-      // First try to get user using multiple auth methods in priority order
+      // Use only user ID-based authentication methods (no session ID)
       let currentUser = null;
 
-      // Method 1: Check if user is authenticated via passport
+      // Method 1: Check if user is authenticated via passport (primary method)
       if (req.isAuthenticated() && req.user) {
         currentUser = req.user;
         console.log("User authenticated via passport for event creation:", currentUser.username);
       }
       
-      // Method 2: Check X-User-ID header (priority over session)
+      // Method 2: Check X-User-ID header (secondary method)
       if (!currentUser) {
         const headerUserId = req.headers['x-user-id'] as string;
         
@@ -1128,49 +1128,7 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         }
       }
 
-      // Method 3: Check session from various sources if other methods fail
-      if (!currentUser) {
-        const headerSessionId = req.headers['x-session-id'] as string;
-        const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
-        const querySessionId = req.query.sessionId as string;
-        const sessionId = headerSessionId || cookieSessionId || querySessionId;
-
-        if (sessionId) {
-          console.log("Trying to authenticate via session ID:", sessionId);
-          console.log("Event creation using session ID:", sessionId);
-
-          try {
-            const sessionQuery = await db
-              .select()
-              .from(sessions)
-              .where(eq(sessions.id, sessionId))
-              .limit(1);
-
-            if (sessionQuery.length > 0 && sessionQuery[0].userId) {
-              const userId = sessionQuery[0].userId;
-              console.log("Found userId in session:", userId);
-              
-              const [user] = await db.select()
-                .from(users)
-                .where(eq(users.id, userId))
-                .limit(1);
-
-              if (user) {
-                currentUser = user;
-                console.log("User authenticated via session ID for event creation:", user.username);
-              } else {
-                console.log("No user found with ID from session:", userId);
-              }
-            } else {
-              console.log("No session found with ID:", sessionId);
-            }
-          } catch (err) {
-            console.error("Error checking session:", err);
-          }
-        }
-      }
-
-      // Method 4: Allow using userId directly from body as a fallback
+      // Method 3: Allow using userId directly from body as a fallback
       if (!currentUser && req.body.userId) {
         const userId = parseInt(req.body.userId);
         console.log("Trying to authenticate via direct userId from body:", userId);
@@ -1190,19 +1148,13 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         }
       }
 
-      // If still no authenticated user, return error
+      // If no authenticated user found through user ID methods, return error
       if (!currentUser) {
-        console.error("Unable to authenticate user for event creation");
-        return res.status(401).json({ error: "Authentication required to create events" });
+        console.error("Unable to authenticate user for event creation - no valid user ID found");
+        return res.status(401).json({ error: "Authentication required to create events - valid user ID required" });
       }
 
       console.log("User authenticated for event creation:", currentUser.username);
-
-      // Final authentication check
-      if (!currentUser) {
-        console.log("Authentication failed via all methods");
-        return res.status(401).json({ error: "You must be logged in to create events" });
-      }
 
       console.log("Event creation request received from user:", currentUser.username);
       console.log("Form data:", req.body);
