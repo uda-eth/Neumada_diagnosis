@@ -71,6 +71,7 @@ async function main() {
         available_tickets INTEGER,
         created_at TIMESTAMP DEFAULT NOW(),
         is_private BOOLEAN DEFAULT false,
+        is_draft BOOLEAN DEFAULT false,
         is_business_event BOOLEAN DEFAULT false,
         tags JSONB DEFAULT '[]',
         attending_count INTEGER DEFAULT 0,
