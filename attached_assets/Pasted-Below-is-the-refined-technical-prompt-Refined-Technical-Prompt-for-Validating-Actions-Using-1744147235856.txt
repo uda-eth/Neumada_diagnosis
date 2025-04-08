@@ -1,0 +1,33 @@
+Below is the refined technical prompt:
+
+---
+
+**Refined Technical Prompt for Validating Actions Using UserID Instead of SessionID**
+
+**Problem Overview:**  
+When creating an event (and in similar user flows such as sending messages or connection requests), the system is currently validating requests by matching the session ID with the stored session ID. Although the logs show that the same session ID is being compared, it isn't found, resulting in an "Invalid session" error and preventing event creation.  
+
+The issue likely arises because session IDs are transient and can change between different sessions, whereas the userID remains consistent. To resolve this, all validations for creating events, sending messages, and similar actions should use the persistent userID instead of the sessionID.
+
+**Action Items:**  
+1. **Update Event Creation Logic:**  
+   - **Remove SessionID Matching:** Eliminate the validation that checks the session ID.
+   - **Use userID for Validation:** Replace the sessionID-based lookup with one that retrieves and validates the persistent userID associated with the authenticated request.
+
+2. **Apply Changes to Other User Flows:**  
+   - Review other parts of the application where sessionID is used for validation (e.g., sending messages, connection requests) and update them to rely on userID instead.
+   - Ensure that the authenticated user context (userID) is available consistently across the application without relying on potentially variable session IDs.
+
+3. **Testing and Verification:**  
+   - Confirm that event creation now correctly validates using userID, and that the "Invalid session" error no longer occurs.
+   - Test additional flows (like messaging and connection requests) to ensure the userID-based validation works and these features function correctly.
+
+**Expected Outcome:**  
+With these changes, the system should:
+- Successfully create events and process user actions based on the persistent userID.
+- Eliminate the "Invalid session" errors caused by transient session ID mismatches.
+- Provide a more robust and consistent validation mechanism across all user flows.
+
+Implement these changes and thoroughly test to ensure that using userID for validation fully resolves the issue.
+
+---
