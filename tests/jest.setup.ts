@@ -6,58 +6,60 @@ import '@testing-library/jest-dom';
 global.fetchMock = require('jest-fetch-mock');
 fetchMock.enableMocks();
 
-// Mock localStorage for tests that use it
-class LocalStorageMock {
-  private store: Record<string, string>;
+// Mock localStorage for tests that use it - only in jsdom environment
+if (typeof window !== 'undefined') {
+  class LocalStorageMock {
+    private store: Record<string, string>;
 
-  constructor() {
-    this.store = {};
+    constructor() {
+      this.store = {};
+    }
+
+    clear() {
+      this.store = {};
+    }
+
+    getItem(key: string) {
+      return this.store[key] || null;
+    }
+
+    setItem(key: string, value: string) {
+      this.store[key] = String(value);
+    }
+
+    removeItem(key: string) {
+      delete this.store[key];
+    }
+
+    get length() {
+      return Object.keys(this.store).length;
+    }
+
+    key(index: number) {
+      return Object.keys(this.store)[index] || null;
+    }
   }
 
-  clear() {
-    this.store = {};
-  }
+  // Set up localStorage mock
+  Object.defineProperty(window, 'localStorage', {
+    value: new LocalStorageMock(),
+  });
 
-  getItem(key: string) {
-    return this.store[key] || null;
-  }
-
-  setItem(key: string, value: string) {
-    this.store[key] = String(value);
-  }
-
-  removeItem(key: string) {
-    delete this.store[key];
-  }
-
-  get length() {
-    return Object.keys(this.store).length;
-  }
-
-  key(index: number) {
-    return Object.keys(this.store)[index] || null;
-  }
+  // Set up matchMedia mock
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: jest.fn().mockImplementation(query => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    })),
+  });
 }
-
-// Set up localStorage mock
-Object.defineProperty(window, 'localStorage', {
-  value: new LocalStorageMock(),
-});
-
-// Set up matchMedia mock
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: jest.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: jest.fn(),
-    removeListener: jest.fn(),
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-  })),
-});
 
 // Fix "ReferenceError: TextEncoder is not defined" issues
 const { TextEncoder, TextDecoder } = require('util');
