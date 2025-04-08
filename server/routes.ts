@@ -816,81 +816,8 @@ app.get('/api/users/:city', (req: Request, res: Response) => {
 
 
 // Middleware to check if user is authenticated
-function isAuthenticated(req: Request, res: Response, next: Function) {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  return res.status(401).json({ 
-    authenticated: false, 
-    message: "You need to be logged in to access this resource" 
-  });
-}
-
-// No redirect middleware - just returns authentication status
-async function checkAuthentication(req: Request, res: Response) {
-  // Check for session ID in headers (from the X-Session-ID header)
-  const headerSessionId = req.headers['x-session-id'] as string;
-
-  // Also check for session ID in cookies as a fallback
-  const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
-
-  // Use header session ID first, then fall back to cookie
-  const sessionId = headerSessionId || cookieSessionId;
-  console.log("Session ID in /api/auth/check:", sessionId);
-
-  // Debug session ID sources
-  console.log("Auth check session sources:", {
-    fromHeader: headerSessionId ? "yes" : "no",
-    fromCookie: cookieSessionId ? "yes" : "no",
-    finalSessionId: sessionId
-  });
-
-  // First check if user is authenticated through passport session
-  if (req.isAuthenticated() && req.user) {
-    console.log("Auth check: User is authenticated via passport");
-    // Return authentication status with user data
-    return res.json({ 
-      authenticated: true,
-      user: req.user
-    });
-  }
-
-  // If not authenticated via passport, try with the provided session ID
-  if (sessionId) {
-    try {
-      // Find the user ID in the session
-      const sessionQuery = await db.select().from(sessions).where(eq(sessions.id, sessionId));
-
-      if (sessionQuery.length > 0 && sessionQuery[0].userId) {
-        // Find the user by ID
-        const userId = sessionQuery[0].userId;
-        const userQuery = await db.select().from(users).where(eq(users.id, userId));
-
-        if (userQuery.length > 0) {
-          const user = userQuery[0];
-          console.log("Auth check: User authenticated via session ID:", user.username);
-
-          // Remove sensitive information
-          const { password, ...userWithoutPassword } = user as any;
-
-          return res.json({
-            authenticated: true,
-            user: userWithoutPassword
-          });
-        }
-      }
-    } catch (err) {
-      console.error("Auth check error with session ID:", err);
-    }
-  }
-
-  // Return unauthenticated status if all methods fail
-  console.log("Auth check: User not authenticated");
-  return res.json({ 
-    authenticated: false,
-    message: "Not logged in"
-  });
-}
+// Import centralized authentication functions instead of duplicated local implementations
+import { isAuthenticated, checkAuthentication } from './middleware/auth.middleware';
 
 export function registerRoutes(app: express.Application): { app: express.Application; httpServer: Server } {
   app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
