@@ -1168,73 +1168,62 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
   app.post("/api/events", upload.single('image'), async (req, res) => {
     try {
-      // First try to get user from session (standard auth flow)
-      let currentUser = null;
-      
-      // Method 1: Check if user is authenticated via passport
-      if (req.isAuthenticated() && req.user) {
-        currentUser = req.user;
-        console.log("User authenticated via passport for event creation:", currentUser.username);
-      } 
-      
-      // Method 2: Check session from various sources if passport auth fails
-      if (!currentUser) {
-        const headerSessionId = req.headers['x-session-id'] as string;
-        const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
-        const querySessionId = req.query.sessionId as string;
-        const sessionId = headerSessionId || cookieSessionId || querySessionId;
-        
-        if (sessionId) {
-          console.log("Trying to authenticate via session ID:", sessionId);
-          
-          try {
-            const sessionQuery = await db
-              .select()
-              .from(sessions)
-              .where(eq(sessions.id, sessionId))
-              .limit(1);
-            
-            if (sessionQuery.length > 0 && sessionQuery[0].userId) {
-              const [user] = await db.select()
-                .from(users)
-                .where(eq(users.id, sessionQuery[0].userId))
-                .limit(1);
-                
-              if (user) {
-                currentUser = user;
-                console.log("User authenticated via session ID for event creation:", user.username);
-              }
-            }
-          } catch (err) {
-            console.error("Error checking session:", err);
-          }
-        }
+      // Get session ID from all possible sources
+      const headerSessionId = req.headers['x-session-id'] as string;
+      const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
+      const querySessionId = req.query.sessionId as string;
+
+      // Use the first available session ID
+      const sessionId = headerSessionId || cookieSessionId || querySessionId;
+      console.log("Event creation using session ID:", sessionId);
+
+      if (!sessionId) {
+        console.log("No session ID provided for event creation");
+        return res.status(401).json({ error: "Authentication required" });
       }
-      
-      // Method 3: Allow using userId directly as a fallback for testing
-      if (!currentUser && req.body.userId) {
-        const userId = parseInt(req.body.userId);
-        console.log("Trying to authenticate via direct userId:", userId);
-        
-        try {
-          const [user] = await db.select()
-            .from(users)
-            .where(eq(users.id, userId))
-            .limit(1);
-            
-          if (user) {
-            currentUser = user;
-            console.log("User authenticated via direct userId for event creation:", user.username);
-          }
-        } catch (err) {
-          console.error("Error checking user by ID:", err);
-        }
+
+      // Find session and associated user with more detailed error handling
+      const sessionQuery = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.id, sessionId))
+        .limit(1);
+
+      if (!sessionQuery.length) {
+        console.error("No session found with ID:", sessionId);
+        return res.status(401).json({ error: "Invalid session" });
       }
-      
-      // If still no authenticated user, return error
+
+      const session = sessionQuery[0];
+      if (!session.userId) {
+        console.error("Session exists but has no user ID:", sessionId);
+        return res.status(401).json({ error: "Invalid session - no user ID associated" });
+      }
+
+      if (!sessionQuery || sessionQuery.length === 0) {
+        console.error("No session found for ID:", sessionId);
+        return res.status(401).json({ error: "Session not found" });
+      }
+
+      if (!sessionQuery[0].userId) {
+        console.error("Session found but no user ID:", sessionId);
+        return res.status(401).json({ error: "Invalid session - no user ID" });
+      }
+
+      // Check if session is expired
+      if (session.expiresAt && new Date(session.expiresAt) < new Date()) {
+        console.error("Session expired:", sessionId);
+        return res.status(401).json({ error: "Session expired" });
+      }
+
+      // Get user details
+      const [currentUser] = await db.select()
+        .from(users)
+        .where(eq(users.id, session.userId))
+        .limit(1);
+
       if (!currentUser) {
-        console.error("Unable to authenticate user for event creation");
-        return res.status(401).json({ error: "Authentication required to create events" });
+        return res.status(401).json({ error: "User not found" });
       }
 
       console.log("User authenticated for event creation:", currentUser.username);
