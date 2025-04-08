@@ -146,8 +146,25 @@ export default function ProfilePage() {
         
         // Otherwise fetch the profile from the API
         if (username) {
-          const response = await fetch(`/api/users/${username}`);
-          if (!response.ok) throw new Error('Failed to fetch profile data');
+          // Check if username is a numeric ID
+          const isNumericId = /^\d+$/.test(username);
+          let endpoint = '';
+          
+          if (isNumericId) {
+            // Fetch by user ID directly
+            console.log(`Fetching user profile by ID: ${username}`);
+            endpoint = `/api/users/${username}`;
+          } else {
+            // Fetch by username
+            console.log(`Fetching user profile by username: ${username}`);
+            endpoint = `/api/users/username/${username}`;
+          }
+          
+          const response = await fetch(endpoint);
+          if (!response.ok) {
+            console.error(`Failed to fetch profile data: ${response.status}`);
+            throw new Error('Failed to fetch profile data');
+          }
           const data = await response.json();
           setProfileData(data);
         }

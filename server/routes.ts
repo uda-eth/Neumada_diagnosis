@@ -1069,9 +1069,42 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       if (dbEvent && dbEvent.length > 0) {
         const event = dbEvent[0];
 
-        // Check if the event is a draft and if the current user is the creator
-        if (event.isDraft && event.creatorId !== currentUserId) {
+        // Check if the event has a draft status property and if the current user is not the creator
+        // This is a safety check in case isDraft exists in some events
+        if (event.isDraft === true && event.creatorId !== currentUserId) {
           return res.status(403).json({ error: "You don't have access to this draft event" });
+        }
+
+        // If we have a creatorId, fetch the creator information
+        if (event.creatorId) {
+          try {
+            // Get creator details
+            const creatorQuery = await db.select({
+              id: users.id,
+              username: users.username,
+              fullName: users.fullName,
+              profileImage: users.profileImage
+            })
+            .from(users)
+            .where(eq(users.id, event.creatorId))
+            .limit(1);
+
+            if (creatorQuery && creatorQuery.length > 0) {
+              // Add creator details to the event object
+              const creator = creatorQuery[0];
+              const eventWithCreator = {
+                ...event,
+                creatorName: creator.fullName || creator.username,
+                creatorImage: creator.profileImage
+              };
+              
+              console.log(`Found event in database with creator: ${event.title}, creator: ${creator.username}`);
+              return res.json(eventWithCreator);
+            }
+          } catch (creatorError) {
+            console.error("Error fetching creator details:", creatorError);
+            // Continue without creator details
+          }
         }
 
         console.log("Found event in database:", event.title);
@@ -1722,13 +1755,69 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       });
 
       if (!user) {
-        return resstatus(404).json({ error: 'User not found' });
+        return res.status(404).json({ error: 'User not found' });
       }
 
       res.json(user);
     } catch (error) {
       console.error('Error fetching user profile:', error);
       res.status(500).json({ error: 'Failed to fetch user profile' });
+    }
+  });
+  
+  // Get user by ID - simplified endpoint for event creator info
+  app.get('/api/users/:userId', async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      console.log(`Fetching user with ID: ${userId}`);
+      
+      // Check if userId is a number
+      if (isNaN(parseInt(userId))) {
+        // This might be a username lookup, forward to the username handler
+        return res.redirect(`/api/users/username/${userId}`);
+      }
+      
+      // Find the user by ID
+      const userQuery = await db.select().from(users).where(eq(users.id, parseInt(userId)));
+      
+      if (userQuery.length === 0) {
+        console.log(`User not found with ID: ${userId}`);
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      // Remove sensitive information before returning user
+      const { password, ...userWithoutPassword } = userQuery[0] as any;
+      
+      console.log(`Found user by ID: ${userWithoutPassword.username}`);
+      return res.json(userWithoutPassword);
+    } catch (error) {
+      console.error('Error fetching user by ID:', error);
+      res.status(500).json({ error: 'Failed to fetch user' });
+    }
+  });
+  
+  // Get user by username
+  app.get('/api/users/username/:username', async (req: Request, res: Response) => {
+    try {
+      const { username } = req.params;
+      console.log(`Fetching user with username: ${username}`);
+      
+      // Find the user by username
+      const userQuery = await db.select().from(users).where(eq(users.username, username));
+      
+      if (userQuery.length === 0) {
+        console.log(`User not found with username: ${username}`);
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      // Remove sensitive information before returning user
+      const { password, ...userWithoutPassword } = userQuery[0] as any;
+      
+      console.log(`Found user by username: ${userWithoutPassword.username}`);
+      return res.json(userWithoutPassword);
+    } catch (error) {
+      console.error('Error fetching user by username:', error);
+      res.status(500).json({ error: 'Failed to fetch user' });
     }
   });
 
