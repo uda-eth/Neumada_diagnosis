@@ -1,7 +1,6 @@
 
 export default {
   preset: "ts-jest",
-  testEnvironment: "node",
   testMatch: ["<rootDir>/tests/**/*.test.ts?(x)"],
   collectCoverage: true,
   coverageDirectory: "coverage",
@@ -16,9 +15,6 @@ export default {
     }]
   },
   setupFilesAfterEnv: ["<rootDir>/tests/jest.setup.ts"],
-  testEnvironmentOptions: {
-    url: "http://localhost/"
-  },
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   clearMocks: true,
   testTimeout: 10000,
