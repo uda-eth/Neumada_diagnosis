@@ -1,0 +1,163 @@
+ts-jest[ts-jest-transformer] (WARN) Define `ts-jest` config under `globals` is deprecated. Please do
+transform: {
+    <transform_regex>: ['ts-jest', { /* ts-jest config goes here in Jest */ }],
+},
+See more at https://kulshekhar.github.io/ts-jest/docs/getting-started/presets#advanced
+ts-jest[ts-jest-transformer] (WARN) Define `ts-jest` config under `globals` is deprecated. Please do
+transform: {
+    <transform_regex>: ['ts-jest', { /* ts-jest config goes here in Jest */ }],
+},
+See more at https://kulshekhar.github.io/ts-jest/docs/getting-started/presets#advanced
+ts-jest[config] (WARN) "isolatedModules" is deprecated and will be removed in v30.0.0. Please remove "isolatedModules" from your "ts-jest" transform options and enable "isolatedModules: true" in /home/runner/workspace/tsconfig.json instead.
+ts-jest[config] (WARN) "isolatedModules" is deprecated and will be removed in v30.0.0. Please remove "isolatedModules" from your "ts-jest" transform options and enable "isolatedModules: true" in /home/runner/workspace/tsconfig.json instead.
+ts-jest[ts-jest-transformer] (WARN) Define `ts-jest` config under `globals` is deprecated. Please do
+transform: {
+    <transform_regex>: ['ts-jest', { /* ts-jest config goes here in Jest */ }],
+},
+See more at https://kulshekhar.github.io/ts-jest/docs/getting-started/presets#advanced
+ts-jest[ts-jest-transformer] (WARN) Define `ts-jest` config under `globals` is deprecated. Please do
+transform: {
+    <transform_regex>: ['ts-jest', { /* ts-jest config goes here in Jest */ }],
+},
+See more at https://kulshekhar.github.io/ts-jest/docs/getting-started/presets#advanced
+ts-jest[ts-jest-transformer] (WARN) Define `ts-jest` config under `globals` is deprecated. Please do
+transform: {
+    <transform_regex>: ['ts-jest', { /* ts-jest config goes here in Jest */ }],
+},
+See more at https://kulshekhar.github.io/ts-jest/docs/getting-started/presets#advanced
+ts-jest[config] (WARN) "isolatedModules" is deprecated and will be removed in v30.0.0. Please remove "isolatedModules" from your "ts-jest" transform options and enable "isolatedModules: true" in /home/runner/workspace/tsconfig.json instead.
+ts-jest[config] (WARN) "isolatedModules" is deprecated and will be removed in v30.0.0. Please remove "isolatedModules" from your "ts-jest" transform options and enable "isolatedModules: true" in /home/runner/workspace/tsconfig.json instead.
+ts-jest[config] (WARN) "isolatedModules" is deprecated and will be removed in v30.0.0. Please remove "isolatedModules" from your "ts-jest" transform options and enable "isolatedModules: true" in /home/runner/workspace/tsconfig.json instead.
+ FAIL  tests/server/services/messaging.test.ts
+  ● Test suite failed to run
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+    
+    ReferenceError: window is not defined
+
+      41 |
+      42 | // Set up localStorage mock
+    > 43 | Object.defineProperty(window, 'localStorage', {
+         |                       ^
+      44 |   value: new LocalStorageMock(),
+      45 | });
+      46 |
+
+      at Object.<anonymous> (tests/jest.setup.ts:43:23)
+
+ FAIL  tests/server/users.test.ts
+  ● Test suite failed to run
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+    
+    ReferenceError: window is not defined
+
+      41 |
+      42 | // Set up localStorage mock
+    > 43 | Object.defineProperty(window, 'localStorage', {
+         |                       ^
+      44 |   value: new LocalStorageMock(),
+      45 | });
+      46 |
+
+      at Object.<anonymous> (tests/jest.setup.ts:43:23)
+
+ FAIL  tests/server/events.test.ts
+  ● Test suite failed to run
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+    
+    ReferenceError: window is not defined
+
+      41 |
+      42 | // Set up localStorage mock
+    > 43 | Object.defineProperty(window, 'localStorage', {
+         |                       ^
+      44 |   value: new LocalStorageMock(),
+      45 | });
+      46 |
+
+      at Object.<anonymous> (tests/jest.setup.ts:43:23)
+
+ FAIL  tests/client/src/hooks/use-user.test.ts
+  ● Test suite failed to run
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+    
+    ReferenceError: window is not defined
+
+      41 |
+      42 | // Set up localStorage mock
+    > 43 | Object.defineProperty(window, 'localStorage', {
+         |                       ^
+      44 |   value: new LocalStorageMock(),
+      45 | });
+      46 |
+
+      at Object.<anonymous> (tests/jest.setup.ts:43:23)
+
+ FAIL  tests/auth/user-id-validation.test.ts
+  ● Test suite failed to run
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+    
+    ReferenceError: window is not defined
+
+      41 |
+      42 | // Set up localStorage mock
+    > 43 | Object.defineProperty(window, 'localStorage', {
+         |                       ^
+      44 |   value: new LocalStorageMock(),
+      45 | });
+      46 |
+
+      at Object.<anonymous> (tests/jest.setup.ts:43:23)
+
+ FAIL  tests/auth/auth-optimization.test.ts
+  ● Test suite failed to run
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+    
+    ReferenceError: window is not defined
+
+      41 |
+      42 | // Set up localStorage mock
+    > 43 | Object.defineProperty(window, 'localStorage', {
+         |                       ^
+      44 |   value: new LocalStorageMock(),
+      45 | });
+      46 |
+
+      at Object.<anonymous> (tests/jest.setup.ts:43:23)
+
+ FAIL  tests/sample.test.ts
+  ● Test suite failed to run
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+    
+    ReferenceError: window is not defined
+
+      41 |
+      42 | // Set up localStorage mock
+    > 43 | Object.defineProperty(window, 'localStorage', {
+         |                       ^
+      44 |   value: new LocalStorageMock(),
+      45 | });
+      46 |
+
+      at Object.<anonymous> (tests/jest.setup.ts:43:23)
+
+----------|---------|----------|---------|---------|-------------------
+File      | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+----------|---------|----------|---------|---------|-------------------
+All files |       0 |        0 |       0 |       0 |                   
+----------|---------|----------|---------|---------|-------------------
+Test Suites: 7 failed, 7 total
+Tests:       0 total
