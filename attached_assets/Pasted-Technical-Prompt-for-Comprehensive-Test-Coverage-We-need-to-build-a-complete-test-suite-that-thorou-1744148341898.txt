@@ -1,0 +1,47 @@
+Technical Prompt for Comprehensive Test Coverage
+
+We need to build a complete test suite that thoroughly verifies the following two fixes:
+
+Reducing Repeated Authentication Calls:
+Ensure that our authentication endpoints (e.g., /api/auth/check, /api/verify-user, /api/user-by-session) are called only as necessary, and that no redundant or duplicate calls are made. Validate that the authentication middleware and any related state management are properly optimized.
+
+Switching from Session ID to Persistent userID for Validation:
+Confirm that all actions (such as creating events, sending messages, and connection requests) use the persistent userID instead of the transient session ID for validation, thus preventing errors like "Session not found or invalid."
+
+Requirements:
+
+Total Tests: Write at least 30 distinct tests covering both of these fixes.
+
+Testing Framework: Use Jest for unit tests, Supertest for backend API testing, and React Testing Library for any applicable frontend tests.
+
+Test Scenarios:
+
+Verify that authentication endpoints return expected results (both for valid and invalid scenarios).
+
+Simulate multiple rapid calls to the auth endpoints to ensure no extra calls are being made (or that responses are cached/throttled).
+
+Test that valid requests pass authentication when using userID, even if session IDs change.
+
+Test error responses when an invalid or expired session is used, ensuring the errors are handled gracefully.
+
+Confirm that actions like event creation, messaging, and connection requests now validate using the persistent userID.
+
+Include tests to ensure that any state management or caching related to authentication is working correctly.
+
+Verify correct HTTP status codes and response bodies for both success and failure cases.
+
+Simulate scenarios for both frontend and backend components where user authentication is required.
+
+Test that logs (if accessible in a test environment) correctly reflect the reduced number of auth-check calls.
+
+Output Requirements:
+
+Generate a test suite with at least 30 individual tests.
+
+Provide inline comments to explain the purpose of each test.
+
+Organize tests into logical groups: one group for authentication call optimizations and another for validation using userID.
+
+Include setup and teardown steps if necessary to simulate a real testing environment (e.g., using test databases or mocks).
+
+Automatically generate the complete test suite (including all code) to ensure comprehensive coverage of these two areas. This will help validate that the repeated auth calls are minimized and that our new userID-based validation is functioning correctly across all relevant user flows.
