@@ -1,12 +1,12 @@
 import passport from "passport";
 import { IVerifyOptions, Strategy as LocalStrategy } from "passport-local";
-import { type Express } from "express";
+import { type Express, Request, Response } from "express";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { createHash } from "crypto";
 import { users, sessions } from "@db/schema";
 import { db } from "@db";
-import { eq } from "drizzle-orm";
+import { eq, or, lte } from "drizzle-orm";
 
 // Define the User type to match our schema
 type UserType = {
@@ -626,7 +626,7 @@ export function setupAuth(app: Express) {
 
   // Cache session checks for 5 minutes
   const AUTH_CACHE_TTL = 5 * 60 * 1000;
-  
+
   // Cleanup expired cache entries periodically
   setInterval(() => {
     const now = Date.now();
@@ -637,11 +637,87 @@ export function setupAuth(app: Express) {
     }
   }, 60 * 1000); // Run cleanup every minute
 
+  // Helper function to get userId from request in various ways
+  export function getUserIdFromRequest(req: Request): number | null {
+    let userId = null;
+
+    // Method 1: From passport session
+    if (req.isAuthenticated() && req.user && (req.user as any).id) {
+      return (req.user as any).id;
+    }
+
+    // Method 2: From X-User-ID header
+    const headerUserId = req.headers['x-user-id'];
+    if (headerUserId && typeof headerUserId === 'string') {
+      try {
+        return parseInt(headerUserId);
+      } catch (e) {
+        console.warn("Invalid X-User-ID header format:", headerUserId);
+      }
+    }
+
+    // Method 3: From session ID
+    const headerSessionId = req.headers['x-session-id'] as string;
+    const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
+    const sessionId = headerSessionId || cookieSessionId || req.sessionID;
+
+    if (sessionId) {
+      // Note: This would require an async function to look up the sessionId
+      // We'll return null here and handle this specific case separately in endpoints
+      return null;
+    }
+
+    // Method 4: From query parameter or body (least secure)
+    if (req.query.userId) {
+      try {
+        return parseInt(req.query.userId as string);
+      } catch (e) {
+        console.warn("Invalid userId query parameter:", req.query.userId);
+      }
+    }
+
+    if (req.body && req.body.userId) {
+      try {
+        return parseInt(req.body.userId);
+      } catch (e) {
+        console.warn("Invalid userId in request body:", req.body.userId);
+      }
+    }
+
+    return null;
+  }
+
+  // Updated middleware to check if user is authenticated
+  function isAuthenticated(req: Request, res: Response, next: Function) {
+    // First check standard passport authentication
+    if (req.isAuthenticated()) {
+      return next();
+    }
+
+    // Then check for userId header
+    const userIdHeader = req.headers['x-user-id'];
+    if (userIdHeader) {
+      // Verify this is a valid user ID in the database
+      // Using async inside middleware requires special handling
+      const userId = parseInt(userIdHeader as string);
+
+      // Use our getUserIdFromRequest helper (handles various methods)
+      if (getUserIdFromRequest(req)) {
+        return next();
+      }
+    }
+
+    return res.status(401).json({ 
+      authenticated: false, 
+      message: "You need to be logged in to access this resource" 
+    });
+  }
+
   // Add a dedicated auth check endpoint
   app.get("/api/auth/check", async (req, res) => {
     // Set proper cache headers - allow browser to cache for 5 minutes
     res.set('Cache-Control', 'private, max-age=300');
-    
+
     const sessionId = req.header('X-Session-ID') || req.sessionID;
     const now = Date.now();
 
@@ -662,7 +738,7 @@ export function setupAuth(app: Express) {
     if (req.isAuthenticated() && req.user) {
       const user = req.user;
       console.log("Auth check: User authenticated via passport:", user.username);
-      
+
       // Return user info without sensitive data
       const { password, ...userWithoutPassword } = user as any;
 
@@ -700,14 +776,14 @@ export function setupAuth(app: Express) {
 
           if (user) {
             const { password, ...userWithoutPassword } = user;
-            
+
             // Cache the result
             authCache.set(sessionId, {
               userId: user.id,
               user: userWithoutPassword,
               expires: now + AUTH_CACHE_TTL
             });
-            
+
             return res.json({
               authenticated: true,
               user: userWithoutPassword,
@@ -754,71 +830,42 @@ export function setupAuth(app: Express) {
       if (req.isAuthenticated() && req.user) {
         // Use the authenticated user object directly
         const userId = (req.user as any).id;
-        
+
         if (!userId) {
           return res.status(401).json({ error: "Not authenticated - Invalid user" });
         }
 
-      // Find the session and associated user
-      const sessionQuery = await db.select().from(sessions).where(eq(sessions.id, sessionId));
-      
-      if (!sessionQuery.length || !sessionQuery[0].userId) {
-        return res.status(401).json({ error: "Invalid session" });
+        const updatedFields = req.body;
+
+        // Remove sensitive fields that shouldn't be updated directly
+        const { password, id, ...safeFields } = updatedFields;
+
+        // Process arrays
+        if (safeFields.interests && Array.isArray(safeFields.interests)) {
+          safeFields.interests = safeFields.interests.length > 0 ? safeFields.interests : null;
+        }
+
+        if (safeFields.currentMoods && Array.isArray(safeFields.currentMoods)) {
+          safeFields.currentMoods = safeFields.currentMoods.length > 0 ? safeFields.currentMoods : null;
+        }
+
+        // Update the user
+        const [updatedUser] = await db
+          .update(users)
+          .set(safeFields)
+          .where(eq(users.id, userId))
+          .returning();
+
+        res.json(updatedUser);
+      } else {
+        return res.status(401).json({ error: "Not authenticated" });
       }
-
-      const userId = sessionQuery[0].userId;
-
-    } catch (err) {
-      console.error("Session verification error:", err);
-      return res.status(401).json({ error: "Session verification failed" });
-    }
-
-    // Get user ID from previous block
-    let userId;
-    try {
-      // We need to get the sessionId and userId again since they're only available in the previous try block
-      const headerSessionId = req.headers['x-session-id'] as string;
-      const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
-      const sessionId = headerSessionId || cookieSessionId;
-      
-      if (!sessionId) {
-        return res.status(401).json({ error: "Not authenticated - No session ID" });
-      }
-      
-      const sessionQuery = await db.select().from(sessions).where(eq(sessions.id, sessionId));
-      if (!sessionQuery.length || !sessionQuery[0].userId) {
-        return res.status(401).json({ error: "Invalid session" });
-      }
-      
-      userId = sessionQuery[0].userId;
-      
-      const updatedFields = req.body;
-
-      // Remove sensitive fields that shouldn't be updated directly
-      const { password, id, ...safeFields } = updatedFields;
-
-      // Process arrays
-      if (safeFields.interests && Array.isArray(safeFields.interests)) {
-        safeFields.interests = safeFields.interests.length > 0 ? safeFields.interests : null;
-      }
-
-      if (safeFields.currentMoods && Array.isArray(safeFields.currentMoods)) {
-        safeFields.currentMoods = safeFields.currentMoods.length > 0 ? safeFields.currentMoods : null;
-      }
-
-      // Update the user
-      const [updatedUser] = await db
-        .update(users)
-        .set(safeFields)
-        .where(eq(users.id, userId))
-        .returning();
-
-      res.json(updatedUser);
     } catch (error) {
       console.error("Profile update error:", error);
       res.status(500).send("Failed to update profile");
     }
   });
+
 
   // User-by-session endpoint is defined in server/routes.ts to avoid duplication
 

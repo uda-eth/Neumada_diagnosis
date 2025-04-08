@@ -1168,16 +1168,40 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
   app.post("/api/events", upload.single('image'), async (req, res) => {
     try {
-      // First try to get user from session (standard auth flow)
+      // First try to get user using multiple auth methods in priority order
       let currentUser = null;
 
       // Method 1: Check if user is authenticated via passport
       if (req.isAuthenticated() && req.user) {
         currentUser = req.user;
         console.log("User authenticated via passport for event creation:", currentUser.username);
-      } 
+      }
+      
+      // Method 2: Check X-User-ID header (priority over session)
+      if (!currentUser) {
+        const headerUserId = req.headers['x-user-id'] as string;
+        
+        if (headerUserId) {
+          console.log("Trying to authenticate via User-ID header:", headerUserId);
+          
+          try {
+            const userId = parseInt(headerUserId);
+            const [user] = await db.select()
+              .from(users)
+              .where(eq(users.id, userId))
+              .limit(1);
+              
+            if (user) {
+              currentUser = user;
+              console.log("User authenticated via User-ID header for event creation:", user.username);
+            }
+          } catch (err) {
+            console.error("Error checking user by header ID:", err);
+          }
+        }
+      }
 
-      // Method 2: Check session from various sources if passport auth fails
+      // Method 3: Check session from various sources if other methods fail
       if (!currentUser) {
         const headerSessionId = req.headers['x-session-id'] as string;
         const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
@@ -1211,10 +1235,10 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         }
       }
 
-      // Method 3: Allow using userId directly as a fallback for testing
+      // Method 4: Allow using userId directly from body as a fallback
       if (!currentUser && req.body.userId) {
         const userId = parseInt(req.body.userId);
-        console.log("Trying to authenticate via direct userId:", userId);
+        console.log("Trying to authenticate via direct userId from body:", userId);
 
         try {
           const [user] = await db.select()

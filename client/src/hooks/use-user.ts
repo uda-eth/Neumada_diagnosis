@@ -53,6 +53,11 @@ async function handleRequest(
         // Store user data if included in the response
         if (data && data.user) {
           localStorage.setItem('maly_user_data', JSON.stringify(data.user));
+          // Store userId separately for direct access
+          if (data.user.id) {
+            console.log("Storing user ID for auth:", data.user.id);
+            localStorage.setItem('maly_user_id', data.user.id.toString());
+          }
         }
         
         return { ok: true };
@@ -156,7 +161,14 @@ export function useUser() {
       // If we need to fetch, prepare headers
       const extraHeaders: Record<string, string> = {};
 
-      // Add session ID if available
+      // Add user ID if available (primary auth method)
+      const userId = localStorage.getItem('maly_user_id');
+      if (userId) {
+        console.log("Including user ID in auth check:", userId);
+        extraHeaders['X-User-ID'] = userId;
+      }
+
+      // Add session ID as fallback
       const malySessionId = localStorage.getItem('maly_session_id');
       if (malySessionId) {
         console.log("Including maly_session_id in auth check:", malySessionId.substring(0, 5) + '...');
