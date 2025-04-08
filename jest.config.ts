@@ -1,17 +1,14 @@
 
-export default {
+import type { Config } from '@jest/types';
+
+const config: Config.InitialOptions = {
   preset: "ts-jest",
   testMatch: ["<rootDir>/tests/**/*.test.ts?(x)"],
   collectCoverage: true,
   coverageDirectory: "coverage",
-  moduleNameMapper: {
-    "^@/(.*)$": "<rootDir>/client/src/$1",
-    "^@db/(.*)$": "<rootDir>/db/$1",
-    "^@db": "<rootDir>/db/index.ts"
-  },
   transform: {
-    "^.+\\.tsx?$": ["ts-jest", {
-      tsconfig: "tsconfig.json"
+    '^.+\\.tsx?$': ['ts-jest', {
+      isolatedModules: true
     }]
   },
   setupFilesAfterEnv: ["<rootDir>/tests/jest.setup.ts"],
@@ -40,3 +37,5 @@ export default {
     }
   ]
 };
+
+export default config;

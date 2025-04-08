@@ -9,8 +9,6 @@ fetchMock.enableMocks();
 // Mock localStorage for tests that use it - only in jsdom environment
 if (typeof window !== 'undefined') {
   class LocalStorageMock {
-    private store: Record<string, string>;
-
     constructor() {
       this.store = {};
     }
@@ -19,15 +17,15 @@ if (typeof window !== 'undefined') {
       this.store = {};
     }
 
-    getItem(key: string) {
+    getItem(key) {
       return this.store[key] || null;
     }
 
-    setItem(key: string, value: string) {
+    setItem(key, value) {
       this.store[key] = String(value);
     }
 
-    removeItem(key: string) {
+    removeItem(key) {
       delete this.store[key];
     }
 
@@ -35,7 +33,7 @@ if (typeof window !== 'undefined') {
       return Object.keys(this.store).length;
     }
 
-    key(index: number) {
+    key(index) {
       return Object.keys(this.store)[index] || null;
     }
   }
