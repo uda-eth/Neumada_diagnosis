@@ -28,7 +28,7 @@
     "express": "4.18.3",
     "express-session": "^1.18.0",
     "i18next": "^23.11.0",
-    "js2py": "^0.74.0",
+    "js2py": "^0.71",
     "jsonwebtoken": "^9.0.2",
     "lightweight-charts": "^4.1.2",
     "lodash": "^4.17.21",
