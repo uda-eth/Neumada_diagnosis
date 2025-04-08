@@ -1,4 +1,3 @@
-
 import 'jest-fetch-mock';
 import '@testing-library/jest-dom';
 
@@ -9,36 +8,37 @@ fetchMock.enableMocks();
 // Mock localStorage for tests that use it - only in jsdom environment
 if (typeof window !== 'undefined') {
   class LocalStorageMock {
+    store: Record<string, string>;
+
     constructor() {
       this.store = {};
+    }
+
+    getItem(key: string) {
+      return this.store[key] || null;
+    }
+
+    setItem(key: string, value: string) {
+      this.store[key] = String(value);
+    }
+
+    removeItem(key: string) {
+      delete this.store[key];
     }
 
     clear() {
       this.store = {};
     }
 
-    getItem(key) {
-      return this.store[key] || null;
-    }
-
-    setItem(key, value) {
-      this.store[key] = String(value);
-    }
-
-    removeItem(key) {
-      delete this.store[key];
-    }
-
     get length() {
       return Object.keys(this.store).length;
     }
 
-    key(index) {
+    key(index: number) {
       return Object.keys(this.store)[index] || null;
     }
   }
 
-  // Set up localStorage mock
   Object.defineProperty(window, 'localStorage', {
     value: new LocalStorageMock(),
   });
@@ -94,3 +94,10 @@ afterAll(() => {
   console.warn = originalConsoleWarn;
   console.log = originalConsoleLog;
 });
+
+// Silence console errors during tests
+global.console = {
+  ...console,
+  error: jest.fn(),
+  warn: jest.fn(),
+};

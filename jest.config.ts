@@ -2,14 +2,21 @@
 import type { Config } from '@jest/types';
 
 const config: Config.InitialOptions = {
-  preset: "ts-jest",
+  preset: 'ts-jest',
+  testEnvironment: 'node',
   testMatch: ["<rootDir>/tests/**/*.test.ts?(x)"],
   collectCoverage: true,
   coverageDirectory: "coverage",
   transform: {
     '^.+\\.tsx?$': ['ts-jest', {
+      tsconfig: "<rootDir>/tsconfig.json",
       isolatedModules: true
     }]
+  },
+  moduleNameMapper: {
+    "^@/(.*)$": "<rootDir>/client/src/$1",
+    "^@db/(.*)$": "<rootDir>/db/$1",
+    "^@db": "<rootDir>/db/index.ts"
   },
   setupFilesAfterEnv: ["<rootDir>/tests/jest.setup.ts"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
@@ -21,7 +28,6 @@ const config: Config.InitialOptions = {
   testEnvironmentOptions: {
     customExportConditions: ["node", "node-addons"]
   },
-  // Configure different test environments based on test path
   projects: [
     {
       displayName: 'client',
