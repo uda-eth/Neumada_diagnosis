@@ -73,6 +73,16 @@ export function isAuthenticated(req: Request, res: Response, next: NextFunction)
     return next();
   }
 
+  // Check if the request wants HTML (browser) vs API (JSON) response
+  const acceptsHtml = req.headers.accept && req.headers.accept.includes('text/html');
+  
+  // For browser requests, redirect to login page
+  if (acceptsHtml) {
+    console.log("Redirecting unauthenticated user to login page from isAuthenticated middleware");
+    return res.redirect('/login');
+  }
+
+  // For API requests, return JSON
   return res.status(401).json({ 
     authenticated: false, 
     message: "You need to be logged in to access this resource" 
@@ -155,8 +165,19 @@ export async function checkAuthentication(req: Request, res: Response) {
     }
   }
 
-  // Return unauthenticated status if all methods fail
+  // Check if the request wants HTML (browser) vs API (JSON) response
+  const acceptsHtml = req.headers.accept && req.headers.accept.includes('text/html');
+  
+  // Return unauthenticated status
   console.log("Auth check: User not authenticated");
+  
+  // For browser requests, redirect to login page
+  if (acceptsHtml) {
+    console.log("Redirecting unauthenticated user to login page");
+    return res.redirect('/login');
+  }
+  
+  // For API requests, return JSON
   return res.json({ 
     authenticated: false,
     message: "Not logged in"

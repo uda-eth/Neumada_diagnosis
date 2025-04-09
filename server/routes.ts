@@ -1683,10 +1683,47 @@ export function registerRoutes(app: express.Application): { app: express.Applica
   // Add endpoint to get user by session ID
   app.get('/api/user-by-session', async (req: Request, res: Response) => {
     try {
-      const sessionId = req.headers['x-session-id'] as string;
-      console.log("User by session request for sessionID:", sessionId);
+      // First check if user is authenticated via passport
+      if (req.isAuthenticated() && req.user) {
+        console.log("User already authenticated via passport:", (req.user as any).username);
+        
+        // Sanitize user object to remove sensitive info (like password)
+        const { password, ...userWithoutPassword } = req.user as any;
+        
+        return res.json({
+          ...userWithoutPassword,
+          authenticated: true
+        });
+      }
+      
+      // Try to get session ID from multiple sources
+      const headerSessionId = req.headers['x-session-id'] as string;
+      const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
+      const expressSessionId = req.sessionID;
+      
+      const sessionId = headerSessionId || cookieSessionId || expressSessionId;
+      
+      console.log("User by session request, checking session ID sources:", {
+        'x-session-id': headerSessionId || 'not_present',
+        'cookie.sessionId': req.cookies?.sessionId || 'not_present',
+        'cookie.maly_session_id': req.cookies?.maly_session_id || 'not_present',
+        'express.sessionID': expressSessionId || 'not_present',
+        'final_session_id': sessionId || 'none_found'
+      });
 
       if (!sessionId) {
+        console.log("No session ID provided in user-by-session request");
+        
+        // Check if the request wants HTML (browser) vs API (JSON) response
+        const acceptsHtml = req.headers.accept && req.headers.accept.includes('text/html');
+        
+        // For browser requests, redirect to login page
+        if (acceptsHtml) {
+          console.log("Redirecting unauthenticated user to login page from user-by-session");
+          return res.redirect('/login');
+        }
+        
+        // For API requests, return JSON
         return res.status(401).json({
           error: "No session ID provided",
           authenticated: false
@@ -1698,6 +1735,17 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
       if (sessionQuery.length === 0 || !sessionQuery[0].userId) {
         console.log("No user found in session:", sessionId);
+        
+        // Check if the request wants HTML (browser) vs API (JSON) response
+        const acceptsHtml = req.headers.accept && req.headers.accept.includes('text/html');
+        
+        // For browser requests, redirect to login page
+        if (acceptsHtml) {
+          console.log("Redirecting user with invalid session to login page");
+          return res.redirect('/login');
+        }
+        
+        // For API requests, return JSON
         return res.status(401).json({
           error: "Session not found or invalid",
           authenticated: false
@@ -1710,6 +1758,17 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
       if (userQuery.length === 0) {
         console.log("User not found for ID:", userId);
+        
+        // Check if the request wants HTML (browser) vs API (JSON) response
+        const acceptsHtml = req.headers.accept && req.headers.accept.includes('text/html');
+        
+        // For browser requests, redirect to login page
+        if (acceptsHtml) {
+          console.log("Redirecting user not found in database to login page");
+          return res.redirect('/login');
+        }
+        
+        // For API requests, return JSON
         return res.status(404).json({
           error: "User not found",
           authenticated: false
@@ -1726,6 +1785,17 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       });
     } catch (error) {
       console.error("Error in user-by-session endpoint:", error);
+      
+      // Check if the request wants HTML (browser) vs API (JSON) response
+      const acceptsHtml = req.headers.accept && req.headers.accept.includes('text/html');
+      
+      // For browser requests, redirect to login page
+      if (acceptsHtml) {
+        console.log("Redirecting user to login page due to server error");
+        return res.redirect('/login');
+      }
+      
+      // For API requests, return JSON
       return res.status(500).json({
         error: "Server error",
         authenticated: false
