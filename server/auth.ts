@@ -613,9 +613,15 @@ export function setupAuth(app: Express) {
       // Continue with logout even if database cleanup fails
     }
 
+    // Check if this is a browser request that wants HTML response
+    const wantsRedirect = req.headers.accept && req.headers.accept.includes('text/html');
+
     req.logout((err) => {
       if (err) {
         console.error("Logout error:", err);
+        if (wantsRedirect) {
+          return res.redirect('/auth');
+        }
         return res.status(500).send("Logout failed");
       }
 
@@ -635,7 +641,20 @@ export function setupAuth(app: Express) {
         });
 
         console.log("Logout successful for user:", username);
-        res.json({ message: "Logged out successfully" });
+        
+        // Check the 'X-Request-Type' header to see if client wants a redirect
+        const requestType = req.headers['x-request-type'];
+        
+        if (wantsRedirect || requestType === 'redirect') {
+          // Handle browser requests with redirect
+          return res.redirect('/auth');
+        } else {
+          // Handle API requests with JSON response including redirect URL
+          return res.json({
+            message: "Logged out successfully",
+            redirectUrl: '/auth'
+          });
+        }
       });
     });
   });
