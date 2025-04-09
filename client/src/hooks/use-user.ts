@@ -283,9 +283,12 @@ export function useUser() {
       queryClient.setQueryData(['user'], null);
       queryClient.invalidateQueries({ queryKey: ['user'] });
       
-      // Clear localStorage cached data
+      // Clear ALL localStorage cached data related to user session/auth
       localStorage.removeItem('maly_user_data');
       localStorage.removeItem('maly_session_id');
+      localStorage.removeItem('maly_user_id');
+      localStorage.removeItem('maly_user_verified_at');
+      
       console.log("Cleared cached user data on logout");
     },
   });

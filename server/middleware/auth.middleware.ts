@@ -76,10 +76,10 @@ export function isAuthenticated(req: Request, res: Response, next: NextFunction)
   // Check if the request wants HTML (browser) vs API (JSON) response
   const acceptsHtml = req.headers.accept && req.headers.accept.includes('text/html');
   
-  // For browser requests, redirect to login page
+  // For browser requests, redirect to auth page
   if (acceptsHtml) {
-    console.log("Redirecting unauthenticated user to login page from isAuthenticated middleware");
-    return res.redirect('/login');
+    console.log("Redirecting unauthenticated user to auth page from isAuthenticated middleware");
+    return res.redirect('/auth');
   }
 
   // For API requests, return JSON
@@ -171,10 +171,10 @@ export async function checkAuthentication(req: Request, res: Response) {
   // Return unauthenticated status
   console.log("Auth check: User not authenticated");
   
-  // For browser requests, redirect to login page
+  // For browser requests, redirect to auth page
   if (acceptsHtml) {
-    console.log("Redirecting unauthenticated user to login page");
-    return res.redirect('/login');
+    console.log("Redirecting unauthenticated user to auth page");
+    return res.redirect('/auth');
   }
   
   // For API requests, return JSON

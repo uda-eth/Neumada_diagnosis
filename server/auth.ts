@@ -587,9 +587,31 @@ export function setupAuth(app: Express) {
     })(req, res, next);
   });
 
-  app.post("/api/logout", (req, res) => {
+  app.post("/api/logout", async (req, res) => {
     const username = req.user?.username;
-    console.log("Logout attempt for user:", username);
+    const userId = req.user?.id;
+    const sessionId = req.session?.id;
+    
+    console.log("Logout attempt for user:", username, "with session ID:", sessionId);
+
+    try {
+      // If we have a user ID, delete their sessions from the database
+      if (userId) {
+        console.log("Removing sessions for user ID:", userId);
+        await db.delete(sessions)
+          .where(eq(sessions.userId, userId));
+      }
+
+      // If we have a session ID, delete that specific session
+      if (sessionId) {
+        console.log("Removing specific session ID:", sessionId);
+        await db.delete(sessions)
+          .where(eq(sessions.id, sessionId));
+      }
+    } catch (dbError) {
+      console.error("Error removing sessions from database:", dbError);
+      // Continue with logout even if database cleanup fails
+    }
 
     req.logout((err) => {
       if (err) {
