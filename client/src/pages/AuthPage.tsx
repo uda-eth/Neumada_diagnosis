@@ -66,10 +66,9 @@ export default function AuthPage() {
     if (user) {
       console.log("User found in state, redirecting to homepage");
       setLocation("/");
-    } else {
-      // Otherwise check auth status from server
-      checkAndRedirect();
     }
+    // We don't need to check auth status here since we're already on the auth page
+    // The user will need to log in
   }, [user, setLocation]);
   
   // Check if we're in a Replit environment

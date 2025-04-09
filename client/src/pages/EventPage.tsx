@@ -26,6 +26,7 @@ const EventSchema = z.object({
   creatorId: z.number().nullable(),
   creatorName: z.string().nullable(),
   creatorImage: z.string().nullable(),
+  creatorUsername: z.string().nullable(), // Added creator username for profile linking
   tags: z.array(z.string()).nullable(),
 });
 
@@ -39,6 +40,7 @@ interface EventUser {
   id: number;
   name: string;
   image: string;
+  username?: string; // Add username field for profile routing
 }
 
 // Helper function to get first name
@@ -47,7 +49,7 @@ const getFirstName = (fullName: string) => fullName?.split(' ')[0] || '';
 export default function EventPage() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
-  const { user } = useUser();
+  const { user, logout } = useUser();
   const { toast } = useToast();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -220,9 +222,20 @@ export default function EventPage() {
     image: `/attached_assets/profile-image-${i + 6}.jpg`
   }));
 
-  const handleUserClick = (userId: number) => {
-    setLocation(`/profile/${userId}`);
-  };
+  // Modified to support both username and ID-based profile navigation
+const handleUserClick = (userIdOrUsername: number | string, username?: string) => {
+  // If we have a username directly or as a second parameter, use that
+  if (typeof userIdOrUsername === 'string') {
+    setLocation(`/profile/${userIdOrUsername}`);
+  } else if (username) {
+    setLocation(`/profile/${username}`);
+  } else {
+    // For backward compatibility, try to fetch the username from the database
+    // This can happen during the transition period or with mock data
+    console.log(`Redirecting to user profile by ID: ${userIdOrUsername}`);
+    setLocation(`/profile/${userIdOrUsername}`);
+  }
+};
 
   const handleViewAllUsers = (type: 'attending' | 'interested') => {
     setLocation(`/event/${id}/users?type=${type}`);
@@ -393,9 +406,11 @@ export default function EventPage() {
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <p className="text-sm text-white/60">Price</p>
-              <p className="text-xl font-semibold">${event.price}</p>
+              <p className="text-xl font-semibold">
+                {event.price ? `$${event.price}` : 'Free'}
+              </p>
             </div>
-            {event.price > 0 ? (
+            {(event.price && typeof event.price === 'string' ? parseFloat(event.price) > 0 : event.price > 0) ? (
               <Button 
                 className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
                 onClick={() => setLocation(`/event/${event.id}/register`)}
@@ -473,7 +488,7 @@ export default function EventPage() {
               <div className="flex items-center gap-3">
                 <Avatar 
                   className="h-12 w-12"
-                  onClick={() => handleUserClick(event.creatorId as number)}
+                  onClick={() => handleUserClick(event.creatorUsername || event.creatorId as number)}
                   style={{cursor: 'pointer'}}
                 >
                   <AvatarImage 
@@ -486,7 +501,7 @@ export default function EventPage() {
                 <div>
                   <div 
                     className="font-medium hover:underline cursor-pointer"
-                    onClick={() => handleUserClick(event.creatorId as number)}
+                    onClick={() => handleUserClick(event.creatorUsername || event.creatorId as number)}
                   >
                     {event.creatorName ? getFirstName(event.creatorName) : "Event Host"}
                   </div>
@@ -517,7 +532,7 @@ export default function EventPage() {
               onClick={() => setLocation(`/event/${id}/tickets`)}
               disabled={participateMutation.isPending}
             >
-              {isPrivateEvent ? "Request Access" : `Buy Tickets • $${event.price}`}
+              {isPrivateEvent ? "Request Access" : `Buy Tickets • $${event.price?.toString()}`}
             </Button>
           </div>
         </div>

@@ -1069,9 +1069,43 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       if (dbEvent && dbEvent.length > 0) {
         const event = dbEvent[0];
 
-        // Check if the event is a draft and if the current user is the creator
-        if (event.isDraft && event.creatorId !== currentUserId) {
+        // Check if the event has a draft status property and if the current user is not the creator
+        // This is a safety check in case isDraft exists in some events
+        if (event.isDraft === true && event.creatorId !== currentUserId) {
           return res.status(403).json({ error: "You don't have access to this draft event" });
+        }
+
+        // If we have a creatorId, fetch the creator information
+        if (event.creatorId) {
+          try {
+            // Get creator details
+            const creatorQuery = await db.select({
+              id: users.id,
+              username: users.username,
+              fullName: users.fullName,
+              profileImage: users.profileImage
+            })
+            .from(users)
+            .where(eq(users.id, event.creatorId))
+            .limit(1);
+
+            if (creatorQuery && creatorQuery.length > 0) {
+              // Add creator details to the event object
+              const creator = creatorQuery[0];
+              const eventWithCreator = {
+                ...event,
+                creatorName: creator.fullName || creator.username,
+                creatorImage: creator.profileImage,
+                creatorUsername: creator.username
+              };
+              
+              console.log(`Found event in database with creator: ${event.title}, creator: ${creator.username}`);
+              return res.json(eventWithCreator);
+            }
+          } catch (creatorError) {
+            console.error("Error fetching creator details:", creatorError);
+            // Continue without creator details
+          }
         }
 
         console.log("Found event in database:", event.title);
@@ -1650,10 +1684,47 @@ export function registerRoutes(app: express.Application): { app: express.Applica
   // Add endpoint to get user by session ID
   app.get('/api/user-by-session', async (req: Request, res: Response) => {
     try {
-      const sessionId = req.headers['x-session-id'] as string;
-      console.log("User by session request for sessionID:", sessionId);
+      // First check if user is authenticated via passport
+      if (req.isAuthenticated() && req.user) {
+        console.log("User already authenticated via passport:", (req.user as any).username);
+        
+        // Sanitize user object to remove sensitive info (like password)
+        const { password, ...userWithoutPassword } = req.user as any;
+        
+        return res.json({
+          ...userWithoutPassword,
+          authenticated: true
+        });
+      }
+      
+      // Try to get session ID from multiple sources
+      const headerSessionId = req.headers['x-session-id'] as string;
+      const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
+      const expressSessionId = req.sessionID;
+      
+      const sessionId = headerSessionId || cookieSessionId || expressSessionId;
+      
+      console.log("User by session request, checking session ID sources:", {
+        'x-session-id': headerSessionId || 'not_present',
+        'cookie.sessionId': req.cookies?.sessionId || 'not_present',
+        'cookie.maly_session_id': req.cookies?.maly_session_id || 'not_present',
+        'express.sessionID': expressSessionId || 'not_present',
+        'final_session_id': sessionId || 'none_found'
+      });
 
       if (!sessionId) {
+        console.log("No session ID provided in user-by-session request");
+        
+        // Check if the request wants HTML (browser) vs API (JSON) response
+        const acceptsHtml = req.headers.accept && req.headers.accept.includes('text/html');
+        
+        // For browser requests, redirect to login page
+        if (acceptsHtml) {
+          console.log("Redirecting unauthenticated user to login page from user-by-session");
+          return res.redirect('/login');
+        }
+        
+        // For API requests, return JSON
         return res.status(401).json({
           error: "No session ID provided",
           authenticated: false
@@ -1665,6 +1736,17 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
       if (sessionQuery.length === 0 || !sessionQuery[0].userId) {
         console.log("No user found in session:", sessionId);
+        
+        // Check if the request wants HTML (browser) vs API (JSON) response
+        const acceptsHtml = req.headers.accept && req.headers.accept.includes('text/html');
+        
+        // For browser requests, redirect to login page
+        if (acceptsHtml) {
+          console.log("Redirecting user with invalid session to login page");
+          return res.redirect('/login');
+        }
+        
+        // For API requests, return JSON
         return res.status(401).json({
           error: "Session not found or invalid",
           authenticated: false
@@ -1677,6 +1759,17 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
       if (userQuery.length === 0) {
         console.log("User not found for ID:", userId);
+        
+        // Check if the request wants HTML (browser) vs API (JSON) response
+        const acceptsHtml = req.headers.accept && req.headers.accept.includes('text/html');
+        
+        // For browser requests, redirect to login page
+        if (acceptsHtml) {
+          console.log("Redirecting user not found in database to login page");
+          return res.redirect('/login');
+        }
+        
+        // For API requests, return JSON
         return res.status(404).json({
           error: "User not found",
           authenticated: false
@@ -1693,6 +1786,17 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       });
     } catch (error) {
       console.error("Error in user-by-session endpoint:", error);
+      
+      // Check if the request wants HTML (browser) vs API (JSON) response
+      const acceptsHtml = req.headers.accept && req.headers.accept.includes('text/html');
+      
+      // For browser requests, redirect to login page
+      if (acceptsHtml) {
+        console.log("Redirecting user to login page due to server error");
+        return res.redirect('/login');
+      }
+      
+      // For API requests, return JSON
       return res.status(500).json({
         error: "Server error",
         authenticated: false
@@ -1722,13 +1826,69 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       });
 
       if (!user) {
-        return resstatus(404).json({ error: 'User not found' });
+        return res.status(404).json({ error: 'User not found' });
       }
 
       res.json(user);
     } catch (error) {
       console.error('Error fetching user profile:', error);
       res.status(500).json({ error: 'Failed to fetch user profile' });
+    }
+  });
+  
+  // Get user by ID - simplified endpoint for event creator info
+  app.get('/api/users/:userId', async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      console.log(`Fetching user with ID: ${userId}`);
+      
+      // Check if userId is a number
+      if (isNaN(parseInt(userId))) {
+        // This might be a username lookup, forward to the username handler
+        return res.redirect(`/api/users/username/${userId}`);
+      }
+      
+      // Find the user by ID
+      const userQuery = await db.select().from(users).where(eq(users.id, parseInt(userId)));
+      
+      if (userQuery.length === 0) {
+        console.log(`User not found with ID: ${userId}`);
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      // Remove sensitive information before returning user
+      const { password, ...userWithoutPassword } = userQuery[0] as any;
+      
+      console.log(`Found user by ID: ${userWithoutPassword.username}`);
+      return res.json(userWithoutPassword);
+    } catch (error) {
+      console.error('Error fetching user by ID:', error);
+      res.status(500).json({ error: 'Failed to fetch user' });
+    }
+  });
+  
+  // Get user by username
+  app.get('/api/users/username/:username', async (req: Request, res: Response) => {
+    try {
+      const { username } = req.params;
+      console.log(`Fetching user with username: ${username}`);
+      
+      // Find the user by username
+      const userQuery = await db.select().from(users).where(eq(users.username, username));
+      
+      if (userQuery.length === 0) {
+        console.log(`User not found with username: ${username}`);
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      // Remove sensitive information before returning user
+      const { password, ...userWithoutPassword } = userQuery[0] as any;
+      
+      console.log(`Found user by username: ${userWithoutPassword.username}`);
+      return res.json(userWithoutPassword);
+    } catch (error) {
+      console.error('Error fetching user by username:', error);
+      res.status(500).json({ error: 'Failed to fetch user' });
     }
   });
 
