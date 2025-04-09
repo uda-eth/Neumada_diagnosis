@@ -220,8 +220,27 @@ export default function EventPage() {
     image: `/attached_assets/profile-image-${i + 6}.jpg`
   }));
 
-  const handleUserClick = (userId: number) => {
-    setLocation(`/profile/${userId}`);
+  const handleUserClick = async (userId: number) => {
+    try {
+      // Fetch the user data to get the username
+      const response = await fetch(`/api/users/${userId}`, {
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        console.error(`Error fetching user with ID ${userId}`);
+        return;
+      }
+
+      const userData = await response.json();
+      if (userData.username) {
+        setLocation(`/profile/${userData.username}`);
+      } else {
+        console.error("Username not found for user ID:", userId);
+      }
+    } catch (error) {
+      console.error("Error navigating to user profile:", error);
+    }
   };
 
   const handleViewAllUsers = (type: 'attending' | 'interested') => {
@@ -486,7 +505,7 @@ export default function EventPage() {
                 <div>
                   <div 
                     className="font-medium hover:underline cursor-pointer"
-                    onClick={() => handleUserClick(event.creatorId as number)}
+                    onClick={() => event.creatorId ? handleUserClick(event.creatorId as number) : null}
                   >
                     {event.creatorName ? getFirstName(event.creatorName) : "Event Host"}
                   </div>
