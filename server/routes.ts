@@ -1095,7 +1095,8 @@ export function registerRoutes(app: express.Application): { app: express.Applica
               const eventWithCreator = {
                 ...event,
                 creatorName: creator.fullName || creator.username,
-                creatorImage: creator.profileImage
+                creatorImage: creator.profileImage,
+                creatorUsername: creator.username
               };
               
               console.log(`Found event in database with creator: ${event.title}, creator: ${creator.username}`);
