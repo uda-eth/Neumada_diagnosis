@@ -291,7 +291,7 @@ export default function HomePage() {
                 className="hidden md:inline-flex items-center text-white"
               >
                 <Users className="h-5 w-5 mr-2" />
-                connect123
+                connect
               </Button>
               <Button
                 className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white whitespace-nowrap px-2 md:px-4"
@@ -748,7 +748,7 @@ export default function HomePage() {
               className="text-white flex flex-col items-center"
             >
               <Users className="h-5 w-5" />
-              <span className="text-xs mt-1">connect123</span>
+              <span className="text-xs mt-1">connect</span>
             </Button>
             <Button
               variant="ghost"
