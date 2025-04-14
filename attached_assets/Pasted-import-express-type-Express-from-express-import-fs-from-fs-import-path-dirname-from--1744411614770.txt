@@ -48,12 +48,6 @@ export async function setupVite(app: Express, server: Server) {
     server: {
       middlewareMode: true,
       hmr: { server },
-      host: true,
-      cors: true,
-      allowedHosts: [
-        "all",
-        "a4d3a60b-508e-49eb-8aa2-60c02f200893-00-1c5hkot3juk98.riker.replit.dev",
-      ],
     },
     appType: "custom",
   });
