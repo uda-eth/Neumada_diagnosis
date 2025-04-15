@@ -1,0 +1,11 @@
+client/src/pages/EventPage.tsx
+coverage/clover.xml
+coverage/lcov-report/index.html
+db/schema.ts
+jest.config.ts
+migrations/meta/_journal.json
+package-lock.json
+package.json
+server/index.ts
+server/routes.ts
+server/vite.ts

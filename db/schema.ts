@@ -28,6 +28,7 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow(),
   lastActive: timestamp("last_active"), // For showing active users
   isPremium: boolean("is_premium").default(false), // For premium features
+  isAdmin: boolean("is_admin").default(false), // For admin access
   preferredLanguage: text("preferred_language").default("en"), // Language preference
   referralCode: text("referral_code").unique(), // For referral system
   referredBy: integer("referred_by"), // Will set up relation later to avoid circular dep
@@ -73,6 +74,8 @@ export const eventParticipants = pgTable("event_participants", {
   checkInStatus: boolean("check_in_status").default(false), // For event check-in
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+  stripeCheckoutSessionId: text("stripe_checkout_session_id"), // Added for tracking checkout
+  ticketIdentifier: text("ticket_identifier").unique(), // Added for unique QR code identifier
 });
 
 export const messages = pgTable("messages", {
@@ -134,6 +137,62 @@ export const sessions = pgTable("sessions", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Table for storing payment details
+export const payments = pgTable("payments", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id")
+    .references(() => users.id)
+    .notNull(),
+  eventParticipantId: integer("event_participant_id").references(
+    () => eventParticipants.id,
+  ), // Link to specific event ticket/participation if applicable
+  stripeChargeId: text("stripe_charge_id").unique(), // From successful charge event
+  stripeCheckoutSessionId: text("stripe_checkout_session_id").unique().notNull(), // From session creation
+  stripeCustomerId: text("stripe_customer_id"), // Optional: If you create Stripe Customers
+  amount: integer("amount").notNull(), // Amount in cents
+  currency: text("currency").notNull(), // e.g., 'usd'
+  status: text("status").notNull(), // e.g., 'succeeded', 'pending', 'failed'
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// New table for premium subscriptions
+export const subscriptions = pgTable("subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id")
+    .references(() => users.id)
+    .notNull(),
+  stripeSubscriptionId: text("stripe_subscription_id").unique(), // Stripe subscription ID
+  stripeCustomerId: text("stripe_customer_id"), // Stripe customer ID
+  status: text("status").notNull(), // active, canceled, past_due, etc.
+  currentPeriodStart: timestamp("current_period_start").notNull(),
+  currentPeriodEnd: timestamp("current_period_end").notNull(),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
+  canceledAt: timestamp("canceled_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  subscriptionType: text("subscription_type").default("monthly"), // monthly, yearly, etc.
+  priceId: text("price_id"), // Stripe price ID
+});
+
+// Table for tracking subscription payment history
+export const subscriptionPayments = pgTable("subscription_payments", {
+  id: serial("id").primaryKey(),
+  subscriptionId: integer("subscription_id").references(() => subscriptions.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  stripeInvoiceId: text("stripe_invoice_id").unique(), // Stripe invoice ID
+  stripePaymentIntentId: text("stripe_payment_intent_id").unique(), // Payment intent from Stripe
+  amount: integer("amount").notNull(), // Amount in cents
+  currency: text("currency").notNull(), // e.g., 'usd'
+  status: text("status").notNull(), // succeeded, failed, pending
+  billingReason: text("billing_reason"), // e.g., 'subscription_create', 'subscription_cycle'
+  periodStart: timestamp("period_start").notNull(), // Start of this billing period
+  periodEnd: timestamp("period_end").notNull(), // End of this billing period
+  paymentMethod: text("payment_method"), // e.g., 'card_visa_1234'
+  receiptUrl: text("receipt_url"), // URL to receipt/invoice
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const userRelations = relations(users, ({ many, one }) => ({
   createdEvents: many(events),
@@ -148,6 +207,8 @@ export const userRelations = relations(users, ({ many, one }) => ({
     references: [users.id],
   }),
   userCities: many(userCities),
+  subscriptions: many(subscriptions), // Add relation to subscriptions
+  subscriptionPayments: many(subscriptionPayments), // Add relation to subscription payments
 }));
 
 export const eventRelations = relations(events, ({ one, many }) => ({
@@ -166,6 +227,10 @@ export const eventParticipantsRelations = relations(eventParticipants, ({ one })
   user: one(users, {
     fields: [eventParticipants.userId],
     references: [users.id],
+  }),
+  payment: one(payments, { // Add relation from participant to payment
+    fields: [eventParticipants.stripeCheckoutSessionId],
+    references: [payments.stripeCheckoutSessionId],
   }),
 }));
 
@@ -212,6 +277,39 @@ export const userCitiesRelations = relations(userCities, ({ one }) => ({
   }),
 }));
 
+// Add relations for the new payments table
+export const paymentRelations = relations(payments, ({ one }) => ({
+  user: one(users, {
+    fields: [payments.userId],
+    references: [users.id],
+  }),
+  eventParticipant: one(eventParticipants, {
+    fields: [payments.eventParticipantId],
+    references: [eventParticipants.id],
+  }),
+}));
+
+// Add relations for the new subscriptions table
+export const subscriptionRelations = relations(subscriptions, ({ one, many }) => ({
+  user: one(users, {
+    fields: [subscriptions.userId],
+    references: [users.id],
+  }),
+  payments: many(subscriptionPayments), // Add relation to subscription payments
+}));
+
+// Add relations for the new subscription payments table
+export const subscriptionPaymentRelations = relations(subscriptionPayments, ({ one }) => ({
+  subscription: one(subscriptions, {
+    fields: [subscriptionPayments.subscriptionId],
+    references: [subscriptions.id],
+  }),
+  user: one(users, {
+    fields: [subscriptionPayments.userId],
+    references: [users.id],
+  }),
+}));
+
 // Schemas
 export const insertUserSchema = createInsertSchema(users);
 export const selectUserSchema = createSelectSchema(users);
@@ -247,3 +345,21 @@ export const insertUserCitySchema = createInsertSchema(userCities);
 export const selectUserCitySchema = createSelectSchema(userCities);
 export type UserCity = typeof userCities.$inferSelect;
 export type NewUserCity = typeof userCities.$inferInsert;
+
+// Zod schemas for payments
+export const insertPaymentSchema = createInsertSchema(payments);
+export const selectPaymentSchema = createSelectSchema(payments);
+export type Payment = typeof payments.$inferSelect;
+export type NewPayment = typeof payments.$inferInsert;
+
+// Add schemas for subscriptions
+export const insertSubscriptionSchema = createInsertSchema(subscriptions);
+export const selectSubscriptionSchema = createSelectSchema(subscriptions);
+export type Subscription = typeof subscriptions.$inferSelect;
+export type NewSubscription = typeof subscriptions.$inferInsert;
+
+// Add schemas for subscription payments
+export const insertSubscriptionPaymentSchema = createInsertSchema(subscriptionPayments);
+export const selectSubscriptionPaymentSchema = createSelectSchema(subscriptionPayments);
+export type SubscriptionPayment = typeof subscriptionPayments.$inferSelect;
+export type NewSubscriptionPayment = typeof subscriptionPayments.$inferInsert;

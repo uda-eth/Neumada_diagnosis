@@ -1,14 +1,16 @@
-import { useParams, useLocation } from "wouter";
+import { useParams, useLocation, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@/hooks/use-user";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, MessageSquare, UserPlus2, Star, Users } from "lucide-react";
+import { ChevronLeft, MessageSquare, UserPlus2, Star, Users, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTranslation } from "@/lib/translations";
 import { z } from "zod";
 import { useEffect, useState } from "react";
+import { loadStripe, Stripe } from '@stripe/stripe-js';
+import { v4 as uuidv4 } from 'uuid'; // Make sure to install uuid: npm install uuid @types/uuid
 
 // Define the Event type with all fields
 const EventSchema = z.object({
@@ -46,6 +48,21 @@ interface EventUser {
 // Helper function to get first name
 const getFirstName = (fullName: string) => fullName?.split(' ')[0] || '';
 
+// Load Stripe instance outside component to avoid reloading
+// Ensure VITE_STRIPE_PUBLISHABLE_KEY is set in your .env file
+let stripePromise: Promise<Stripe | null>;
+const getStripe = () => {
+  if (!stripePromise) {
+    const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+    if (!publishableKey) {
+      console.error("Stripe publishable key is not set in environment variables.");
+      return Promise.resolve(null); // Return a promise that resolves to null
+    }
+    stripePromise = loadStripe(publishableKey);
+  }
+  return stripePromise;
+};
+
 export default function EventPage() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
@@ -54,8 +71,10 @@ export default function EventPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [userStatus, setUserStatus] = useState<ParticipationStatus>('not_attending');
+  const [error, setError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const { data: event, isLoading } = useQuery<Event>({
+  const { data: event, isLoading, error: queryError } = useQuery<Event>({
     queryKey: [`/api/events/${id}`],
     queryFn: async () => {
       const response = await fetch(`/api/events/${id}`, {
@@ -196,6 +215,82 @@ export default function EventPage() {
     }
   };
 
+  // Fix for the dependency array where setLocation was added incorrectly
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('payment_cancelled') === 'true') {
+      setError('Payment was cancelled. Please try again.');
+    }
+  }, [id]); // Remove setLocation from dependency array since it's not used
+
+  const handlePurchase = async () => {
+    if (!event || !event.id || !user) {
+        toast({ title: "Error", description: "Event details or user information missing.", variant: "destructive" });
+        return;
+    }
+    setError(null);
+    setIsProcessing(true);
+
+    try {
+        // --- Generate temporary ticket data ---
+        const temporaryTicketId = uuidv4();
+        const ticketDataForLocalStorage = {
+            tempId: temporaryTicketId,
+            eventId: event.id,
+            userId: user.id, // Assuming user object is available
+            eventName: event.title, // Store some display data
+            timestamp: Date.now() // Add a timestamp for potential cleanup
+        };
+        localStorage.setItem('temp_ticket_data', JSON.stringify(ticketDataForLocalStorage));
+        console.log("Stored temporary ticket data:", ticketDataForLocalStorage);
+        // ------------------------------------
+
+        // 1. Create Checkout Session on the backend
+        const response = await fetch('/api/payments/create-checkout-session', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // Include session ID for auth
+                'x-session-id': localStorage.getItem('maly_session_id') || '' 
+            },
+            credentials: 'include',
+            body: JSON.stringify({ eventId: event.id, quantity: 1 }), 
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            localStorage.removeItem('temp_ticket_data'); // Clear temp data on error
+            throw new Error(errorData.error || 'Failed to create checkout session');
+        }
+
+        const { sessionId } = await response.json();
+
+        // 2. Redirect to Stripe Checkout
+        const stripe = await getStripe(); 
+        if (!stripe) {
+            localStorage.removeItem('temp_ticket_data'); // Clear temp data on error
+            throw new Error('Stripe.js failed to load or key is missing.');
+        }
+
+        const { error: stripeError } = await stripe.redirectToCheckout({
+            sessionId: sessionId,
+        });
+
+        if (stripeError) {
+            console.error('Stripe redirection error:', stripeError);
+            setError(stripeError.message || 'Failed to redirect to Stripe.');
+            localStorage.removeItem('temp_ticket_data'); // Clear temp data on error
+        }
+        // If redirectToCheckout succeeds, the browser navigates away, 
+        // so we don't need to clear localStorage here immediately.
+    } catch (err: any) {
+        console.error('Purchase error:', err);
+        setError(err.message || 'An unexpected error occurred.');
+        localStorage.removeItem('temp_ticket_data'); // Clear temp data on error
+    } finally {
+        setIsProcessing(false);
+    }
+  };
 
   if (isLoading || !event) {
     return (
@@ -278,6 +373,13 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
       });
     }
   };
+
+  // Update the canPurchase check to handle string prices
+  const canPurchase = 
+    event.price !== null && 
+    (typeof event.price === 'string' 
+      ? parseFloat(event.price) > 0 
+      : typeof event.price === 'number' && event.price > 0);
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -410,10 +512,10 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                 {event.price ? `$${event.price}` : 'Free'}
               </p>
             </div>
-            {(event.price && typeof event.price === 'string' ? parseFloat(event.price) > 0 : event.price > 0) ? (
+            {event.price !== null && ((typeof event.price === 'string' ? parseFloat(event.price) > 0 : event.price > 0)) ? (
               <Button 
                 className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
-                onClick={() => setLocation(`/event/${event.id}/register`)}
+                onClick={() => setLocation(`/event/${event.id}/tickets`)}
               >
                 Get Tickets
               </Button>
@@ -521,6 +623,35 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
             </div>
           </div>
         )}
+
+        {/* Display error message if exists */}
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span className="block sm:inline">{error}</span>
+          </div>
+        )}
+
+        {/* Add Purchase Button */} 
+        {canPurchase && (
+          <div className="mt-4">
+            <Button
+              className="w-full mt-4 font-semibold"
+              onClick={handlePurchase}
+              disabled={isProcessing}
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  Purchase Ticket {event.price ? `($${typeof event.price === 'string' ? parseFloat(event.price).toFixed(2) : event.price.toFixed(2)})` : ''}
+                </>
+              )}
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Bottom Actions */}
@@ -532,7 +663,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
               onClick={() => setLocation(`/event/${id}/tickets`)}
               disabled={participateMutation.isPending}
             >
-              {isPrivateEvent ? "Request Access" : `Buy Tickets • $${event.price?.toString()}`}
+              {isPrivateEvent ? "Request Access" : `Buy Tickets • $${typeof event.price === 'string' ? event.price : event.price?.toString()}`}
             </Button>
           </div>
         </div>

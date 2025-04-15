@@ -1,2 +1,32 @@
-
-{"version":"7","dialect":"postgresql","entries":[{"idx":0,"when":1709774400000,"tag":"0001_add_is_draft","name":"add_is_draft"},{"idx":1,"when":1712795000000,"tag":"0002_remove_is_draft","name":"remove_is_draft"}]}
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "when": 1709774400000,
+      "tag": "0001_add_is_draft",
+      "name": "add_is_draft"
+    },
+    {
+      "idx": 1,
+      "when": 1712795000000,
+      "tag": "0002_remove_is_draft",
+      "name": "remove_is_draft"
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1744355709198,
+      "tag": "0002_add_payments",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1744356645989,
+      "tag": "0003_add_ticket_identifier",
+      "breakpoints": true
+    }
+  ]
+}
