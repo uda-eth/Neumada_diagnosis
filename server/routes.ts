@@ -19,6 +19,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { isNotNull } from "drizzle-orm";
 import { recordSubscriptionPayment, getUserPaymentHistory, getSubscriptionWithPayments, getPaymentStats } from "./lib/payments";
 import { sql } from 'drizzle-orm';
+// Add import for premium router
+import premiumRouter from './premium';
 
 const categories = [
   "Retail",
@@ -864,6 +866,9 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
   app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
 
   setupAuth(app);
+  
+  // Mount premium router at /api/premium
+  app.use('/api/premium', premiumRouter);
 
   // API endpoint for city suggestions
   app.post("/api/suggest-city", async (req: Request, res: Response) => {
