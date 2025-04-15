@@ -265,3 +265,43 @@ export async function checkAuthentication(req: Request, res: Response, next?: Ne
     message: "Not logged in"
   });
 }
+
+export const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+
+  // Try alternative auth methods
+  const headerSessionId = req.headers['x-session-id'] as string;
+  const cookieSessionId = req.cookies?.maly_session_id || req.cookies?.sessionId;
+  
+  if (headerSessionId || cookieSessionId) {
+    const sessionId = headerSessionId || cookieSessionId;
+    try {
+      const sessionQuery = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.id, sessionId));
+      if (sessionQuery.length > 0 && sessionQuery[0].userId) {
+        // Create a minimal user object with required fields
+        req.user = {
+          id: sessionQuery[0].userId,
+          username: '',
+          email: '',
+          password: '',
+          fullName: '',
+          createdAt: new Date(),
+          bio: '',
+          profileImage: '',
+          location: '',
+          interests: []
+        };
+        return next();
+      }
+    } catch (error) {
+      console.error("Error checking session:", error);
+    }
+  }
+  
+  return res.status(401).json({ error: 'Authentication required' });
+};
