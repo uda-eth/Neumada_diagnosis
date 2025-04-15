@@ -517,13 +517,23 @@ export function setupAuth(app: Express) {
 
               console.log("Session stored in database successfully");
 
-              // Set cookie with proper settings
-              res.cookie('maly_session', sessionId, {
+              // Set cookies with different names to maximize persistence
+              // Primary session cookie
+              res.cookie('maly_session_id', sessionId, {
+                maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
                 httpOnly: true,
-                secure: true,
-                sameSite: 'strict',
-                maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+                sameSite: 'lax'
               });
+              
+              // Backup session cookie
+              res.cookie('sessionId', sessionId, {
+                maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+                httpOnly: true,
+                sameSite: 'lax'
+              });
+              
+              // Set session ID header
+              res.setHeader('x-session-id', sessionId);
 
             } catch (dbError) {
               console.error("Error storing session in database:", dbError);
@@ -564,25 +574,90 @@ export function setupAuth(app: Express) {
         return res.redirect('/auth?error=Invalid+credentials');
       }
 
-      req.logIn(user, (err) => {
+      req.logIn(user, async (err) => {
         if (err) {
           console.error("Login error during redirect flow:", err);
           return res.redirect('/auth?error=Authentication+failed');
         }
 
-        // Save session and redirect
-        req.session.save((err) => {
-          if (err) {
-            console.error("Session save error during redirect flow:", err);
-            return res.redirect('/auth?error=Session+error');
+        try {
+          // Create a session record in the database that matches our session ID
+          // First, check if a session already exists
+          const sessionId = req.sessionID;
+          const existingSession = await db.select()
+            .from(sessions)
+            .where(eq(sessions.id, sessionId))
+            .limit(1);
+
+          // If no session exists, create it
+          if (existingSession.length === 0) {
+            console.log("Creating new session record in database:", sessionId);
+            // Set session expiration to 30 days from now
+            const expiresAt = new Date();
+            expiresAt.setDate(expiresAt.getDate() + 30);
+
+            await db.insert(sessions).values({
+              id: sessionId,
+              userId: user.id,
+              expiresAt: expiresAt,
+              data: JSON.stringify({ 
+                userId: user.id,
+                username: user.username,
+                email: user.email 
+              }),
+              createdAt: new Date(),
+              updatedAt: new Date()
+            });
+          } else {
+            console.log("Updating existing session record:", sessionId);
+            await db.update(sessions)
+              .set({
+                userId: user.id,
+                updatedAt: new Date(),
+                data: JSON.stringify({ 
+                  userId: user.id,
+                  username: user.username,
+                  email: user.email
+                })
+              })
+              .where(eq(sessions.id, sessionId));
           }
 
-          console.log("Login successful, redirecting to homepage with session:", req.sessionID);
+          // Save session and redirect with session cookie and header
+          req.session.save((err) => {
+            if (err) {
+              console.error("Session save error during redirect flow:", err);
+              return res.redirect('/auth?error=Session+error');
+            }
 
-          // Add a timestamp to break browser caching
-          const timestamp = Date.now();
-          return res.redirect(`/?sessionId=${req.sessionID}&ts=${timestamp}`);
-        });
+            console.log("Login successful, redirecting to homepage with session:", req.sessionID);
+
+            // Set cookies with different names to maximize persistence
+            // Main session ID cookie
+            res.cookie('maly_session_id', sessionId, {
+              maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+              httpOnly: true,
+              sameSite: 'lax' // Use 'lax' instead of 'none' to improve persistence
+            });
+            
+            // Backup session ID cookie
+            res.cookie('sessionId', sessionId, {
+              maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+              httpOnly: true,
+              sameSite: 'lax'
+            });
+            
+            // Set x-session-id header
+            res.setHeader('x-session-id', sessionId);
+
+            // Add a timestamp to break browser caching and include session ID in URL
+            const timestamp = Date.now();
+            return res.redirect(`/?sessionId=${sessionId}&ts=${timestamp}`);
+          });
+        } catch (error) {
+          console.error("Database error during session creation:", error);
+          return res.redirect('/auth?error=Session+creation+failed');
+        }
       });
     })(req, res, next);
   });
@@ -604,12 +679,30 @@ export function setupAuth(app: Express) {
           // Continue anyway as the user is already logged out
         }
 
-        // Clear the cookie on the client with compatible settings
+        // Clear all the session cookies we've set
         res.clearCookie('maly_session', {
           path: '/',
           httpOnly: true,
-          sameSite: 'none',
-          secure: true // Required for sameSite: 'none'
+          sameSite: 'lax'
+        });
+        
+        res.clearCookie('maly_session_id', {
+          path: '/',
+          httpOnly: true,
+          sameSite: 'lax'
+        });
+        
+        res.clearCookie('sessionId', {
+          path: '/',
+          httpOnly: true,
+          sameSite: 'lax'
+        });
+        
+        // Also clear the default Express session cookie
+        res.clearCookie('connect.sid', {
+          path: '/',
+          httpOnly: true,
+          sameSite: 'lax'
         });
 
         console.log("Logout successful for user:", username);

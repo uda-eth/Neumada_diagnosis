@@ -486,7 +486,7 @@ export default function HomePage() {
                                 className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white w-full md:w-auto"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setLocation(`/event/${featuredEvent.id}/register`);
+                                  setLocation(`/event/${featuredEvent.id}/tickets`);
                                 }}
                               >
                                 Get Tickets
@@ -577,7 +577,7 @@ export default function HomePage() {
                                     className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      setLocation(`/event/${event.id}/register`);
+                                      setLocation(`/event/${event.id}/tickets`);
                                     }}
                                   >
                                     Get Tickets
@@ -710,7 +710,7 @@ export default function HomePage() {
                                     className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      setLocation(`/event/${event.id}/register`);
+                                      setLocation(`/event/${event.id}/tickets`);
                                     }}
                                   >
                                     Get Tickets

@@ -11,12 +11,18 @@ import MessagesPage from "./pages/MessagesPage";
 import ChatPage from "./pages/ChatPage";
 import SettingsPage from "./pages/SettingsPage";
 import PremiumPage from "./pages/PremiumPage";
+import PremiumSuccessPage from "./pages/PremiumSuccessPage";
 import InboxPage from "./pages/InboxPage";
 import ProfileEditPage from "./pages/ProfileEditPage";
 import TranslatorPage from "./pages/TranslatorPage";
 import OndaLindaFestivalPage from "./pages/OndaLindaFestivalPage";
 import ProfileGeneratorPage from "./pages/ProfileGeneratorPage";
 import ReplitProfilePage from "./pages/ReplitProfilePage";
+import EventTicketsPage from "./pages/EventTicketsPage";
+import PaymentSuccessPage from "./pages/PaymentSuccessPage";
+import PaymentCancelPage from "./pages/PaymentCancelPage";
+import AdminPaymentsPage from "./pages/AdminPaymentsPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AuthPage from "./pages/AuthPage";
 import { Layout } from "./components/ui/layout";
 import { ThemeProvider } from "./lib/theme-provider";
@@ -52,7 +58,7 @@ function AppContent() {
     
     // Don't perform redundant auth checks - defer to the Layout component
     // Skip check if we're already on the auth page or during loading
-    if (location.startsWith('/auth') || isLoading) {
+    if (location.startsWith('/auth') || location.startsWith('/payment-') || isLoading) {
       return;
     }
     
@@ -64,7 +70,7 @@ function AppContent() {
   }, [user, isLoading, location, setLocation]);
 
   // Determine if we should show the layout based on the current route
-  const showLayout = !location.startsWith('/auth');
+  const showLayout = !location.startsWith('/auth') && !location.startsWith('/payment-');
 
   return (
     <>
@@ -73,6 +79,7 @@ function AppContent() {
           <Switch>
             <Route path="/" component={HomePage} />
             <Route path="/event/onda-linda-festival" component={OndaLindaFestivalPage} />
+            <Route path="/event/:id/tickets" component={EventTicketsPage} />
             <Route path="/event/:id" component={EventPage} />
             <Route path="/profile" component={ProfilePage} />
             <Route path="/profile/:username" component={ProfilePage} />
@@ -85,11 +92,14 @@ function AppContent() {
             <Route path="/chat/:id" component={ChatPage} />
             <Route path="/settings" component={SettingsPage} />
             <Route path="/premium" component={PremiumPage} />
+            <Route path="/premium-success" component={PremiumSuccessPage} />
             <Route path="/inbox" component={InboxPage} />
             <Route path="/profile-edit" component={ProfileEditPage} />
             <Route path="/translator" component={TranslatorPage} />
             <Route path="/profile-setup" component={ProfileGeneratorPage} />
             <Route path="/replit-profile" component={ReplitProfilePage} />
+            <Route path="/admin" component={AdminDashboardPage} />
+            <Route path="/admin/payments" component={AdminPaymentsPage} />
             <Route path="/:rest*">
               {() => <div className="text-center p-8">404 - Page Not Found</div>}
             </Route>
@@ -98,6 +108,8 @@ function AppContent() {
       ) : (
         <Switch>
           <Route path="/auth" component={AuthPage} />
+          <Route path="/payment-success" component={PaymentSuccessPage} />
+          <Route path="/payment-cancel" component={PaymentCancelPage} />
           <Route path="/:rest*">
             {() => <AuthPage />}
           </Route>

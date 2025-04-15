@@ -123,29 +123,52 @@ export async function getUserBySessionId(sessionId: string) {
  * Check authentication status and return user data
  * @param req Express request object
  * @param res Express response object
+ * @param next Optional next function for middleware use
  */
-export async function checkAuthentication(req: Request, res: Response) {
+export async function checkAuthentication(req: Request, res: Response, next?: NextFunction) {
   // Check for session ID in headers (from the X-Session-ID header)
   const headerSessionId = req.headers['x-session-id'] as string;
 
   // Also check for session ID in cookies as a fallback
   const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
 
-  // Use header session ID first, then fall back to cookie
-  const sessionId = headerSessionId || cookieSessionId;
+  // Check express session ID
+  const expressSessionId = req.sessionID;
+
+  // Use header session ID first, then fall back to cookie, then express session
+  const sessionId = headerSessionId || cookieSessionId || expressSessionId;
   console.log("Session ID in auth check:", sessionId);
 
   // Debug session ID sources
   console.log("Auth check session sources:", {
-    fromHeader: headerSessionId ? "yes" : "no",
-    fromCookie: cookieSessionId ? "yes" : "no",
-    finalSessionId: sessionId
+    fromHeader: headerSessionId || 'not_present',
+    fromCookie: cookieSessionId || 'not_present',
+    fromExpressSession: expressSessionId || 'not_present',
+    finalSessionId: sessionId || 'none_found',
+    url: req.url
   });
 
   // First check if user is authenticated through passport session
   if (req.isAuthenticated() && req.user) {
     console.log("Auth check: User is authenticated via passport");
-    // Return authentication status with user data
+    
+    // Make sure to store the session ID for future use
+    if (sessionId) {
+      res.setHeader('x-session-id', sessionId);
+      // Set a cookie as well for more reliable persistence
+      res.cookie('maly_session_id', sessionId, { 
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        httpOnly: true,
+        sameSite: 'lax'
+      });
+    }
+    
+    // If this is being used as middleware, call next
+    if (next) {
+      return next();
+    }
+    
+    // Otherwise return authentication status with user data
     return res.json({ 
       authenticated: true,
       user: req.user
@@ -154,27 +177,86 @@ export async function checkAuthentication(req: Request, res: Response) {
 
   // If not authenticated via passport, try with the provided session ID
   if (sessionId) {
-    const user = await getUserBySessionId(sessionId);
-    
-    if (user) {
-      console.log("Auth check: User authenticated via session ID:", user.username);
-      return res.json({
-        authenticated: true,
-        user
-      });
+    try {
+      // Find the session in the database
+      const sessionResults = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.id, sessionId));
+      
+      console.log("Auth check: Session lookup result count:", sessionResults.length);
+      
+      if (sessionResults.length > 0 && sessionResults[0].userId) {
+        const userId = sessionResults[0].userId;
+        
+        // Find the user by ID
+        const userResults = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, userId));
+        
+        console.log("Auth check: User lookup result count:", userResults.length);
+        
+        if (userResults.length > 0) {
+          const user = userResults[0];
+          console.log("Auth check: User authenticated via session ID:", user.username);
+          
+          // Attach the user to the request object so it's available in routes
+          req.user = user as any;
+          
+          // Always ensure session ID is set in both headers and cookies
+          res.setHeader('x-session-id', sessionId);
+          // Set a cookie as well for more reliable persistence
+          res.cookie('maly_session_id', sessionId, { 
+            maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+            httpOnly: true,
+            sameSite: 'lax'
+          });
+          
+          // If this is being used as middleware, call next
+          if (next) {
+            return next();
+          }
+          
+          // Otherwise return authentication status with user data
+          return res.json({
+            authenticated: true,
+            user: {
+              id: user.id,
+              username: user.username,
+              email: user.email,
+              fullName: user.fullName,
+              profileImage: user.profileImage,
+              // Add other user fields as needed but exclude sensitive data
+              isPremium: user.isPremium,
+              isAdmin: user.isAdmin
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error authenticating via session:", error);
     }
   }
 
+  // Authentication failed
+  console.log("Auth check: User not authenticated");
+  
   // Check if the request wants HTML (browser) vs API (JSON) response
   const acceptsHtml = req.headers.accept && req.headers.accept.includes('text/html');
   
-  // Return unauthenticated status
-  console.log("Auth check: User not authenticated");
+  // For middleware usage, we return 401 instead of automatically redirecting
+  if (next) {
+    return res.status(401).json({ 
+      authenticated: false,
+      message: "Authentication required" 
+    });
+  }
   
   // For browser requests, redirect to login page
   if (acceptsHtml) {
     console.log("Redirecting unauthenticated user to login page");
-    return res.redirect('/login');
+    return res.redirect('/auth'); // Changed from /login to /auth to match your app
   }
   
   // For API requests, return JSON

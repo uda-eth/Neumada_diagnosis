@@ -87,6 +87,7 @@ export function Layout({ children }: LayoutProps) {
     { href: "/profile", label: "Profile", icon: UserCircle },
     { href: "/settings", label: "Settings", icon: Settings },
     { href: "/help", label: "Help", icon: HelpCircle },
+    { href: "/admin", label: "Admin Panel", icon: Settings, isAdmin: true },
     { onClick: handleLogout, label: "Logout", icon: LogOut }
   ];
 
@@ -136,16 +137,19 @@ export function Layout({ children }: LayoutProps) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
-                    {menuItems.map((item, index) => (
-                      <DropdownMenuItem 
-                        key={index}
-                        className={`cursor-pointer interactive-hover ${item.isPremium ? 'text-purple-500 font-medium' : ''}`}
-                        onClick={() => item.onClick ? item.onClick() : setLocation(item.href)}
-                      >
-                        <item.icon className="w-4 h-4 mr-2" />
-                        <span>{item.label}</span>
-                      </DropdownMenuItem>
-                    ))}
+                    {menuItems.map((item, index) => 
+                      // Only show admin links for admins
+                      (!item.isAdmin || (user && user.isAdmin)) && (
+                        <DropdownMenuItem 
+                          key={index}
+                          className={`cursor-pointer interactive-hover ${item.isPremium ? 'text-purple-500 font-medium' : ''} ${item.isAdmin ? 'text-red-500 font-medium' : ''}`}
+                          onClick={() => item.onClick ? item.onClick() : setLocation(item.href)}
+                        >
+                          <item.icon className="w-4 h-4 mr-2" />
+                          <span>{item.label}</span>
+                        </DropdownMenuItem>
+                      )
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>

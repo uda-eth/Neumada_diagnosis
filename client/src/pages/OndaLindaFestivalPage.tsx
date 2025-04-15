@@ -188,7 +188,7 @@ export default function OndaLindaFestivalPage() {
             </div>
             <Button 
               className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
-              onClick={() => setLocation(`/event/${festival.id}/register`)}
+              onClick={() => setLocation(`/event/${festival.id}/tickets`)}
             >
               Get Tickets
             </Button>
