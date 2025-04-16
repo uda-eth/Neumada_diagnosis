@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { useForm } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -31,8 +31,16 @@ import { z } from "zod";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { EVENT_CATEGORIES } from "@/lib/constants";
 import { useUser } from "@/hooks/use-user";
+import { ItineraryFormField } from "@/components/ItineraryFormField";
 
 // Define a simple schema for our form
+// Define a schema for itinerary items
+const itineraryItemSchema = z.object({
+  startTime: z.string().min(1, "Start time is required"),
+  endTime: z.string().min(1, "End time is required"),
+  description: z.string().min(1, "Description is required"),
+});
+
 const eventSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
@@ -44,6 +52,8 @@ const eventSchema = z.object({
   date: z.string()
     .refine(val => !isNaN(Date.parse(val)), "Please enter a valid date")
     .default(() => new Date().toISOString()),
+  // Add itinerary field (optional array of itinerary items)
+  itinerary: z.array(itineraryItemSchema).optional().default([]),
 });
 
 // Define the form data type using the zod schema
@@ -83,7 +93,8 @@ export default function CreateEventPage() {
       date: new Date().toISOString(),
       price: 0,
       isPrivate: false,
-      category: "Social"
+      category: "Social",
+      itinerary: [] // Initialize with empty array
     },
   });
 
@@ -148,8 +159,14 @@ export default function CreateEventPage() {
       // Add all form fields
       Object.entries(data).forEach(([key, value]) => {
         if (value !== null && value !== undefined) {
-          formData.append(key, value.toString());
-          console.log(`Added form field: ${key} = ${value}`);
+          if (key === 'itinerary' && Array.isArray(value)) {
+            // Serialize the itinerary array to JSON
+            formData.append(key, JSON.stringify(value));
+            console.log(`Added itinerary field with ${value.length} items`);
+          } else {
+            formData.append(key, value.toString());
+            console.log(`Added form field: ${key} = ${value}`);
+          }
         }
       });
       
@@ -443,6 +460,16 @@ export default function CreateEventPage() {
               </div>
             </div>
 
+            {/* Event Itinerary */}
+            <div className="space-y-4 bg-white/5 p-6 rounded-lg">
+              <FormProvider {...form}>
+                <ItineraryFormField name="itinerary" />
+              </FormProvider>
+              {form.formState.errors.itinerary && (
+                <p className="text-red-500 text-xs">Please check itinerary details</p>
+              )}
+            </div>
+
             {/* Publication Button */}
             <div className="space-y-4">
               <div className="flex gap-4">
@@ -450,7 +477,7 @@ export default function CreateEventPage() {
                   type="button"
                   className="flex-1 h-12 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
                   disabled={loading}
-                  onClick={() => publishEvent(false)}
+                  onClick={publishEvent}
                 >
                   Publish Event
                 </Button>
@@ -478,7 +505,7 @@ export default function CreateEventPage() {
             type="button"
             className="w-full h-12 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white transition-all duration-200"
             disabled={loading}
-            onClick={() => publishEvent()}
+            onClick={publishEvent}
           >
             <Plus className="h-5 w-5 mr-2" />
             <span>{loading ? "Creating..." : "Create Event"}</span>
