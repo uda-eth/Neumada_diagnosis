@@ -398,6 +398,88 @@ export default function ProfilePage() {
           </div>
         </CardHeader>
         <CardContent>
+          {/* Current Mood Section */}
+          <div className="mt-6 mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold">Current Mood</h2>
+              
+              {/* Only show change mood button if viewing own profile */}
+              {currentUser && profileData.id === currentUser.id && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => setIsUpdatingMood(!isUpdatingMood)}
+                  disabled={updateMoodMutation.isPending}
+                >
+                  {updateMoodMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Edit3 className="h-4 w-4" />
+                  )}
+                  {isUpdatingMood ? "Cancel" : (profileData.currentMoods?.length ? "Change Your Mood" : "Share Your Mood")}
+                </Button>
+              )}
+            </div>
+            
+            {/* Current Mood Display */}
+            {!isUpdatingMood ? (
+              <div>
+                {profileData.currentMoods && profileData.currentMoods.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {profileData.currentMoods.map((mood, index) => (
+                      <Badge 
+                        key={index}
+                        className={`text-sm py-1.5 px-3 ${moodStyles[mood as keyof typeof moodStyles] || ''}`}
+                      >
+                        <Smile className="h-4 w-4 mr-2" />
+                        {mood}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-sm">
+                    {currentUser && profileData.id === currentUser.id 
+                      ? "You haven't shared your mood yet." 
+                      : "This user hasn't shared their mood yet."}
+                  </p>
+                )}
+              </div>
+            ) : (
+              // Mood Selection Panel
+              <div className="bg-accent/5 p-4 rounded-lg border border-border">
+                <h3 className="text-sm font-medium mb-3">How are you feeling today?</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                  {moods.map((mood) => (
+                    <Badge
+                      key={mood}
+                      variant="outline"
+                      className={`cursor-pointer text-sm py-2 px-3 flex items-center justify-center transition-colors
+                        ${profileData.currentMoods?.includes(mood) 
+                          ? moodStyles[mood as keyof typeof moodStyles] 
+                          : 'hover:bg-accent/50'}`}
+                      onClick={() => updateMoodMutation.mutate(mood)}
+                    >
+                      {profileData.currentMoods?.includes(mood) && <Check className="h-3 w-3 mr-1" />}
+                      {mood}
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex justify-end mt-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => updateMoodMutation.mutate('')}
+                    disabled={updateMoodMutation.isPending || !profileData.currentMoods?.length}
+                  >
+                    Clear mood
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Interests Section */}
           {profileData.interests && profileData.interests.length > 0 && (
             <div className="mt-6">
               <h2 className="text-lg font-semibold mb-3">Interests</h2>
