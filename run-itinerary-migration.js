@@ -1,5 +1,5 @@
 // Simple script to run the itinerary migration
-const { addEventItineraryField } = require('./migrations/0003_add_event_itinerary');
+import { addEventItineraryField } from './migrations/0003_add_event_itinerary.js';
 
 async function runItineraryMigration() {
   try {
