@@ -959,10 +959,11 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
       }
       
       // Properly handle mood filters at the database level if possible
-      if (moods && Array.isArray(moods) && moods.length > 0) {
-        console.log(`Applying mood filters at database level: ${moods.join(', ')}`);
+      if (moods && (Array.isArray(moods) ? moods.length > 0 : true)) {
+        const moodArray = Array.isArray(moods) ? moods : [moods];
+        console.log(`Applying mood filters at database level: ${moodArray.join(', ')}`);
         // Use overlaps to find users with any of the selected moods
-        query = query.where(sql`${users.currentMoods} && ${sql.array(moods, 'text')}`);
+        query = query.where(sql`${users.currentMoods} && ${sql.array(moodArray, 'text')}`);
       }
       
       // Log the query parameters for debugging
@@ -993,38 +994,8 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         console.log(`Found ${dbUsers.length} users with matching interests`);
       }
 
-      if (moods) {
-        // Improved mood filtering using array overlap 
-        const moodArray = Array.isArray(moods) ? moods : [moods];
-        
-        console.log(`Filtering by moods: ${JSON.stringify(moodArray)}`);
-        
-        // Filter users where at least one of their moods matches any mood in our filter
-        const usersBefore = dbUsers.length;
-        
-        // First check if we have any users with moods at all
-        const usersWithMoods = dbUsers.filter(user => user.currentMoods && Array.isArray(user.currentMoods));
-        console.log(`${usersWithMoods.length} of ${dbUsers.length} users have moods set`);
-        
-        dbUsers = dbUsers.filter(user => {
-          // Only include users with moods
-          if (!user.currentMoods || !Array.isArray(user.currentMoods)) {
-            console.log(`User ${user.username} has no moods, excluding`);
-            return false;
-          }
-          
-          // Check for any overlap between user moods and filter moods
-          const hasMatchingMood = moodArray.some(filterMood => 
-            user.currentMoods?.includes(filterMood)
-          );
-          
-          console.log(`User ${user.username} has moods [${user.currentMoods.join(', ')}], match: ${hasMatchingMood}`);
-          return hasMatchingMood;
-        });
-        
-        // Log filtered count
-        console.log(`Mood filtering: ${usersBefore} users before, ${dbUsers.length} users after filtering`);
-      }
+      // Mood filtering is now handled entirely at the database level
+      // We don't need additional JS-based filtering
 
       if (name) {
         const lowercaseName = name.toLowerCase();
