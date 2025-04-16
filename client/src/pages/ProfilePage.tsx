@@ -173,8 +173,9 @@ export default function ProfilePage() {
   // Update mood mutation
   const updateMoodMutation = useMutation({
     mutationFn: async (mood: string) => {
+      console.log('Updating mood with:', mood ? [mood] : []);
       const response = await fetch('/api/profile', {
-        method: 'PATCH',
+        method: 'POST', // Changed from PATCH to POST to match server endpoint
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           currentMoods: mood ? [mood] : [] 
