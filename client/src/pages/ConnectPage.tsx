@@ -270,7 +270,7 @@ export function ConnectPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 auto-rows-fr">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 auto-rows-fr">
         {isLoading ? (
           // Loading skeletons
           Array(6).fill(0).map((_, index) => (
@@ -333,7 +333,7 @@ export function ConnectPage() {
                                 <Badge
                                   key={index}
                                   variant="secondary"
-                                  className={`${moodStyles[mood] || 'bg-secondary'} text-xs`}
+                                  className={`${moodStyles[mood as keyof typeof moodStyles] || 'bg-secondary'} text-xs`}
                                 >
                                   {mood}
                                 </Badge>

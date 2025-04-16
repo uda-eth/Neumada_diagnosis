@@ -3,12 +3,29 @@ import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useUser } from "@/hooks/use-user";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, ArrowLeft, MapPin, Mail, Briefcase, Calendar, UserPlus, Check, X, UserCheck } from "lucide-react";
+import { Loader2, ArrowLeft, MapPin, Mail, Briefcase, Calendar, UserPlus, Check, X, UserCheck, Smile, Heart, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+
+// Mood badge styles configuration
+const moodStyles = {
+  "Dating": "bg-pink-500/20 text-pink-500 hover:bg-pink-500/30",
+  "Networking": "bg-blue-500/20 text-blue-500 hover:bg-blue-500/30",
+  "Parties": "bg-purple-500/20 text-purple-500 hover:bg-purple-500/30",
+  "Adventure": "bg-orange-500/20 text-orange-500 hover:bg-orange-500/30",
+  "Dining Out": "bg-green-500/20 text-green-500 hover:bg-green-500/30",
+  "Working": "bg-slate-500/20 text-slate-500 hover:bg-slate-500/30",
+  "Exploring": "bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30",
+  "Learning": "bg-indigo-500/20 text-indigo-500 hover:bg-indigo-500/30",
+  "Teaching": "bg-amber-500/20 text-amber-500 hover:bg-amber-500/30",
+  "Socializing": "bg-rose-500/20 text-rose-500 hover:bg-rose-500/30",
+  "Focusing": "bg-cyan-500/20 text-cyan-500 hover:bg-cyan-500/30",
+  "Relaxing": "bg-teal-500/20 text-teal-500 hover:bg-teal-500/30",
+  "Creating": "bg-violet-500/20 text-violet-500 hover:bg-violet-500/30"
+} as const;
 
 interface ProfileData {
   id: number;
@@ -19,6 +36,7 @@ interface ProfileData {
   bio: string | null;
   location: string | null;
   interests: string[];
+  currentMoods?: string[] | null;
   profession: string | null;
   age: number | null;
 }
@@ -40,8 +58,26 @@ export default function ProfilePage() {
   const { user: currentUser } = useUser();
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isUpdatingMood, setIsUpdatingMood] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Available moods for selection
+  const moods = [
+    "Dating",
+    "Networking",
+    "Parties",
+    "Adventure",
+    "Dining Out",
+    "Working",
+    "Exploring",
+    "Learning",
+    "Teaching",
+    "Socializing",
+    "Focusing",
+    "Relaxing",
+    "Creating"
+  ];
   
   // If we're at /profile (without a username), we want to show the current user's profile
   // And redirect to /profile/{username} for proper routing
@@ -128,6 +164,53 @@ export default function ProfilePage() {
     onError: (error: Error) => {
       toast({
         title: 'Error updating request',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+  
+  // Update mood mutation
+  const updateMoodMutation = useMutation({
+    mutationFn: async (mood: string) => {
+      const response = await fetch('/api/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          currentMoods: mood ? [mood] : [] 
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update mood');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: 'Mood updated',
+        description: 'Your mood has been updated successfully.',
+      });
+      
+      // Update the profile data locally
+      if (profileData) {
+        setProfileData({
+          ...profileData,
+          currentMoods: data.currentMoods
+        });
+      }
+      
+      // Close the mood selector
+      setIsUpdatingMood(false);
+      
+      // Invalidate any queries that depend on user data
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error updating mood',
         description: error.message,
         variant: 'destructive',
       });
