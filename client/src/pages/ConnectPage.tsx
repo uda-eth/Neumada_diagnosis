@@ -103,7 +103,8 @@ export function ConnectPage() {
   const {
     data: users,
     isLoading,
-    error
+    error,
+    refetch
   } = useQuery<User[]>({
     queryKey: ['users', selectedCity, selectedInterests, selectedMoods, currentUser?.id],
     queryFn: async () => {
@@ -118,13 +119,18 @@ export function ConnectPage() {
         params.append('currentUserId', currentUser.id.toString());
       }
       
+      // Add interests as array parameters
       selectedInterests.forEach(interest => {
         params.append('interests[]', interest);
       });
       
+      // Add moods as array parameters
       selectedMoods.forEach(mood => {
         params.append('moods[]', mood);
       });
+      
+      // Log the query for debugging
+      console.log(`Fetching users with filters: ${params.toString()}`);
       
       const response = await fetch(`/api/users/browse?${params.toString()}`);
       
@@ -132,8 +138,11 @@ export function ConnectPage() {
         throw new Error('Failed to fetch users');
       }
       
-      return response.json();
-    }
+      const results = await response.json();
+      console.log(`Received ${results.length} users from server`);
+      return results;
+    },
+    refetchOnWindowFocus: false
   });
 
   useEffect(() => {
@@ -157,14 +166,25 @@ export function ConnectPage() {
 
   const toggleFilter = (item: string, type: 'interests' | 'moods') => {
     if (type === 'interests') {
-      setSelectedInterests(prev =>
-        prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
-      );
+      setSelectedInterests(prev => {
+        const newInterests = prev.includes(item) 
+          ? prev.filter(i => i !== item) 
+          : [...prev, item];
+        console.log(`Updated interests: ${newInterests.join(', ')}`);
+        return newInterests;
+      });
     } else {
-      setSelectedMoods(prev =>
-        prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
-      );
+      setSelectedMoods(prev => {
+        const newMoods = prev.includes(item) 
+          ? prev.filter(i => i !== item) 
+          : [...prev, item];
+        console.log(`Updated moods: ${newMoods.join(', ')}`);
+        return newMoods;
+      });
     }
+    
+    // Force a refetch after state updates
+    setTimeout(() => refetch(), 0);
   };
 
   return (

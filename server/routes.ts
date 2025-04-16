@@ -917,12 +917,16 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
 
   app.get("/api/users/browse", async (req, res) => {
     try {
-      const { location: city, gender, minAge: minAgeStr, maxAge: maxAgeStr } = req.query;
+      // Get location parameter as 'location' or 'city' (for backward compatibility)
+      const city = req.query.location || req.query.city || 'all';
+      const { gender, minAge: minAgeStr, maxAge: maxAgeStr } = req.query;
       const interests = req.query['interests[]'] as string[] | string;
       const moods = req.query['moods[]'] as string[] | string;
       const name = req.query.name as string;
       const currentUserIdSource = req.user?.id || req.query.currentUserId as string;
       const currentUserId = currentUserIdSource ? parseInt(currentUserIdSource.toString(), 10) : undefined;
+      
+      console.log(`User browse request received with city=${city}, moods=${JSON.stringify(moods)}`);
       
       // Database query to get real users
       let query = db.select().from(users);
@@ -953,6 +957,16 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
       if (maxAge !== undefined && !isNaN(maxAge)) {
         query = query.where(lte(users.age, maxAge));
       }
+      
+      // Log the query parameters for debugging
+      console.log("Users browse query params:", {
+        city,
+        gender,
+        minAge,
+        maxAge,
+        interests: req.query['interests[]'],
+        moods: req.query['moods[]']
+      });
 
       // Get all users with the applied filters
       let dbUsers = await query;
@@ -960,11 +974,15 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
       // Further filtering that's harder to do at the DB level
       if (interests) {
         const interestArray = Array.isArray(interests) ? interests : [interests];
+        console.log(`Filtering by interests: ${JSON.stringify(interestArray)}`);
+        
         dbUsers = dbUsers.filter(user => 
           user.interests && interestArray.some(interest => 
             user.interests?.includes(interest)
           )
         );
+        
+        console.log(`Found ${dbUsers.length} users with matching interests`);
       }
 
       if (moods) {
@@ -975,6 +993,7 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         console.log(`Filtering by moods: ${JSON.stringify(moodArray)}`);
         
         // Filter users where at least one of their moods matches any mood in our filter
+        const usersBefore = dbUsers.length;
         dbUsers = dbUsers.filter(user => {
           // Only include users with moods
           if (!user.currentMoods || !Array.isArray(user.currentMoods)) {
@@ -990,7 +1009,7 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         });
         
         // Log filtered count
-        console.log(`Found ${dbUsers.length} users with matching moods`);
+        console.log(`Mood filtering: ${usersBefore} users before, ${dbUsers.length} users after filtering`);
       }
 
       if (name) {
