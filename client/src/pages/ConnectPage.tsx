@@ -272,11 +272,11 @@ export function ConnectPage() {
       </div>
 
       {/* Enhanced grid layout with proper spacing and centering - ensuring consistent card sizes */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 mx-auto w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center w-full">
         {isLoading ? (
           // Loading skeletons
           Array(6).fill(0).map((_, index) => (
-            <Card key={index} className="overflow-hidden h-full w-full max-w-sm">
+            <Card key={index} className="overflow-hidden h-full w-full max-w-sm card-hover">
               <CardContent className="p-0">
                 <div className="flex flex-col h-full">
                   <div className="relative w-full aspect-square overflow-hidden bg-muted">
@@ -299,7 +299,7 @@ export function ConnectPage() {
           // Real users from database
           filteredUsers.map((user) => (
             <Link key={user.id} href={`/profile/${user.username}`} className="w-full max-w-sm">
-              <Card className="overflow-hidden hover:bg-accent/5 transition-colors cursor-pointer group h-full w-full">
+              <Card className="overflow-hidden hover:bg-accent/5 transition-colors cursor-pointer group h-full w-full card-hover">
                 <CardContent className="p-0">
                   <div className="flex flex-col h-full">
                     <div className="relative w-full aspect-square overflow-hidden bg-muted">
