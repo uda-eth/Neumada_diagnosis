@@ -29,7 +29,7 @@ const profileSchema = z.object({
   profession: z.string().min(2, "Profession is required"),
   location: z.string(),
   interests: z.array(z.string()).min(1, "Select at least one interest"),
-  currentMood: z.enum(["Dating", "Networking", "Parties", "Adventure", "Dining Out"]),
+  currentMoods: z.array(z.enum(["Dating", "Networking", "Parties", "Adventure", "Dining Out"])).optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -84,9 +84,9 @@ export default function EditProfilePage() {
       profession: currentUser.occupation,
       location: currentUser.location,
       interests: currentUser.interests,
-      currentMood: (currentUser.currentMoods && currentUser.currentMoods.length > 0) 
-        ? currentUser.currentMoods[0] as any 
-        : "Networking", // Default to Networking if no mood is set
+      currentMoods: (currentUser.currentMoods && currentUser.currentMoods.length > 0) 
+        ? currentUser.currentMoods 
+        : ["Networking"], // Default to Networking if no mood is set
     },
   });
 
