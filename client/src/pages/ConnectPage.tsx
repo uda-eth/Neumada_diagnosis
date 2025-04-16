@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
@@ -92,7 +93,6 @@ const moods = [
 export function ConnectPage() {
   const [selectedCity, setSelectedCity] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
   const [isFiltersVisible, setIsFiltersVisible] = useState(false);
   const { toast } = useToast();
@@ -102,9 +102,10 @@ export function ConnectPage() {
   const {
     data: users,
     isLoading,
-    error
+    error,
+    refetch
   } = useQuery<User[]>({
-    queryKey: ['users', selectedCity, selectedInterests, selectedMoods, currentUser?.id],
+    queryKey: ['users', selectedCity, selectedMoods, currentUser?.id],
     queryFn: async () => {
       // Build query parameters
       const params = new URLSearchParams();
@@ -117,22 +118,31 @@ export function ConnectPage() {
         params.append('currentUserId', currentUser.id.toString());
       }
       
-      selectedInterests.forEach(interest => {
-        params.append('interests[]', interest);
-      });
+      // Add moods as array parameters - ensure this is working
+      if (selectedMoods.length > 0) {
+        // Use the proper way to add array parameters that the server expects
+        selectedMoods.forEach(mood => {
+          params.append('moods[]', mood);
+        });
+        console.log(`Including mood filters: ${selectedMoods.join(', ')}`);
+      }
       
-      selectedMoods.forEach(mood => {
-        params.append('moods[]', mood);
-      });
+      // Log the query for debugging
+      const queryString = params.toString();
+      console.log(`Fetching users with filters: ${queryString}`);
       
-      const response = await fetch(`/api/users/browse?${params.toString()}`);
+      // Use the properly formatted query string
+      const response = await fetch(`/api/users/browse?${queryString}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch users');
       }
       
-      return response.json();
-    }
+      const results = await response.json();
+      console.log(`Received ${results.length} users from server`);
+      return results;
+    },
+    refetchOnWindowFocus: false
   });
 
   useEffect(() => {
@@ -145,7 +155,7 @@ export function ConnectPage() {
     }
   }, [error, toast]);
 
-  // Filter the user results client-side for search terms
+  // Filter the user results client-side for search terms only
   const filteredUsers = users?.filter(user => {
     const matchesSearch = !searchTerm || 
       (user.fullName && user.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -154,37 +164,54 @@ export function ConnectPage() {
     return matchesSearch;
   }) || [];
 
-  const toggleFilter = (item: string, type: 'interests' | 'moods') => {
-    const setterFn = type === 'interests' ? setSelectedInterests : setSelectedMoods;
-    setterFn(prev =>
-      prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
-    );
+  const toggleFilter = (item: string) => {
+    setSelectedMoods(prev => {
+      const newMoods = prev.includes(item) 
+        ? prev.filter(i => i !== item) 
+        : [...prev, item];
+      console.log(`Updated moods: ${newMoods.join(', ')}`);
+      return newMoods;
+    });
   };
 
   return (
-    <div className="container py-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-semibold tracking-tight">Connect</h1>
-          <Link href="/connections">
-            <Button variant="outline" size="sm" className="gap-2">
-              <UserCircle className="h-4 w-4" />
-              My Connections
+    <div className="container mx-auto py-6 space-y-6">
+      <header className="border-b border-border sticky top-0 z-50 bg-black/40 backdrop-blur-sm text-white mb-6">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <h1 className="text-sm font-medium uppercase tracking-[.5em] text-white">Connect</h1>
+              <Link href="/connections">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <UserCircle className="h-4 w-4" />
+                  My Connections
+                </Button>
+              </Link>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsFiltersVisible(!isFiltersVisible)}
+              className="gap-2"
+            >
+              <Filter className="h-4 w-4" />
+              Filters
+              {selectedMoods.length > 0 && (
+                <Badge variant="secondary" className="ml-2">
+                  {selectedMoods.length}
+                </Badge>
+              )}
             </Button>
-          </Link>
+          </div>
         </div>
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsFiltersVisible(!isFiltersVisible)}
-            className="gap-2"
-          >
-            <Filter className="h-4 w-4" />
-            Filters
-          </Button>
+      </header>
+
+      <div className="mb-8 space-y-4">
+        {/* Location and Mood filters - Primary Filters */}
+        <div className="flex flex-col md:flex-row gap-4">
+          {/* Location Filter - Positioned at top-left */}
           <Select value={selectedCity} onValueChange={setSelectedCity}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full md:w-[180px] bg-background/5 border-border">
               <SelectValue placeholder="Select city" />
             </SelectTrigger>
             <SelectContent>
@@ -194,63 +221,71 @@ export function ConnectPage() {
               ))}
             </SelectContent>
           </Select>
+          
+          {/* Mood Filter - Enhanced pill-style toggles with better visual feedback */}
+          <div className="flex flex-wrap gap-2">
+            {moods.map((mood) => (
+              <button
+                key={mood}
+                className={`rounded-full px-3 py-1 text-sm font-medium transition-colors 
+                  ${selectedMoods.includes(mood) 
+                    ? moodStyles[mood as keyof typeof moodStyles] + ' shadow-sm' 
+                    : 'border border-border bg-background/5 hover:bg-accent/20'}`}
+                onClick={() => toggleFilter(mood)}
+              >
+                {selectedMoods.includes(mood) && (
+                  <span className="mr-1">✓</span>
+                )}
+                {mood}
+              </button>
+            ))}
+            {selectedMoods.length > 0 && (
+              <button
+                className="rounded-full px-3 py-1 text-sm font-medium text-muted-foreground border border-border bg-background/5 hover:bg-accent/20"
+                onClick={() => setSelectedMoods([])}
+              >
+                Clear
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* Additional filters - Expanded section */}
+        {isFiltersVisible && (
+          <div className="space-y-4 bg-accent/5 p-4 rounded-lg border border-border">
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium">Search</h3>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by name..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+
+            {/* Interests filter removed - now only filtering by moods */}
+          </div>
+        )}
+
+        {/* Display selected filters count if any */}
+        {selectedMoods.length > 0 && (
+          <div className="py-2">
+            <h2 className="text-sm font-medium text-muted-foreground">
+              {filteredUsers.length} People Found
+            </h2>
+          </div>
+        )}
       </div>
 
-      {isFiltersVisible && (
-        <div className="space-y-4 bg-accent/5 p-4 rounded-lg border border-border">
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium">Search</h3>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium">Interests</h3>
-            <div className="flex flex-wrap gap-2">
-              {interests.map((interest) => (
-                <Badge
-                  key={interest}
-                  variant={selectedInterests.includes(interest) ? "default" : "outline"}
-                  className="cursor-pointer"
-                  onClick={() => toggleFilter(interest, 'interests')}
-                >
-                  {interest}
-                </Badge>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium">Current Mood</h3>
-            <div className="flex flex-wrap gap-2">
-              {moods.map((mood) => (
-                <Badge
-                  key={mood}
-                  variant={selectedMoods.includes(mood) ? "default" : "outline"}
-                  className={`cursor-pointer ${selectedMoods.includes(mood) ? moodStyles[mood as keyof typeof moodStyles] : ''}`}
-                  onClick={() => toggleFilter(mood, 'moods')}
-                >
-                  {mood}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 auto-rows-fr">
+      {/* Enhanced grid layout with proper spacing and centering */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 w-full place-items-center">
         {isLoading ? (
           // Loading skeletons
           Array(6).fill(0).map((_, index) => (
-            <Card key={index} className="overflow-hidden h-full">
+            <Card key={index} className="overflow-hidden h-full w-full max-w-sm">
               <CardContent className="p-0">
                 <div className="flex flex-col h-full">
                   <div className="relative w-full aspect-square overflow-hidden bg-muted">
@@ -272,8 +307,8 @@ export function ConnectPage() {
         ) : filteredUsers.length > 0 ? (
           // Real users from database
           filteredUsers.map((user) => (
-            <Link key={user.id} href={`/profile/${user.username}`}>
-              <Card className="overflow-hidden hover:bg-accent/5 transition-colors cursor-pointer group h-full">
+            <Link key={user.id} href={`/profile/${user.username}`} className="w-full max-w-sm h-full">
+              <Card className="overflow-hidden hover:bg-accent/5 transition-colors cursor-pointer group h-full w-full">
                 <CardContent className="p-0">
                   <div className="flex flex-col h-full">
                     <div className="relative w-full aspect-square overflow-hidden bg-muted">
@@ -309,7 +344,7 @@ export function ConnectPage() {
                                 <Badge
                                   key={index}
                                   variant="secondary"
-                                  className={`${moodStyles[mood] || 'bg-secondary'} text-xs`}
+                                  className={`${moodStyles[mood as keyof typeof moodStyles] || 'bg-secondary'} text-xs`}
                                 >
                                   {mood}
                                 </Badge>
@@ -342,14 +377,14 @@ export function ConnectPage() {
           ))
         ) : (
           // No users found
-          <div className="col-span-3 py-12 text-center">
+          <div className="col-span-1 sm:col-span-2 md:col-span-3 xl:col-span-4 py-12 text-center w-full">
             <p className="text-muted-foreground">No users found matching your criteria.</p>
             <p className="text-sm mt-2">Try adjusting your filters or search terms.</p>
           </div>
         )}
       </div>
       <div className="py-8 border-y border-border/10 bg-accent/5">
-        <div className="container">
+        <div className="container mx-auto">
           <p className="text-center text-sm font-medium text-muted-foreground mb-4">
             Premium Ad Partner
           </p>

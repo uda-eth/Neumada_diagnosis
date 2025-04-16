@@ -20,7 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { MapPin, Upload } from "lucide-react";
 import { members } from "@/lib/members-data";
 import { DIGITAL_NOMAD_CITIES } from "@/lib/constants";
-import { useRouter } from 'next/router'; // Add useRouter for navigation
+import { useLocation } from "wouter"; // Replace next/router with wouter
 
 const profileSchema = z.object({
   fullName: z.string().min(2, "Name must be at least 2 characters"),
@@ -29,7 +29,7 @@ const profileSchema = z.object({
   profession: z.string().min(2, "Profession is required"),
   location: z.string(),
   interests: z.array(z.string()).min(1, "Select at least one interest"),
-  currentMood: z.enum(["Dating", "Networking", "Parties", "Adventure", "Dining Out"]),
+  currentMoods: z.array(z.enum(["Dating", "Networking", "Parties", "Adventure", "Dining Out"])).optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -65,15 +65,14 @@ export default function EditProfilePage() {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false); // Add loading state
-  const router = useRouter(); // Initialize useRouter
-  const [location, setLocation] = useState(''); //Corrected this line
+  const [, navigate] = useLocation(); // Use wouter's useLocation for navigation
 
   // For demo, use first member as current user
   const currentUser = members[0];
 
   // Handle back navigation
   const handleBack = () => {
-    router.push('/profile'); //Directly push to profile page
+    navigate('/profile'); // Navigate to profile page
   };
 
   const form = useForm<ProfileFormValues>({
@@ -85,7 +84,9 @@ export default function EditProfilePage() {
       profession: currentUser.occupation,
       location: currentUser.location,
       interests: currentUser.interests,
-      currentMood: currentUser.currentMood,
+      currentMoods: (currentUser.currentMoods && currentUser.currentMoods.length > 0) 
+        ? currentUser.currentMoods 
+        : ["Networking"], // Default to Networking if no mood is set
     },
   });
 
@@ -103,15 +104,20 @@ export default function EditProfilePage() {
   const onSubmit = async (data: ProfileFormValues) => {
     setIsLoading(true);
     try {
+      // Create headers object
+      const headers = new Headers({
+        'Content-Type': 'application/json'
+      });
+      
+      // Add session ID if it exists
+      const sessionId = localStorage.getItem('maly_session_id');
+      if (sessionId) {
+        headers.append('X-Session-ID', sessionId);
+      }
+      
       const response = await fetch('/api/profile', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Include session ID from localStorage if it exists
-          ...(localStorage.getItem('maly_session_id') && {
-            'X-Session-ID': localStorage.getItem('maly_session_id')
-          })
-        },
+        headers,
         credentials: 'include', // Important for auth
         body: JSON.stringify(data)
       });
@@ -181,6 +187,76 @@ export default function EditProfilePage() {
               </div>
             </div>
 
+            {/* Current Mood - Primary CTA */}
+            <div className="space-y-4 glass p-6 rounded-lg border border-primary/30 shadow-lg">
+              <h2 className="text-2xl font-bold gradient-text">How are you feeling today?</h2>
+              
+              <div className="w-full">
+                <div className="flex flex-wrap gap-3 mt-2">
+                  {moods.map(mood => (
+                    <div
+                      key={mood}
+                      className={`cursor-pointer flex-grow text-center py-3 px-4 rounded-lg transition-all ${
+                        (form.watch("currentMoods") || []).includes(mood)
+                          ? `${moodStyles[mood]} border-2 border-white/20 shadow-md transform scale-105` 
+                          : "bg-white/5 hover:bg-white/10"
+                      }`}
+                      onClick={async () => {
+                        // Get current moods
+                        const currentMoods = form.watch("currentMoods") || [];
+                        
+                        // Toggle the selected mood (add if not present, remove if present)
+                        const updatedMoods = currentMoods.includes(mood) 
+                          ? currentMoods.filter(m => m !== mood)
+                          : [...currentMoods, mood];
+                        
+                        // Update form value
+                        form.setValue("currentMoods", updatedMoods);
+                        
+                        // Save immediately via POST request
+                        try {
+                          // Create headers object
+                          const headers = new Headers({
+                            'Content-Type': 'application/json'
+                          });
+                          
+                          // Add session ID if it exists
+                          const sessionId = localStorage.getItem('maly_session_id');
+                          if (sessionId) {
+                            headers.append('X-Session-ID', sessionId);
+                          }
+                          
+                          const response = await fetch('/api/profile', {
+                            method: 'POST',
+                            headers,
+                            credentials: 'include',
+                            body: JSON.stringify({ currentMoods: updatedMoods })
+                          });
+                          
+                          if (!response.ok) {
+                            throw new Error('Failed to update mood');
+                          }
+                          
+                          toast({
+                            title: "Mood Updated",
+                            description: "Your mood has been updated!",
+                          });
+                        } catch (error) {
+                          toast({
+                            title: "Error",
+                            description: "Failed to update your mood. Please try again.",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                    >
+                      {mood}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
             {/* Basic Information */}
             <div className="space-y-4 glass p-6 rounded-lg border border-white/10">
               <FormField
@@ -282,7 +358,7 @@ export default function EditProfilePage() {
               />
             </div>
 
-            {/* Interests & Mood */}
+            {/* Interests */}
             <div className="space-y-4 glass p-6 rounded-lg border border-white/10">
               <div>
                 <FormLabel>Interests</FormLabel>
@@ -307,32 +383,6 @@ export default function EditProfilePage() {
                 </div>
                 <FormMessage>{form.formState.errors.interests?.message}</FormMessage>
               </div>
-
-              <FormField
-                control={form.control}
-                name="currentMood"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Current Mood</FormLabel>
-                    <FormDescription className="text-white/60">What's your current focus?</FormDescription>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {moods.map(mood => (
-                        <Badge
-                          key={mood}
-                          variant={field.value === mood ? "default" : "outline"}
-                          className={`cursor-pointer hover:opacity-80 transition-opacity ${
-                            field.value === mood ? moodStyles[mood] : ""
-                          }`}
-                          onClick={() => field.onChange(mood)}
-                        >
-                          {mood}
-                        </Badge>
-                      ))}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
 
             <div className="flex gap-4">

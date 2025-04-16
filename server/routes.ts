@@ -917,12 +917,18 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
 
   app.get("/api/users/browse", async (req, res) => {
     try {
-      const { location: city, gender, minAge: minAgeStr, maxAge: maxAgeStr } = req.query;
+      // Get location parameter as 'location' or 'city' (for backward compatibility)
+      const city = req.query.location || req.query.city || 'all';
+      const { gender, minAge: minAgeStr, maxAge: maxAgeStr } = req.query;
       const interests = req.query['interests[]'] as string[] | string;
       const moods = req.query['moods[]'] as string[] | string;
       const name = req.query.name as string;
       const currentUserIdSource = req.user?.id || req.query.currentUserId as string;
       const currentUserId = currentUserIdSource ? parseInt(currentUserIdSource.toString(), 10) : undefined;
+      
+      // More detailed logging for debugging
+      console.log(`User browse request received with city=${city}`);
+      console.log(`Mood filters: ${moods ? (Array.isArray(moods) ? moods.join(', ') : moods) : 'none'}`);
       
       // Database query to get real users
       let query = db.select().from(users);
@@ -931,8 +937,6 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
       if (currentUserId && !isNaN(currentUserId)) {
         query = query.where(ne(users.id, currentUserId)); // Use the parsed ID
       }
-      
-      // Remove redundant/incorrect line: query = query.where(ne(users.id, currentUserId));
 
       // Apply filters to query
       if (city && city !== 'all') {
@@ -953,28 +957,45 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
       if (maxAge !== undefined && !isNaN(maxAge)) {
         query = query.where(lte(users.age, maxAge));
       }
+      
+      // Properly handle mood filters at the database level if possible
+      if (moods && (Array.isArray(moods) ? moods.length > 0 : true)) {
+        const moodArray = Array.isArray(moods) ? moods : [moods];
+        console.log(`Applying mood filters at database level: ${moodArray.join(', ')}`);
+        // Use overlaps to find users with any of the selected moods
+        query = query.where(sql`${users.currentMoods} && ${sql.array(moodArray, 'text')}`);
+      }
+      
+      // Log the query parameters for debugging
+      console.log("Users browse query params:", {
+        city,
+        gender,
+        minAge,
+        maxAge,
+        interests: req.query['interests[]'],
+        moods: req.query['moods[]']
+      });
 
       // Get all users with the applied filters
       let dbUsers = await query;
+      console.log(`Initial query returned ${dbUsers.length} users before additional filtering`);
 
       // Further filtering that's harder to do at the DB level
       if (interests) {
         const interestArray = Array.isArray(interests) ? interests : [interests];
+        console.log(`Filtering by interests: ${JSON.stringify(interestArray)}`);
+        
         dbUsers = dbUsers.filter(user => 
           user.interests && interestArray.some(interest => 
             user.interests?.includes(interest)
           )
         );
+        
+        console.log(`Found ${dbUsers.length} users with matching interests`);
       }
 
-      if (moods) {
-        const moodArray = Array.isArray(moods) ? moods : [moods];
-        dbUsers = dbUsers.filter(user => 
-          user.currentMoods && moodArray.some(mood => 
-            user.currentMoods?.includes(mood)
-          )
-        );
-      }
+      // Mood filtering is now handled entirely at the database level
+      // We don't need additional JS-based filtering
 
       if (name) {
         const lowercaseName = name.toLowerCase();
@@ -1859,6 +1880,47 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         error: "Server error",
         authenticated: false
       });
+    }
+  });
+
+  // Endpoint to update user profile - including moods
+  app.post("/api/profile", async (req, res) => {
+    try {
+      // Ensure user is authenticated
+      if (!req.isAuthenticated() || !req.user) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const userId = req.user.id;
+      const updateData = req.body;
+      
+      console.log(`Updating profile for user ${userId}:`, updateData);
+      
+      // Check if we're updating moods
+      if (updateData.currentMoods !== undefined) {
+        // Update user moods in the database
+        await db.update(users)
+          .set({ 
+            currentMoods: updateData.currentMoods 
+          })
+          .where(eq(users.id, userId));
+        
+        console.log(`Updated user ${userId} moods to:`, updateData.currentMoods);
+        
+        // Get the updated user data
+        const updatedUser = await db.query.users.findFirst({
+          where: eq(users.id, userId)
+        });
+        
+        // Return the updated user data
+        return res.json(updatedUser || { error: "User not found after update" });
+      }
+      
+      // If we reach here, return error for unsupported update type
+      return res.status(400).json({ error: "Unsupported update type" });
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      res.status(500).json({ error: "Failed to update profile" });
     }
   });
 

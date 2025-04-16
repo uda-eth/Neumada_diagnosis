@@ -3,12 +3,29 @@ import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useUser } from "@/hooks/use-user";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, ArrowLeft, MapPin, Mail, Briefcase, Calendar, UserPlus, Check, X, UserCheck } from "lucide-react";
+import { Loader2, ArrowLeft, MapPin, Mail, Briefcase, Calendar, UserPlus, Check, X, UserCheck, Smile, Heart, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+
+// Mood badge styles configuration
+const moodStyles = {
+  "Dating": "bg-pink-500/20 text-pink-500 hover:bg-pink-500/30",
+  "Networking": "bg-blue-500/20 text-blue-500 hover:bg-blue-500/30",
+  "Parties": "bg-purple-500/20 text-purple-500 hover:bg-purple-500/30",
+  "Adventure": "bg-orange-500/20 text-orange-500 hover:bg-orange-500/30",
+  "Dining Out": "bg-green-500/20 text-green-500 hover:bg-green-500/30",
+  "Working": "bg-slate-500/20 text-slate-500 hover:bg-slate-500/30",
+  "Exploring": "bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30",
+  "Learning": "bg-indigo-500/20 text-indigo-500 hover:bg-indigo-500/30",
+  "Teaching": "bg-amber-500/20 text-amber-500 hover:bg-amber-500/30",
+  "Socializing": "bg-rose-500/20 text-rose-500 hover:bg-rose-500/30",
+  "Focusing": "bg-cyan-500/20 text-cyan-500 hover:bg-cyan-500/30",
+  "Relaxing": "bg-teal-500/20 text-teal-500 hover:bg-teal-500/30",
+  "Creating": "bg-violet-500/20 text-violet-500 hover:bg-violet-500/30"
+} as const;
 
 interface ProfileData {
   id: number;
@@ -19,6 +36,7 @@ interface ProfileData {
   bio: string | null;
   location: string | null;
   interests: string[];
+  currentMoods?: string[] | null;
   profession: string | null;
   age: number | null;
 }
@@ -40,8 +58,26 @@ export default function ProfilePage() {
   const { user: currentUser } = useUser();
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isUpdatingMood, setIsUpdatingMood] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Available moods for selection
+  const moods = [
+    "Dating",
+    "Networking",
+    "Parties",
+    "Adventure",
+    "Dining Out",
+    "Working",
+    "Exploring",
+    "Learning",
+    "Teaching",
+    "Socializing",
+    "Focusing",
+    "Relaxing",
+    "Creating"
+  ];
   
   // If we're at /profile (without a username), we want to show the current user's profile
   // And redirect to /profile/{username} for proper routing
@@ -128,6 +164,82 @@ export default function ProfilePage() {
     onError: (error: Error) => {
       toast({
         title: 'Error updating request',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+  
+  // Update mood mutation
+  const updateMoodMutation = useMutation({
+    mutationFn: async (mood: string) => {
+      console.log('⚠️ Updating mood with:', mood ? [mood] : []);
+      console.log('⚠️ Sending POST request to /api/profile');
+      
+      try {
+        const response = await fetch('/api/profile', {
+          method: 'POST', // Changed from PATCH to POST to match server endpoint
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include', // Include cookies for auth
+          body: JSON.stringify({ 
+            currentMoods: mood ? [mood] : [] 
+          }),
+        });
+        
+        if (!response.ok) {
+          // Fix for HTML error response handling
+          try {
+            const errorText = await response.text();
+            console.log('⚠️ Error response text:', errorText.substring(0, 500) + '...');
+            
+            // Check if response is HTML (typical for redirect to login page)
+            if (errorText.includes('<!DOCTYPE html>') || errorText.includes('<html')) {
+              throw new Error('Authentication error. Please log in again.');
+            }
+            
+            // Try to parse as JSON if not HTML
+            const errorData = JSON.parse(errorText);
+            throw new Error(errorData.error || 'Failed to update mood');
+          } catch (e: any) {
+            // If JSON parsing fails or any other error
+            if (e.message === 'Authentication error. Please log in again.') {
+              throw e;
+            }
+            throw new Error(`Error updating mood: ${response.status} ${response.statusText}`);
+          }
+        }
+        
+        const responseData = await response.json();
+        console.log('⚠️ Mood update successful, received:', responseData);
+        return responseData;
+      } catch (error) {
+        console.error('⚠️ Error in mood update function:', error);
+        throw error;
+      }
+    },
+    onSuccess: (data) => {
+      toast({
+        title: 'Mood updated',
+        description: 'Your mood has been updated successfully.',
+      });
+      
+      // Update the profile data locally
+      if (profileData) {
+        setProfileData({
+          ...profileData,
+          currentMoods: data.currentMoods
+        });
+      }
+      
+      // Close the mood selector
+      setIsUpdatingMood(false);
+      
+      // Invalidate any queries that depend on user data
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error updating mood',
         description: error.message,
         variant: 'destructive',
       });
@@ -315,6 +427,88 @@ export default function ProfilePage() {
           </div>
         </CardHeader>
         <CardContent>
+          {/* Current Mood Section */}
+          <div className="mt-6 mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold">Current Mood</h2>
+              
+              {/* Only show change mood button if viewing own profile */}
+              {currentUser && profileData.id === currentUser.id && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => setIsUpdatingMood(!isUpdatingMood)}
+                  disabled={updateMoodMutation.isPending}
+                >
+                  {updateMoodMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Edit3 className="h-4 w-4" />
+                  )}
+                  {isUpdatingMood ? "Cancel" : (profileData.currentMoods?.length ? "Change Your Mood" : "Share Your Mood")}
+                </Button>
+              )}
+            </div>
+            
+            {/* Current Mood Display */}
+            {!isUpdatingMood ? (
+              <div>
+                {profileData.currentMoods && profileData.currentMoods.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {profileData.currentMoods.map((mood, index) => (
+                      <Badge 
+                        key={index}
+                        className={`text-sm py-1.5 px-3 ${moodStyles[mood as keyof typeof moodStyles] || ''}`}
+                      >
+                        <Smile className="h-4 w-4 mr-2" />
+                        {mood}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-sm">
+                    {currentUser && profileData.id === currentUser.id 
+                      ? "You haven't shared your mood yet." 
+                      : "This user hasn't shared their mood yet."}
+                  </p>
+                )}
+              </div>
+            ) : (
+              // Mood Selection Panel
+              <div className="bg-accent/5 p-4 rounded-lg border border-border">
+                <h3 className="text-sm font-medium mb-3">How are you feeling today?</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                  {moods.map((mood) => (
+                    <Badge
+                      key={mood}
+                      variant="outline"
+                      className={`cursor-pointer text-sm py-2 px-3 flex items-center justify-center transition-colors
+                        ${profileData.currentMoods?.includes(mood) 
+                          ? moodStyles[mood as keyof typeof moodStyles] 
+                          : 'hover:bg-accent/50'}`}
+                      onClick={() => updateMoodMutation.mutate(mood)}
+                    >
+                      {profileData.currentMoods?.includes(mood) && <Check className="h-3 w-3 mr-1" />}
+                      {mood}
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex justify-end mt-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => updateMoodMutation.mutate('')}
+                    disabled={updateMoodMutation.isPending || !profileData.currentMoods?.length}
+                  >
+                    Clear mood
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Interests Section */}
           {profileData.interests && profileData.interests.length > 0 && (
             <div className="mt-6">
               <h2 className="text-lg font-semibold mb-3">Interests</h2>

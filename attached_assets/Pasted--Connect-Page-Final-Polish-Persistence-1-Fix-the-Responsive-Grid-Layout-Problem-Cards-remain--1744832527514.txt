@@ -1,0 +1,89 @@
+🚀 Connect Page: Final Polish & Persistence
+1. Fix the Responsive Grid Layout
+Problem: Cards remain stuck to the left without spacing or centering.
+
+Requested Action:
+
+In ConnectPage.tsx (or its CSS module), locate the container wrapping the <UserCard /> components.
+
+Replace any Flexbox hacks with a pure CSS Grid:
+
+css
+Copy
+.connect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;                /* uniform spacing */
+  justify-items: center;    /* center each card */
+  padding: 1rem;            /* avoid edge-clinging */
+}
+Remove any margin-left: 0 or justify-content: flex-start overrides.
+
+Verify on desktop, tablet, and mobile breakpoints—there should always be even margins around the cards.
+
+2. Persist Edited Mood Across Pages
+Problem: Mood updates succeed but disappear when navigating away and back.
+
+Requested Action:
+
+Confirm that the profile‑update API (POST /api/profile) returns the updated currentMoods array in its JSON response.
+
+In your client’s updateProfile mutation (e.g. in use-user.ts), after successful update, immediately write the new mood into:
+
+React Query cache for ['user']
+
+localStorage under maly_user_data
+
+Ensure your useUser hook’s useQuery is configured to use that updated cache instead of stale data (staleTime / refetchOnMount).
+
+Add a navigation listener or useEffect in the Profile Edit page that, on mount, refetches the user if currentMoods from cache ≠ state.
+
+Manually test:
+
+Edit mood
+
+Navigate to Discover
+
+Return to Profile Edit → mood must reflect your selection.
+
+3. Overhaul Mood‑Filter UI & Logic
+Problem: Clicking mood filters has no effect and the UI is confusing.
+
+Requested Action:
+
+Replace the raw dropdown or icon list with pill‑style toggles. Example component:
+
+tsx
+Copy
+{MOODS.map(m => (
+  <button
+    key={m}
+    className={selectedMoods.includes(m) ? 'pill--active' : 'pill'}
+    onClick={() => toggleMood(m)}
+  >
+    {m}
+  </button>
+))}
+Maintain selectedMoods: string[] in state and visually distinguish active pills.
+
+On each change, re-fetch /api/users/browse?city=${city}&${selectedMoods.map(m=>moods[]=${m}).join('&')}
+
+Ensure the query string exactly matches the server‑side parsing (req.query['moods[]']).
+
+In /api/users/browse, verify the backend filters by:
+
+ts
+Copy
+if (moodsArray.length) {
+  query = query.where(users.currentMoods.overlaps(moodsArray));
+}
+Test combinations of 1–3 moods and confirm only matching users are returned.
+
+✅ Acceptance Criteria
+Grid is centered, evenly spaced, and fluid across devices.
+
+Mood edits immediately persist in UI and survive navigation.
+
+Mood filters visually clear, selectable as pills, and actually narrow results.
+
+Once each item is green‑lit, commit your changes and update attached_assets/connect-page-bugfixes.md with notes on what was done so the agent can refer back for verification. Good luck!
