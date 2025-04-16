@@ -958,6 +958,13 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         query = query.where(lte(users.age, maxAge));
       }
       
+      // Properly handle mood filters at the database level if possible
+      if (moods && Array.isArray(moods) && moods.length > 0) {
+        console.log(`Applying mood filters at database level: ${moods.join(', ')}`);
+        // Use overlaps to find users with any of the selected moods
+        query = query.where(sql`${users.currentMoods} && ${sql.array(moods, 'text')}`);
+      }
+      
       // Log the query parameters for debugging
       console.log("Users browse query params:", {
         city,

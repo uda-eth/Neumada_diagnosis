@@ -120,6 +120,7 @@ export function ConnectPage() {
       
       // Add moods as array parameters - ensure this is working
       if (selectedMoods.length > 0) {
+        // Use the proper way to add array parameters that the server expects
         selectedMoods.forEach(mood => {
           params.append('moods[]', mood);
         });
@@ -127,9 +128,11 @@ export function ConnectPage() {
       }
       
       // Log the query for debugging
-      console.log(`Fetching users with filters: ${params.toString()}`);
+      const queryString = params.toString();
+      console.log(`Fetching users with filters: ${queryString}`);
       
-      const response = await fetch(`/api/users/browse?${params.toString()}`);
+      // Use the properly formatted query string
+      const response = await fetch(`/api/users/browse?${queryString}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch users');
@@ -167,13 +170,6 @@ export function ConnectPage() {
         ? prev.filter(i => i !== item) 
         : [...prev, item];
       console.log(`Updated moods: ${newMoods.join(', ')}`);
-      
-      // Force an immediate refetch after mood changes
-      setTimeout(() => {
-        console.log(`Refetching with updated moods: ${newMoods.join(', ')}`);
-        refetch();
-      }, 50);
-      
       return newMoods;
     });
   };
