@@ -1,8 +1,7 @@
-
 export default {
   preset: "ts-jest",
-  testEnvironment: "node",
-  testMatch: ["<rootDir>/tests/**/*.test.ts"],
+  testEnvironment: "jsdom",
+  testMatch: ["<rootDir>/tests/**/*.test.ts?(x)"],
   collectCoverage: true,
   coverageDirectory: "coverage",
   moduleNameMapper: {

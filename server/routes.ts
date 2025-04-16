@@ -1,6 +1,6 @@
 import multer from 'multer';
 import path from 'path';
-import express, { Request, Response } from 'express';
+import express, { Request, Response, Express, NextFunction } from 'express';
 import { createServer, Server } from 'http';
 import { setupAuth } from './auth';
 import { handleChatMessage } from './chat';
@@ -10,8 +10,17 @@ import { getEventImage } from './services/eventsService';
 import { WebSocketServer, WebSocket } from 'ws';
 import { sendMessage, getConversations, getMessages, markMessageAsRead, markAllMessagesAsRead } from './services/messagingService';
 import { db } from "../db";
-import { userCities, users, events, sessions, userConnections, eventParticipants } from "../db/schema";
-import { eq, ne, gte, lte, and, or } from "drizzle-orm";
+import { userCities, users, events, sessions, userConnections, eventParticipants, payments, subscriptions } from "../db/schema";
+import { eq, ne, gte, lte, and, or, desc } from "drizzle-orm";
+import { stripe } from './lib/stripe'; // Import Stripe client from server/lib
+import Stripe from 'stripe'; // Ensure Stripe type is available if needed later
+import QRCode from 'qrcode';
+import { v4 as uuidv4 } from 'uuid';
+import { isNotNull } from "drizzle-orm";
+import { recordSubscriptionPayment, getUserPaymentHistory, getSubscriptionWithPayments, getPaymentStats } from "./lib/payments";
+import { sql } from 'drizzle-orm';
+// Add import for premium router
+import premiumRouter from './premium';
 
 const categories = [
   "Retail",
@@ -490,17 +499,7 @@ const newEvents = {
         { id: 1047, name: "David Black", image: "/attached_assets/profile-image-38.jpg" },
         { id: 1048, name: "Jessica Jones", image: "/attached_assets/profile-image-39.jpg" },
         { id: 1049, name: "William Green", image: "/attached_assets/profile-image-40.jpg" },
-        { id: 1050, name: "Amanda Brown", image: "/attached_assets/profile-image-41.jpg" },
-        { id: 1051, name: "Robert White", image: "/attached_assets/profile-image-42.jpg" },
-        { id: 1052, name: "Ashley Black", image: "/attached_assets/profile-image-43.jpg" },
-        { id: 1053, name: "William Jones", image: "/attached_assets/profile-image-44.jpg" },
-        { id: 1054, name: "Amanda White", image: "/attached_assets/profile-image-45.jpg" },
-        { id: 1055, name: "Brian Lee", image: "/attached_assets/profile-image-46.jpg" },
-        { id: 1056, name: "Sarah Jones", image: "/attached_assets/profile-image-47.jpg" },
-        { id: 1057, name: "Christopher Brown", image: "/attached_assets/profile-image-48.jpg" },
-        { id: 1058, name: "Angela Green", image: "/attached_assets/profile-image-49.jpg" },
-        { id: 1059, name: "David Jones", image: "/attached_assets/profile-image-50.jpg" },
-        { id: 1060, name: "Jessica Black", image: "/attached_assets/profile-image-51.jpg" }
+        { id: 1050, name: "Amanda Brown", image: "/attached_assets/profile-image-41.jpg" }
       ],
       interestedUsers: [
         { id: 1061, name: "Robert Green", image: "/attached_assets/profile-image-52.jpg" },
@@ -819,10 +818,57 @@ app.get('/api/users/:city', (req: Request, res: Response) => {
 // Import centralized authentication functions instead of duplicated local implementations
 import { isAuthenticated, checkAuthentication } from './middleware/auth.middleware';
 
-export function registerRoutes(app: express.Application): { app: express.Application; httpServer: Server } {
+// Authentication middleware
+const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
+  // Method 1: Check if already authenticated via passport
+  if (req.isAuthenticated() && req.user) {
+    return next();
+  }
+  
+  // Method 2: Try to authenticate via session ID in headers or cookies
+  const headerSessionId = req.headers['x-session-id'] as string;
+  const cookieSessionId = req.cookies?.maly_session_id || req.cookies?.sessionId;
+  
+  if (headerSessionId || cookieSessionId) {
+    const sessionId = headerSessionId || cookieSessionId;
+    
+    try {
+      // Check for session in the database
+      const sessionResults = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.id, sessionId));
+      
+      if (sessionResults.length > 0 && sessionResults[0].userId) {
+        // Session is valid, find the user
+        const userResults = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, sessionResults[0].userId));
+        
+        if (userResults.length > 0) {
+          // Set the user on the request so it's available to route handlers
+          req.user = userResults[0] as any;
+          console.log(`User authenticated via session ID: ${userResults[0].username}`);
+          return next();
+        }
+      }
+    } catch (err: any) {
+      console.error("Error authenticating via session:", err);
+    }
+  }
+  
+  // If we get here, authentication failed
+  return res.status(401).json({ error: 'Authentication required' });
+};
+
+export function registerRoutes(app: Express): { app: Express; httpServer: Server } {
   app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
 
   setupAuth(app);
+  
+  // Mount premium router at /api/premium
+  app.use('/api/premium', premiumRouter);
 
   // API endpoint for city suggestions
   app.post("/api/suggest-city", async (req: Request, res: Response) => {
@@ -871,42 +917,40 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
   app.get("/api/users/browse", async (req, res) => {
     try {
-      const city = req.query.city as string;
-      const gender = req.query.gender as string;
-      const minAge = req.query.minAge ? parseInt(req.query.minAge as string) : undefined;
-      const maxAge = req.query.maxAge ? parseInt(req.query.maxAge as string) : undefined;
+      const { location: city, gender, minAge: minAgeStr, maxAge: maxAgeStr } = req.query;
       const interests = req.query['interests[]'] as string[] | string;
       const moods = req.query['moods[]'] as string[] | string;
       const name = req.query.name as string;
-      const currentUserId = req.user?.id || req.query.currentUserId as string;
-
+      const currentUserIdSource = req.user?.id || req.query.currentUserId as string;
+      const currentUserId = currentUserIdSource ? parseInt(currentUserIdSource.toString(), 10) : undefined;
+      
       // Database query to get real users
       let query = db.select().from(users);
 
-      // Always exclude the current user from results
-      if (currentUserId) {
-        query = query.where(ne(users.id, parseInt(currentUserId.toString())));
+      // Always exclude the current user from results if available
+      if (currentUserId && !isNaN(currentUserId)) {
+        query = query.where(ne(users.id, currentUserId)); // Use the parsed ID
       }
-
-      // Don't include the current user in the results
-      if (currentUserId) {
-        query = query.where(ne(users.id, currentUserId));
-      }
+      
+      // Remove redundant/incorrect line: query = query.where(ne(users.id, currentUserId));
 
       // Apply filters to query
       if (city && city !== 'all') {
-        query = query.where(eq(users.location, city));
+        query = query.where(eq(users.location, city as string));
       }
 
       if (gender && gender !== 'all') {
-        query = query.where(eq(users.gender, gender));
+        query = query.where(eq(users.gender, gender as string));
       }
+      
+      const minAge = minAgeStr ? parseInt(minAgeStr as string, 10) : undefined;
+      const maxAge = maxAgeStr ? parseInt(maxAgeStr as string, 10) : undefined;
 
-      if (minAge !== undefined) {
+      if (minAge !== undefined && !isNaN(minAge)) {
         query = query.where(gte(users.age, minAge));
       }
 
-      if (maxAge !== undefined) {
+      if (maxAge !== undefined && !isNaN(maxAge)) {
         query = query.where(lte(users.age, maxAge));
       }
 
@@ -1047,9 +1091,12 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       return res.json(dbEvents);
     } catch (error) {
       console.error("Error fetching events:", error);
+      let message = "Failed to fetch events";
+      if (error instanceof Error) {
+          message = error.message;
+      }
       res.status(500).json({ 
-        error: "Failed to fetch events",
-        details: error.message
+        error: message
       });
     }
   });
@@ -1068,12 +1115,6 @@ export function registerRoutes(app: express.Application): { app: express.Applica
 
       if (dbEvent && dbEvent.length > 0) {
         const event = dbEvent[0];
-
-        // Check if the event has a draft status property and if the current user is not the creator
-        // This is a safety check in case isDraft exists in some events
-        if (event.isDraft === true && event.creatorId !== currentUserId) {
-          return res.status(403).json({ error: "You don't have access to this draft event" });
-        }
 
         // If we have a creatorId, fetch the creator information
         if (event.creatorId) {
@@ -1123,7 +1164,11 @@ export function registerRoutes(app: express.Application): { app: express.Applica
       res.json(mockEvent);
     } catch (error) {
       console.error("Error fetching event:", error);
-      res.status(500).json({ error: "Failed to fetch event" });
+      let message = "Failed to fetch event";
+      if (error instanceof Error) {
+          message = error.message;
+      }
+      res.status(500).json({ error: message });
     }
   });
 
@@ -1228,10 +1273,11 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         title: req.body.title,
         description: req.body.description,
         location: req.body.location,
-        category: req.body.category || 'Social',
+        city: req.body.city || 'Unknown',
+        category: req.body.category,
         ticketType: req.body.price && parseFloat(req.body.price) > 0 ? 'paid' : 'free',
         capacity: parseInt(req.body.capacity || '10'),
-        price: price,
+        price: req.body.price ? req.body.price.toString() : '0', // Ensure price is a string
         date: new Date(req.body.date || new Date()),
         tags: tags,
         image: req.file ? `/uploads/${req.file.filename}` : getEventImage(req.body.category || 'Social'),
@@ -1239,9 +1285,8 @@ export function registerRoutes(app: express.Application): { app: express.Applica
         creatorId: currentUser.id,
         isPrivate: req.body.isPrivate === 'true',
         createdAt: new Date(),
-        city: req.body.city || req.body.location || 'Mexico City',
-        attendingCount: 0,
-        interestedCount: 0,
+        isBusinessEvent: req.body.organizerType === 'business',
+        timeFrame: req.body.timeFrame || '',
         stripeProductId: null,
         stripePriceId: null
       };
@@ -2306,6 +2351,1136 @@ app.post('/api/events/:eventId/participate', isAuthenticated, async (req: Reques
     res.status(500).json({ error: 'Failed to update participation status' });
   }
 });
+
+  // Stripe requires the raw body to construct the event
+  // IMPORTANT: This must come *before* express.json() middleware, or apply only to this route.
+  // We'll apply it specifically to the webhook route.
+  app.post('/api/webhooks/stripe', express.raw({type: 'application/json'}), async (req: Request, res: Response) => {
+    const sig = req.headers['stripe-signature'] as string;
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+    if (!webhookSecret) {
+      console.error('Stripe webhook secret not configured.');
+      return res.sendStatus(400);
+    }
+
+    let event: Stripe.Event;
+
+    try {
+      event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+    } catch (err) { // Keep simple catch, handle error below
+      console.error(`Error verifying webhook signature:`);
+      if (err instanceof Error) {
+        console.error(err.message);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+      }
+      return res.status(400).send(`Webhook Error: Unknown error`);
+    }
+
+    // Handle the event
+    switch (event.type) {
+      case 'checkout.session.completed':
+        const session = event.data.object as Stripe.Checkout.Session;
+        console.log('Checkout session completed:', session.id);
+
+        // --- Retrieve and validate metadata --- 
+        const userIdStr = session.metadata?.userId;
+        const eventIdStr = session.metadata?.eventId;
+        const quantityStr = session.metadata?.quantity;
+        
+        const userId = userIdStr ? parseInt(userIdStr, 10) : NaN;
+        const eventId = eventIdStr ? parseInt(eventIdStr, 10) : NaN;
+        const quantity = quantityStr ? parseInt(quantityStr, 10) : 1; // Default quantity to 1 if missing/invalid
+
+        if (isNaN(userId) || isNaN(eventId) || isNaN(quantity)) {
+            console.error('Missing or invalid metadata in checkout session:', session.id, { userIdStr, eventIdStr, quantityStr });
+            return res.status(400).send('Metadata error.');
+        }
+
+        // --- Payment details --- 
+        const stripeCheckoutSessionId = session.id;
+        const paymentIntentId = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id;
+        const stripeCustomerId = typeof session.customer === 'string' ? session.customer : session.customer?.id;
+        const amount = session.amount_total;
+        const currency = session.currency;
+
+        if (!paymentIntentId || amount === null || !currency) {
+             console.error('Missing payment details in checkout session:', session.id);
+             return res.status(400).send('Payment detail error.');
+        }
+
+        try {
+            // --- Generate Unique Ticket Identifier --- 
+            const ticketIdentifier = uuidv4();
+            
+            // --- Update Event Participant --- 
+            const [participant] = await db
+                .update(eventParticipants)
+                .set({
+                    paymentStatus: 'completed',
+                    paymentIntentId: paymentIntentId, 
+                    purchaseDate: new Date(),
+                    ticketIdentifier: ticketIdentifier, // Store the unique identifier
+                    updatedAt: new Date(),
+                })
+                .where(and(
+                    eq(eventParticipants.userId, userId), // Use validated number userId
+                    eq(eventParticipants.eventId, eventId), // Use validated number eventId
+                    eq(eventParticipants.paymentIntentId, stripeCheckoutSessionId) // Look for session ID in paymentIntentId field
+                ))
+                .returning();
+            
+            if (!participant) {
+                console.error(`Webhook: Event participant not found for session: ${stripeCheckoutSessionId}, userId: ${userId}, eventId: ${eventId}`);
+                 return res.status(404).send('Participant not found.');
+            }
+
+            // --- Create Payment Record --- 
+             await db.insert(payments).values({
+                userId: userId,
+                eventParticipantId: participant.id, 
+                stripeChargeId: paymentIntentId, 
+                // We don't have a stripeCheckoutSessionId column in the database,
+                // so use the paymentIntentId (which contains the session ID) twice
+                stripeCheckoutSessionId: paymentIntentId, 
+                stripeCustomerId: stripeCustomerId,
+                amount: amount,
+                currency: currency,
+                status: 'succeeded',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            });
+
+            // --- Update Event Ticket Count --- 
+             const [eventData] = await db.select({ availableTickets: events.availableTickets }).from(events).where(eq(events.id, eventId));
+             if (eventData && typeof eventData.availableTickets === 'number') {
+                 await db.update(events)
+                    .set({ availableTickets: eventData.availableTickets - quantity })
+                    .where(eq(events.id, eventId));
+             }
+             console.log(`Successfully processed checkout for session: ${stripeCheckoutSessionId}, Ticket ID: ${ticketIdentifier}`);
+
+        } catch (dbError) { // Keep simple catch, handle error below
+            console.error(`Database error processing webhook for session ${stripeCheckoutSessionId}:`);
+             if (dbError instanceof Error) {
+                console.error(dbError.message);
+             }
+            return res.sendStatus(500);
+        }
+
+        break;
+      // ... handle other event types
+      default:
+        console.log(`Unhandled event type ${event.type}`);
+    }
+
+    // Return a 200 response to acknowledge receipt of the event
+    res.json({ received: true });
+  });
+
+  // Ensure regular JSON parsing happens *after* the raw body parser for the webhook
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+
+  // Define other routes *after* middleware setup
+  // ... existing routes ...
+
+  // --- Create Stripe Checkout Session Endpoint --- 
+  app.post('/api/payments/create-checkout-session', async (req: Request, res: Response) => {
+    // Check authentication - try multiple methods
+    let userId: number | null = null;
+    
+    // Method 1: Check if authenticated via passport
+    if (req.isAuthenticated() && req.user) {
+      userId = (req.user as any).id;
+      console.log("User authenticated via passport:", (req.user as any).username);
+    } 
+    // Method 2: Try to get userId from request headers and body
+    else {
+      const headerUserId = req.headers['x-user-id'] as string;
+      const headerSessionId = req.headers['x-session-id'] as string;
+      const cookieSessionId = req.cookies?.maly_session_id || req.cookies?.sessionId;
+      const bodyUserId = req.body.userId;
+      
+      console.log("Checkout authentication attempt via alternative methods:", {
+        headerUserId: headerUserId || 'not_present',
+        headerSessionId: headerSessionId || 'not_present',
+        cookieSessionId: cookieSessionId || 'not_present',
+        bodyUserId: bodyUserId || 'not_present'
+      });
+      
+      // Try to authenticate using the session if available
+      if (headerSessionId || cookieSessionId) {
+        const sessionId = headerSessionId || cookieSessionId;
+        try {
+          const sessionQuery = await db
+            .select()
+            .from(sessions)
+            .where(eq(sessions.id, sessionId));
+            
+          if (sessionQuery.length > 0 && sessionQuery[0].userId) {
+            userId = sessionQuery[0].userId;
+            console.log("User authenticated via sessionId:", sessionId);
+          }
+        } catch (error) {
+          console.error("Error checking session:", error);
+        }
+      }
+      
+      // If still not authenticated, use X-User-ID header or body userId as a fallback
+      if (!userId) {
+        if (headerUserId) {
+          userId = parseInt(headerUserId, 10);
+          console.log("User ID from header:", userId);
+        } else if (bodyUserId) {
+          userId = parseInt(bodyUserId.toString(), 10);
+          console.log("User ID from request body:", userId);
+        }
+        
+        // Verify this user exists if we found an ID
+        if (userId) {
+          try {
+            const userQuery = await db
+              .select()
+              .from(users)
+              .where(eq(users.id, userId));
+              
+            if (!userQuery.length) {
+              console.log("User not found for ID:", userId);
+              userId = null;
+            } else {
+              console.log("User verified from ID:", userQuery[0].username);
+            }
+          } catch (err) {
+            console.error("Error verifying user:", err);
+            userId = null;
+          }
+        }
+      }
+    }
+    
+    // If no user ID found through any method, return authentication error
+    if (!userId) {
+      console.log("Checkout failed: No authenticated user found");
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+    
+    const { eventId: eventIdReq, quantity: quantityReq = 1 } = req.body;
+
+    if (!eventIdReq) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
+
+    try {
+      const eventId = parseInt(eventIdReq.toString(), 10);
+      const quantity = parseInt(quantityReq.toString(), 10);
+
+      // Fetch event details
+      const event = await db
+        .select()
+        .from(events)
+        .where(eq(events.id, eventId))
+        .limit(1);
+
+      if (!event || !event.length) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+
+      // Convert string price to cents for Stripe
+      const unitAmount = parseInt((parseFloat(event[0].price || '0') * 100).toString(), 10);
+
+      // Create Stripe checkout session
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: event[0].title,
+                description: event[0].description,
+                // Only include images if they have a valid URL
+                ...(event[0].image && event[0].image.startsWith('http') ? {
+                  images: [event[0].image]
+                } : {}),
+              },
+              unit_amount: unitAmount,
+            },
+            quantity,
+          },
+        ],
+        mode: 'payment',
+        // Use absolute URLs for Stripe redirects
+        success_url: `${req.headers.origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${req.headers.origin}/payment-cancel?eventId=${eventId}`, // Added the missing slash
+        metadata: {
+          eventId: eventId.toString(),
+          userId: userId.toString(),
+          quantity: quantity.toString(),
+        },
+      });
+
+      // Create initial participation record
+      await db.insert(eventParticipants).values({
+        userId,
+        eventId,
+        status: 'pending',
+        ticketQuantity: quantity,
+        paymentStatus: 'initiated',
+        paymentIntentId: session.id, // Use paymentIntentId to store the session ID since stripeCheckoutSessionId doesn't exist
+        createdAt: new Date(),
+      });
+
+      return res.json({ sessionId: session.id });
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      return res.status(500).json({ 
+        error: 'Failed to create checkout session', 
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // ... other routes ...
+
+  // --- QR Code Download Endpoint --- 
+  app.get('/api/tickets/:participantId/qr', requireAuth, async (req: Request, res: Response) => {
+    const participantId = parseInt(req.params.participantId, 10);
+    const userId = (req.user as any)?.id;
+
+    if (isNaN(participantId) || !userId || isNaN(userId)) {
+      return res.status(400).json({ error: 'Invalid request' });
+    }
+
+    try {
+      // Fetch participant record and verify ownership
+      const [participant] = await db
+        .select({ 
+            ticketIdentifier: eventParticipants.ticketIdentifier,
+            userId: eventParticipants.userId,
+            eventId: eventParticipants.eventId // For filename
+         })
+        .from(eventParticipants)
+        .where(and(
+          eq(eventParticipants.id, participantId),
+          eq(eventParticipants.userId, userId) // Ensure the logged-in user owns this ticket
+        ))
+        .limit(1);
+
+      if (!participant || !participant.ticketIdentifier) {
+        return res.status(404).json({ error: 'Ticket not found or QR not available' });
+      }
+
+      // Generate QR Code
+      const qrCodeDataURL = await QRCode.toDataURL(participant.ticketIdentifier, {
+         errorCorrectionLevel: 'H', // High error correction
+         type: 'image/png',
+         margin: 1, // Minimal margin
+         scale: 8 // Size of the QR code
+      });
+
+      // Convert data URL to buffer
+      const base64Data = qrCodeDataURL.replace(/^data:image\/png;base64,/, "");
+      const imgBuffer = Buffer.from(base64Data, 'base64');
+
+      // Set headers for download
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Content-Disposition', `attachment; filename="ticket-qr-${participant.eventId}-${participantId}.png"`);
+      res.send(imgBuffer);
+
+    } catch (error) {
+      console.error(`Error generating QR code for participant ${participantId}:`, error);
+      res.status(500).json({ error: 'Failed to generate QR code' });
+    }
+  });
+  
+  // --- Get Latest Ticket Endpoint --- 
+  app.get('/api/me/latest-ticket', requireAuth, async (req: Request, res: Response) => {
+     const userId = (req.user as any)?.id;
+     
+     if (!userId || isNaN(userId)) {
+       return res.status(401).json({ error: 'User not authenticated' });
+     }
+     
+     try {
+         const [latestParticipant] = await db
+            .select({ 
+                id: eventParticipants.id,
+                eventId: eventParticipants.eventId,
+                purchaseDate: eventParticipants.purchaseDate
+             })
+            .from(eventParticipants)
+            .where(and(
+                eq(eventParticipants.userId, userId),
+                eq(eventParticipants.paymentStatus, 'completed'), // Only completed purchases
+                isNotNull(eventParticipants.ticketIdentifier) // Ensure QR is available
+            ))
+            .orderBy(desc(eventParticipants.purchaseDate)) // Get the most recent
+            .limit(1);
+            
+        if (!latestParticipant) {
+            return res.status(404).json({ message: 'No recent completed tickets found.' });
+        }
+        
+        res.json(latestParticipant);
+        
+     } catch (error) {
+         console.error(`Error fetching latest ticket for user ${userId}:`, error);
+         res.status(500).json({ error: 'Failed to fetch latest ticket' });
+     }
+  });
+
+  // --- Premium Subscription Routes ---
+
+  // Create a checkout session for premium subscription
+  app.post('/api/premium/create-checkout', async (req, res, next) => {
+    // Use the checkAuthentication middleware as a function
+    // This will either call next() if authenticated or return an error response
+    await checkAuthentication(req, res, async () => {
+      try {
+        // Detailed session ID debugging
+        const headerSessionId = req.headers['x-session-id'] as string;
+        const cookieSessionId = req.cookies?.sessionId || req.cookies?.maly_session_id;
+        const expressSessionId = req.sessionID;
+        
+        console.log("Premium checkout - session ID sources:", {
+          'x-session-id': headerSessionId || 'not_present',
+          'cookie.sessionId': req.cookies?.sessionId || 'not_present',
+          'cookie.maly_session_id': req.cookies?.maly_session_id || 'not_present',
+          'express.sessionID': expressSessionId || 'not_present',
+          'passport_authenticated': req.isAuthenticated() ? 'yes' : 'no'
+        });
+        
+        // At this point, the user should be authenticated and available on req.user
+        // thanks to the checkAuthentication middleware
+        const userId = req.user?.id;
+        
+        if (!userId) {
+          console.log("Premium checkout - Authentication failed: No userId found after middleware");
+          return res.status(401).json({ error: 'User not authenticated' });
+        }
+
+        console.log("Premium checkout - Proceeding with userId:", userId);
+
+        // Get the subscription type (monthly, yearly, etc.)
+        const { subscriptionType = 'monthly' } = req.body;
+        
+        // Calculate unit amount based on subscription type (in cents)
+        // Use the same prices shown in the PremiumPage component
+        const unitAmount = subscriptionType === 'yearly' ? 29000 : 2900; // $290 yearly or $29 monthly
+        const interval = subscriptionType === 'yearly' ? 'year' : 'month';
+        
+        console.log(`Premium checkout - Creating checkout with ${subscriptionType} subscription at ${unitAmount/100} USD`);
+
+        // Get user for customer information
+        const user = await db.query.users.findFirst({
+          where: eq(users.id, userId)
+        });
+
+        if (!user) {
+          console.log("Premium checkout - User not found in database for ID:", userId);
+          return res.status(404).json({ error: 'User not found' });
+        }
+
+        console.log("Premium checkout - Creating Stripe session for user:", user.username);
+
+        // Create a Stripe checkout session for subscription
+        const session = await stripe.checkout.sessions.create({
+          payment_method_types: ['card'],
+          line_items: [
+            {
+              price_data: {
+                currency: 'usd',
+                product_data: {
+                  name: `Maly Premium ${subscriptionType === 'yearly' ? 'Yearly' : 'Monthly'} Subscription`,
+                  description: `Unlock all premium features with our ${subscriptionType} subscription`,
+                },
+                unit_amount: unitAmount,
+                recurring: {
+                  interval: interval,
+                },
+              },
+              quantity: 1,
+            },
+          ],
+          mode: 'subscription',
+          success_url: `${req.headers.origin}/premium-success?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${req.headers.origin}/premium`,
+          customer_email: user.email,
+          client_reference_id: userId.toString(),
+          metadata: {
+            userId: userId.toString(),
+            subscriptionType
+          }
+        });
+
+        console.log("Premium checkout - Created Stripe session:", session.id);
+        
+        // Set the session ID in the response header so the client can store it
+        res.setHeader('x-session-id', headerSessionId || cookieSessionId || expressSessionId || '');
+        
+        return res.json({ sessionId: session.id, url: session.url });
+      } catch (error) {
+        console.error('Error creating premium checkout session:', error);
+        return res.status(500).json({ error: 'Failed to create checkout session' });
+      }
+    });
+  });
+
+  // Get subscription status
+  app.get('/api/premium/status', checkAuthentication, async (req, res) => {
+    try {
+      const userId = req.user?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
+
+      // Check if user is premium in the users table
+      const user = await db.query.users.findFirst({
+        where: eq(users.id, userId)
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Get active subscription if exists
+      const subscription = await db.query.subscriptions.findFirst({
+        where: and(
+          eq(subscriptions.userId, userId),
+          eq(subscriptions.status, 'active')
+        )
+      });
+
+      return res.json({
+        isPremium: user.isPremium,
+        subscription: subscription || null,
+        expiresAt: subscription ? subscription.currentPeriodEnd : null
+      });
+    } catch (error) {
+      console.error('Error getting premium status:', error);
+      return res.status(500).json({ error: 'Failed to get premium status' });
+    }
+  });
+
+  // Cancel subscription
+  app.post('/api/premium/cancel', checkAuthentication, async (req, res) => {
+    try {
+      const userId = req.user?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
+
+      // Get active subscription
+      const subscription = await db.query.subscriptions.findFirst({
+        where: and(
+          eq(subscriptions.userId, userId),
+          eq(subscriptions.status, 'active')
+        )
+      });
+
+      if (!subscription || !subscription.stripeSubscriptionId) {
+        return res.status(404).json({ error: 'No active subscription found' });
+      }
+
+      // Cancel at period end to allow user to keep benefits until the end of the current period
+      await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+        cancel_at_period_end: true
+      });
+
+      // Update the subscription in our database
+      await db.update(subscriptions)
+        .set({
+          cancelAtPeriodEnd: true,
+          canceledAt: new Date(),
+          updatedAt: new Date()
+        })
+        .where(eq(subscriptions.id, subscription.id));
+
+      return res.json({ success: true, message: 'Subscription will be canceled at the end of the current billing period' });
+    } catch (error) {
+      console.error('Error canceling subscription:', error);
+      return res.status(500).json({ error: 'Failed to cancel subscription' });
+    }
+  });
+
+  // Handle subscription webhook events
+  app.post('/api/webhooks/stripe', express.raw({type: 'application/json'}), async (req: Request, res: Response) => {
+    const sig = req.headers['stripe-signature'] as string;
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+    if (!webhookSecret) {
+      console.error('Stripe webhook secret not configured.');
+      return res.status(500).send('Webhook secret not configured');
+    }
+
+    let event: Stripe.Event;
+
+    try {
+      event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+    } catch (err) {
+      console.error(`⚠️  Webhook signature verification failed:`, err);
+      return res.status(400).send('Webhook signature verification failed');
+    }
+
+    try {
+      // Handle the specific events
+      switch (event.type) {
+        case 'checkout.session.completed': {
+          const session = event.data.object as Stripe.Checkout.Session;
+          
+          // Handle both subscription and one-time payments
+          if (session.mode === 'subscription') {
+            await handleSubscriptionCheckout(session);
+          } else if (session.mode === 'payment') {
+            await handlePaymentCheckout(session);
+          }
+          break;
+        }
+          
+        case 'invoice.payment_succeeded': {
+          const invoice = event.data.object as Stripe.Invoice;
+          await handleInvoicePayment(invoice);
+          break;
+        }
+          
+        case 'customer.subscription.updated': {
+          const subscription = event.data.object as Stripe.Subscription;
+          await handleSubscriptionUpdated(subscription);
+          break;
+        }
+          
+        case 'customer.subscription.deleted': {
+          const subscription = event.data.object as Stripe.Subscription;
+          await handleSubscriptionDeleted(subscription);
+          break;
+        }
+          
+        default:
+          console.log(`Unhandled event type: ${event.type}`);
+      }
+
+      return res.json({ received: true });
+    } catch (error) {
+      console.error(`Error processing webhook: ${event.type}`, error);
+      return res.status(500).send('Webhook processing failed');
+    }
+  });
+
+  // Helper functions for webhook handling
+  async function handleSubscriptionCheckout(session: Stripe.Checkout.Session) {
+    // Get metadata from the session
+    const userId = parseInt(session.metadata?.userId || '0');
+    const subscriptionType = session.metadata?.subscriptionType || 'monthly';
+    
+    if (!userId) {
+      console.error('No user ID in session metadata');
+      return;
+    }
+    
+    // Get the subscription from Stripe
+    if (!session.subscription) {
+      console.error('No subscription created with checkout session');
+      return;
+    }
+    
+    const subscriptionId = typeof session.subscription === 'string' 
+      ? session.subscription 
+      : session.subscription.id;
+      
+    const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId);
+    
+    let dbSubscriptionId: number; // Store the DB subscription ID for payment recording
+    
+    // Insert subscription into database
+    try {
+      // Update user to premium
+      await db.update(users)
+        .set({ isPremium: true })
+        .where(eq(users.id, userId));
+        
+      // Check if the subscription already exists
+      const existingSubscription = await db.query.subscriptions.findFirst({
+        where: eq(subscriptions.stripeSubscriptionId, subscriptionId)
+      });
+      
+      if (existingSubscription) {
+        // Update existing subscription
+        await db.update(subscriptions)
+          .set({
+            status: stripeSubscription.status,
+            currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
+            currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+            updatedAt: new Date()
+          })
+          .where(eq(subscriptions.id, existingSubscription.id));
+      
+        dbSubscriptionId = existingSubscription.id;
+      } else {
+        // Create new subscription
+        const [newSubscription] = await db.insert(subscriptions).values({
+          userId,
+          stripeSubscriptionId: subscriptionId,
+          stripeCustomerId: typeof stripeSubscription.customer === 'string' 
+            ? stripeSubscription.customer 
+            : stripeSubscription.customer?.id,
+          status: stripeSubscription.status,
+          currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
+          currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+          subscriptionType,
+          priceId: stripeSubscription.items.data[0]?.price.id
+        }).returning();
+        
+        dbSubscriptionId = newSubscription.id;
+      }
+      
+      // Record the initial payment
+      // Get the latest invoice for this subscription
+      const invoices = await stripe.invoices.list({
+        subscription: subscriptionId,
+        limit: 1
+      });
+      
+      if (invoices.data.length > 0) {
+        const invoice = invoices.data[0];
+        
+        // Get payment intent if available
+        let paymentIntent = null;
+        if (invoice.payment_intent) {
+          const paymentIntentId = typeof invoice.payment_intent === 'string'
+            ? invoice.payment_intent
+            : invoice.payment_intent.id;
+          
+          paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+        }
+        
+        // Record the payment
+        await recordSubscriptionPayment(
+          dbSubscriptionId,
+          userId,
+          invoice,
+          paymentIntent
+        );
+        
+        console.log(`Initial payment recorded for subscription ${subscriptionId}, amount: ${invoice.amount_paid/100} ${invoice.currency}`);
+      }
+      
+      console.log(`Successfully processed premium subscription for user ${userId}`);
+    } catch (error) {
+      console.error('Error storing subscription:', error);
+      throw error;
+    }
+  }
+
+  async function handlePaymentCheckout(session: Stripe.Checkout.Session) {
+    // Handle one-time payment (existing code for event tickets)
+    // **FIX**: Get userId from metadata, not client_reference_id
+    const userId = parseInt(session.metadata?.userId || '0'); 
+    const eventId = parseInt(session.metadata?.eventId || '0');
+    const quantity = parseInt(session.metadata?.quantity || '1');
+    const stripeCheckoutSessionId = session.id; // Get the actual session ID
+    const paymentIntentId = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id; // Get the actual PI id
+
+    console.log(`[Webhook] Received checkout.session.completed for session: ${stripeCheckoutSessionId}`);
+
+    if (!userId || !eventId) {
+      console.error(`[Webhook Error] Missing userId (${userId}) or eventId (${eventId}) in metadata for session: ${stripeCheckoutSessionId}`);
+      return; // Stop processing
+    }
+
+    if (!paymentIntentId) {
+        console.error(`[Webhook Error] Missing payment_intent ID in session: ${stripeCheckoutSessionId}`);
+        // It's unusual but might happen in some edge cases. Decide if you want to stop or proceed.
+        // For now, we'll log and potentially stop.
+        return; 
+    }
+
+    console.log(`[Webhook] Processing payment checkout for user ${userId}, event ${eventId}, session ${stripeCheckoutSessionId}, PI: ${paymentIntentId}`);
+    
+    const stripeCustomerId = typeof session.customer === 'string' ? session.customer : session.customer?.id;
+    
+    try {
+      console.log(`[Webhook] Searching for participant record for session ${stripeCheckoutSessionId} (user: ${userId}, event: ${eventId})`);
+      // Find the initial participation record created when checkout started
+      // Use the checkout session ID (stored in paymentIntentId column initially) to find the correct record
+      const participantRecord = await db.query.eventParticipants.findFirst({
+        where: and(
+          eq(eventParticipants.userId, userId),
+          eq(eventParticipants.eventId, eventId),
+          // IMPORTANT: We stored the session.id in paymentIntentId when creating the participant record initially
+          eq(eventParticipants.paymentIntentId, stripeCheckoutSessionId) 
+        )
+      });
+
+      if (!participantRecord) {
+        // This is a critical error. The webhook received a completed payment, but we can't find the matching 'pending' record
+        // that should have been created when the user clicked "purchase".
+        console.error(`[Webhook Critical Error] Could not find initial 'pending' participation record for session ${stripeCheckoutSessionId} (user: ${userId}, event: ${eventId}). Did the initial record creation fail?`);
+        // You might want to add alerting here. For now, we stop processing.
+        return; 
+      }
+      
+      console.log(`[Webhook] Found participant record ID: ${participantRecord.id}. Current status: ${participantRecord.paymentStatus}`);
+      
+      // Check if already processed (idempotency check)
+      if (participantRecord.paymentStatus === 'completed' && participantRecord.ticketIdentifier) {
+          console.log(`[Webhook Info] Participation record ${participantRecord.id} already marked as completed. Skipping update. (Session: ${stripeCheckoutSessionId})`);
+          return;
+      }
+
+      // Generate a unique ticket identifier
+      const ticketIdentifier = uuidv4();
+      console.log(`[Webhook] Generated new ticketIdentifier: ${ticketIdentifier} for participant ID: ${participantRecord.id}`);
+
+      // Update the event participant record
+      console.log(`[Webhook] Updating participant record ID: ${participantRecord.id} to status 'completed' and setting paymentIntentId to ${paymentIntentId}`);
+      const updateResult = await db.update(eventParticipants)
+        .set({
+          paymentStatus: 'completed',
+          paymentIntentId: paymentIntentId, // Update with the actual Payment Intent ID
+          ticketIdentifier: ticketIdentifier,
+          purchaseDate: new Date(),
+          updatedAt: new Date()
+        })
+        .where(eq(eventParticipants.id, participantRecord.id)) // Update by the specific participant record ID
+        .returning(); // Return the updated record to confirm
+
+      if (!updateResult || updateResult.length === 0) {
+          console.error(`[Webhook Error] Failed to update participant record ID: ${participantRecord.id}. Update returned no rows.`);
+          // Consider adding specific error handling or retry logic here
+          return;
+      }
+
+      console.log(`[Webhook] Successfully updated event participation for user ${userId}, event ${eventId}, participant ID: ${participantRecord.id}, ticket ID: ${ticketIdentifier}`);
+
+      // Optionally, create a record in the main payments table
+      if (session.amount_total && session.currency) {
+        console.log(`[Webhook] Creating payment record for session ${stripeCheckoutSessionId}`);
+        await db.insert(payments).values({
+          userId: userId,
+          eventParticipantId: participantRecord.id, // Link to the participant record
+          stripeCheckoutSessionId: stripeCheckoutSessionId, // Use the actual session ID
+          stripeChargeId: paymentIntentId, // Use the actual Payment Intent ID
+          stripeCustomerId: stripeCustomerId,
+          amount: session.amount_total, // Amount in cents
+          currency: session.currency,
+          status: 'succeeded',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        console.log(`[Webhook] Successfully created payment record for session ${stripeCheckoutSessionId}`);
+      } else {
+           console.warn(`[Webhook Warning] Missing amount_total or currency for session ${stripeCheckoutSessionId}. Skipping payment record creation.`);
+      }
+      
+    } catch (error) {
+      console.error(`[Webhook Error] Database error processing checkout session ${stripeCheckoutSessionId}:`, error);
+      // Re-throw the error so the main webhook handler catches it and returns 500
+      // This ensures Stripe knows the webhook failed and will retry.
+      throw error; 
+    }
+  }
+
+  async function handleInvoicePayment(invoice: Stripe.Invoice) {
+    if (!invoice.subscription) return;
+    
+    const subscriptionId = typeof invoice.subscription === 'string' 
+      ? invoice.subscription 
+      : invoice.subscription.id;
+    
+    // Get the subscription from our database
+    const subscription = await db.query.subscriptions.findFirst({
+      where: eq(subscriptions.stripeSubscriptionId, subscriptionId)
+    });
+    
+    if (!subscription) {
+      console.error(`Subscription not found for invoice: ${invoice.id}`);
+      return;
+    }
+    
+    // Get the updated subscription from Stripe
+    const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId);
+    
+    // Update our subscription record
+    await db.update(subscriptions)
+      .set({
+        status: stripeSubscription.status,
+        currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
+        currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+        updatedAt: new Date()
+      })
+      .where(eq(subscriptions.id, subscription.id));
+    
+    // Make sure the user is marked as premium
+    await db.update(users)
+      .set({ isPremium: true })
+      .where(eq(users.id, subscription.userId));
+    
+    // Get payment intent if available
+    let paymentIntent = null;
+    if (invoice.payment_intent) {
+      const paymentIntentId = typeof invoice.payment_intent === 'string'
+        ? invoice.payment_intent
+        : invoice.payment_intent.id;
+      
+      paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    }
+    
+    // Record the payment in our database
+    try {
+      await recordSubscriptionPayment(
+        subscription.id,
+        subscription.userId,
+        invoice,
+        paymentIntent
+      );
+      console.log(`Payment recorded for invoice ${invoice.id}`);
+    } catch (error) {
+      console.error(`Error recording payment for invoice ${invoice.id}:`, error);
+    }
+    
+    console.log(`Updated subscription for user ${subscription.userId} after invoice payment`);
+  }
+
+  async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
+    // Find the subscription in our database
+    const dbSubscription = await db.query.subscriptions.findFirst({
+      where: eq(subscriptions.stripeSubscriptionId, subscription.id)
+    });
+    
+    if (!dbSubscription) {
+      console.error(`Subscription not found for update: ${subscription.id}`);
+      return;
+    }
+    
+    // Update the subscription in our database
+    await db.update(subscriptions)
+      .set({
+        status: subscription.status,
+        currentPeriodStart: new Date(subscription.current_period_start * 1000),
+        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+        canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000) : undefined,
+        updatedAt: new Date()
+      })
+      .where(eq(subscriptions.id, dbSubscription.id));
+    
+    // If the subscription is no longer active, remove premium status
+    if (subscription.status !== 'active') {
+      await db.update(users)
+        .set({ isPremium: false })
+        .where(eq(users.id, dbSubscription.userId));
+    }
+    
+    console.log(`Updated subscription status to ${subscription.status} for user ${dbSubscription.userId}`);
+  }
+
+  async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
+    // Find the subscription in our database
+    const dbSubscription = await db.query.subscriptions.findFirst({
+      where: eq(subscriptions.stripeSubscriptionId, subscription.id)
+    });
+    
+    if (!dbSubscription) {
+      console.error(`Subscription not found for deletion: ${subscription.id}`);
+      return;
+    }
+    
+    // Update the subscription in our database
+    await db.update(subscriptions)
+      .set({
+        status: 'canceled',
+        canceledAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(subscriptions.id, dbSubscription.id));
+    
+    // Remove premium status from the user
+    await db.update(users)
+      .set({ isPremium: false })
+      .where(eq(users.id, dbSubscription.userId));
+    
+    console.log(`Marked subscription as canceled for user ${dbSubscription.userId}`);
+  }
+
+  // Get user's payment history
+  app.get('/api/me/payment-history', requireAuth, async (req, res) => {
+    try {
+      const userId = (req.user as any).id;
+      
+      if (!userId) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
+      
+      // Get payment history
+      const payments = await getUserPaymentHistory(userId);
+      
+      return res.json({ payments });
+    } catch (error) {
+      console.error('Error getting payment history:', error);
+      return res.status(500).json({ error: 'Failed to get payment history' });
+    }
+  });
+  
+  // Get details for a specific subscription including payment history
+  app.get('/api/me/subscriptions/:id', requireAuth, async (req, res) => {
+    try {
+      const userId = (req.user as any).id;
+      const subscriptionId = parseInt(req.params.id, 10);
+      
+      if (!userId) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
+      
+      if (isNaN(subscriptionId)) {
+        return res.status(400).json({ error: 'Invalid subscription ID' });
+      }
+      
+      // Get subscription
+      const subscription = await db.query.subscriptions.findFirst({
+        where: (subscriptions, { and, eq }) => and(
+          eq(subscriptions.id, subscriptionId),
+          eq(subscriptions.userId, userId)
+        )
+      });
+      
+      if (!subscription) {
+        return res.status(404).json({ error: 'Subscription not found' });
+      }
+      
+      // Get subscription with payment history
+      const subscriptionWithPayments = await getSubscriptionWithPayments(subscriptionId);
+      
+      return res.json(subscriptionWithPayments);
+    } catch (error) {
+      console.error('Error getting subscription details:', error);
+      return res.status(500).json({ error: 'Failed to get subscription details' });
+    }
+  });
+
+  // Create migration for subscription_payments table if it doesn't exist
+  app.post('/api/admin/create-payment-tables', async (req, res) => {
+    try {
+      // Check if table exists
+      const tableExists = await db.execute(sql`
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_name = 'subscription_payments'
+        );
+      `);
+      
+      if (!tableExists.rows[0].exists) {
+        // Create subscription_payments table
+        await db.execute(sql`
+          CREATE TABLE IF NOT EXISTS "subscription_payments" (
+            "id" SERIAL PRIMARY KEY,
+            "subscription_id" INTEGER NOT NULL REFERENCES "subscriptions"("id"),
+            "user_id" INTEGER NOT NULL REFERENCES "users"("id"),
+            "stripe_invoice_id" TEXT UNIQUE,
+            "stripe_payment_intent_id" TEXT UNIQUE,
+            "amount" INTEGER NOT NULL,
+            "currency" TEXT NOT NULL,
+            "status" TEXT NOT NULL,
+            "billing_reason" TEXT,
+            "period_start" TIMESTAMP NOT NULL,
+            "period_end" TIMESTAMP NOT NULL,
+            "payment_method" TEXT,
+            "receipt_url" TEXT,
+            "created_at" TIMESTAMP DEFAULT NOW()
+          );
+        `);
+        
+        return res.json({ message: 'Payment tables created successfully' });
+      } else {
+        return res.json({ message: 'Payment tables already exist' });
+      }
+    } catch (error) {
+      console.error('Error creating payment tables:', error);
+      return res.status(500).json({ error: 'Failed to create payment tables' });
+    }
+  });
+
+  // Get admin payment statistics
+  app.get('/api/admin/payment-stats', requireAuth, async (req, res) => {
+    try {
+      const userId = (req.user as any).id;
+      
+      // First check if user is admin
+      const user = await db.query.users.findFirst({
+        where: eq(users.id, userId)
+      });
+      
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ error: 'Permission denied' });
+      }
+      
+      // Get payment statistics
+      const stats = await getPaymentStats();
+      
+      return res.json(stats);
+    } catch (error) {
+      console.error('Error getting payment stats:', error);
+      return res.status(500).json({ error: 'Failed to get payment statistics' });
+    }
+  });
+
+  // Get all payments (admin only)
+  app.get('/api/admin/all-payments', requireAuth, async (req, res) => {
+    try {
+      const userId = (req.user as any).id;
+      
+      // First check if user is admin
+      const user = await db.query.users.findFirst({
+        where: eq(users.id, userId)
+      });
+      
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ error: 'Permission denied' });
+      }
+      
+      // Get all payments
+      const payments = await db.query.subscriptionPayments.findMany({
+        orderBy: (subscriptionPayments, { desc }) => [desc(subscriptionPayments.createdAt)],
+      });
+      
+      return res.json({ payments });
+    } catch (error) {
+      console.error('Error getting all payments:', error);
+      return res.status(500).json({ error: 'Failed to get payment data' });
+    }
+  });
+
+  // Add an endpoint to make a user an admin 
+  app.post('/api/admin/make-admin', async (req, res) => {
+    try {
+      const { username } = req.body;
+      
+      if (!username) {
+        return res.status(400).json({ error: 'Username is required' });
+      }
+
+      // Find the user by username
+      const user = await db.query.users.findFirst({
+        where: eq(users.username, username)
+      });
+      
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      // Update the user to be an admin
+      await db.update(users)
+        .set({ isAdmin: true })
+        .where(eq(users.id, user.id));
+      
+      return res.json({ success: true, message: `User ${username} is now an admin` });
+    } catch (error) {
+      console.error('Error making user admin:', error);
+      return res.status(500).json({ error: 'Failed to update user' });
+    }
+  });
 
   return { app, httpServer };
 }
