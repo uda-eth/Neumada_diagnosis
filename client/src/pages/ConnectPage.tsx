@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
@@ -145,7 +146,7 @@ export function ConnectPage() {
     }
   }, [error, toast]);
 
-  // Filter the user results client-side for search terms
+  // Filter the user results client-side for search terms only
   const filteredUsers = users?.filter(user => {
     const matchesSearch = !searchTerm || 
       (user.fullName && user.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -155,10 +156,15 @@ export function ConnectPage() {
   }) || [];
 
   const toggleFilter = (item: string, type: 'interests' | 'moods') => {
-    const setterFn = type === 'interests' ? setSelectedInterests : setSelectedMoods;
-    setterFn(prev =>
-      prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
-    );
+    if (type === 'interests') {
+      setSelectedInterests(prev =>
+        prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
+      );
+    } else {
+      setSelectedMoods(prev =>
+        prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
+      );
+    }
   };
 
   return (
@@ -175,23 +181,20 @@ export function ConnectPage() {
                 </Button>
               </Link>
             </div>
-            {/* Fixed: Removed duplicate filter button - only keeping this one */}
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsFiltersVisible(!isFiltersVisible)}
-                className="gap-2"
-              >
-                <Filter className="h-4 w-4" />
-                Filters
-                {(selectedMoods.length > 0 || selectedInterests.length > 0) && (
-                  <Badge variant="secondary" className="ml-2">
-                    {selectedMoods.length + selectedInterests.length}
-                  </Badge>
-                )}
-              </Button>
-            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsFiltersVisible(!isFiltersVisible)}
+              className="gap-2"
+            >
+              <Filter className="h-4 w-4" />
+              Filters
+              {(selectedMoods.length > 0 || selectedInterests.length > 0) && (
+                <Badge variant="secondary" className="ml-2">
+                  {selectedMoods.length + selectedInterests.length}
+                </Badge>
+              )}
+            </Button>
           </div>
         </div>
       </header>
