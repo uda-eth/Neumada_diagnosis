@@ -321,14 +321,35 @@ export function useUser() {
   // Add profile update mutation
   const updateProfile = useMutation({
     mutationFn: async (profileData: any) => {
-      const result = await handleRequest('/api/profile', 'POST', profileData);
-      if (result.ok) {
-        // Force a refetch immediately after successful profile update
-        await refetch();
+      const response = await fetch('/api/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profileData),
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to update profile: ${errorText}`);
       }
-      return result;
+      
+      // Parse the updated user response
+      const updatedUser = await response.json();
+      
+      // Update localStorage cache with the fresh user data
+      if (updatedUser) {
+        localStorage.setItem('maly_user_data', JSON.stringify(updatedUser));
+      }
+      
+      return { ok: true, user: updatedUser };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Update the React Query cache with our updated user
+      if (data.user) {
+        queryClient.setQueryData(['user'], data.user);
+      }
+      
+      // Then invalidate to make sure any components using the data are refreshed
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
   });
