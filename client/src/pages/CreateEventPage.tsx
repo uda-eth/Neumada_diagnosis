@@ -36,20 +36,10 @@ import { ItineraryFormField } from "@/components/ItineraryFormField";
 // Define a simple schema for our form
 // Define a schema for itinerary items
 const itineraryItemSchema = z.object({
-  startTime: z.string().refine(val => !isNaN(Date.parse(val)), "Please enter a valid start time"),
-  endTime: z.string().refine(val => !isNaN(Date.parse(val)), "Please enter a valid end time"),
+  startTime: z.string().min(1, "Start time is required"),
+  endTime: z.string().min(1, "End time is required"),
   description: z.string().min(1, "Description is required"),
-}).refine(
-  (data) => {
-    const startTime = new Date(data.startTime).getTime();
-    const endTime = new Date(data.endTime).getTime();
-    return startTime < endTime;
-  },
-  {
-    message: "End time must be after start time",
-    path: ["endTime"]
-  }
-);
+});
 
 const eventSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -103,7 +93,8 @@ export default function CreateEventPage() {
       date: new Date().toISOString(),
       price: 0,
       isPrivate: false,
-      category: "Social"
+      category: "Social",
+      itinerary: [] // Initialize with empty array
     },
   });
 
