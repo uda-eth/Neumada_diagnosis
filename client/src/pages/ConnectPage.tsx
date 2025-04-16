@@ -212,31 +212,18 @@ export function ConnectPage() {
             </SelectContent>
           </Select>
           
-          {/* Mood Filter - Enhanced pill-style toggles with better visual feedback */}
+          {/* Mood Filter - Positioned to the right of Location */}
           <div className="flex flex-wrap gap-2">
             {moods.map((mood) => (
-              <button
+              <Badge
                 key={mood}
-                className={`rounded-full px-3 py-1 text-sm font-medium transition-colors 
-                  ${selectedMoods.includes(mood) 
-                    ? moodStyles[mood as keyof typeof moodStyles] + ' shadow-sm' 
-                    : 'border border-border bg-background/5 hover:bg-accent/20'}`}
+                variant={selectedMoods.includes(mood) ? "default" : "outline"}
+                className={`cursor-pointer hover:opacity-80 transition-colors ${selectedMoods.includes(mood) ? moodStyles[mood as keyof typeof moodStyles] : ''}`}
                 onClick={() => toggleFilter(mood, 'moods')}
               >
-                {selectedMoods.includes(mood) && (
-                  <span className="mr-1">✓</span>
-                )}
                 {mood}
-              </button>
+              </Badge>
             ))}
-            {selectedMoods.length > 0 && (
-              <button
-                className="rounded-full px-3 py-1 text-sm font-medium text-muted-foreground border border-border bg-background/5 hover:bg-accent/20"
-                onClick={() => setSelectedMoods([])}
-              >
-                Clear
-              </button>
-            )}
           </div>
         </div>
 
@@ -284,8 +271,8 @@ export function ConnectPage() {
         )}
       </div>
 
-      {/* Enhanced grid layout with proper spacing and centering using pure CSS Grid */}
-      <div className="connect-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 justify-items-center p-4 w-full">
+      {/* Enhanced grid layout with proper spacing and centering - ensuring consistent card sizes */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 mx-auto w-full">
         {isLoading ? (
           // Loading skeletons
           Array(6).fill(0).map((_, index) => (
