@@ -511,6 +511,13 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
           </div>
         </div>
 
+        {/* Event Itinerary */}
+        {event.itinerary && event.itinerary.length > 0 && (
+          <div className="bg-white/5 p-6 rounded-lg">
+            <EventItinerary itinerary={event.itinerary} />
+          </div>
+        )}
+
         {/* Price and Registration */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">

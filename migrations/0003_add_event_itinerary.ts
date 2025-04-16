@@ -1,27 +1,36 @@
 import { sql } from "drizzle-orm";
+import { db } from "../db";
 
-export async function up(db: any) {
+export async function addEventItineraryField() {
   try {
-    await db.execute(sql`
-      ALTER TABLE events 
-      ADD COLUMN IF NOT EXISTS itinerary JSONB DEFAULT '[]'::jsonb
-    `);
-    console.log("Successfully added itinerary column to events table");
+    console.log("Starting migration: Adding itinerary field to events table");
+    
+    // Check if the column already exists
+    const checkColumnQuery = sql`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name = 'events' AND column_name = 'itinerary';
+    `;
+    
+    const checkResult = await db.execute(checkColumnQuery);
+    
+    if (checkResult.length === 0) {
+      // Column doesn't exist, so add it
+      await db.execute(sql`
+        ALTER TABLE events 
+        ADD COLUMN itinerary JSONB DEFAULT '[]'::jsonb;
+      `);
+      
+      console.log("Successfully added itinerary field to events table");
+    } else {
+      console.log("Itinerary field already exists in events table");
+    }
+    
+    return { success: true, message: "Migration completed successfully" };
   } catch (error) {
-    console.error("Failed to add itinerary column:", error);
-    throw error;
+    console.error("Migration failed:", error);
+    return { success: false, error };
   }
 }
 
-export async function down(db: any) {
-  try {
-    await db.execute(sql`
-      ALTER TABLE events 
-      DROP COLUMN IF EXISTS itinerary
-    `);
-    console.log("Successfully removed itinerary column from events table");
-  } catch (error) {
-    console.error("Failed to remove itinerary column:", error);
-    throw error;
-  }
-}
+export default addEventItineraryField;

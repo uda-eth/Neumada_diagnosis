@@ -1,44 +1,24 @@
-import postgres from "postgres";
-
-// Load environment variables if needed
-if (!process.env.DATABASE_URL) {
-  console.error("DATABASE_URL is not set. Please make sure the database is properly configured.");
-  process.exit(1);
-}
+// Simple script to run the itinerary migration
+const { addEventItineraryField } = require('./migrations/0003_add_event_itinerary');
 
 async function runItineraryMigration() {
-  const client = postgres(process.env.DATABASE_URL);
-  
   try {
-    console.log("Connected to database, adding itinerary column to events table...");
+    console.log('Starting itinerary field migration...');
+    const result = await addEventItineraryField();
     
-    // Add itinerary column
-    await client`
-      ALTER TABLE events 
-      ADD COLUMN IF NOT EXISTS itinerary JSONB DEFAULT '[]'::jsonb
-    `;
-    
-    console.log("Migration completed successfully!");
-    
-    // Verify the column was added
-    const checkColumn = await client`
-      SELECT column_name, data_type 
-      FROM information_schema.columns 
-      WHERE table_name = 'events' 
-      AND column_name = 'itinerary'
-    `;
-    
-    if (checkColumn.length > 0) {
-      console.log("Itinerary column verified! Details:");
-      checkColumn.forEach(col => console.log(col));
+    if (result.success) {
+      console.log('Migration completed successfully!');
+      console.log(result.message);
     } else {
-      console.log("Itinerary column was not added successfully.");
+      console.error('Migration failed:');
+      console.error(result.error);
+      process.exit(1);
     }
   } catch (error) {
-    console.error("Migration error:", error);
-  } finally {
-    await client.end();
+    console.error('Unexpected error during migration:');
+    console.error(error);
+    process.exit(1);
   }
 }
 
-runItineraryMigration().catch(console.error);
+runItineraryMigration();
