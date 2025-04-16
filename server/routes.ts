@@ -968,12 +968,29 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
       }
 
       if (moods) {
+        // Improved mood filtering using array overlap 
         const moodArray = Array.isArray(moods) ? moods : [moods];
-        dbUsers = dbUsers.filter(user => 
-          user.currentMoods && moodArray.some(mood => 
-            user.currentMoods?.includes(mood)
-          )
-        );
+        
+        // Log for debugging
+        console.log(`Filtering by moods: ${JSON.stringify(moodArray)}`);
+        
+        // Filter users where at least one of their moods matches any mood in our filter
+        dbUsers = dbUsers.filter(user => {
+          // Only include users with moods
+          if (!user.currentMoods || !Array.isArray(user.currentMoods)) {
+            return false;
+          }
+          
+          // Check for any overlap between user moods and filter moods
+          const hasMatchingMood = moodArray.some(filterMood => 
+            user.currentMoods?.includes(filterMood)
+          );
+          
+          return hasMatchingMood;
+        });
+        
+        // Log filtered count
+        console.log(`Found ${dbUsers.length} users with matching moods`);
       }
 
       if (name) {

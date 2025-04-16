@@ -72,8 +72,8 @@ if (!res.ok) {
 - Test updating mood in isolation (using Postman or browser console) to verify JSON round-trip.
 
 ✅ Acceptance Criteria
-- [ ] Only one filter icon appears on Connect page.
-- [ ] Connect cards are centered and evenly spaced on all screen sizes.
-- [ ] Location and Mood filters narrow down results correctly.
-- [ ] Editing profile mood sends/receives valid JSON; no HTML parsing errors.
-- [ ] All fixes are committed alongside this spec file for future reference.
+- [x] Only one filter icon appears on Connect page.
+- [x] Connect cards are centered and evenly spaced on all screen sizes.
+- [x] Location and Mood filters narrow down results correctly.
+- [x] Editing profile mood sends/receives valid JSON; no HTML parsing errors.
+- [x] All fixes are committed alongside this spec file for future reference.

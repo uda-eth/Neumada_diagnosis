@@ -182,8 +182,24 @@ export default function ProfilePage() {
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update mood');
+        // Fix for HTML error response handling
+        try {
+          const errorText = await response.text();
+          // Check if response is HTML (typical for redirect to login page)
+          if (errorText.includes('<!DOCTYPE html>') || errorText.includes('<html')) {
+            throw new Error('Authentication error. Please log in again.');
+          }
+          
+          // Try to parse as JSON if not HTML
+          const errorData = JSON.parse(errorText);
+          throw new Error(errorData.error || 'Failed to update mood');
+        } catch (e: any) {
+          // If JSON parsing fails or any other error
+          if (e.message === 'Authentication error. Please log in again.') {
+            throw e;
+          }
+          throw new Error(`Error updating mood: ${response.status} ${response.statusText}`);
+        }
       }
       
       return response.json();

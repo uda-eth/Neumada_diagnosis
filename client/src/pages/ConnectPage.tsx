@@ -271,11 +271,12 @@ export function ConnectPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 auto-rows-fr">
+      {/* Fixed: Improved grid layout with proper spacing and centering */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 mx-auto w-full justify-items-center">
         {isLoading ? (
           // Loading skeletons
           Array(6).fill(0).map((_, index) => (
-            <Card key={index} className="overflow-hidden h-full">
+            <Card key={index} className="overflow-hidden h-full w-full max-w-sm">
               <CardContent className="p-0">
                 <div className="flex flex-col h-full">
                   <div className="relative w-full aspect-square overflow-hidden bg-muted">
@@ -297,8 +298,8 @@ export function ConnectPage() {
         ) : filteredUsers.length > 0 ? (
           // Real users from database
           filteredUsers.map((user) => (
-            <Link key={user.id} href={`/profile/${user.username}`}>
-              <Card className="overflow-hidden hover:bg-accent/5 transition-colors cursor-pointer group h-full">
+            <Link key={user.id} href={`/profile/${user.username}`} className="w-full max-w-sm">
+              <Card className="overflow-hidden hover:bg-accent/5 transition-colors cursor-pointer group h-full w-full">
                 <CardContent className="p-0">
                   <div className="flex flex-col h-full">
                     <div className="relative w-full aspect-square overflow-hidden bg-muted">
@@ -367,7 +368,7 @@ export function ConnectPage() {
           ))
         ) : (
           // No users found
-          <div className="col-span-3 py-12 text-center">
+          <div className="col-span-1 sm:col-span-2 md:col-span-3 xl:col-span-4 py-12 text-center w-full">
             <p className="text-muted-foreground">No users found matching your criteria.</p>
             <p className="text-sm mt-2">Try adjusting your filters or search terms.</p>
           </div>
