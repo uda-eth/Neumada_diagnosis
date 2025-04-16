@@ -102,10 +102,17 @@ export function ConnectPage() {
   const {
     data: users,
     isLoading,
-    error
+    error,
+    refetch
   } = useQuery<User[]>({
     queryKey: ['users', selectedCity, selectedInterests, selectedMoods, currentUser?.id],
     queryFn: async () => {
+      console.log("Fetching users with filters:", {
+        city: selectedCity,
+        moods: selectedMoods,
+        interests: selectedInterests
+      });
+      
       // Build query parameters
       const params = new URLSearchParams();
       
@@ -117,21 +124,31 @@ export function ConnectPage() {
         params.append('currentUserId', currentUser.id.toString());
       }
       
+      // Add interests with proper array notation for server
       selectedInterests.forEach(interest => {
         params.append('interests[]', interest);
       });
       
-      selectedMoods.forEach(mood => {
-        params.append('moods[]', mood);
-      });
+      // Add moods with proper array notation for server
+      if (selectedMoods.length > 0) {
+        selectedMoods.forEach(mood => {
+          params.append('moods[]', mood);
+        });
+        console.log("Added mood filters:", selectedMoods);
+      }
       
-      const response = await fetch(`/api/users/browse?${params.toString()}`);
+      const queryString = params.toString();
+      console.log("Query string:", queryString);
+      
+      const response = await fetch(`/api/users/browse?${queryString}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch users');
       }
       
-      return response.json();
+      const data = await response.json();
+      console.log("Received user data:", data.length);
+      return data;
     }
   });
 
@@ -212,15 +229,23 @@ export function ConnectPage() {
             </SelectContent>
           </Select>
           
-          {/* Mood Filter - Positioned to the right of Location */}
+          {/* Mood Filter - Enhanced with visual indicators and styled consistently */}
           <div className="flex flex-wrap gap-2">
+            <span className="text-sm text-muted-foreground font-medium self-center mr-1">Mood:</span>
             {moods.map((mood) => (
               <Badge
                 key={mood}
                 variant={selectedMoods.includes(mood) ? "default" : "outline"}
-                className={`cursor-pointer hover:opacity-80 transition-colors ${selectedMoods.includes(mood) ? moodStyles[mood as keyof typeof moodStyles] : ''}`}
+                className={`cursor-pointer py-1.5 px-3 flex items-center gap-1 transition-all ${
+                  selectedMoods.includes(mood) 
+                    ? moodStyles[mood as keyof typeof moodStyles] 
+                    : 'hover:bg-accent/10'
+                }`}
                 onClick={() => toggleFilter(mood, 'moods')}
               >
+                {selectedMoods.includes(mood) && (
+                  <div className="h-2 w-2 bg-current rounded-full animate-pulse" />
+                )}
                 {mood}
               </Badge>
             ))}
@@ -250,9 +275,16 @@ export function ConnectPage() {
                   <Badge
                     key={interest}
                     variant={selectedInterests.includes(interest) ? "default" : "outline"}
-                    className="cursor-pointer hover:opacity-80 transition-opacity"
+                    className={`cursor-pointer py-1.5 px-3 flex items-center gap-1 transition-all ${
+                      selectedInterests.includes(interest) 
+                        ? 'bg-primary/20 text-primary border-primary/30' 
+                        : 'hover:bg-accent/10'
+                    }`}
                     onClick={() => toggleFilter(interest, 'interests')}
                   >
+                    {selectedInterests.includes(interest) && (
+                      <div className="h-2 w-2 bg-primary rounded-full" />
+                    )}
                     {interest}
                   </Badge>
                 ))}
