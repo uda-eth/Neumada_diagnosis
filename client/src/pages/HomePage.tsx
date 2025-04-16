@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Users, Plus, Search, Globe2, Bot, Share2, X, Check, Mail } from "lucide-react";
+import { MapPin, Users, Plus, Search, Globe2, Bot, Share2, X, Check, Mail, Calendar } from "lucide-react";
 import { format } from "date-fns";
 import { DIGITAL_NOMAD_CITIES } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
@@ -284,6 +284,15 @@ export default function HomePage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setLocation("/discover")}
+                className="hidden md:inline-flex items-center text-white"
+              >
+                <Calendar className="h-5 w-5 mr-2" />
+                Discover
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"
@@ -739,6 +748,15 @@ export default function HomePage() {
               className="text-white flex flex-col items-center"
             >
               <Search className="h-5 w-5" />
+              <span className="text-xs mt-1">Home</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setLocation("/discover")}
+              className="text-white flex flex-col items-center"
+            >
+              <Calendar className="h-5 w-5" />
               <span className="text-xs mt-1">Discover</span>
             </Button>
             <Button

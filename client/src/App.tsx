@@ -1,5 +1,6 @@
 import { Switch, Route, useLocation } from "wouter";
 import HomePage from "./pages/HomePage";
+import DiscoverPage from "./pages/DiscoverPage";
 import EventPage from "./pages/EventPage";
 import ProfilePage from "./pages/ProfilePage";
 import CreateEventPage from "./pages/CreateEventPage";
@@ -78,6 +79,7 @@ function AppContent() {
         <Layout>
           <Switch>
             <Route path="/" component={HomePage} />
+            <Route path="/discover" component={DiscoverPage} />
             <Route path="/event/onda-linda-festival" component={OndaLindaFestivalPage} />
             <Route path="/event/:id/tickets" component={EventTicketsPage} />
             <Route path="/event/:id" component={EventPage} />
