@@ -163,28 +163,44 @@ export function ConnectPage() {
 
   return (
     <div className="container py-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-semibold tracking-tight">Connect</h1>
-          <Link href="/connections">
-            <Button variant="outline" size="sm" className="gap-2">
-              <UserCircle className="h-4 w-4" />
-              My Connections
-            </Button>
-          </Link>
+      <header className="border-b border-border sticky top-0 z-50 bg-black/40 backdrop-blur-sm text-white mb-6">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <h1 className="text-sm font-medium uppercase tracking-[.5em] text-white">Connect</h1>
+              <Link href="/connections">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <UserCircle className="h-4 w-4" />
+                  My Connections
+                </Button>
+              </Link>
+            </div>
+            <div className="flex items-center gap-2 ml-auto">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsFiltersVisible(!isFiltersVisible)}
+                className="gap-2"
+              >
+                <Filter className="h-4 w-4" />
+                Filters
+                {(selectedMoods.length > 0 || selectedInterests.length > 0) && (
+                  <Badge variant="secondary" className="ml-2">
+                    {selectedMoods.length + selectedInterests.length}
+                  </Badge>
+                )}
+              </Button>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsFiltersVisible(!isFiltersVisible)}
-            className="gap-2"
-          >
-            <Filter className="h-4 w-4" />
-            Filters
-          </Button>
+      </header>
+
+      <div className="mb-8 space-y-4">
+        {/* Location and Mood filters - Primary Filters */}
+        <div className="flex flex-col md:flex-row gap-4">
+          {/* Location Filter - Positioned at top-left */}
           <Select value={selectedCity} onValueChange={setSelectedCity}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full md:w-[180px] bg-background/5 border-border">
               <SelectValue placeholder="Select city" />
             </SelectTrigger>
             <SelectContent>
@@ -194,57 +210,65 @@ export function ConnectPage() {
               ))}
             </SelectContent>
           </Select>
+          
+          {/* Mood Filter - Positioned to the right of Location */}
+          <div className="flex flex-wrap gap-2">
+            {moods.map((mood) => (
+              <Badge
+                key={mood}
+                variant={selectedMoods.includes(mood) ? "default" : "outline"}
+                className={`cursor-pointer hover:opacity-80 transition-colors ${selectedMoods.includes(mood) ? moodStyles[mood as keyof typeof moodStyles] : ''}`}
+                onClick={() => toggleFilter(mood, 'moods')}
+              >
+                {mood}
+              </Badge>
+            ))}
+          </div>
         </div>
+
+        {/* Additional filters - Expanded section */}
+        {isFiltersVisible && (
+          <div className="space-y-4 bg-accent/5 p-4 rounded-lg border border-border">
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium">Search</h3>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by name..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium">Interests</h3>
+              <div className="flex flex-wrap gap-2">
+                {interests.map((interest) => (
+                  <Badge
+                    key={interest}
+                    variant={selectedInterests.includes(interest) ? "default" : "outline"}
+                    className="cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => toggleFilter(interest, 'interests')}
+                  >
+                    {interest}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Display selected filters count if any */}
+        {(selectedMoods.length > 0 || selectedInterests.length > 0) && (
+          <div className="py-2">
+            <h2 className="text-sm font-medium text-muted-foreground">
+              {filteredUsers.length} People Found
+            </h2>
+          </div>
+        )}
       </div>
-
-      {isFiltersVisible && (
-        <div className="space-y-4 bg-accent/5 p-4 rounded-lg border border-border">
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium">Search</h3>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium">Interests</h3>
-            <div className="flex flex-wrap gap-2">
-              {interests.map((interest) => (
-                <Badge
-                  key={interest}
-                  variant={selectedInterests.includes(interest) ? "default" : "outline"}
-                  className="cursor-pointer"
-                  onClick={() => toggleFilter(interest, 'interests')}
-                >
-                  {interest}
-                </Badge>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium">Current Mood</h3>
-            <div className="flex flex-wrap gap-2">
-              {moods.map((mood) => (
-                <Badge
-                  key={mood}
-                  variant={selectedMoods.includes(mood) ? "default" : "outline"}
-                  className={`cursor-pointer ${selectedMoods.includes(mood) ? moodStyles[mood as keyof typeof moodStyles] : ''}`}
-                  onClick={() => toggleFilter(mood, 'moods')}
-                >
-                  {mood}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 auto-rows-fr">
         {isLoading ? (
