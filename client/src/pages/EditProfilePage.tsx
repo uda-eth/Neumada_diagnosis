@@ -115,20 +115,11 @@ export default function EditProfilePage() {
         headers.append('X-Session-ID', sessionId);
       }
       
-      // Convert single mood to array format for consistency
-      const formattedData = {
-        ...data,
-        currentMoods: data.currentMood ? [data.currentMood] : []
-      };
-      
-      // Remove the single mood property since we're using the array version
-      delete formattedData.currentMood;
-      
       const response = await fetch('/api/profile', {
         method: 'POST',
         headers,
         credentials: 'include', // Important for auth
-        body: JSON.stringify(formattedData)
+        body: JSON.stringify(data)
       });
 
       if (!response.ok) {
@@ -231,7 +222,7 @@ export default function EditProfilePage() {
                             method: 'POST',
                             headers,
                             credentials: 'include',
-                            body: JSON.stringify({ currentMoods: [mood] })
+                            body: JSON.stringify({ currentMood: mood })
                           });
                           
                           if (!response.ok) {

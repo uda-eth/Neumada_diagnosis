@@ -102,17 +102,10 @@ export function ConnectPage() {
   const {
     data: users,
     isLoading,
-    error,
-    refetch
+    error
   } = useQuery<User[]>({
     queryKey: ['users', selectedCity, selectedInterests, selectedMoods, currentUser?.id],
     queryFn: async () => {
-      console.log("Fetching users with filters:", {
-        city: selectedCity,
-        moods: selectedMoods,
-        interests: selectedInterests
-      });
-      
       // Build query parameters
       const params = new URLSearchParams();
       
@@ -124,31 +117,21 @@ export function ConnectPage() {
         params.append('currentUserId', currentUser.id.toString());
       }
       
-      // Add interests with proper array notation for server
       selectedInterests.forEach(interest => {
         params.append('interests[]', interest);
       });
       
-      // Add moods with proper array notation for server
-      if (selectedMoods.length > 0) {
-        selectedMoods.forEach(mood => {
-          params.append('moods[]', mood);
-        });
-        console.log("Added mood filters:", selectedMoods);
-      }
+      selectedMoods.forEach(mood => {
+        params.append('moods[]', mood);
+      });
       
-      const queryString = params.toString();
-      console.log("Query string:", queryString);
-      
-      const response = await fetch(`/api/users/browse?${queryString}`);
+      const response = await fetch(`/api/users/browse?${params.toString()}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch users');
       }
       
-      const data = await response.json();
-      console.log("Received user data:", data.length);
-      return data;
+      return response.json();
     }
   });
 
@@ -229,26 +212,31 @@ export function ConnectPage() {
             </SelectContent>
           </Select>
           
-          {/* Mood Filter - Enhanced with visual indicators and styled consistently */}
+          {/* Mood Filter - Enhanced pill-style toggles with better visual feedback */}
           <div className="flex flex-wrap gap-2">
-            <span className="text-sm text-muted-foreground font-medium self-center mr-1">Mood:</span>
             {moods.map((mood) => (
-              <Badge
+              <button
                 key={mood}
-                variant={selectedMoods.includes(mood) ? "default" : "outline"}
-                className={`cursor-pointer py-1.5 px-3 flex items-center gap-1 transition-all ${
-                  selectedMoods.includes(mood) 
-                    ? moodStyles[mood as keyof typeof moodStyles] 
-                    : 'hover:bg-accent/10'
-                }`}
+                className={`rounded-full px-3 py-1 text-sm font-medium transition-colors 
+                  ${selectedMoods.includes(mood) 
+                    ? moodStyles[mood as keyof typeof moodStyles] + ' shadow-sm' 
+                    : 'border border-border bg-background/5 hover:bg-accent/20'}`}
                 onClick={() => toggleFilter(mood, 'moods')}
               >
                 {selectedMoods.includes(mood) && (
-                  <div className="h-2 w-2 bg-current rounded-full animate-pulse" />
+                  <span className="mr-1">✓</span>
                 )}
                 {mood}
-              </Badge>
+              </button>
             ))}
+            {selectedMoods.length > 0 && (
+              <button
+                className="rounded-full px-3 py-1 text-sm font-medium text-muted-foreground border border-border bg-background/5 hover:bg-accent/20"
+                onClick={() => setSelectedMoods([])}
+              >
+                Clear
+              </button>
+            )}
           </div>
         </div>
 
@@ -275,16 +263,9 @@ export function ConnectPage() {
                   <Badge
                     key={interest}
                     variant={selectedInterests.includes(interest) ? "default" : "outline"}
-                    className={`cursor-pointer py-1.5 px-3 flex items-center gap-1 transition-all ${
-                      selectedInterests.includes(interest) 
-                        ? 'bg-primary/20 text-primary border-primary/30' 
-                        : 'hover:bg-accent/10'
-                    }`}
+                    className="cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={() => toggleFilter(interest, 'interests')}
                   >
-                    {selectedInterests.includes(interest) && (
-                      <div className="h-2 w-2 bg-primary rounded-full" />
-                    )}
                     {interest}
                   </Badge>
                 ))}
@@ -303,12 +284,12 @@ export function ConnectPage() {
         )}
       </div>
 
-      {/* Enhanced grid layout with proper spacing and centering - ensuring consistent card sizes */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center w-full">
+      {/* Enhanced grid layout with proper spacing and centering using pure CSS Grid */}
+      <div className="connect-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 justify-items-center p-4 w-full">
         {isLoading ? (
           // Loading skeletons
           Array(6).fill(0).map((_, index) => (
-            <Card key={index} className="overflow-hidden h-full w-full max-w-sm card-hover">
+            <Card key={index} className="overflow-hidden h-full w-full max-w-sm">
               <CardContent className="p-0">
                 <div className="flex flex-col h-full">
                   <div className="relative w-full aspect-square overflow-hidden bg-muted">
@@ -331,7 +312,7 @@ export function ConnectPage() {
           // Real users from database
           filteredUsers.map((user) => (
             <Link key={user.id} href={`/profile/${user.username}`} className="w-full max-w-sm">
-              <Card className="overflow-hidden hover:bg-accent/5 transition-colors cursor-pointer group h-full w-full card-hover">
+              <Card className="overflow-hidden hover:bg-accent/5 transition-colors cursor-pointer group h-full w-full">
                 <CardContent className="p-0">
                   <div className="flex flex-col h-full">
                     <div className="relative w-full aspect-square overflow-hidden bg-muted">
