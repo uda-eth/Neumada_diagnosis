@@ -31,6 +31,7 @@ import { z } from "zod";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { EVENT_CATEGORIES } from "@/lib/constants";
 import { useUser } from "@/hooks/use-user";
+import { ItineraryFormField } from "@/components/ItineraryFormField";
 
 // Define a simple schema for our form
 // Define a schema for itinerary items
