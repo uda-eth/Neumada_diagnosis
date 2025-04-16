@@ -93,7 +93,6 @@ const moods = [
 export function ConnectPage() {
   const [selectedCity, setSelectedCity] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
   const [isFiltersVisible, setIsFiltersVisible] = useState(false);
   const { toast } = useToast();
@@ -106,7 +105,7 @@ export function ConnectPage() {
     error,
     refetch
   } = useQuery<User[]>({
-    queryKey: ['users', selectedCity, selectedInterests, selectedMoods, currentUser?.id],
+    queryKey: ['users', selectedCity, selectedMoods, currentUser?.id],
     queryFn: async () => {
       // Build query parameters
       const params = new URLSearchParams();
@@ -118,11 +117,6 @@ export function ConnectPage() {
       if (currentUser?.id) {
         params.append('currentUserId', currentUser.id.toString());
       }
-      
-      // Add interests as array parameters
-      selectedInterests.forEach(interest => {
-        params.append('interests[]', interest);
-      });
       
       // Add moods as array parameters - ensure this is working
       if (selectedMoods.length > 0) {
@@ -167,31 +161,21 @@ export function ConnectPage() {
     return matchesSearch;
   }) || [];
 
-  const toggleFilter = (item: string, type: 'interests' | 'moods') => {
-    if (type === 'interests') {
-      setSelectedInterests(prev => {
-        const newInterests = prev.includes(item) 
-          ? prev.filter(i => i !== item) 
-          : [...prev, item];
-        console.log(`Updated interests: ${newInterests.join(', ')}`);
-        return newInterests;
-      });
-    } else {
-      setSelectedMoods(prev => {
-        const newMoods = prev.includes(item) 
-          ? prev.filter(i => i !== item) 
-          : [...prev, item];
-        console.log(`Updated moods: ${newMoods.join(', ')}`);
-        
-        // Force an immediate refetch after mood changes
-        setTimeout(() => {
-          console.log(`Refetching with updated moods: ${newMoods.join(', ')}`);
-          refetch();
-        }, 50);
-        
-        return newMoods;
-      });
-    }
+  const toggleFilter = (item: string) => {
+    setSelectedMoods(prev => {
+      const newMoods = prev.includes(item) 
+        ? prev.filter(i => i !== item) 
+        : [...prev, item];
+      console.log(`Updated moods: ${newMoods.join(', ')}`);
+      
+      // Force an immediate refetch after mood changes
+      setTimeout(() => {
+        console.log(`Refetching with updated moods: ${newMoods.join(', ')}`);
+        refetch();
+      }, 50);
+      
+      return newMoods;
+    });
   };
 
   return (
@@ -216,9 +200,9 @@ export function ConnectPage() {
             >
               <Filter className="h-4 w-4" />
               Filters
-              {(selectedMoods.length > 0 || selectedInterests.length > 0) && (
+              {selectedMoods.length > 0 && (
                 <Badge variant="secondary" className="ml-2">
-                  {selectedMoods.length + selectedInterests.length}
+                  {selectedMoods.length}
                 </Badge>
               )}
             </Button>
@@ -251,7 +235,7 @@ export function ConnectPage() {
                   ${selectedMoods.includes(mood) 
                     ? moodStyles[mood as keyof typeof moodStyles] + ' shadow-sm' 
                     : 'border border-border bg-background/5 hover:bg-accent/20'}`}
-                onClick={() => toggleFilter(mood, 'moods')}
+                onClick={() => toggleFilter(mood)}
               >
                 {selectedMoods.includes(mood) && (
                   <span className="mr-1">✓</span>
@@ -286,26 +270,12 @@ export function ConnectPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium">Interests</h3>
-              <div className="flex flex-wrap gap-2">
-                {interests.map((interest) => (
-                  <Badge
-                    key={interest}
-                    variant={selectedInterests.includes(interest) ? "default" : "outline"}
-                    className="cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => toggleFilter(interest, 'interests')}
-                  >
-                    {interest}
-                  </Badge>
-                ))}
-              </div>
-            </div>
+            {/* Interests filter removed - now only filtering by moods */}
           </div>
         )}
 
         {/* Display selected filters count if any */}
-        {(selectedMoods.length > 0 || selectedInterests.length > 0) && (
+        {selectedMoods.length > 0 && (
           <div className="py-2">
             <h2 className="text-sm font-medium text-muted-foreground">
               {filteredUsers.length} People Found
