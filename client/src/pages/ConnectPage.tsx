@@ -175,7 +175,8 @@ export function ConnectPage() {
                 </Button>
               </Link>
             </div>
-            <div className="flex items-center gap-2 ml-auto">
+            {/* Fixed: Removed duplicate filter button - only keeping this one */}
+            <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
                 size="sm"

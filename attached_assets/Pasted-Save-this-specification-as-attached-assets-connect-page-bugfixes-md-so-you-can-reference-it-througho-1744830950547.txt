@@ -1,0 +1,103 @@
+Save this specification as attached_assets/connect-page-bugfixes.md so you can reference it throughout implementation.
+
+🔧 Connect Page & Mood Update Bugfixes
+1. Remove Duplicate Filter Icon
+Issue: Two filter icons appear in the header.
+
+Action Steps:
+
+Locate the filter icon component import in ConnectPage.tsx (or its layout wrapper).
+
+Identify the two instances of <FilterIcon /> (or similar) and remove the extra one.
+
+Verify only a single filter button remains, styled consistently with Discover.
+
+2. Center & Space Connect Cards
+Issue: User cards are stuck to the left edge, not centered or evenly spaced.
+
+Action Steps:
+
+In the CSS/JSX container for the grid (e.g. .connect-grid), ensure you’re using a responsive grid system:
+
+css
+Copy
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+gap: 1rem;
+justify-items: center;      /* centers each card */
+Remove any justify-content: flex-start or margin-left: 0 overrides.
+
+Confirm that the parent container has proper padding/margin to avoid sticking to the viewport edge.
+
+3. Fix Filtering Logic (Connect Page)
+Issue: All 18 users always return; location & mood filters have no effect.
+
+Action Steps:
+
+In the filter change handler, inspect the query parameters being sent to /api/users/browse.
+
+Should be: ?city=SelectedCity&moods[]=Mood1&moods[]=Mood2
+
+Update the React state hook to accumulate multi-select moods:
+
+ts
+Copy
+const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
+// onClick mood badge:
+setSelectedMoods(prev => prev.includes(mood) ? prev.filter(m=>m!==mood) : [...prev, mood]);
+Ensure the API call uses these values:
+
+ts
+Copy
+fetch(`/api/users/browse?city=${city}&${selectedMoods.map(m=>`moods[]=${m}`).join('&')}`)
+On the server (/api/users/browse), confirm you apply:
+
+ts
+Copy
+if (moods) {
+  query = query.where(users.currentMoods.overlaps(moodsArray))
+}
+Write unit tests (or manual logs) to confirm filter queries yield subsets, not the full list.
+
+4. Resolve Mood-Update JSON Error
+Issue: “Error updating mood: Unexpected token <!doctype is not valid JSON”
+
+Likely Cause: The client POST to /api/profile is receiving an HTML error page rather than JSON.
+
+Action Steps:
+
+In the front end, the mood PATCH request should:
+
+ts
+Copy
+fetch('/api/profile', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ currentMoods: [newMood] })
+})
+Confirm the server endpoint app.post('/api/profile') is sending back res.json(updatedUser) and not redirecting or rendering HTML.
+
+Check for any middleware that might intercept and return an HTML login page on 401 — ensure API routes return JSON with status codes.
+
+Add error handling in the client:
+
+ts
+Copy
+if (!res.ok) {
+  const err = await res.text();
+  throw new Error(`Error updating mood: ${err}`);
+}
+Test updating mood in isolation (using Postman or browser console) to verify JSON round-trip.
+
+✅ Acceptance Criteria
+ Only one filter icon appears on Connect page.
+
+ Connect cards are centered and evenly spaced on all screen sizes.
+
+ Location and Mood filters narrow down results correctly.
+
+ Editing profile mood sends/receives valid JSON; no HTML parsing errors.
+
+ All fixes are committed alongside this spec file for future reference.
+
+Please implement each fix in order, verify visually and with console logs, then mark tasks complete in attached_assets/connect-page-bugfixes.md.
