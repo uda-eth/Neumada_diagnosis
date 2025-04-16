@@ -11,6 +11,7 @@ import { z } from "zod";
 import { useEffect, useState } from "react";
 import { loadStripe, Stripe } from '@stripe/stripe-js';
 import { v4 as uuidv4 } from 'uuid'; // Make sure to install uuid: npm install uuid @types/uuid
+import { EventItinerary } from "@/components/EventItinerary";
 
 // Define the Event type with all fields
 const EventSchema = z.object({
@@ -30,6 +31,13 @@ const EventSchema = z.object({
   creatorImage: z.string().nullable(),
   creatorUsername: z.string().nullable(), // Added creator username for profile linking
   tags: z.array(z.string()).nullable(),
+  itinerary: z.array(
+    z.object({
+      startTime: z.string(),
+      endTime: z.string(),
+      description: z.string()
+    })
+  ).nullable(),
 });
 
 type Event = z.infer<typeof EventSchema>;
