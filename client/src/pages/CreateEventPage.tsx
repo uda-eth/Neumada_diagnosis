@@ -168,8 +168,14 @@ export default function CreateEventPage() {
       // Add all form fields
       Object.entries(data).forEach(([key, value]) => {
         if (value !== null && value !== undefined) {
-          formData.append(key, value.toString());
-          console.log(`Added form field: ${key} = ${value}`);
+          if (key === 'itinerary' && Array.isArray(value)) {
+            // Serialize the itinerary array to JSON
+            formData.append(key, JSON.stringify(value));
+            console.log(`Added itinerary field with ${value.length} items`);
+          } else {
+            formData.append(key, value.toString());
+            console.log(`Added form field: ${key} = ${value}`);
+          }
         }
       });
       

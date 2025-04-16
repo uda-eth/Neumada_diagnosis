@@ -1257,6 +1257,18 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         console.warn("Failed to parse tags JSON:", e);
         // Default to empty array if parsing fails
       }
+      
+      // Parse itinerary data if provided
+      let itinerary = [];
+      try {
+        if (req.body.itinerary) {
+          itinerary = JSON.parse(req.body.itinerary);
+          console.log("Parsed itinerary data:", itinerary);
+        }
+      } catch (e) {
+        console.warn("Failed to parse itinerary JSON:", e);
+        // Default to empty array if parsing fails
+      }
 
       // Process price (making sure it's a number)
       let price = 0;
@@ -1287,6 +1299,7 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         createdAt: new Date(),
         isBusinessEvent: req.body.organizerType === 'business',
         timeFrame: req.body.timeFrame || '',
+        itinerary: itinerary, // Add the parsed itinerary data
         stripeProductId: null,
         stripePriceId: null
       };
