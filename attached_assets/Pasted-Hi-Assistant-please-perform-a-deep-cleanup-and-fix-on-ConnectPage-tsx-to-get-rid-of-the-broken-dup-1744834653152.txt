@@ -1,0 +1,50 @@
+Hi Assistant, please perform a deep cleanup and fix on ConnectPage.tsx to get rid of the broken, duplicated mood‑filter logic and restore proper server‑side filtering. Follow these precise steps:
+
+Consolidate Filtering Logic
+
+Remove any client‑side mood filtering beyond the server query. In filteredUsers you’re only supposed to search by name; delete any code that tries to filter by selectedMoods there.
+
+Ensure the only mood filter lives in the useQuery call—by appending moods[] params—and that React Query re‑runs when selectedMoods changes.
+
+Fix the Query Parameter Building
+
+In the queryFn for useQuery, confirm you loop over selectedMoods with
+
+ts
+Copy
+selectedMoods.forEach(mood => params.append('moods[]', mood));
+Make sure queryKey includes selectedMoods so React Query automatically triggers a refetch when they change.
+
+Remove any stray code paths that also hit /api/users/browse elsewhere in this file with a different param name (e.g. mood or moods without []).
+
+Simplify toggleFilter & State Updates
+
+Ensure toggleFilter(item, 'moods') only affects selectedMoods state and does not accidentally also toggle selectedInterests.
+
+After toggling, verify that React Query’s cache invalidates so a fresh API request uses the new moods[] list.
+
+Verify Backend Endpoint Compatibility
+
+Confirm /api/users/browse on the server parses req.query['moods[]'] (an array of strings) and filters users whose currentMoods overlap.
+
+If the server code expects moods instead of moods[], either update the front‑end to match or rename params in the API handler—pick one consistent format.
+
+Enhance User Feedback
+
+When no users match the current city+interest+mood filters, show “No users found matching your criteria.”
+
+Display a count of active mood filters near the “Filters” button (already done) but ensure it updates correctly as selectedMoods changes.
+
+Remove Duplicate Filter UI
+
+There’s a legacy “Filters” button or icon somewhere else in this file—remove it so only the one you’ve built remains.
+
+After applying these changes, test the following flows:
+
+Select one or more moods → API call includes moods[]=… for each → only users with at least one matching mood appear.
+
+Clear all moods → a fresh fetch returns all users in the selected city.
+
+Toggling moods doesn’t leave any ghost filters or stale UI state.
+
+Thank you! Save these instructions in attached_assets/connect-page-bugfixes.md for future reference.
