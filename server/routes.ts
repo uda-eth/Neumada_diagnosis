@@ -926,7 +926,9 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
       const currentUserIdSource = req.user?.id || req.query.currentUserId as string;
       const currentUserId = currentUserIdSource ? parseInt(currentUserIdSource.toString(), 10) : undefined;
       
-      console.log(`User browse request received with city=${city}, moods=${JSON.stringify(moods)}`);
+      // More detailed logging for debugging
+      console.log(`User browse request received with city=${city}`);
+      console.log(`Mood filters: ${moods ? (Array.isArray(moods) ? moods.join(', ') : moods) : 'none'}`);
       
       // Database query to get real users
       let query = db.select().from(users);
@@ -935,8 +937,6 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
       if (currentUserId && !isNaN(currentUserId)) {
         query = query.where(ne(users.id, currentUserId)); // Use the parsed ID
       }
-      
-      // Remove redundant/incorrect line: query = query.where(ne(users.id, currentUserId));
 
       // Apply filters to query
       if (city && city !== 'all') {
@@ -970,6 +970,7 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
 
       // Get all users with the applied filters
       let dbUsers = await query;
+      console.log(`Initial query returned ${dbUsers.length} users before additional filtering`);
 
       // Further filtering that's harder to do at the DB level
       if (interests) {
@@ -989,14 +990,19 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         // Improved mood filtering using array overlap 
         const moodArray = Array.isArray(moods) ? moods : [moods];
         
-        // Log for debugging
         console.log(`Filtering by moods: ${JSON.stringify(moodArray)}`);
         
         // Filter users where at least one of their moods matches any mood in our filter
         const usersBefore = dbUsers.length;
+        
+        // First check if we have any users with moods at all
+        const usersWithMoods = dbUsers.filter(user => user.currentMoods && Array.isArray(user.currentMoods));
+        console.log(`${usersWithMoods.length} of ${dbUsers.length} users have moods set`);
+        
         dbUsers = dbUsers.filter(user => {
           // Only include users with moods
           if (!user.currentMoods || !Array.isArray(user.currentMoods)) {
+            console.log(`User ${user.username} has no moods, excluding`);
             return false;
           }
           
@@ -1005,6 +1011,7 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
             user.currentMoods?.includes(filterMood)
           );
           
+          console.log(`User ${user.username} has moods [${user.currentMoods.join(', ')}], match: ${hasMatchingMood}`);
           return hasMatchingMood;
         });
         

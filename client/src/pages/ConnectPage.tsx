@@ -124,10 +124,13 @@ export function ConnectPage() {
         params.append('interests[]', interest);
       });
       
-      // Add moods as array parameters
-      selectedMoods.forEach(mood => {
-        params.append('moods[]', mood);
-      });
+      // Add moods as array parameters - ensure this is working
+      if (selectedMoods.length > 0) {
+        selectedMoods.forEach(mood => {
+          params.append('moods[]', mood);
+        });
+        console.log(`Including mood filters: ${selectedMoods.join(', ')}`);
+      }
       
       // Log the query for debugging
       console.log(`Fetching users with filters: ${params.toString()}`);
@@ -179,12 +182,16 @@ export function ConnectPage() {
           ? prev.filter(i => i !== item) 
           : [...prev, item];
         console.log(`Updated moods: ${newMoods.join(', ')}`);
+        
+        // Force an immediate refetch after mood changes
+        setTimeout(() => {
+          console.log(`Refetching with updated moods: ${newMoods.join(', ')}`);
+          refetch();
+        }, 50);
+        
         return newMoods;
       });
     }
-    
-    // Force a refetch after state updates
-    setTimeout(() => refetch(), 0);
   };
 
   return (
