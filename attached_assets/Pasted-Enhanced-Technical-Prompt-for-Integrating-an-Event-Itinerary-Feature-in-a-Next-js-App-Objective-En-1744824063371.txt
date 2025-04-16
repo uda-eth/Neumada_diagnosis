@@ -1,0 +1,132 @@
+Enhanced Technical Prompt for Integrating an Event Itinerary Feature in a Next.js App
+
+Objective:
+Enable event creators to specify a detailed itinerary (a timeline/roadmap) during event creation so that users can view a clear, chronologically ordered schedule (e.g., "6:00–6:30 Networking, 6:45–9:00 Dinner, 9:00–10:00 Drinks") on the event details page.
+
+1. Database Schema Updates (Drizzle ORM with PostgreSQL)
+Add an Itinerary Column to the events Table:
+
+Modify the events schema to add a new JSONB column (e.g., itinerary) designed to store an array of itinerary items.
+
+Each itinerary item should be an object with the following properties:
+
+startTime: A time string or timestamp indicating when the activity begins.
+
+endTime: A time string or timestamp indicating when the activity ends.
+
+description: A short string describing the activity.
+
+Example Migration Update:
+
+ts
+Copy
+export const events = pgTable("events", {
+  // ... existing columns
+  itinerary: jsonb("itinerary")
+    .$type<{ startTime: string; endTime: string; description: string }[]>()
+    .default([]),
+});
+2. Backend API Enhancements (TypeScript / Next.js API Routes or Express Server)
+Event Creation Endpoint (e.g., POST /api/events):
+
+Update the endpoint to accept an additional itinerary field in the request body.
+
+Use a robust validation mechanism (e.g., Zod schema) to ensure each itinerary item includes valid startTime, endTime, and description.
+
+Insert the validated itinerary into the new database column along with the other event details.
+
+Update any logging and error handling to include issues with itinerary data.
+
+Event Fetching Endpoints (GET /api/events and GET /api/events/[id]):
+
+Ensure that these endpoints query and include the itinerary data from the database when returning event objects.
+
+Confirm that the returned JSON structure includes the itinerary array so the frontend can render it.
+
+3. Frontend Enhancements (Next.js with React and TypeScript)
+Event Creation Form:
+
+Enhance the event creation page to include dynamic form fields for itinerary items.
+
+Use React Hook Form with a field array to allow multiple itinerary items to be added, edited, or removed.
+
+Provide inputs for startTime, endTime, and description for each itinerary item.
+
+Implement Zod validation (via zodResolver) to ensure that:
+
+Each item has a valid time format.
+
+The startTime is before the endTime.
+
+The description is not empty.
+
+Provide clear UI elements (e.g., buttons to “Add Itinerary Item”) and error feedback if the data is incorrect.
+
+Event Details Page:
+
+Create or update a dedicated component (e.g., <EventItinerary />) that takes the itinerary array from the event object as a prop.
+
+Render the itinerary items in a visually appealing timeline or roadmap format:
+
+Sort items chronologically by startTime.
+
+Display each item with its time range and description.
+
+Use a timeline, stepper, or card layout for a modern look.
+
+Ensure the timeline is responsive and works well on different device sizes.
+
+4. Error Handling and Validation
+Backend Validation:
+
+Return clear HTTP error codes if the itinerary data fails validation.
+
+Log detailed errors to diagnose issues with time formatting or missing fields.
+
+Frontend Feedback:
+
+Provide inline error messages and tooltips in the form if the itinerary data is incomplete or misformatted.
+
+Implement a fallback UI for the event details page, displaying a message like “No itinerary provided for this event” when the itinerary is empty.
+
+5. Testing and Verification
+Unit and Integration Tests (Backend):
+
+Write tests to confirm that the event creation endpoint:
+
+Accepts valid itinerary data and persists it in the database.
+
+Returns appropriate error responses for invalid itinerary entries.
+
+Test that the event fetching endpoints include the itinerary data as part of the event object.
+
+Component Tests (Frontend):
+
+Build tests for the event creation form:
+
+Verify that users can add, edit, and remove multiple itinerary items.
+
+Check that Zod validation fires for invalid entries.
+
+Test the timeline component:
+
+Render a sample itinerary array and verify that items are sorted and displayed correctly.
+
+Ensure responsiveness across viewports.
+
+6. Deployment Considerations and Documentation
+Document Schema Changes:
+
+Update migration files and documentation to include the new itinerary field.
+
+Environment Variables:
+
+Ensure that any changes to API endpoints or additional configuration are documented.
+
+CI/CD and Testing:
+
+Integrate these tests into your CI/CD pipeline if applicable, ensuring robust quality checks.
+
+Deliverable:
+
+Implement these changes in our Next.js project with a TypeScript backend and React frontend. The final solution must allow event creators to add a detailed itinerary during event creation and display it elegantly on the event details page in a timeline format. Provide thorough tests and documentation for this new functionality.
