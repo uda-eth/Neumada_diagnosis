@@ -59,6 +59,7 @@ export const events = pgTable("events", {
   timeFrame: text("time_frame"), // Today, This Week, This Weekend, This Month, Next Month
   stripeProductId: text("stripe_product_id"), // For payment integration
   stripePriceId: text("stripe_price_id"), // For payment integration
+  itinerary: jsonb("itinerary").$type<{ startTime: string; endTime: string; description: string }[]>().default([]),
 });
 
 export const eventParticipants = pgTable("event_participants", {

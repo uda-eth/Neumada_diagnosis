@@ -33,6 +33,23 @@ import { EVENT_CATEGORIES } from "@/lib/constants";
 import { useUser } from "@/hooks/use-user";
 
 // Define a simple schema for our form
+// Define a schema for itinerary items
+const itineraryItemSchema = z.object({
+  startTime: z.string().refine(val => !isNaN(Date.parse(val)), "Please enter a valid start time"),
+  endTime: z.string().refine(val => !isNaN(Date.parse(val)), "Please enter a valid end time"),
+  description: z.string().min(1, "Description is required"),
+}).refine(
+  (data) => {
+    const startTime = new Date(data.startTime).getTime();
+    const endTime = new Date(data.endTime).getTime();
+    return startTime < endTime;
+  },
+  {
+    message: "End time must be after start time",
+    path: ["endTime"]
+  }
+);
+
 const eventSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
@@ -44,6 +61,8 @@ const eventSchema = z.object({
   date: z.string()
     .refine(val => !isNaN(Date.parse(val)), "Please enter a valid date")
     .default(() => new Date().toISOString()),
+  // Add itinerary field (optional array of itinerary items)
+  itinerary: z.array(itineraryItemSchema).optional().default([]),
 });
 
 // Define the form data type using the zod schema
