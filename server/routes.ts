@@ -1879,6 +1879,47 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
     }
   });
 
+  // Endpoint to update user profile - including moods
+  app.post("/api/profile", async (req, res) => {
+    try {
+      // Ensure user is authenticated
+      if (!req.isAuthenticated() || !req.user) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const userId = req.user.id;
+      const updateData = req.body;
+      
+      console.log(`Updating profile for user ${userId}:`, updateData);
+      
+      // Check if we're updating moods
+      if (updateData.currentMoods !== undefined) {
+        // Update user moods in the database
+        await db.update(users)
+          .set({ 
+            currentMoods: updateData.currentMoods 
+          })
+          .where(eq(users.id, userId));
+        
+        console.log(`Updated user ${userId} moods to:`, updateData.currentMoods);
+        
+        // Get the updated user data
+        const updatedUser = await db.query.users.findFirst({
+          where: eq(users.id, userId)
+        });
+        
+        // Return the updated user data
+        return res.json(updatedUser || { error: "User not found after update" });
+      }
+      
+      // If we reach here, return error for unsupported update type
+      return res.status(400).json({ error: "Unsupported update type" });
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      res.status(500).json({ error: "Failed to update profile" });
+    }
+  });
+
   // Get user profile by ID
   app.get('/api/users/profile/:userId', async (req: Request, res: Response) => {
     try {

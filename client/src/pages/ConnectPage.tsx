@@ -271,8 +271,8 @@ export function ConnectPage() {
         )}
       </div>
 
-      {/* Fixed: Improved grid layout with proper spacing and centering */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 mx-auto w-full justify-items-center">
+      {/* Enhanced grid layout with proper spacing and centering - ensuring consistent card sizes */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 mx-auto w-full">
         {isLoading ? (
           // Loading skeletons
           Array(6).fill(0).map((_, index) => (
