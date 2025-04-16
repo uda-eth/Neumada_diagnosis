@@ -197,13 +197,21 @@ export default function EditProfilePage() {
                     <div
                       key={mood}
                       className={`cursor-pointer flex-grow text-center py-3 px-4 rounded-lg transition-all ${
-                        form.watch("currentMood") === mood 
+                        (form.watch("currentMoods") || []).includes(mood)
                           ? `${moodStyles[mood]} border-2 border-white/20 shadow-md transform scale-105` 
                           : "bg-white/5 hover:bg-white/10"
                       }`}
                       onClick={async () => {
+                        // Get current moods
+                        const currentMoods = form.watch("currentMoods") || [];
+                        
+                        // Toggle the selected mood (add if not present, remove if present)
+                        const updatedMoods = currentMoods.includes(mood) 
+                          ? currentMoods.filter(m => m !== mood)
+                          : [...currentMoods, mood];
+                        
                         // Update form value
-                        form.setValue("currentMood", mood);
+                        form.setValue("currentMoods", updatedMoods);
                         
                         // Save immediately via POST request
                         try {
@@ -222,7 +230,7 @@ export default function EditProfilePage() {
                             method: 'POST',
                             headers,
                             credentials: 'include',
-                            body: JSON.stringify({ currentMood: mood })
+                            body: JSON.stringify({ currentMoods: updatedMoods })
                           });
                           
                           if (!response.ok) {

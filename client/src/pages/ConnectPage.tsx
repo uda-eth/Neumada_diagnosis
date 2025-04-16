@@ -162,7 +162,7 @@ export function ConnectPage() {
   };
 
   return (
-    <div className="container py-6 space-y-6">
+    <div className="container mx-auto py-6 space-y-6">
       <header className="border-b border-border sticky top-0 z-50 bg-black/40 backdrop-blur-sm text-white mb-6">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -284,8 +284,8 @@ export function ConnectPage() {
         )}
       </div>
 
-      {/* Enhanced grid layout with proper spacing and centering using pure CSS Grid */}
-      <div className="connect-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 justify-items-center p-4 w-full">
+      {/* Enhanced grid layout with proper spacing and centering */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 w-full place-items-center">
         {isLoading ? (
           // Loading skeletons
           Array(6).fill(0).map((_, index) => (
@@ -311,7 +311,7 @@ export function ConnectPage() {
         ) : filteredUsers.length > 0 ? (
           // Real users from database
           filteredUsers.map((user) => (
-            <Link key={user.id} href={`/profile/${user.username}`} className="w-full max-w-sm">
+            <Link key={user.id} href={`/profile/${user.username}`} className="w-full max-w-sm h-full">
               <Card className="overflow-hidden hover:bg-accent/5 transition-colors cursor-pointer group h-full w-full">
                 <CardContent className="p-0">
                   <div className="flex flex-col h-full">
@@ -388,7 +388,7 @@ export function ConnectPage() {
         )}
       </div>
       <div className="py-8 border-y border-border/10 bg-accent/5">
-        <div className="container">
+        <div className="container mx-auto">
           <p className="text-center text-sm font-medium text-muted-foreground mb-4">
             Premium Ad Partner
           </p>
