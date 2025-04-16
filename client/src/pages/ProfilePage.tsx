@@ -173,37 +173,49 @@ export default function ProfilePage() {
   // Update mood mutation
   const updateMoodMutation = useMutation({
     mutationFn: async (mood: string) => {
-      console.log('Updating mood with:', mood ? [mood] : []);
-      const response = await fetch('/api/profile', {
-        method: 'POST', // Changed from PATCH to POST to match server endpoint
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          currentMoods: mood ? [mood] : [] 
-        }),
-      });
+      console.log('⚠️ Updating mood with:', mood ? [mood] : []);
+      console.log('⚠️ Sending POST request to /api/profile');
       
-      if (!response.ok) {
-        // Fix for HTML error response handling
-        try {
-          const errorText = await response.text();
-          // Check if response is HTML (typical for redirect to login page)
-          if (errorText.includes('<!DOCTYPE html>') || errorText.includes('<html')) {
-            throw new Error('Authentication error. Please log in again.');
+      try {
+        const response = await fetch('/api/profile', {
+          method: 'POST', // Changed from PATCH to POST to match server endpoint
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include', // Include cookies for auth
+          body: JSON.stringify({ 
+            currentMoods: mood ? [mood] : [] 
+          }),
+        });
+        
+        if (!response.ok) {
+          // Fix for HTML error response handling
+          try {
+            const errorText = await response.text();
+            console.log('⚠️ Error response text:', errorText.substring(0, 500) + '...');
+            
+            // Check if response is HTML (typical for redirect to login page)
+            if (errorText.includes('<!DOCTYPE html>') || errorText.includes('<html')) {
+              throw new Error('Authentication error. Please log in again.');
+            }
+            
+            // Try to parse as JSON if not HTML
+            const errorData = JSON.parse(errorText);
+            throw new Error(errorData.error || 'Failed to update mood');
+          } catch (e: any) {
+            // If JSON parsing fails or any other error
+            if (e.message === 'Authentication error. Please log in again.') {
+              throw e;
+            }
+            throw new Error(`Error updating mood: ${response.status} ${response.statusText}`);
           }
-          
-          // Try to parse as JSON if not HTML
-          const errorData = JSON.parse(errorText);
-          throw new Error(errorData.error || 'Failed to update mood');
-        } catch (e: any) {
-          // If JSON parsing fails or any other error
-          if (e.message === 'Authentication error. Please log in again.') {
-            throw e;
-          }
-          throw new Error(`Error updating mood: ${response.status} ${response.statusText}`);
         }
+        
+        const responseData = await response.json();
+        console.log('⚠️ Mood update successful, received:', responseData);
+        return responseData;
+      } catch (error) {
+        console.error('⚠️ Error in mood update function:', error);
+        throw error;
       }
-      
-      return response.json();
     },
     onSuccess: (data) => {
       toast({
