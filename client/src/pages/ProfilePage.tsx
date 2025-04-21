@@ -319,43 +319,43 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Full-width profile image cover with gradient overlay */}
+      {/* Profile image cover with gradient overlay - adjusted height */}
       <div className="relative w-full">
         {profileData.profileImage ? (
-          <div className="w-full h-[40vh] relative">
+          <div className="w-full h-[30vh] md:h-[35vh] relative">
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/60 to-black"></div>
             <img 
               src={profileData.profileImage} 
               alt={profileData.fullName || profileData.username}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover object-center"
             />
           </div>
         ) : (
-          <div className="w-full h-[40vh] bg-gradient-to-b from-purple-900/80 via-blue-900/80 to-black flex items-center justify-center">
-            <div className="text-8xl font-bold text-white/20">
+          <div className="w-full h-[30vh] md:h-[35vh] bg-gradient-to-b from-purple-900/80 via-blue-900/80 to-black flex items-center justify-center">
+            <div className="text-6xl md:text-8xl font-bold text-white/20">
               {profileData.username[0].toUpperCase()}
             </div>
           </div>
         )}
 
         {/* Profile info overlay - positioned at bottom of cover image */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 text-white">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl font-bold tracking-tight mb-2">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
               {profileData.fullName || profileData.username}
-              {profileData.age && <span className="ml-2 text-3xl font-normal">{profileData.age}</span>}
+              {profileData.age && <span className="ml-2 text-xl md:text-2xl font-normal">{profileData.age}</span>}
             </h1>
 
-            <div className="flex flex-wrap gap-3 mt-3">
+            <div className="flex flex-wrap gap-2 mt-2">
               {profileData.location && (
-                <Badge className="bg-white/10 hover:bg-white/20 text-white py-1.5 px-3 backdrop-blur-sm">
+                <Badge className="bg-white/10 hover:bg-white/20 text-white py-1 px-2 text-xs md:text-sm backdrop-blur-sm">
                   <MapPin className="h-3 w-3 mr-1" />
                   {profileData.location}
                 </Badge>
               )}
               
               {profileData.profession && (
-                <Badge className="bg-white/10 hover:bg-white/20 text-white py-1.5 px-3 backdrop-blur-sm">
+                <Badge className="bg-white/10 hover:bg-white/20 text-white py-1 px-2 text-xs md:text-sm backdrop-blur-sm">
                   <Briefcase className="h-3 w-3 mr-1" />
                   {profileData.profession}
                 </Badge>
@@ -366,9 +366,9 @@ export default function ProfilePage() {
       </div>
 
       {/* Main profile content */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-4 py-6">
         {/* Action buttons */}
-        <div className="flex flex-wrap gap-3 mb-8">
+        <div className="flex flex-wrap gap-3 mb-6">
           {/* Edit Profile button - only show if viewing own profile */}
           {currentUser && profileData.id === currentUser.id && (
             <Button 
@@ -430,7 +430,7 @@ export default function ProfilePage() {
                 <Button 
                   onClick={() => createConnectionMutation.mutate(profileData.id)}
                   disabled={createConnectionMutation.isPending}
-                  className="gap-2 bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 w-full sm:w-auto"
+                  className="gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 w-full sm:w-auto rounded-full"
                 >
                   {createConnectionMutation.isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -446,56 +446,56 @@ export default function ProfilePage() {
 
         {/* Bio section */}
         {profileData.bio && (
-          <Card className="mb-8 bg-black border-border/30 overflow-hidden">
-            <CardContent className="p-6">
-              <p className="text-lg text-foreground/90">{profileData.bio}</p>
+          <Card className="mb-6 bg-black/30 border-border/30 overflow-hidden rounded-xl">
+            <CardContent className="p-4 md:p-5">
+              <p className="text-base md:text-lg text-foreground/90">{profileData.bio}</p>
             </CardContent>
           </Card>
         )}
 
         {/* Current Mood Section */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Smile className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-semibold">Current Mood</h2>
+              <Smile className="h-4 w-4 text-primary" />
+              <h2 className="text-base font-semibold">Current Mood</h2>
             </div>
             
             {/* Only show change mood button if viewing own profile */}
             {currentUser && profileData.id === currentUser.id && (
               <Button 
-                variant="outline" 
+                variant="ghost" 
                 size="sm"
-                className="gap-2 border-primary/50 hover:border-primary text-primary"
+                className="gap-1 text-xs text-primary h-7 px-2"
                 onClick={() => setIsUpdatingMood(!isUpdatingMood)}
                 disabled={updateMoodMutation.isPending}
               >
                 {updateMoodMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-3 w-3 animate-spin" />
                 ) : (
-                  <Edit3 className="h-4 w-4" />
+                  <Edit3 className="h-3 w-3" />
                 )}
-                {isUpdatingMood ? "Cancel" : (profileData.currentMoods?.length ? "Change Mood" : "Add Mood")}
+                {isUpdatingMood ? "Cancel" : (profileData.currentMoods?.length ? "Change" : "Add")}
               </Button>
             )}
           </div>
           
           {/* Current Mood Display */}
           {!isUpdatingMood ? (
-            <div className="bg-black/50 rounded-xl p-5 border border-border/30">
+            <div className="bg-black/20 rounded-xl p-4 border border-border/20">
               {profileData.currentMoods && profileData.currentMoods.length > 0 ? (
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-2">
                   {profileData.currentMoods.map((mood, index) => (
                     <Badge 
                       key={index}
-                      className={`py-2 px-4 text-base font-medium ${moodStyles[mood as keyof typeof moodStyles] || ''}`}
+                      className={`py-1.5 px-3 text-sm font-medium ${moodStyles[mood as keyof typeof moodStyles] || ''} rounded-full`}
                     >
                       {mood}
                     </Badge>
                   ))}
                 </div>
               ) : (
-                <p className="text-muted-foreground italic">
+                <p className="text-muted-foreground text-sm italic">
                   {currentUser && profileData.id === currentUser.id 
                     ? "You haven't shared your current mood yet."
                     : "This user hasn't shared their current mood yet."}
@@ -503,15 +503,16 @@ export default function ProfilePage() {
               )}
             </div>
           ) : (
-            <div className="bg-black/50 rounded-xl p-5 border border-border/30 space-y-4">
-              <p className="text-sm text-muted-foreground">Select your current mood:</p>
-              <div className="flex flex-wrap gap-3">
+            <div className="bg-black/20 rounded-xl p-4 border border-border/20 space-y-3">
+              <p className="text-xs text-muted-foreground">Select your current mood:</p>
+              <div className="flex flex-wrap gap-2">
                 {moods.map((mood) => (
                   <Button
                     key={mood}
                     variant="outline"
+                    size="sm"
                     className={`
-                      border rounded-full px-4 py-2 
+                      border rounded-full px-3 py-1 h-auto text-xs
                       ${moodStyles[mood as keyof typeof moodStyles] || ''}
                     `}
                     onClick={() => updateMoodMutation.mutate(mood)}
@@ -526,18 +527,18 @@ export default function ProfilePage() {
         
         {/* Interests Section */}
         {profileData.interests && profileData.interests.length > 0 && (
-          <div className="mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <Heart className="h-5 w-5 text-red-400" />
-              <h2 className="text-xl font-semibold">Interests</h2>
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <Heart className="h-4 w-4 text-red-400" />
+              <h2 className="text-base font-semibold">Interests</h2>
             </div>
-            <div className="bg-black/50 rounded-xl p-5 border border-border/30">
-              <div className="flex flex-wrap gap-3">
+            <div className="bg-black/20 rounded-xl p-4 border border-border/20">
+              <div className="flex flex-wrap gap-2">
                 {profileData.interests.map((interest, index) => (
                   <Badge 
                     key={index}
                     variant="outline"
-                    className="py-2 px-4 text-base border-red-500/20 text-red-400/90 hover:border-red-500/40"
+                    className="py-1.5 px-3 text-sm border-red-500/20 text-red-400/90 hover:border-red-500/40 rounded-full"
                   >
                     {interest}
                   </Badge>
