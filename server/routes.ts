@@ -1214,6 +1214,67 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
 
       if (dbEvent && dbEvent.length > 0) {
         const event = dbEvent[0];
+        
+        // Get both attending and interested participants for this event
+        const eventParticipantsList = await db.select({
+          userId: eventParticipants.userId,
+          status: eventParticipants.status
+        })
+        .from(eventParticipants)
+        .where(eq(eventParticipants.eventId, eventId));
+        
+        // Create separate lists for attending and interested users
+        const attendingUserIds = eventParticipantsList
+          .filter(p => p.status === 'attending')
+          .map(p => p.userId);
+        
+        const interestedUserIds = eventParticipantsList
+          .filter(p => p.status === 'interested')
+          .map(p => p.userId);
+          
+        // Fetch user details for all participants
+        let attendingUsers = [];
+        let interestedUsers = [];
+        
+        if (attendingUserIds.length > 0) {
+          // Fetch details for attending users
+          const attendingUsersData = await db.select({
+            id: users.id,
+            username: users.username,
+            fullName: users.fullName,
+            profileImage: users.profileImage
+          })
+          .from(users)
+          .where(inArray(users.id, attendingUserIds));
+          
+          // Format for client
+          attendingUsers = attendingUsersData.map(user => ({
+            id: user.id,
+            name: user.fullName || user.username,
+            username: user.username,
+            image: user.profileImage || '/default-avatar.png'
+          }));
+        }
+        
+        if (interestedUserIds.length > 0) {
+          // Fetch details for interested users
+          const interestedUsersData = await db.select({
+            id: users.id,
+            username: users.username,
+            fullName: users.fullName,
+            profileImage: users.profileImage
+          })
+          .from(users)
+          .where(inArray(users.id, interestedUserIds));
+          
+          // Format for client
+          interestedUsers = interestedUsersData.map(user => ({
+            id: user.id,
+            name: user.fullName || user.username,
+            username: user.username,
+            image: user.profileImage || '/default-avatar.png'
+          }));
+        }
 
         // If we have a creatorId, fetch the creator information
         if (event.creatorId) {
@@ -1230,17 +1291,19 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
             .limit(1);
 
             if (creatorQuery && creatorQuery.length > 0) {
-              // Add creator details to the event object
+              // Add creator details and participants to the event object
               const creator = creatorQuery[0];
-              const eventWithCreator = {
+              const eventWithDetails = {
                 ...event,
                 creatorName: creator.fullName || creator.username,
                 creatorImage: creator.profileImage,
-                creatorUsername: creator.username
+                creatorUsername: creator.username,
+                attendingUsers,
+                interestedUsers
               };
               
               console.log(`Found event in database with creator: ${event.title}, creator: ${creator.username}`);
-              return res.json(eventWithCreator);
+              return res.json(eventWithDetails);
             }
           } catch (creatorError) {
             console.error("Error fetching creator details:", creatorError);
@@ -1248,8 +1311,15 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
           }
         }
 
+        // Add participants to the event object even if we don't have creator details
+        const eventWithParticipants = {
+          ...event,
+          attendingUsers,
+          interestedUsers
+        };
+        
         console.log("Found event in database:", event.title);
-        return res.json(event);
+        return res.json(eventWithParticipants);
       }
 
       // If not found in database, fall back to mock data during development

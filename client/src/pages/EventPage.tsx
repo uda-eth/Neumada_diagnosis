@@ -38,6 +38,23 @@ const EventSchema = z.object({
       description: z.string()
     })
   ).nullable(),
+  // Add attending and interested users arrays for profile linking
+  attendingUsers: z.array(
+    z.object({
+      id: z.number(),
+      name: z.string(),
+      image: z.string(),
+      username: z.string().optional()
+    })
+  ).optional().nullable(),
+  interestedUsers: z.array(
+    z.object({
+      id: z.number(),
+      name: z.string(),
+      image: z.string(),
+      username: z.string().optional()
+    })
+  ).optional().nullable(),
 });
 
 type Event = z.infer<typeof EventSchema>;
@@ -312,18 +329,9 @@ export default function EventPage() {
   const attendingCount = event.attendingCount || 0;
   const interestedCount = event.interestedCount || 0;
 
-  // Use actual data if available, or a placeholder set
-  const attendingUsers: EventUser[] = Array.from({ length: Math.min(attendingCount, 5) }, (_, i) => ({
-    id: i,
-    name: `User ${i + 1}`,
-    image: `/attached_assets/profile-image-${i + 1}.jpg`
-  }));
-
-  const interestedUsers: EventUser[] = Array.from({ length: Math.min(interestedCount, 5) }, (_, i) => ({
-    id: i + 10,
-    name: `User ${i + 6}`,
-    image: `/attached_assets/profile-image-${i + 6}.jpg`
-  }));
+  // Use actual attendees data from the event object if available
+  const attendingUsers: EventUser[] = event.attendingUsers || [];
+  const interestedUsers: EventUser[] = event.interestedUsers || [];
 
   // Modified to support both username and ID-based profile navigation
 const handleUserClick = (userIdOrUsername: number | string, username?: string) => {
@@ -436,7 +444,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                     className="ring-2 ring-background w-12 h-12 border-2 border-black/40"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleUserClick(user.id);
+                      handleUserClick(user.username || user.id);
                     }}
                   >
                     <AvatarImage 
@@ -473,7 +481,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                     className="ring-2 ring-background w-12 h-12 border-2 border-black/40"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleUserClick(user.id);
+                      handleUserClick(user.username || user.id);
                     }}
                   >
                     <AvatarImage 
