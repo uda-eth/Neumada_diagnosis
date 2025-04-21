@@ -1,0 +1,54 @@
+**Diagnostic & Fix Plan for Mood Filtering on Connect Page**
+
+**1. Identify Front‑end Query Construction**  
+- **Search for:** `params.append('moods[]'` in `ConnectPage.tsx` (or wherever you build the URL).  
+- **Verify:**  
+  - That each selected mood is appended as `moods[]=MoodName`.  
+  - That you don’t accidentally clear or overwrite `selectedMoods` on render.  
+- **Check:** In React DevTools Network tab, inspect the actual request URL for `/api/users/browse?…`—confirm your chosen moods appear in the query string.
+
+**2. Inspect Back‑end Route Handling**  
+- **Search for:**  
+  ```ts
+  app.get('/api/users/browse', …
+  ```  
+  in your server files (e.g. `server/routes.ts`).  
+- **Locate:** The code that reads `req.query['moods[]']` (or `req.query.moods`) and how it filters the database.  
+- **Verify:**  
+  - That you parse `req.query['moods[]']` into an array (handle both string and string[]).  
+  - That you actually apply a `WHERE` clause to your Drizzle/SQL query—e.g. `db.select().from(users).where(or(...))` or JSONB containment (`users.currentMoods.contains(moods)`).  
+
+**3. Implement & Test Correct Filtering**  
+- **Front‑end:**  
+  - Ensure `fetch(`/api/users/browse?${params}`)` includes your moods.  
+  - Log `params.toString()` just before fetch to confirm.  
+- **Back‑end:**  
+  ```ts
+  // Example: Convert req.query.moods to an array
+  let moodFilters: string[] = [];
+  if (req.query['moods[]']) {
+    moodFilters = Array.isArray(req.query['moods[]'])
+      ? req.query['moods[]']
+      : [req.query['moods[]']];
+  }
+  if (moodFilters.length) {
+    query = query.where(
+      or(...moodFilters.map(m => users.currentMoods.contains([m])))
+    );
+  }
+  ```
+- **Test:**  
+  - Restart server, use Postman or browser to hit `/api/users/browse?moods[]=Dining%20Out` and confirm only users with `currentMoods` including `"Dining Out"` are returned.  
+  - On the UI, select a mood in the Connect page and verify only matching users appear.
+
+**4. Commit & Validate**  
+- After changes, click each mood filter in the UI—ensure the list narrows correctly.  
+- Remove all mood filters—confirm it returns the full user list again.  
+- Check for console errors; ensure no unexpected full reloads clear filters.
+
+   
+> **Next Steps for Agent:**  
+> 1. **Search** within `ConnectPage.tsx` for `moods[]` to confirm request construction.  
+> 2. **Search** in server routes for `/api/users/browse` and `req.query` handling of `moods`.  
+> 3. **Implement** array parsing and Drizzle JSONB or relational filtering.  
+> 4. **Test** via direct API calls and UI interactions until mood filters work end‑to‑end.
