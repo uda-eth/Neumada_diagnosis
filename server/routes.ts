@@ -11,7 +11,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { sendMessage, getConversations, getMessages, markMessageAsRead, markAllMessagesAsRead } from './services/messagingService';
 import { db } from "../db";
 import { userCities, users, events, sessions, userConnections, eventParticipants, payments, subscriptions } from "../db/schema";
-import { eq, ne, gte, lte, and, or, desc } from "drizzle-orm";
+import { eq, ne, gte, lte, and, or, desc, inArray } from "drizzle-orm";
 import { stripe } from './lib/stripe'; // Import Stripe client from server/lib
 import Stripe from 'stripe'; // Ensure Stripe type is available if needed later
 import QRCode from 'qrcode';
@@ -1233,19 +1233,27 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
           .map(p => p.userId);
           
         // Fetch user details for all participants
-        let attendingUsers = [];
-        let interestedUsers = [];
+        let attendingUsers: { id: number; name: string; username: string; image: string }[] = [];
+        let interestedUsers: { id: number; name: string; username: string; image: string }[] = [];
         
         if (attendingUserIds.length > 0) {
-          // Fetch details for attending users
-          const attendingUsersData = await db.select({
-            id: users.id,
-            username: users.username,
-            fullName: users.fullName,
-            profileImage: users.profileImage
-          })
-          .from(users)
-          .where(inArray(users.id, attendingUserIds));
+          // Fetch each attending user individually
+          const attendingUsersData = [];
+          for (const userId of attendingUserIds) {
+            const userData = await db.select({
+              id: users.id,
+              username: users.username,
+              fullName: users.fullName,
+              profileImage: users.profileImage
+            })
+            .from(users)
+            .where(eq(users.id, userId))
+            .limit(1);
+            
+            if (userData && userData.length > 0) {
+              attendingUsersData.push(userData[0]);
+            }
+          }
           
           // Format for client
           attendingUsers = attendingUsersData.map(user => ({
@@ -1257,15 +1265,23 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         }
         
         if (interestedUserIds.length > 0) {
-          // Fetch details for interested users
-          const interestedUsersData = await db.select({
-            id: users.id,
-            username: users.username,
-            fullName: users.fullName,
-            profileImage: users.profileImage
-          })
-          .from(users)
-          .where(inArray(users.id, interestedUserIds));
+          // Fetch each interested user individually
+          const interestedUsersData = [];
+          for (const userId of interestedUserIds) {
+            const userData = await db.select({
+              id: users.id,
+              username: users.username,
+              fullName: users.fullName,
+              profileImage: users.profileImage
+            })
+            .from(users)
+            .where(eq(users.id, userId))
+            .limit(1);
+            
+            if (userData && userData.length > 0) {
+              interestedUsersData.push(userData[0]);
+            }
+          }
           
           // Format for client
           interestedUsers = interestedUsersData.map(user => ({
