@@ -1019,6 +1019,11 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         moods = [req.query['moods[]']];
         console.log("Converting moods[] string to array:", moods);
       }
+      // If moods is present as array, use it directly (for Express 4's handling of query parameters)
+      else if (Array.isArray(req.query.moods)) {
+        moods = req.query.moods;
+        console.log("Using req.query.moods as array:", moods);
+      }
       // If moods is present as a comma-separated string, split it
       else if (req.query.moods && typeof req.query.moods === 'string' && req.query.moods.includes(',')) {
         moods = req.query.moods.split(',');
@@ -1074,9 +1079,11 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         console.log(`Applying mood filters at database level: ${moodArray.join(', ')}`);
 
         // Use SQL to directly apply the && operator (array overlap)
-        // Convert the JavaScript array to a PostgreSQL array literal
-        const moodArrayLiteral = `ARRAY['${moodArray.join("','")}']`;
-        query = query.where(sql`${users.currentMoods} && ${sql.raw(moodArrayLiteral)}`);
+        // For JSONB arrays (which currentMoods is), we need to use jsonb_array_elements and check if any value is in our list
+        query = query.where(sql`EXISTS (
+          SELECT 1 FROM jsonb_array_elements_text(${users.currentMoods}) as mood
+          WHERE mood IN (${sql.join(moodArray, sql`, `)})
+        )`);
       }
       
       // Log the query parameters for debugging
