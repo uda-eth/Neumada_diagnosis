@@ -333,10 +333,10 @@ export default function ProfilePage() {
       <Button
         variant="ghost"
         className="text-white"
-        onClick={() => setLocation('/connect')}
+        onClick={() => setLocation(determineBackPath())}
       >
         <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Connect
+        {determineBackPath().startsWith('/event/') ? 'Back to Event' : 'Back'}
       </Button>
     </div>
   </div>
