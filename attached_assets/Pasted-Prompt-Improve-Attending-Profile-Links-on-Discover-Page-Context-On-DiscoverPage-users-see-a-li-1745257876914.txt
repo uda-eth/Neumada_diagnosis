@@ -1,0 +1,49 @@
+Prompt: Improve “Attending” Profile Links on Discover Page
+
+Context:
+On DiscoverPage, users see a list of attendees’ avatars below each event. When I click “I’m attending,” my avatar appears—but:
+
+My avatar remains a blank placeholder rather than my real profile image.
+
+Clicking any attendee’s avatar (including mine) navigates to /profile/<id> and shows a “No profile found” page instead of that user’s profile.
+
+Goal:
+
+Ensure that when a user RSVPs, their real profile image is fetched and displayed among the attending icons.
+
+Fix the attendee–avatar click handler so it routes to /profile/:username (not /profile/:id) and successfully renders that user’s profile page.
+
+Tasks:
+
+Verify RSVP State & Data:
+
+Check the API response for the “attending” mutation to confirm it returns the attendee’s username and profileImage fields.
+
+In the React state that holds the attending-user list, ensure you’re storing and rendering user.profileImage (fallback to avatar placeholder only if missing).
+
+Render Correct Avatar:
+
+In DiscoverPage (or its <EventShow> child), locate the JSX mapping over event.attendingUsers.
+
+Change from something like:
+
+tsx
+Copy
+Edit
+<img src={user.profileImage || defaultAvatar} … />
+to properly pull user.profileImage (e.g. user.profileImage instead of an undefined field).
+
+Fix Click-to-Profile Route:
+
+Change the avatar <Link> from linking to /profile/${user.id}
+to /profile/${user.username}.
+
+Ensure the profile route component (e.g. ProfilePage.tsx) reads the username from useParams() and queries the correct /api/users/:username endpoint.
+
+Test & Validate:
+
+RSVP as a test user, confirm your real image appears under “Attending.”
+
+Click your avatar and another attendee’s avatar—verify you land on /profile/<username> and see their profile details instead of the “not found” screen.
+
+Please update the Discover/Event‑Show component accordingly and commit those changes. Once fixed, attendees’ avatars should display correctly and route to the right username‑based profile page.

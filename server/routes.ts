@@ -11,7 +11,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { sendMessage, getConversations, getMessages, markMessageAsRead, markAllMessagesAsRead } from './services/messagingService';
 import { db } from "../db";
 import { userCities, users, events, sessions, userConnections, eventParticipants, payments, subscriptions } from "../db/schema";
-import { eq, ne, gte, lte, and, or, desc } from "drizzle-orm";
+import { eq, ne, gte, lte, and, or, desc, inArray } from "drizzle-orm";
 import { stripe } from './lib/stripe'; // Import Stripe client from server/lib
 import Stripe from 'stripe'; // Ensure Stripe type is available if needed later
 import QRCode from 'qrcode';
@@ -1214,6 +1214,83 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
 
       if (dbEvent && dbEvent.length > 0) {
         const event = dbEvent[0];
+        
+        // Get both attending and interested participants for this event
+        const eventParticipantsList = await db.select({
+          userId: eventParticipants.userId,
+          status: eventParticipants.status
+        })
+        .from(eventParticipants)
+        .where(eq(eventParticipants.eventId, eventId));
+        
+        // Create separate lists for attending and interested users
+        const attendingUserIds = eventParticipantsList
+          .filter(p => p.status === 'attending')
+          .map(p => p.userId);
+        
+        const interestedUserIds = eventParticipantsList
+          .filter(p => p.status === 'interested')
+          .map(p => p.userId);
+          
+        // Fetch user details for all participants
+        let attendingUsers: { id: number; name: string; username: string; image: string }[] = [];
+        let interestedUsers: { id: number; name: string; username: string; image: string }[] = [];
+        
+        if (attendingUserIds.length > 0) {
+          // Fetch each attending user individually
+          const attendingUsersData = [];
+          for (const userId of attendingUserIds) {
+            const userData = await db.select({
+              id: users.id,
+              username: users.username,
+              fullName: users.fullName,
+              profileImage: users.profileImage
+            })
+            .from(users)
+            .where(eq(users.id, userId))
+            .limit(1);
+            
+            if (userData && userData.length > 0) {
+              attendingUsersData.push(userData[0]);
+            }
+          }
+          
+          // Format for client
+          attendingUsers = attendingUsersData.map(user => ({
+            id: user.id,
+            name: user.fullName || user.username,
+            username: user.username,
+            image: user.profileImage || '/default-avatar.png'
+          }));
+        }
+        
+        if (interestedUserIds.length > 0) {
+          // Fetch each interested user individually
+          const interestedUsersData = [];
+          for (const userId of interestedUserIds) {
+            const userData = await db.select({
+              id: users.id,
+              username: users.username,
+              fullName: users.fullName,
+              profileImage: users.profileImage
+            })
+            .from(users)
+            .where(eq(users.id, userId))
+            .limit(1);
+            
+            if (userData && userData.length > 0) {
+              interestedUsersData.push(userData[0]);
+            }
+          }
+          
+          // Format for client
+          interestedUsers = interestedUsersData.map(user => ({
+            id: user.id,
+            name: user.fullName || user.username,
+            username: user.username,
+            image: user.profileImage || '/default-avatar.png'
+          }));
+        }
 
         // If we have a creatorId, fetch the creator information
         if (event.creatorId) {
@@ -1230,17 +1307,19 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
             .limit(1);
 
             if (creatorQuery && creatorQuery.length > 0) {
-              // Add creator details to the event object
+              // Add creator details and participants to the event object
               const creator = creatorQuery[0];
-              const eventWithCreator = {
+              const eventWithDetails = {
                 ...event,
                 creatorName: creator.fullName || creator.username,
                 creatorImage: creator.profileImage,
-                creatorUsername: creator.username
+                creatorUsername: creator.username,
+                attendingUsers,
+                interestedUsers
               };
               
               console.log(`Found event in database with creator: ${event.title}, creator: ${creator.username}`);
-              return res.json(eventWithCreator);
+              return res.json(eventWithDetails);
             }
           } catch (creatorError) {
             console.error("Error fetching creator details:", creatorError);
@@ -1248,8 +1327,15 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
           }
         }
 
+        // Add participants to the event object even if we don't have creator details
+        const eventWithParticipants = {
+          ...event,
+          attendingUsers,
+          interestedUsers
+        };
+        
         console.log("Found event in database:", event.title);
-        return res.json(event);
+        return res.json(eventWithParticipants);
       }
 
       // If not found in database, fall back to mock data during development
