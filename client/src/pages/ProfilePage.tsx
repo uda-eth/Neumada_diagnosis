@@ -309,7 +309,7 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-background p-4 md:p-8">
       <PageHeader
         title={profileData.fullName || profileData.username}
-        backButtonFallbackPath="/connect"
+        backButtonFallbackPath={isOwnProfile ? "/discover" : "/connect"}
         className="mb-6 px-0"
       />
 
