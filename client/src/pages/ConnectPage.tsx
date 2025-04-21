@@ -182,35 +182,34 @@ export function ConnectPage() {
 
   return (
     <div className="container mx-auto py-6 space-y-6">
-      <header className="border-b border-border sticky top-0 z-50 bg-black/40 backdrop-blur-sm text-white mb-6">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <h1 className="text-sm font-medium uppercase tracking-[.5em] text-white">Connect</h1>
-              <Link href="/connections">
-                <Button variant="outline" size="sm" className="gap-2">
-                  <UserCircle className="h-4 w-4" />
-                  My Connections
-                </Button>
-              </Link>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsFiltersVisible(!isFiltersVisible)}
-              className="gap-2"
-            >
-              <Filter className="h-4 w-4" />
-              Filters
-              {selectedMoods.length > 0 && (
-                <Badge variant="secondary" className="ml-2">
-                  {selectedMoods.length}
-                </Badge>
-              )}
+      <PageHeader
+        title="Connect"
+        className="border-b border-border sticky top-0 z-50 bg-black/40 backdrop-blur-sm text-white mb-6"
+        backButtonFallbackPath="/discover"
+      >
+        <div className="flex items-center gap-4">
+          <Link href="/connections">
+            <Button variant="outline" size="sm" className="gap-2">
+              <UserCircle className="h-4 w-4" />
+              My Connections
             </Button>
-          </div>
+          </Link>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsFiltersVisible(!isFiltersVisible)}
+            className="gap-2"
+          >
+            <Filter className="h-4 w-4" />
+            Filters
+            {selectedMoods.length > 0 && (
+              <Badge variant="secondary" className="ml-2">
+                {selectedMoods.length}
+              </Badge>
+            )}
+          </Button>
         </div>
-      </header>
+      </PageHeader>
 
       <div className="mb-8 space-y-4">
         {/* Location and Mood filters - Primary Filters */}
