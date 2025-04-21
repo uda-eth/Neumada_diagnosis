@@ -336,6 +336,14 @@ export default function EventPage() {
 
   // Modified to support both username and ID-based profile navigation
 const handleUserClick = (userIdOrUsername: number | string, username?: string) => {
+  // Store current location in localStorage before navigating to profile
+  // This will allow the back button to return to the event page
+  try {
+    localStorage.setItem('lastEventPage', window.location.pathname);
+  } catch (e) {
+    console.error('Failed to store last event page:', e);
+  }
+  
   // If we have a username directly or as a second parameter, use that
   if (typeof userIdOrUsername === 'string') {
     setLocation(`/profile/${userIdOrUsername}`);

@@ -304,12 +304,28 @@ export default function ProfilePage() {
   if (!profileData) {
     return <div>Profile not found</div>;
   }
+  
+  // Determine the back path based on context and stored information
+  const determineBackPath = () => {
+    // Check if we came from an event page
+    try {
+      const lastEventPage = localStorage.getItem('lastEventPage');
+      if (lastEventPage && lastEventPage.startsWith('/event/')) {
+        return lastEventPage;
+      }
+    } catch (e) {
+      console.error('Failed to retrieve last event page:', e);
+    }
+    
+    // Default fallback based on whether we're viewing own profile or other profile
+    return currentUser && profileData.id === currentUser.id ? "/discover" : "/connect";
+  };
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <PageHeader
         title={profileData.fullName || profileData.username}
-        backButtonFallbackPath={currentUser && profileData.id === currentUser.id ? "/discover" : "/connect"}
+        backButtonFallbackPath={determineBackPath()}
         className="mb-6 px-0"
       />
 
