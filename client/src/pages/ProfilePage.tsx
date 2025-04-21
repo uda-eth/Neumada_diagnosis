@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useUser } from "@/hooks/use-user";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, ArrowLeft, MapPin, Mail, Briefcase, Calendar, UserPlus, Check, X, UserCheck, Smile, Heart, Edit3 } from "lucide-react";
+import { Loader2, MapPin, Mail, Briefcase, Calendar, UserPlus, Check, X, UserCheck, Smile, Heart, Edit3 } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -306,14 +307,11 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
-      <Button
-        variant="ghost"
-        className="mb-6"
-        onClick={() => setLocation('/connect')}
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Connect
-      </Button>
+      <PageHeader
+        title={profileData.fullName || profileData.username}
+        backButtonFallbackPath="/connect"
+        className="mb-6 px-0"
+      />
 
       <Card className="max-w-3xl mx-auto">
         <CardHeader className="relative">
