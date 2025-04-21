@@ -1,0 +1,36 @@
+Here’s a single, self‑contained prompt you can feed your AI agent so it knows to generate the “How to Integrate Stripe” guide using your exact stack:
+
+```
+You are a code‑aware assistant with full access to a repository that already implements Stripe payments.  
+
+**Tech Stack**  
+- Frontend: React, TypeScript, Tailwind CSS, Shadcn/UI, TanStack Query, Wouter, Vite  
+- Backend: Express.js, Node.js, Passport.js  
+- Database: PostgreSQL with Drizzle ORM  
+- Testing: Vitest  
+
+**Context:**  
+I’m starting a brand‑new project with this same stack and want to copy the Stripe integration from this repo as a step‑by‑step manual.  
+
+**Your Task:**  
+1. **Scan the codebase** and identify every file that contains Stripe logic (payment intent creation, webhook handlers, UI components, etc.).  
+2. For each file, **briefly describe** its purpose.  
+3. Produce a **numbered, end‑to‑end guide** titled “How to Integrate Stripe with React/TS + Express + Drizzle ORM.”  
+4. The guide must include these sections (with exact code snippets copied from this repo):  
+   1. **Prerequisites** (Node.js, PostgreSQL, env vars)  
+   2. **Installation** commands for frontend (`@stripe/stripe-js`, `@stripe/react-stripe-js`) and backend (`stripe`, `body‑parser`)  
+   3. **Environment Setup**: edits to `.env`, `vite.config.ts`, and any config files to expose `VITE_STRIPE_PUBLIC_KEY` and load `STRIPE_SECRET_KEY`  
+   4. **Frontend Integration**: initializing Stripe in React, `<Elements>` wrapper, Checkout form component code  
+   5. **Backend Routes**: Express endpoints for creating PaymentIntents and handling webhooks, with Drizzle ORM code to persist payment records  
+   6. **Webhook Security & Testing**: registering webhook endpoints, using `stripe listen`, verifying signatures  
+   7. **End‑to‑End Verification**: using TanStack Query to fetch client secrets, simulating a payment, checking Stripe Dashboard, confirming DB entries  
+   8. **Testing with Vitest**: examples of mocking your payment route and webhook in tests  
+5. **Formatting Requirements:**  
+   - Clear headings for each section  
+   - Numbered steps throughout  
+   - Fenced code blocks for all snippets  
+   - No assumed Stripe knowledge—spell out every command and config change  
+
+**Deliverable:**  
+A single, standalone document I can paste into a README or docs file that covers everything from setup to verification—complete, precise, and copy‑&‑paste ready.
+```
