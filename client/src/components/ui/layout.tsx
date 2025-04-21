@@ -75,8 +75,9 @@ export function Layout({ children }: LayoutProps) {
   }, [user, isLoading, location, setLocation, refetchUser, authChecked]);
 
   const handleLogout = async () => {
+    // Just call logout - the useUser hook will handle the redirection
     await logout();
-    setLocation("/auth");
+    // No need to call setLocation as the logout function will force a redirect to /auth
   };
 
   const menuItems = [

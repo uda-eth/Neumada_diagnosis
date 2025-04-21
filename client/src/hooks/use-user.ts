@@ -283,10 +283,21 @@ export function useUser() {
       queryClient.setQueryData(['user'], null);
       queryClient.invalidateQueries({ queryKey: ['user'] });
       
-      // Clear localStorage cached data
+      // Clear ALL localStorage cached data related to user session
       localStorage.removeItem('maly_user_data');
       localStorage.removeItem('maly_session_id');
-      console.log("Cleared cached user data on logout");
+      localStorage.removeItem('maly_user_id');
+      localStorage.removeItem('maly_user_verified_at');
+      localStorage.removeItem('sessionId');
+      
+      // Remove any other potential cached data
+      localStorage.removeItem('connect.sid');
+      localStorage.removeItem('maly_session');
+      
+      console.log("Cleared all cached user data on logout");
+      
+      // Force a page reload to ensure a clean state
+      window.location.href = '/auth';
     },
   });
 
