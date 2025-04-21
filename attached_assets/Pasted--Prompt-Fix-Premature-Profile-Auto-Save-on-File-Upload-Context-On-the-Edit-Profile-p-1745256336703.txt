@@ -1,0 +1,51 @@
+**Prompt: Fix Premature Profile Auto‑Save on File Upload**
+
+**Context:**  
+On the **Edit Profile** page, selecting a new profile picture immediately triggers a `POST /api/profile` before I ever click “Save.” As a result:
+- I cannot review or change my selection before it’s submitted.
+- The profile updates with an empty or incomplete payload.
+
+**Server Logs:**  
+```
+5:23:03 PM [express] POST /api/profile 200 in 231ms :: {"id":16,"username":"demo",…}
+Deserializing user: 16
+Deserialized user found: true
+Fetching user with username: demo
+Found user by username: demo
+5:23:03 PM [express] GET /api/users/username/demo 304 in 245ms :: {"id":16,"username":"demo",…}
+Deserializing user: 16
+Deserialized user found: true
+5:23:04 PM [express] GET /api/connections/status/16 304 in 390ms :: {"outgoing":null,"incoming":null}
+```
+
+---
+
+### Your Tasks
+
+1. **Front‑End (React)**
+   - **Locate** the file‐input change handler in the Edit Profile component (e.g. `onChange` on `<input type="file" …>`).
+   - **Remove** or **disable** any logic that immediately calls the profile‐update mutation or form submission on file selection.
+   - **Implement** staging of the selected file in component state (e.g. `useState<File | null>`), without triggering a network request.
+   - **Ensure** that only when the user clicks the **“Save”** button does the component:
+     1. Collect all updated fields (including the staged file).
+     2. Send a single consolidated `POST /api/profile` request via your existing `updateProfile` mutation or fetch call.
+   - **Provide** immediate client‐side preview of the selected image (optional but ideal).
+
+2. **Back‑End (Express)**
+   - **Confirm** that the `/api/profile` endpoint only processes updates on explicit form submission—no changes needed unless current behavior conflicts.
+   - **Add** server‐side validation to reject any payloads that contain no actual changes (optional safeguard).
+
+3. **Testing & Verification**
+   - Manually test:
+     - Select a file: verify no network request fires.
+     - Click “Save”: verify one `POST /api/profile` with the new image file in `multipart/form-data`.
+     - Confirm server responds correctly and the new image persists.
+   - Review network tab to ensure no stray `POST /api/profile` calls on file selection.
+
+4. **Documentation**
+   - Add a code comment in the Edit Profile component explaining the change.
+   - Save a short summary of the fix to **`attached_assets/profile-upload-fix.md`** for future reference.
+
+---
+
+Please implement these changes end‑to‑end so that profile updates—including image uploads—only occur when the user explicitly clicks **Save**.
