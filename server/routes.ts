@@ -2102,28 +2102,45 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
       
       console.log(`Updating profile for user ${userId}:`, updateData);
       
-      // Check if we're updating moods
-      if (updateData.currentMoods !== undefined) {
-        // Update user moods in the database
-        await db.update(users)
-          .set({ 
-            currentMoods: updateData.currentMoods 
-          })
-          .where(eq(users.id, userId));
-        
-        console.log(`Updated user ${userId} moods to:`, updateData.currentMoods);
-        
-        // Get the updated user data
-        const updatedUser = await db.query.users.findFirst({
-          where: eq(users.id, userId)
-        });
-        
-        // Return the updated user data
-        return res.json(updatedUser || { error: "User not found after update" });
+      // Remove sensitive fields that shouldn't be updated directly
+      const { password, email, id, ...safeFields } = updateData;
+      
+      // Process arrays to ensure proper storage format
+      if (safeFields.interests && Array.isArray(safeFields.interests)) {
+        safeFields.interests = safeFields.interests.length > 0 ? safeFields.interests : [];
+      }
+
+      if (safeFields.currentMoods && Array.isArray(safeFields.currentMoods)) {
+        safeFields.currentMoods = safeFields.currentMoods.length > 0 ? safeFields.currentMoods : [];
       }
       
-      // If we reach here, return error for unsupported update type
-      return res.status(400).json({ error: "Unsupported update type" });
+      // Handle location fields specifically
+      if (safeFields.currentLocation) {
+        safeFields.location = safeFields.currentLocation;
+        delete safeFields.currentLocation;
+      }
+      
+      if (safeFields.upcomingLocation) {
+        safeFields.nextLocation = safeFields.upcomingLocation;
+        delete safeFields.upcomingLocation;
+      }
+      
+      console.log(`Safe profile update for user ${userId}:`, safeFields);
+      
+      // Update the user with all provided safe fields
+      await db.update(users)
+        .set(safeFields)
+        .where(eq(users.id, userId));
+      
+      console.log(`Updated user ${userId} profile successfully`);
+      
+      // Get the updated user data
+      const updatedUser = await db.query.users.findFirst({
+        where: eq(users.id, userId)
+      });
+      
+      // Return the updated user data
+      return res.json(updatedUser || { error: "User not found after update" });
     } catch (error) {
       console.error("Error updating profile:", error);
       res.status(500).json({ error: "Failed to update profile" });
@@ -2145,9 +2162,14 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
           profileImage: true,
           bio: true,
           location: true,
+          birthLocation: true,
+          nextLocation: true,
           interests: true,
           currentMoods: true,
-          profession: true
+          profession: true,
+          age: true,
+          gender: true,
+          sexualOrientation: true
         }
       });
 
