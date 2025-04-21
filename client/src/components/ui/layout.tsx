@@ -1,6 +1,6 @@
 import { BottomNav } from "./bottom-nav";
 import { Logo } from "./logo";
-import { Menu, Bot, Globe, Inbox, Crown, Settings, UserCircle, HelpCircle, LogOut } from "lucide-react";
+import { Menu, Bot, Globe, Inbox, Crown, Settings, UserCircle, LogOut } from "lucide-react";
 import { Button } from "./button";
 import { useLocation } from "wouter";
 import { useUser } from "@/hooks/use-user";
@@ -87,7 +87,6 @@ export function Layout({ children }: LayoutProps) {
     { href: "/companion", label: "Concierge", icon: Bot },
     { href: "/profile", label: "Profile", icon: UserCircle },
     { href: "/settings", label: "Settings", icon: Settings },
-    { href: "/help", label: "Help", icon: HelpCircle },
     { href: "/admin", label: "Admin Panel", icon: Settings, isAdmin: true },
     { onClick: handleLogout, label: "Logout", icon: LogOut }
   ];

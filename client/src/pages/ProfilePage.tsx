@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useUser } from "@/hooks/use-user";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, ArrowLeft, MapPin, Mail, Briefcase, Calendar, UserPlus, Check, X, UserCheck, Smile, Heart, Edit3 } from "lucide-react";
+import { Loader2, MapPin, Mail, Briefcase, Calendar, UserPlus, Check, X, UserCheck, Smile, Heart, Edit3 } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -303,17 +304,30 @@ export default function ProfilePage() {
   if (!profileData) {
     return <div>Profile not found</div>;
   }
+  
+  // Determine the back path based on context and stored information
+  const determineBackPath = () => {
+    // Check if we came from an event page
+    try {
+      const lastEventPage = localStorage.getItem('lastEventPage');
+      if (lastEventPage && lastEventPage.startsWith('/event/')) {
+        return lastEventPage;
+      }
+    } catch (e) {
+      console.error('Failed to retrieve last event page:', e);
+    }
+    
+    // Default fallback based on whether we're viewing own profile or other profile
+    return currentUser && profileData.id === currentUser.id ? "/discover" : "/connect";
+  };
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
-      <Button
-        variant="ghost"
-        className="mb-6"
-        onClick={() => setLocation('/connect')}
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Connect
-      </Button>
+      <PageHeader
+        title={profileData.fullName || profileData.username}
+        backButtonFallbackPath={determineBackPath()}
+        className="mb-6 px-0"
+      />
 
       <Card className="max-w-3xl mx-auto">
         <CardHeader className="relative">

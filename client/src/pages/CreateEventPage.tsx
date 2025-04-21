@@ -22,11 +22,11 @@ import {
 } from "@/components/ui/select";
 import { 
   CalendarIcon, 
-  ChevronLeft, 
   Plus, 
   Loader2,
   ChevronsUpDown
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { z } from "zod";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { EVENT_CATEGORIES } from "@/lib/constants";
@@ -239,23 +239,10 @@ export default function CreateEventPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <header className="sticky top-0 z-10 bg-black/80 backdrop-blur-lg border-b border-white/10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white/60"
-              onClick={() => setLocation("/")}
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <h1 className="text-sm font-medium uppercase tracking-wider">
-              Create Event
-            </h1>
-          </div>
-        </div>
-      </header>
+      <PageHeader 
+        title="Create Event"
+        backButtonFallbackPath="/"
+      />
 
       <ScrollArea className="flex-1" style={{ height: 'calc(100vh - 140px)' }}>
         <div className="container mx-auto px-4 py-8 space-y-8 max-w-2xl">
