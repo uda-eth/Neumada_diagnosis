@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MessageSquare, MapPin, Search, Filter, UserCircle } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   HoverCard,
   HoverCardContent,

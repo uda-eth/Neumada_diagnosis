@@ -401,19 +401,11 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-black/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white/60"
-            onClick={() => setLocation("/")}
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
-          <h1 className="text-sm font-medium">Back</h1>
-        </div>
-      </header>
+      <PageHeader
+        title={event.title}
+        backButtonFallbackPath="/"
+        className="bg-black/80 backdrop-blur-sm"
+      />
 
       {/* Event Image */}
       {event.image && (
