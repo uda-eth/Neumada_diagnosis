@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Users, Search, Plus, Star, Calendar, X } from "lucide-react";
+import { MapPin, Users, Search, Plus, Star, Calendar, X, UserCircle } from "lucide-react";
 import { format } from "date-fns";
 import { DIGITAL_NOMAD_CITIES } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
@@ -139,6 +139,15 @@ export default function DiscoverPage() {
               >
                 <Users className="h-5 w-5 mr-2" />
                 Connect
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setLocation("/connections")}
+                className="hidden md:inline-flex items-center text-white"
+              >
+                <UserCircle className="h-5 w-5 mr-2" />
+                My Network
               </Button>
               <Button
                 className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white whitespace-nowrap px-2 md:px-4"

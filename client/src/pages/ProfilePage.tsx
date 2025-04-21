@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useUser } from "@/hooks/use-user";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, MapPin, Mail, Briefcase, Calendar, UserPlus, Check, X, UserCheck, Smile, Heart, Edit3 } from "lucide-react";
+import { Loader2, ArrowLeft, MapPin, Mail, Briefcase, Calendar, UserPlus, Check, X, UserCheck, Smile, Heart, Edit3, UserCircle } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -36,10 +36,14 @@ interface ProfileData {
   profileImage: string | null;
   bio: string | null;
   location: string | null;
+  birthLocation: string | null;
+  nextLocation: string | null;
   interests: string[];
   currentMoods?: string[] | null;
   profession: string | null;
   age: number | null;
+  gender: string | null;
+  sexualOrientation: string | null;
 }
 
 interface ConnectionStatus {
@@ -322,58 +326,107 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
-      <PageHeader
-        title={profileData.fullName || profileData.username}
-        backButtonFallbackPath={determineBackPath()}
-        className="mb-6 px-0"
-      />
+<div className="min-h-screen bg-black">
+  {/* Header with back button */}
+  <div className="sticky top-0 z-10 bg-black/70 backdrop-blur-sm border-b border-border">
+    <div className="container mx-auto px-4 py-4">
+      <Button
+        variant="ghost"
+        className="text-white"
+        onClick={() => setLocation('/connect')}
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back to Connect
+      </Button>
+    </div>
+  </div>
 
-      <Card className="max-w-3xl mx-auto">
-        <CardHeader className="relative">
-          <div className="flex items-start gap-6">
-            <Avatar className="h-24 w-24 border-2">
-              <AvatarImage src={profileData.profileImage || undefined} alt={profileData.username} />
-              <AvatarFallback>{profileData.username[0].toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <div className="space-y-2 flex-1">
-              <div className="flex justify-between items-start">
-                <h1 className="text-2xl font-bold">{profileData.fullName || profileData.username}</h1>
+
+      <div className="container mx-auto px-4 py-6">
+        <div className="max-w-2xl mx-auto">
+          {/* Profile Card with Image */}
+          <Card className="overflow-hidden border-border/30 bg-black/30 mb-6">
+            <div className="aspect-[3/2] sm:aspect-[16/9] relative">
+              {profileData.profileImage ? (
+                <>
+                  <img 
+                    src={profileData.profileImage} 
+                    alt={profileData.fullName || profileData.username}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/80"></div>
+                </>
+              ) : (
+                <div className="w-full h-full bg-gradient-to-b from-purple-900/80 via-blue-900/80 to-black/90 flex items-center justify-center">
+                  <div className="text-6xl font-bold text-white/20">
+                    {profileData.username[0].toUpperCase()}
+                  </div>
+                </div>
+              )}
+              
+              {/* Profile info overlay */}
+              <div className="absolute bottom-0 left-0 right-0 p-4">
+                <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight mb-2">
+                  {profileData.fullName || profileData.username}
+                  {profileData.age && <span className="ml-2 text-lg sm:text-xl font-normal">{profileData.age}</span>}
+                </h1>
                 
+                <div className="flex flex-wrap gap-2">
+                  {profileData.location && (
+                    <Badge className="bg-white/10 hover:bg-white/20 text-white py-1 px-2 text-xs backdrop-blur-sm">
+                      <MapPin className="h-3 w-3 mr-1" />
+                      {profileData.location}
+                    </Badge>
+                  )}
+                  
+                  {profileData.profession && (
+                    <Badge className="bg-white/10 hover:bg-white/20 text-white py-1 px-2 text-xs backdrop-blur-sm">
+                      <Briefcase className="h-3 w-3 mr-1" />
+                      {profileData.profession}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            {/* Action buttons */}
+            <div className="p-4 border-t border-border/20">
+              <div className="flex flex-wrap gap-3">
                 {/* Edit Profile button - only show if viewing own profile */}
                 {currentUser && profileData.id === currentUser.id && (
                   <Button 
                     variant="outline"
-                    className="gap-2"
+                    className="gap-2 border-primary/30 hover:border-primary"
                     onClick={() => setLocation('/profile-edit')}
                   >
+                    <Edit3 className="h-4 w-4" />
                     Edit Profile
                   </Button>
                 )}
                 
                 {/* Connection Button - only show if viewing profile of other user and user is logged in */}
                 {currentUser && profileData.id !== currentUser.id && (
-                  <div>
+                  <div className="w-full sm:w-auto">
                     {connectionLoading ? (
-                      <Button disabled>
+                      <Button disabled className="w-full sm:w-auto">
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                         Loading
                       </Button>
                     ) : connectionStatus?.outgoing?.status === 'accepted' || connectionStatus?.incoming?.status === 'accepted' ? (
-                      <Button variant="outline" className="gap-2" disabled>
+                      <Button variant="outline" className="gap-2 border-green-500/30 text-green-500 w-full sm:w-auto" disabled>
                         <UserCheck className="h-4 w-4" />
                         Connected
                       </Button>
                     ) : connectionStatus?.outgoing?.status === 'pending' ? (
-                      <Button variant="outline" className="gap-2" disabled>
+                      <Button variant="outline" className="gap-2 border-yellow-500/30 text-yellow-500 w-full sm:w-auto" disabled>
                         <Loader2 className="h-4 w-4 animate-spin" />
                         Request Pending
                       </Button>
                     ) : connectionStatus?.incoming?.status === 'pending' ? (
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 w-full">
                         <Button 
-                          variant="outline" 
-                          className="gap-1"
+                          variant="default" 
+                          className="gap-1 bg-green-600 hover:bg-green-700 flex-1 sm:flex-auto"
                           onClick={() => respondToConnectionMutation.mutate({ 
                             userId: profileData.id, 
                             status: 'accepted' 
@@ -385,7 +438,7 @@ export default function ProfilePage() {
                         </Button>
                         <Button 
                           variant="outline" 
-                          className="gap-1"
+                          className="gap-1 border-red-500/30 text-red-500 hover:bg-red-500/10 flex-1 sm:flex-auto"
                           onClick={() => respondToConnectionMutation.mutate({ 
                             userId: profileData.id, 
                             status: 'declined' 
@@ -400,7 +453,7 @@ export default function ProfilePage() {
                       <Button 
                         onClick={() => createConnectionMutation.mutate(profileData.id)}
                         disabled={createConnectionMutation.isPending}
-                        className="gap-2"
+                        className="gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 w-full sm:w-auto rounded-full"
                       >
                         {createConnectionMutation.isPending ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -413,130 +466,165 @@ export default function ProfilePage() {
                   </div>
                 )}
               </div>
-              
-              {profileData.bio && (
-                <p className="text-muted-foreground">{profileData.bio}</p>
-              )}
-              <div className="flex flex-wrap gap-2">
-                {profileData.location && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />
-                    {profileData.location}
-                  </Badge>
-                )}
-                {profileData.profession && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    <Briefcase className="h-3 w-3" />
-                    {profileData.profession}
-                  </Badge>
-                )}
-                {profileData.age && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    {profileData.age} years old
-                  </Badge>
-                )}
-              </div>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent>
+          </Card>
+          
+          {/* Personal Info Section */}
+          <Card className="mb-6 bg-black/30 border-border/30 overflow-hidden rounded-xl">
+            <CardContent className="p-4">
+              {/* Bio */}
+              {profileData.bio && (
+                <div className="mb-4">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">About</h3>
+                  <p className="text-base text-foreground/90">{profileData.bio}</p>
+                </div>
+              )}
+              
+              {/* Personal Details */}
+              <div className="space-y-4">
+                {/* Gender & Sexual Orientation */}
+                {(profileData.gender || profileData.sexualOrientation) && (
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Personal</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {profileData.gender && (
+                        <Badge variant="outline" className="py-1 px-2 text-xs">
+                          Gender: {profileData.gender}
+                        </Badge>
+                      )}
+                      {profileData.sexualOrientation && (
+                        <Badge variant="outline" className="py-1 px-2 text-xs">
+                          Orientation: {profileData.sexualOrientation}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Locations */}
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Locations</h3>
+                  <div className="space-y-2">
+                    {profileData.location && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <MapPin className="h-3.5 w-3.5 text-primary" />
+                        <span>Currently in <span className="font-medium">{profileData.location}</span></span>
+                      </div>
+                    )}
+                    {profileData.birthLocation && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <MapPin className="h-3.5 w-3.5 text-blue-400" />
+                        <span>Born in <span className="font-medium">{profileData.birthLocation}</span></span>
+                      </div>
+                    )}
+                    {profileData.nextLocation && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <MapPin className="h-3.5 w-3.5 text-green-400" />
+                        <span>Going to <span className="font-medium">{profileData.nextLocation}</span></span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
           {/* Current Mood Section */}
-          <div className="mt-6 mb-6">
+          <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold">Current Mood</h2>
+              <div className="flex items-center gap-2">
+                <Smile className="h-4 w-4 text-primary" />
+                <h2 className="text-base font-semibold">Current Mood</h2>
+              </div>
               
               {/* Only show change mood button if viewing own profile */}
               {currentUser && profileData.id === currentUser.id && (
                 <Button 
-                  variant="outline" 
+                  variant="ghost" 
                   size="sm"
-                  className="gap-2"
+                  className="gap-1 text-xs text-primary h-7 px-2"
                   onClick={() => setIsUpdatingMood(!isUpdatingMood)}
                   disabled={updateMoodMutation.isPending}
                 >
                   {updateMoodMutation.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-3 w-3 animate-spin" />
                   ) : (
-                    <Edit3 className="h-4 w-4" />
+                    <Edit3 className="h-3 w-3" />
                   )}
-                  {isUpdatingMood ? "Cancel" : (profileData.currentMoods?.length ? "Change Your Mood" : "Share Your Mood")}
+                  {isUpdatingMood ? "Cancel" : (profileData.currentMoods?.length ? "Change" : "Add")}
                 </Button>
               )}
             </div>
             
             {/* Current Mood Display */}
             {!isUpdatingMood ? (
-              <div>
+              <div className="bg-black/20 rounded-xl p-4 border border-border/20">
                 {profileData.currentMoods && profileData.currentMoods.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {profileData.currentMoods.map((mood, index) => (
                       <Badge 
                         key={index}
-                        className={`text-sm py-1.5 px-3 ${moodStyles[mood as keyof typeof moodStyles] || ''}`}
+                        className={`py-1.5 px-3 text-sm font-medium ${moodStyles[mood as keyof typeof moodStyles] || ''} rounded-full`}
                       >
-                        <Smile className="h-4 w-4 mr-2" />
                         {mood}
                       </Badge>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-muted-foreground text-sm italic">
                     {currentUser && profileData.id === currentUser.id 
-                      ? "You haven't shared your mood yet." 
-                      : "This user hasn't shared their mood yet."}
+                      ? "You haven't shared your current mood yet."
+                      : "This user hasn't shared their current mood yet."}
                   </p>
                 )}
               </div>
             ) : (
-              // Mood Selection Panel
-              <div className="bg-accent/5 p-4 rounded-lg border border-border">
-                <h3 className="text-sm font-medium mb-3">How are you feeling today?</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+              <div className="bg-black/20 rounded-xl p-4 border border-border/20 space-y-3">
+                <p className="text-xs text-muted-foreground">Select your current mood:</p>
+                <div className="flex flex-wrap gap-2">
                   {moods.map((mood) => (
-                    <Badge
+                    <Button
                       key={mood}
                       variant="outline"
-                      className={`cursor-pointer text-sm py-2 px-3 flex items-center justify-center transition-colors
-                        ${profileData.currentMoods?.includes(mood) 
-                          ? moodStyles[mood as keyof typeof moodStyles] 
-                          : 'hover:bg-accent/50'}`}
+                      size="sm"
+                      className={`
+                        border rounded-full px-3 py-1 h-auto text-xs
+                        ${moodStyles[mood as keyof typeof moodStyles] || ''}
+                      `}
                       onClick={() => updateMoodMutation.mutate(mood)}
                     >
-                      {profileData.currentMoods?.includes(mood) && <Check className="h-3 w-3 mr-1" />}
                       {mood}
-                    </Badge>
+                    </Button>
                   ))}
-                </div>
-                <div className="flex justify-end mt-4">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => updateMoodMutation.mutate('')}
-                    disabled={updateMoodMutation.isPending || !profileData.currentMoods?.length}
-                  >
-                    Clear mood
-                  </Button>
                 </div>
               </div>
             )}
           </div>
-
+          
           {/* Interests Section */}
           {profileData.interests && profileData.interests.length > 0 && (
-            <div className="mt-6">
-              <h2 className="text-lg font-semibold mb-3">Interests</h2>
-              <div className="flex flex-wrap gap-2">
-                {profileData.interests.map((interest, index) => (
-                  <Badge key={index} variant="outline">
-                    {interest}
-                  </Badge>
-                ))}
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <Heart className="h-4 w-4 text-red-400" />
+                <h2 className="text-base font-semibold">Interests</h2>
+              </div>
+              <div className="bg-black/20 rounded-xl p-4 border border-border/20">
+                <div className="flex flex-wrap gap-2">
+                  {profileData.interests.map((interest, index) => (
+                    <Badge 
+                      key={index}
+                      variant="outline"
+                      className="py-1.5 px-3 text-sm border-red-500/20 text-red-400/90 hover:border-red-500/40 rounded-full"
+                    >
+                      {interest}
+                    </Badge>
+                  ))}
+                </div>
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
