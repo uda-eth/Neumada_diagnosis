@@ -21,6 +21,8 @@ import { recordSubscriptionPayment, getUserPaymentHistory, getSubscriptionWithPa
 import { sql } from 'drizzle-orm';
 // Add import for premium router
 import premiumRouter from './premium';
+// Import object storage utilities
+import { uploadToObjectStorage } from './lib/objectStorage';
 
 const categories = [
   "Retail",
@@ -732,7 +734,7 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024
+    fileSize: 10 * 1024 * 1024 // Increased to 10MB
   },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
@@ -800,6 +802,14 @@ interface Event {
 const app = express();
 app.use(express.json());
 
+// Add multer error handling middleware
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  if (err.name === 'MulterError' && err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({ error: "File too large; maximum size is 10 MB" });
+  }
+  next(err);
+});
+
 // Add your routes here
 app.get('/api/events/:city', (req: Request, res: Response) => {
   const city = req.params.city;
@@ -864,11 +874,75 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
 
 export function registerRoutes(app: Express): { app: Express; httpServer: Server } {
   app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
+  app.use('/uploads', express.static('uploads')); // Serve uploaded files (fallback if object storage fails)
 
   setupAuth(app);
   
   // Mount premium router at /api/premium
   app.use('/api/premium', premiumRouter);
+
+  // Profile image upload endpoint
+  app.post("/api/upload-profile-image", requireAuth, upload.single('image'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No image file provided" });
+      }
+
+      const userId = req.user.id;
+      let imageUrl = '';
+
+      try {
+        // Upload to Replit Object Storage
+        const username = req.user.username || 'user';
+        const objectName = `profile-images/${username}-${Date.now()}${path.extname(req.file.originalname)}`;
+        
+        // Check if STORAGE_TOKEN exists
+        if (!process.env.STORAGE_TOKEN) {
+          throw new Error('STORAGE_TOKEN not configured');
+        }
+        
+        // Upload to object storage
+        imageUrl = await uploadToObjectStorage(
+          req.file.path, 
+          req.file.mimetype, 
+          objectName
+        );
+        
+        console.log(`Uploaded profile image to object storage: ${imageUrl}`);
+        
+        // Delete local file after successful upload
+        fs.unlinkSync(req.file.path);
+      } 
+      catch (storageError) {
+        console.error("Error uploading to object storage:", storageError);
+        
+        // Fallback to local storage
+        imageUrl = `/uploads/${req.file.filename}`;
+        console.log(`Fallback: Using local storage for profile image: ${imageUrl}`);
+      }
+
+      // Update user's profile image in database
+      const [updatedUser] = await db
+        .update(users)
+        .set({ profileImage: imageUrl })
+        .where(eq(users.id, userId))
+        .returning();
+
+      return res.json({ 
+        success: true, 
+        message: "Profile image uploaded successfully",
+        profileImage: imageUrl,
+        user: updatedUser
+      });
+    } 
+    catch (error) {
+      console.error("Profile image upload error:", error);
+      return res.status(500).json({ 
+        success: false, 
+        error: "Failed to upload profile image" 
+      });
+    }
+  });
 
   // API endpoint for city suggestions
   app.post("/api/suggest-city", async (req: Request, res: Response) => {
