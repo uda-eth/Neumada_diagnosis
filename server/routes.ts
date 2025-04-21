@@ -888,12 +888,14 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         return res.status(400).json({ error: "No image file provided" });
       }
 
-      const userId = req.user.id;
+      // Type assertion to access user property safely
+      const user = req.user as { id: number; username?: string };
+      const userId = user.id;
       let imageUrl = '';
 
       try {
         // Upload to Replit Object Storage
-        const username = req.user.username || 'user';
+        const username = user.username || 'user';
         const objectName = `profile-images/${username}-${Date.now()}${path.extname(req.file.originalname)}`;
         
         // Check if STORAGE_TOKEN exists

@@ -129,14 +129,56 @@ export default function ProfileEditPage() {
     }
   }, [user, form]);
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+    
+    // Show local preview immediately for better UX
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+    
+    try {
+      // Upload file to server
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      // Create headers - important for auth
+      const headers = new Headers();
+      const sessionId = localStorage.getItem('maly_session_id');
+      if (sessionId) {
+        headers.append('X-Session-ID', sessionId);
+      }
+      
+      const response = await fetch('/api/upload-profile-image', {
+        method: 'POST',
+        headers,
+        credentials: 'include',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to upload image');
+      }
+      
+      const result = await response.json();
+      
+      // Update preview with the stored image URL from server
+      setImagePreview(result.profileImage);
+      
+      toast({
+        title: "Image Uploaded",
+        description: "Your profile picture has been updated.",
+      });
+    } catch (error) {
+      console.error('Error uploading profile image:', error);
+      toast({
+        title: "Upload Failed",
+        description: "There was a problem uploading your image. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -144,9 +186,9 @@ export default function ProfileEditPage() {
     setIsLoading(true);
     try {
       // Map form values to the API expected format
+      // Note: profileImage is now handled separately by the upload endpoint
       const profileData = {
         ...data,
-        profileImage: imagePreview,
         location: data.currentLocation,
         birthLocation: data.birthLocation,
         nextLocation: data.upcomingLocation,
