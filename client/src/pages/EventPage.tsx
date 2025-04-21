@@ -634,16 +634,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                   <div className="text-sm text-white/60">Event Organizer</div>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="h-9">
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Message
-                </Button>
-                <Button variant="outline" size="sm" className="h-9">
-                  <UserPlus2 className="h-4 w-4 mr-2" />
-                  Follow
-                </Button>
-              </div>
+              {/* Message and Follow buttons removed */}
             </div>
           </div>
         )}
