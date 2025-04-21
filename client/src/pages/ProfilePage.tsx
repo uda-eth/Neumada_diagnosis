@@ -34,10 +34,14 @@ interface ProfileData {
   profileImage: string | null;
   bio: string | null;
   location: string | null;
+  birthLocation: string | null;
+  nextLocation: string | null;
   interests: string[];
   currentMoods?: string[] | null;
   profession: string | null;
   age: number | null;
+  gender: string | null;
+  sexualOrientation: string | null;
 }
 
 interface ConnectionStatus {
@@ -446,14 +450,65 @@ export default function ProfilePage() {
             </div>
           </Card>
           
-          {/* Bio section */}
-          {profileData.bio && (
-            <Card className="mb-6 bg-black/30 border-border/30 overflow-hidden rounded-xl">
-              <CardContent className="p-4">
-                <p className="text-base text-foreground/90">{profileData.bio}</p>
-              </CardContent>
-            </Card>
-          )}
+          {/* Personal Info Section */}
+          <Card className="mb-6 bg-black/30 border-border/30 overflow-hidden rounded-xl">
+            <CardContent className="p-4">
+              {/* Bio */}
+              {profileData.bio && (
+                <div className="mb-4">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">About</h3>
+                  <p className="text-base text-foreground/90">{profileData.bio}</p>
+                </div>
+              )}
+              
+              {/* Personal Details */}
+              <div className="space-y-4">
+                {/* Gender & Sexual Orientation */}
+                {(profileData.gender || profileData.sexualOrientation) && (
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Personal</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {profileData.gender && (
+                        <Badge variant="outline" className="py-1 px-2 text-xs">
+                          Gender: {profileData.gender}
+                        </Badge>
+                      )}
+                      {profileData.sexualOrientation && (
+                        <Badge variant="outline" className="py-1 px-2 text-xs">
+                          Orientation: {profileData.sexualOrientation}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Locations */}
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Locations</h3>
+                  <div className="space-y-2">
+                    {profileData.location && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <MapPin className="h-3.5 w-3.5 text-primary" />
+                        <span>Currently in <span className="font-medium">{profileData.location}</span></span>
+                      </div>
+                    )}
+                    {profileData.birthLocation && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <MapPin className="h-3.5 w-3.5 text-blue-400" />
+                        <span>Born in <span className="font-medium">{profileData.birthLocation}</span></span>
+                      </div>
+                    )}
+                    {profileData.nextLocation && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <MapPin className="h-3.5 w-3.5 text-green-400" />
+                        <span>Going to <span className="font-medium">{profileData.nextLocation}</span></span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
           
           {/* Current Mood Section */}
           <div className="mb-6">
