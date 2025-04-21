@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useUser } from "@/hooks/use-user";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, ArrowLeft, MapPin, Mail, Briefcase, Calendar, UserPlus, Check, X, UserCheck, Smile, Heart, Edit3 } from "lucide-react";
+import { Loader2, ArrowLeft, MapPin, Mail, Briefcase, Calendar, UserPlus, Check, X, UserCheck, Smile, Heart, Edit3, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -305,7 +304,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-black">
+      {/* Header with back button */}
       <div className="sticky top-0 z-10 bg-black/70 backdrop-blur-sm border-b border-border">
         <div className="container mx-auto px-4 py-4">
           <Button
@@ -319,249 +319,234 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <div className="w-full h-48 bg-gradient-to-r from-purple-900/80 via-blue-900/80 to-teal-900/80"></div>
-
-      <div className="max-w-4xl mx-auto px-4 relative -mt-16">
-        <div className="flex flex-col items-center md:flex-row md:items-end gap-6 mb-6">
-          <Avatar className="h-32 w-32 md:h-40 md:w-40 rounded-xl border-4 border-background shadow-xl">
-            <AvatarImage 
-              src={profileData.profileImage || undefined} 
-              alt={profileData.username} 
-              className="object-cover"
+      {/* Full-width profile image cover with gradient overlay */}
+      <div className="relative w-full">
+        {profileData.profileImage ? (
+          <div className="w-full h-[40vh] relative">
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/60 to-black"></div>
+            <img 
+              src={profileData.profileImage} 
+              alt={profileData.fullName || profileData.username}
+              className="w-full h-full object-cover"
             />
-            <AvatarFallback className="text-4xl font-bold">
+          </div>
+        ) : (
+          <div className="w-full h-[40vh] bg-gradient-to-b from-purple-900/80 via-blue-900/80 to-black flex items-center justify-center">
+            <div className="text-8xl font-bold text-white/20">
               {profileData.username[0].toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          
-          <div className="space-y-2 flex-1 text-center md:text-left">
-            <h1 className="text-3xl font-bold">
-              {profileData.fullName || profileData.username}
-            </h1>
-            
-            {profileData.profession && (
-              <p className="text-lg text-muted-foreground flex items-center justify-center md:justify-start gap-2">
-                <Briefcase className="h-5 w-5" />
-                {profileData.profession}
-              </p>
-            )}
+            </div>
           </div>
-          
-          <div className="flex gap-2 mt-4 md:mt-0">
-            {/* Edit Profile button - only show if viewing own profile */}
-            {currentUser && profileData.id === currentUser.id && (
-              <Button 
-                variant="outline"
-                className="gap-2"
-                onClick={() => setLocation('/profile-edit')}
-              >
-                <Edit3 className="h-4 w-4" />
-                Edit Profile
-              </Button>
-            )}
-            
-            {/* Connection Button - only show if viewing profile of other user and user is logged in */}
-            {currentUser && profileData.id !== currentUser.id && (
-              <div>
-                {connectionLoading ? (
-                  <Button disabled>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Loading
-                  </Button>
-                ) : connectionStatus?.outgoing?.status === 'accepted' || connectionStatus?.incoming?.status === 'accepted' ? (
-                  <Button variant="outline" className="gap-2" disabled>
-                    <UserCheck className="h-4 w-4" />
-                    Connected
-                  </Button>
-                ) : connectionStatus?.outgoing?.status === 'pending' ? (
-                  <Button variant="outline" className="gap-2" disabled>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Request Pending
-                  </Button>
-                ) : connectionStatus?.incoming?.status === 'pending' ? (
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      className="gap-1"
-                      onClick={() => respondToConnectionMutation.mutate({ 
-                        userId: profileData.id, 
-                        status: 'accepted' 
-                      })}
-                      disabled={respondToConnectionMutation.isPending}
-                    >
-                      <Check className="h-4 w-4" />
-                      Accept
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="gap-1"
-                      onClick={() => respondToConnectionMutation.mutate({ 
-                        userId: profileData.id, 
-                        status: 'declined' 
-                      })}
-                      disabled={respondToConnectionMutation.isPending}
-                    >
-                      <X className="h-4 w-4" />
-                      Decline
-                    </Button>
-                  </div>
-                ) : (
-                  <Button 
-                    onClick={() => createConnectionMutation.mutate(profileData.id)}
-                    disabled={createConnectionMutation.isPending}
-                    className="gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                  >
-                    {createConnectionMutation.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <UserPlus className="h-4 w-4" />
-                    )}
-                    Connect
-                  </Button>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
+        )}
 
-        <Card className="mb-8 overflow-hidden">
-          <CardHeader className="relative bg-black/20 pb-4">
-            <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+        {/* Profile info overlay - positioned at bottom of cover image */}
+        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-4xl font-bold tracking-tight mb-2">
+              {profileData.fullName || profileData.username}
+              {profileData.age && <span className="ml-2 text-3xl font-normal">{profileData.age}</span>}
+            </h1>
+
+            <div className="flex flex-wrap gap-3 mt-3">
               {profileData.location && (
-                <Badge variant="secondary" className="flex items-center gap-1 py-1.5 px-3">
-                  <MapPin className="h-3 w-3" />
+                <Badge className="bg-white/10 hover:bg-white/20 text-white py-1.5 px-3 backdrop-blur-sm">
+                  <MapPin className="h-3 w-3 mr-1" />
                   {profileData.location}
                 </Badge>
               )}
-              {profileData.age && (
-                <Badge variant="secondary" className="flex items-center gap-1 py-1.5 px-3">
-                  <Calendar className="h-3 w-3" />
-                  {profileData.age} years old
-                </Badge>
-              )}
-              {profileData.email && (
-                <Badge variant="secondary" className="flex items-center gap-1 py-1.5 px-3">
-                  <Mail className="h-3 w-3" />
-                  {profileData.email}
+              
+              {profileData.profession && (
+                <Badge className="bg-white/10 hover:bg-white/20 text-white py-1.5 px-3 backdrop-blur-sm">
+                  <Briefcase className="h-3 w-3 mr-1" />
+                  {profileData.profession}
                 </Badge>
               )}
             </div>
-            
-            {profileData.bio && (
-              <div className="mt-4 p-4 bg-black/10 rounded-lg border border-border/30">
-                <p className="text-foreground/90 italic">{profileData.bio}</p>
-              </div>
-            )}
-          </CardHeader>
-        <CardContent className="space-y-8">
-          {/* Current Mood Section */}
-          <div className="p-5 rounded-xl bg-gradient-to-br from-black/20 via-black/10 to-transparent backdrop-blur-sm border border-border/30">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Smile className="h-5 w-5 text-teal-500" />
-                <h2 className="text-xl font-semibold">Current Mood</h2>
-              </div>
-              
-              {/* Only show change mood button if viewing own profile */}
-              {currentUser && profileData.id === currentUser.id && (
+          </div>
+        </div>
+      </div>
+
+      {/* Main profile content */}
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Action buttons */}
+        <div className="flex flex-wrap gap-3 mb-8">
+          {/* Edit Profile button - only show if viewing own profile */}
+          {currentUser && profileData.id === currentUser.id && (
+            <Button 
+              variant="outline"
+              className="gap-2 border-primary/30 hover:border-primary"
+              onClick={() => setLocation('/profile-edit')}
+            >
+              <Edit3 className="h-4 w-4" />
+              Edit Profile
+            </Button>
+          )}
+          
+          {/* Connection Button - only show if viewing profile of other user and user is logged in */}
+          {currentUser && profileData.id !== currentUser.id && (
+            <div className="w-full sm:w-auto">
+              {connectionLoading ? (
+                <Button disabled className="w-full sm:w-auto">
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Loading
+                </Button>
+              ) : connectionStatus?.outgoing?.status === 'accepted' || connectionStatus?.incoming?.status === 'accepted' ? (
+                <Button variant="outline" className="gap-2 border-green-500/30 text-green-500 w-full sm:w-auto" disabled>
+                  <UserCheck className="h-4 w-4" />
+                  Connected
+                </Button>
+              ) : connectionStatus?.outgoing?.status === 'pending' ? (
+                <Button variant="outline" className="gap-2 border-yellow-500/30 text-yellow-500 w-full sm:w-auto" disabled>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Request Pending
+                </Button>
+              ) : connectionStatus?.incoming?.status === 'pending' ? (
+                <div className="flex gap-2 w-full">
+                  <Button 
+                    variant="default" 
+                    className="gap-1 bg-green-600 hover:bg-green-700 flex-1 sm:flex-auto"
+                    onClick={() => respondToConnectionMutation.mutate({ 
+                      userId: profileData.id, 
+                      status: 'accepted' 
+                    })}
+                    disabled={respondToConnectionMutation.isPending}
+                  >
+                    <Check className="h-4 w-4" />
+                    Accept
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="gap-1 border-red-500/30 text-red-500 hover:bg-red-500/10 flex-1 sm:flex-auto"
+                    onClick={() => respondToConnectionMutation.mutate({ 
+                      userId: profileData.id, 
+                      status: 'declined' 
+                    })}
+                    disabled={respondToConnectionMutation.isPending}
+                  >
+                    <X className="h-4 w-4" />
+                    Decline
+                  </Button>
+                </div>
+              ) : (
                 <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="gap-2 border-teal-500/50 hover:border-teal-500 text-teal-500"
-                  onClick={() => setIsUpdatingMood(!isUpdatingMood)}
-                  disabled={updateMoodMutation.isPending}
+                  onClick={() => createConnectionMutation.mutate(profileData.id)}
+                  disabled={createConnectionMutation.isPending}
+                  className="gap-2 bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 w-full sm:w-auto"
                 >
-                  {updateMoodMutation.isPending ? (
+                  {createConnectionMutation.isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Edit3 className="h-4 w-4" />
+                    <UserPlus className="h-4 w-4" />
                   )}
-                  {isUpdatingMood ? "Cancel" : (profileData.currentMoods?.length ? "Change Mood" : "Share Mood")}
+                  Connect
                 </Button>
               )}
             </div>
+          )}
+        </div>
+
+        {/* Bio section */}
+        {profileData.bio && (
+          <Card className="mb-8 bg-black border-border/30 overflow-hidden">
+            <CardContent className="p-6">
+              <p className="text-lg text-foreground/90">{profileData.bio}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Current Mood Section */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Smile className="h-5 w-5 text-primary" />
+              <h2 className="text-xl font-semibold">Current Mood</h2>
+            </div>
             
-            {/* Current Mood Display */}
-            {!isUpdatingMood ? (
-              <div>
-                {profileData.currentMoods && profileData.currentMoods.length > 0 ? (
-                  <div className="flex flex-wrap gap-3">
-                    {profileData.currentMoods.map((mood, index) => (
-                      <Badge 
-                        key={index}
-                        className={`text-sm py-2 px-4 ${moodStyles[mood as keyof typeof moodStyles] || ''} rounded-lg shadow-sm`}
-                      >
-                        <Smile className="h-5 w-5 mr-2" />
-                        {mood}
-                      </Badge>
-                    ))}
-                  </div>
+            {/* Only show change mood button if viewing own profile */}
+            {currentUser && profileData.id === currentUser.id && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="gap-2 border-primary/50 hover:border-primary text-primary"
+                onClick={() => setIsUpdatingMood(!isUpdatingMood)}
+                disabled={updateMoodMutation.isPending}
+              >
+                {updateMoodMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <div className="text-center p-6 bg-black/10 rounded-lg">
-                    <p className="text-muted-foreground">
-                      {currentUser && profileData.id === currentUser.id 
-                        ? "You haven't shared your mood yet." 
-                        : "This user hasn't shared their mood yet."}
-                    </p>
-                  </div>
+                  <Edit3 className="h-4 w-4" />
                 )}
-              </div>
-            ) : (
-              // Mood Selection Panel
-              <div className="bg-black/10 p-5 rounded-lg border border-border/40 mt-3">
-                <h3 className="text-sm font-medium mb-4 text-center">How are you feeling today?</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {moods.map((mood) => (
-                    <Badge
-                      key={mood}
-                      variant="outline"
-                      className={`cursor-pointer text-sm py-2 px-3 flex items-center justify-center transition-colors rounded-lg
-                        ${profileData.currentMoods?.includes(mood) 
-                          ? moodStyles[mood as keyof typeof moodStyles] 
-                          : 'hover:bg-accent/50'}`}
-                      onClick={() => updateMoodMutation.mutate(mood)}
+                {isUpdatingMood ? "Cancel" : (profileData.currentMoods?.length ? "Change Mood" : "Add Mood")}
+              </Button>
+            )}
+          </div>
+          
+          {/* Current Mood Display */}
+          {!isUpdatingMood ? (
+            <div className="bg-black/50 rounded-xl p-5 border border-border/30">
+              {profileData.currentMoods && profileData.currentMoods.length > 0 ? (
+                <div className="flex flex-wrap gap-3">
+                  {profileData.currentMoods.map((mood, index) => (
+                    <Badge 
+                      key={index}
+                      className={`py-2 px-4 text-base font-medium ${moodStyles[mood as keyof typeof moodStyles] || ''}`}
                     >
-                      {profileData.currentMoods?.includes(mood) && <Check className="h-3 w-3 mr-1" />}
                       {mood}
                     </Badge>
                   ))}
                 </div>
-                <div className="flex justify-end mt-4">
+              ) : (
+                <p className="text-muted-foreground italic">
+                  {currentUser && profileData.id === currentUser.id 
+                    ? "You haven't shared your current mood yet."
+                    : "This user hasn't shared their current mood yet."}
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="bg-black/50 rounded-xl p-5 border border-border/30 space-y-4">
+              <p className="text-sm text-muted-foreground">Select your current mood:</p>
+              <div className="flex flex-wrap gap-3">
+                {moods.map((mood) => (
                   <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => updateMoodMutation.mutate('')}
-                    disabled={updateMoodMutation.isPending || !profileData.currentMoods?.length}
+                    key={mood}
+                    variant="outline"
+                    className={`
+                      border rounded-full px-4 py-2 
+                      ${moodStyles[mood as keyof typeof moodStyles] || ''}
+                    `}
+                    onClick={() => updateMoodMutation.mutate(mood)}
                   >
-                    Clear mood
+                    {mood}
                   </Button>
-                </div>
+                ))}
               </div>
-            )}
-          </div>
-
-          {/* Interests Section */}
-          {profileData.interests && profileData.interests.length > 0 && (
-            <div className="p-5 rounded-xl bg-gradient-to-br from-black/20 via-black/10 to-transparent backdrop-blur-sm border border-border/30">
-              <div className="flex items-center gap-2 mb-4">
-                <Heart className="h-5 w-5 text-rose-500" />
-                <h2 className="text-xl font-semibold">Interests</h2>
-              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Interests Section */}
+        {profileData.interests && profileData.interests.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <Heart className="h-5 w-5 text-red-400" />
+              <h2 className="text-xl font-semibold">Interests</h2>
+            </div>
+            <div className="bg-black/50 rounded-xl p-5 border border-border/30">
               <div className="flex flex-wrap gap-3">
                 {profileData.interests.map((interest, index) => (
                   <Badge 
-                    key={index} 
-                    variant="outline" 
-                    className="py-2 px-4 rounded-lg text-sm border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10"
+                    key={index}
+                    variant="outline"
+                    className="py-2 px-4 text-base border-red-500/20 text-red-400/90 hover:border-red-500/40"
                   >
                     {interest}
                   </Badge>
                 ))}
               </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
