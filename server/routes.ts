@@ -1067,15 +1067,16 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         query = query.where(lte(users.age, maxAge));
       }
       
-      // Properly handle mood filters using Drizzle's array overlap function
+      // Properly handle mood filters using PostgreSQL's array overlap operator '&&'
       // This ensures that we only return users who have at least one of the selected moods
       if (moods && (Array.isArray(moods) ? moods.length > 0 : true)) {
         const moodArray = Array.isArray(moods) ? moods : [moods];
         console.log(`Applying mood filters at database level: ${moodArray.join(', ')}`);
 
-        // Use Drizzle's overlap function to find users whose currentMoods array 
-        // contains at least one element from the requested moods array
-        query = query.where(overlap(users.currentMoods, moodArray));
+        // Use SQL to directly apply the && operator (array overlap)
+        // Convert the JavaScript array to a PostgreSQL array literal
+        const moodArrayLiteral = `ARRAY['${moodArray.join("','")}']`;
+        query = query.where(sql`${users.currentMoods} && ${sql.raw(moodArrayLiteral)}`);
       }
       
       // Log the query parameters for debugging
