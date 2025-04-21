@@ -1,0 +1,37 @@
+**Prompt: Fix “Mood” Filters on Connect Page**
+
+**Background:**  
+On the Connect page, clicking any mood filter always returns **all** users instead of narrowing to those whose `currentMoods` include the selected value. Server logs show that `/api/users/browse` always sees `moods: undefined` and falls back to `city=all`, returning every user.
+
+---
+
+**Your Mission:**  
+1. **Client‑Side**  
+   - Inspect the React Query hook in `ConnectPage` to ensure that when `selectedMoods` changes, the request URL actually includes `moods[]=…`.  
+   - Verify that after toggling a mood button React isn’t inadvertently resetting `selectedCity` back to `"all"` (which can override the mood filter).
+
+2. **Server‑Side**  
+   - Open the `/api/users/browse` handler (in `server/routes.ts`).  
+   - Replace the current manual array‑filtering logic with a proper Drizzle‑ORM JSONB overlap query. For example:
+     ```ts
+     if (moods && moods.length) {
+       query = query.where(users.currentMoods.overlap(moods));
+     }
+     ```
+   - Ensure you only apply the “all”‐city check when `city !== 'all'`, and apply mood filtering _after_ that.  
+   - Remove any fallback that re‑queries without filters whenever a reload or cache hit occurs.
+
+3. **Testing & Verification**  
+   - After your changes, confirm in server logs that `User browse request received with … moods: ['Networking']` (or whatever you clicked).  
+   - Verify the database SQL now contains a `WHERE current_moods @> ARRAY[…];` or equivalent.  
+   - Manually test: select one mood → only users who have that mood appear.  
+
+4. **Deliverables**  
+   - Updated client‑side hook so `moods[]` is sent correctly.  
+   - Updated `/api/users/browse` route with Drizzle ORM overlap filter.  
+   - A brief comment in `routes.ts` above your new filter block explaining the change.  
+   - A note in `attached_assets/connect-filter-fix.md` summarizing the before/after behavior.
+
+---
+
+Please implement these edits end‑to‑end and verify that mood filters now work as expected.
