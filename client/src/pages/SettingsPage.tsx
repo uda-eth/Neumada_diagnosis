@@ -4,6 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Bell, Moon, Sun, Volume2 } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -12,7 +13,11 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-[#121212] text-white">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-4xl font-bold mb-8 gradient-text">Settings</h1>
+          <PageHeader
+            title="Settings"
+            backButtonFallbackPath="/discover"
+            className="mb-8"
+          />
 
           <div className="space-y-6">
             {/* Appearance */}

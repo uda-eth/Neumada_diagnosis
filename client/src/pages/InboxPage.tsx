@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import { MessageSquare, Search, XCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PageHeader } from '@/components/ui/page-header';
 
 export default function InboxPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -116,11 +117,16 @@ export default function InboxPage() {
 
   return (
     <div className="container max-w-4xl py-8 mx-auto">
+      <PageHeader
+        title="Messages"
+        backButtonFallbackPath="/discover"
+        className="mb-4"
+      />
       <Card className="w-full">
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="flex flex-col space-y-1.5">
             <CardTitle className="flex items-center">
-              Messages
+              Inbox
               {unreadCount > 0 && (
                 <Badge className="ml-2 bg-primary">{unreadCount}</Badge>
               )}
