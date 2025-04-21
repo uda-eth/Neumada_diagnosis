@@ -2,7 +2,8 @@ import { useParams, useLocation, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@/hooks/use-user";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, MessageSquare, UserPlus2, Star, Users, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { MessageSquare, UserPlus2, Star, Users, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -335,6 +336,14 @@ export default function EventPage() {
 
   // Modified to support both username and ID-based profile navigation
 const handleUserClick = (userIdOrUsername: number | string, username?: string) => {
+  // Store current location in localStorage before navigating to profile
+  // This will allow the back button to return to the event page
+  try {
+    localStorage.setItem('lastEventPage', window.location.pathname);
+  } catch (e) {
+    console.error('Failed to store last event page:', e);
+  }
+  
   // If we have a username directly or as a second parameter, use that
   if (typeof userIdOrUsername === 'string') {
     setLocation(`/profile/${userIdOrUsername}`);
@@ -400,19 +409,11 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-black/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white/60"
-            onClick={() => setLocation("/")}
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
-          <h1 className="text-sm font-medium">Back</h1>
-        </div>
-      </header>
+      <PageHeader
+        title={event.title}
+        backButtonFallbackPath="/"
+        className="bg-black/80 backdrop-blur-sm"
+      />
 
       {/* Event Image */}
       {event.image && (

@@ -3,6 +3,8 @@ import { useParams, useLocation } from "wouter";
 import { useUser } from "@/hooks/use-user";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, ArrowLeft, MapPin, Mail, Briefcase, Calendar, UserPlus, Check, X, UserCheck, Smile, Heart, Edit3, UserCircle } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -306,22 +308,39 @@ export default function ProfilePage() {
   if (!profileData) {
     return <div>Profile not found</div>;
   }
+  
+  // Determine the back path based on context and stored information
+  const determineBackPath = () => {
+    // Check if we came from an event page
+    try {
+      const lastEventPage = localStorage.getItem('lastEventPage');
+      if (lastEventPage && lastEventPage.startsWith('/event/')) {
+        return lastEventPage;
+      }
+    } catch (e) {
+      console.error('Failed to retrieve last event page:', e);
+    }
+    
+    // Default fallback based on whether we're viewing own profile or other profile
+    return currentUser && profileData.id === currentUser.id ? "/discover" : "/connect";
+  };
 
   return (
-    <div className="min-h-screen bg-black">
-      {/* Header with back button */}
-      <div className="sticky top-0 z-10 bg-black/70 backdrop-blur-sm border-b border-border">
-        <div className="container mx-auto px-4 py-4">
-          <Button
-            variant="ghost"
-            className="text-white"
-            onClick={() => setLocation('/connect')}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Connect
-          </Button>
-        </div>
-      </div>
+<div className="min-h-screen bg-black">
+  {/* Header with back button */}
+  <div className="sticky top-0 z-10 bg-black/70 backdrop-blur-sm border-b border-border">
+    <div className="container mx-auto px-4 py-4">
+      <Button
+        variant="ghost"
+        className="text-white"
+        onClick={() => setLocation('/connect')}
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back to Connect
+      </Button>
+    </div>
+  </div>
+
 
       <div className="container mx-auto px-4 py-6">
         <div className="max-w-2xl mx-auto">
