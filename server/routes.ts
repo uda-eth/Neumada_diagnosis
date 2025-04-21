@@ -923,18 +923,20 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         console.log(`Fallback: Using local storage for profile image: ${imageUrl}`);
       }
 
-      // Update user's profile image in database
-      const [updatedUser] = await db
-        .update(users)
-        .set({ profileImage: imageUrl })
-        .where(eq(users.id, userId))
-        .returning();
+      // No longer updating the user profile automatically
+      // Instead, just return the URL for the client to use later
+      // This allows clients to stage/preview the image before saving profile
+      
+      // Get current user data without updating
+      const currentUser = await db.query.users.findFirst({
+        where: eq(users.id, userId)
+      });
 
       return res.json({ 
         success: true, 
-        message: "Profile image uploaded successfully",
+        message: "Profile image uploaded and staged (not saved to profile yet)",
         profileImage: imageUrl,
-        user: updatedUser
+        user: currentUser
       });
     } 
     catch (error) {
