@@ -995,11 +995,42 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
 
   app.get("/api/users/browse", async (req, res) => {
     try {
+      // Comprehensive debug logging to see all query parameters
+      console.log("Full request query object:", req.query);
+      
       // Get location parameter as 'location' or 'city' (for backward compatibility)
       const city = req.query.location || req.query.city || 'all';
       const { gender, minAge: minAgeStr, maxAge: maxAgeStr } = req.query;
+      
+      // Check if moods are coming in different formats and normalize
+      let moods;
+      
+      // Look for moods in all possible formats and log everything
+      console.log("moods[] =", req.query['moods[]']);
+      console.log("moods =", req.query.moods);
+      
+      // If moods[] is present as array, use it directly
+      if (Array.isArray(req.query['moods[]'])) {
+        moods = req.query['moods[]'];
+        console.log("Using moods[] as array:", moods);
+      }
+      // If moods[] is present as string, convert to array with single item
+      else if (req.query['moods[]'] && typeof req.query['moods[]'] === 'string') {
+        moods = [req.query['moods[]']];
+        console.log("Converting moods[] string to array:", moods);
+      }
+      // If moods is present as a comma-separated string, split it
+      else if (req.query.moods && typeof req.query.moods === 'string' && req.query.moods.includes(',')) {
+        moods = req.query.moods.split(',');
+        console.log("Splitting comma-separated moods string:", moods);
+      }
+      // If moods is present as string, convert to array with single item
+      else if (req.query.moods && typeof req.query.moods === 'string') {
+        moods = [req.query.moods];
+        console.log("Converting moods string to array:", moods);
+      }
+      
       const interests = req.query['interests[]'] as string[] | string;
-      const moods = req.query['moods[]'] as string[] | string;
       const name = req.query.name as string;
       const currentUserIdSource = req.user?.id || req.query.currentUserId as string;
       const currentUserId = currentUserIdSource ? parseInt(currentUserIdSource.toString(), 10) : undefined;
@@ -1036,14 +1067,25 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         query = query.where(lte(users.age, maxAge));
       }
       
-      // Properly handle mood filters using Drizzle-ORM's 'overlap' operator for JSONB arrays
+      // Properly handle mood filters using SQL expressions for JSONB arrays
       // This ensures that we only return users who have at least one of the selected moods
       if (moods && (Array.isArray(moods) ? moods.length > 0 : true)) {
         const moodArray = Array.isArray(moods) ? moods : [moods];
         console.log(`Applying mood filters at database level: ${moodArray.join(', ')}`);
-        
-        // Use overlap operator to find users with any of the selected moods in their currentMoods array
-        query = query.where(users.currentMoods.overlap(moodArray));
+
+        // Approach: Use SQL-based filter for each mood and OR them together
+        if (moodArray.length === 1) {
+          // If only one mood, use simpler query with array_position
+          query = query.where(sql`array_position(${users.currentMoods}, ${moodArray[0]}) IS NOT NULL`);
+        } else {
+          // For multiple moods, build a condition for each one
+          const moodConditions = moodArray.map(mood => 
+            sql`array_position(${users.currentMoods}, ${mood}) IS NOT NULL`
+          );
+          
+          // Combine conditions with OR
+          query = query.where(sql`(${sql.join(moodConditions, sql` OR `)})`);
+        }
       }
       
       // Log the query parameters for debugging

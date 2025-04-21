@@ -1,0 +1,79 @@
+}
+Initial query returned 18 users before additional filtering
+Found 18 real users in database
+5:29:43 PM [express] GET /api/users/browse 304 in 292ms :: [{"id":19,"username":"mood","email":"mood…
+Deserializing user: 6
+Deserialized user found: true
+User browse request received with city=all
+Mood filters: none
+Users browse query params: {
+  city: 'all',
+  gender: undefined,
+  minAge: undefined,
+  maxAge: undefined,
+  interests: undefined,
+  moods: undefined
+}
+Initial query returned 18 users before additional filtering
+Found 18 real users in database
+5:29:45 PM [express] GET /api/users/browse 304 in 290ms :: [{"id":19,"username":"mood","email":"mood…
+Deserializing user: 6
+Deserialized user found: true
+User browse request received with city=all
+Mood filters: none
+Users browse query params: {
+  city: 'all',
+  gender: undefined,
+  minAge: undefined,
+  maxAge: undefined,
+  interests: undefined,
+  moods: undefined
+}
+Initial query returned 18 users before additional filtering
+Found 18 real users in database
+5:29:45 PM [express] GET /api/users/browse 200 in 293ms :: [{"id":19,"username":"mood","email":"mood…
+Deserializing user: 6
+Deserialized user found: true
+User browse request received with city=all
+Mood filters: none
+Users browse query params: {
+  city: 'all',
+  gender: undefined,
+  minAge: undefined,
+  maxAge: undefined,
+  interests: undefined,
+  moods: undefined
+}
+Initial query returned 18 users before additional filtering
+Found 18 real users in database
+5:29:46 PM [express] GET /api/users/browse 304 in 287ms :: [{"id":19,"username":"mood","email":"mood…
+Deserializing user: 6
+Deserialized user found: true
+User browse request received with city=all
+Mood filters: none
+Users browse query params: {
+  city: 'all',
+  gender: undefined,
+  minAge: undefined,
+  maxAge: undefined,
+  interests: undefined,
+  moods: undefined
+}
+Initial query returned 18 users before additional filtering
+Found 18 real users in database
+5:29:47 PM [express] GET /api/users/browse 304 in 290ms :: [{"id":19,"username":"mood","email":"mood…
+Deserializing user: 6
+Deserialized user found: true
+User browse request received with city=all
+Mood filters: none
+Users browse query params: {
+  city: 'all',
+  gender: undefined,
+  minAge: undefined,
+  maxAge: undefined,
+  interests: undefined,
+  moods: undefined
+}
+Initial query returned 18 users before additional filtering
+Found 18 real users in database
+5:29:48 PM [express] GET /api/users/browse 304 in 288ms :: [{"id":19,"username":"mood","email":"mood…

@@ -120,10 +120,15 @@ export function ConnectPage() {
       
       // Add moods as array parameters - ensure this is working
       if (selectedMoods.length > 0) {
-        // Use the proper way to add array parameters that the server expects
+        // Try multiple parameter formats to ensure compatibility with server
+        // Format 1: Standard array notation as 'moods[]'
         selectedMoods.forEach(mood => {
           params.append('moods[]', mood);
         });
+        
+        // Format 2: Also add as 'moods' parameter for frameworks that might handle it differently
+        params.append('moods', selectedMoods.join(','));
+        
         console.log(`Including mood filters: ${selectedMoods.join(', ')}`);
       }
       
