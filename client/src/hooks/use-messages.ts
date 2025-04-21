@@ -446,15 +446,18 @@ export const useMessages = create<MessagesState>((set, get) => ({
     };
 
     socket.onclose = (event) => {
-      console.log(`WebSocket disconnected: ${event.code} ${event.reason}`);
+      console.warn(`WebSocket closed (suppressed): ${event.code} ${event.reason}`);
       const { reconnectAttempts, maxReconnectAttempts, reconnectTimeout } = get();
 
       if (reconnectAttempts < maxReconnectAttempts) {
-        clearTimeout(reconnectTimeout);
+        if (reconnectTimeout) {
+          clearTimeout(reconnectTimeout);
+        }
         const timeout = Math.min(1000 * Math.pow(2, reconnectAttempts), 10000);
         console.log(`Attempting reconnect in ${timeout}ms`);
 
-        const reconnectTimeout = setTimeout(() => {
+        // Fix variable declaration to avoid shadowing
+        let newReconnectTimeout = setTimeout(() => {
           set(state => ({ 
             reconnectAttempts: state.reconnectAttempts + 1,
             socketConnected: false,
@@ -464,12 +467,13 @@ export const useMessages = create<MessagesState>((set, get) => ({
           get().connectSocket(userId);
         }, timeout);
 
-        set({ reconnectTimeout });
+        set({ reconnectTimeout: newReconnectTimeout });
       } else {
+        // Suppress error toast but still log to console
+        console.warn('WebSocket closed (suppressed): max reconnect attempts reached');
         set({ 
           socketConnected: false, 
           currentSocket: null,
-          error: 'Connection lost. Please refresh the page to reconnect.',
           reconnectAttempts: 0,
           reconnectTimeout: null
         });
@@ -477,8 +481,9 @@ export const useMessages = create<MessagesState>((set, get) => ({
     };
 
     socket.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      set({ error: 'WebSocket connection failed', loading: false });
+      // Suppress error toast but still log to console
+      console.warn('WebSocket error (suppressed):', error);
+      set({ loading: false });
     };
   },
 
@@ -488,7 +493,9 @@ export const useMessages = create<MessagesState>((set, get) => ({
       currentSocket.close();
       set({ socketConnected: false, currentSocket: null, reconnectAttempts: 0, reconnectTimeout: null});
     }
-    clearTimeout(reconnectTimeout);
+    if (reconnectTimeout) {
+      clearTimeout(reconnectTimeout);
+    }
   }
 }));
 
