@@ -1,0 +1,56 @@
+Prompt for Replit Assistant: Profile‐Picture Upload Fix & Object‑Storage Integration
+
+Goal: Allow users to upload profile pictures up to 10 MB and store them in your new Replit object‐storage bucket instead of failing with “file too big.”
+
+Plan of Attack:
+
+Increase Upload Size Limit
+
+In your multer setup (in server/routes.ts), bump limits.fileSize from 5 * 1024 * 1024 to 10 * 1024 * 1024 (or higher as needed).
+
+Add explicit error handling for MulterError: LIMIT_FILE_SIZE so you return a clear JSON error (e.g. { error: "File too large; max is 10 MB" }).
+
+Wire Up Replit Object Storage
+
+Import and initialize your Replit bucket client or call the bucket’s REST API using the environment variables you’ve set (e.g. STORAGE_URL, STORAGE_TOKEN).
+
+After upload.single('image') middleware, replace writing to local uploads/ with:
+
+ts
+Copy
+Edit
+// req.file.buffer or fs.readFile on local temp
+await fetch(`${process.env.STORAGE_URL}/upload`, {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${process.env.STORAGE_TOKEN}`,
+    'Content-Type': req.file.mimetype
+  },
+  body: fs.readFileSync(req.file.path)  // or req.file.buffer
+});
+// parse response to get `publicUrl`
+Delete the local copy (fs.unlinkSync(req.file.path)) once upload succeeds.
+
+Persist the Public URL
+
+Update the user’s profileImage field in the database to the bucket’s publicUrl.
+
+Return the updated user object (sans sensitive fields) in your JSON response.
+
+Graceful Fallback & Testing
+
+If the bucket upload fails, fall back to saving locally and log the error.
+
+Write unit tests (or manual steps) to verify:
+
+Uploading a 2 MB file → stored in bucket successfully.
+
+Uploading a 12 MB file → returns your “max size” error.
+
+The user’s DB record contains the correct bucket URL and the client displays it.
+
+Documentation & Reference
+
+Save this checklist and sample code snippets in attached_assets/profile-upload-plan.md so future commits can refer back to exactly what needs to be done.
+
+Please implement these steps end‑to‑end, test the flows, and commit both the code changes and the attached_assets/profile-upload-plan.md file with this plan.
