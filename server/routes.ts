@@ -1036,12 +1036,14 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         query = query.where(lte(users.age, maxAge));
       }
       
-      // Properly handle mood filters at the database level if possible
+      // Properly handle mood filters using Drizzle-ORM's 'overlap' operator for JSONB arrays
+      // This ensures that we only return users who have at least one of the selected moods
       if (moods && (Array.isArray(moods) ? moods.length > 0 : true)) {
         const moodArray = Array.isArray(moods) ? moods : [moods];
         console.log(`Applying mood filters at database level: ${moodArray.join(', ')}`);
-        // Use overlaps to find users with any of the selected moods
-        query = query.where(sql`${users.currentMoods} && ${sql.array(moodArray, 'text')}`);
+        
+        // Use overlap operator to find users with any of the selected moods in their currentMoods array
+        query = query.where(users.currentMoods.overlap(moodArray));
       }
       
       // Log the query parameters for debugging
