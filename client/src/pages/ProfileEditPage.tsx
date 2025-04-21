@@ -129,71 +129,77 @@ export default function ProfileEditPage() {
     }
   }, [user, form]);
 
-  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  // State to store the selected file for later upload when the user clicks Save
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+
+  // Handle image selection without immediate upload
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    
+    // Stage the file for later upload (when user clicks Save)
+    setSelectedImageFile(file);
     
     // Show local preview immediately for better UX
     const reader = new FileReader();
     reader.onloadend = () => {
+      // Store preview in state - but only upload on form submission
       setImagePreview(reader.result as string);
     };
     reader.readAsDataURL(file);
-    
-    try {
-      // Upload file to server
-      const formData = new FormData();
-      formData.append('image', file);
-      
-      // Create headers - important for auth
-      const headers = new Headers();
-      const sessionId = localStorage.getItem('maly_session_id');
-      if (sessionId) {
-        headers.append('X-Session-ID', sessionId);
-      }
-      
-      const response = await fetch('/api/upload-profile-image', {
-        method: 'POST',
-        headers,
-        credentials: 'include',
-        body: formData
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to upload image');
-      }
-      
-      const result = await response.json();
-      
-      // Update preview with the stored image URL from server
-      setImagePreview(result.profileImage);
-      
-      toast({
-        title: "Image Uploaded",
-        description: "Your profile picture has been updated.",
-      });
-    } catch (error) {
-      console.error('Error uploading profile image:', error);
-      toast({
-        title: "Upload Failed",
-        description: "There was a problem uploading your image. Please try again.",
-        variant: "destructive"
-      });
-    }
+
+    // Notify user the image is staged but not yet saved
+    toast({
+      title: "Image Selected",
+      description: "Click 'Save' to update your profile with this image.",
+    });
   };
 
   const onSubmit = async (data: ProfileFormValues) => {
     setIsLoading(true);
     try {
-      // Map form values to the API expected format
-      // Note: profileImage is now handled separately by the upload endpoint
+      // Step 1: Upload the image first if one was selected
+      let uploadedImageUrl: string | null = null;
+      
+      if (selectedImageFile) {
+        // Create formData for image upload
+        const formData = new FormData();
+        formData.append('image', selectedImageFile);
+        
+        // Create headers for auth
+        const headers = new Headers();
+        const sessionId = localStorage.getItem('maly_session_id');
+        if (sessionId) {
+          headers.append('X-Session-ID', sessionId);
+        }
+        
+        // Upload the image
+        const imageResponse = await fetch('/api/upload-profile-image', {
+          method: 'POST',
+          headers,
+          credentials: 'include',
+          body: formData
+        });
+        
+        if (!imageResponse.ok) {
+          throw new Error('Failed to upload profile image');
+        }
+        
+        const imageResult = await imageResponse.json();
+        uploadedImageUrl = imageResult.profileImage;
+      }
+      
+      // Step 2: Map form values to the API expected format
       const profileData = {
         ...data,
         location: data.currentLocation,
         birthLocation: data.birthLocation,
         nextLocation: data.upcomingLocation,
+        // Include the new image URL if we uploaded one
+        ...(uploadedImageUrl && { profileImage: uploadedImageUrl }),
       };
 
+      // Step 3: Update the profile with all data
       await updateProfile(profileData);
 
       toast({
@@ -201,9 +207,13 @@ export default function ProfileEditPage() {
         description: "Your profile has been successfully updated.",
       });
       
+      // Clear the selected image file state since we've now processed it
+      setSelectedImageFile(null);
+      
       // Redirect to profile page with username
       setLocation(`/profile/${user?.username}`);
     } catch (error) {
+      console.error('Profile update error:', error);
       toast({
         title: "Error",
         description: "Failed to update profile. Please try again.",
