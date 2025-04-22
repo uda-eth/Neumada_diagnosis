@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useEvents } from "@/hooks/use-events";
 import { useUser } from "@/hooks/use-user";
@@ -76,9 +76,10 @@ export default function DiscoverPage() {
   const { events: fetchedEvents, isLoading } = useEvents(undefined, selectedCity);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [page, setPage] = useState(1);
-  const itemsPerPage = 16; // Show 16 items (4x4 grid) per page
-
+  const [displayCount, setDisplayCount] = useState(8); // Initially show 8 items (2 rows of 2x2)
+  const itemsPerBatch = 4; // Load 4 more items on each scroll
+  const observerTarget = useRef(null);
+  
   const allEvents = fetchedEvents || [];
 
   const filteredEvents = allEvents.filter(event => {
@@ -90,19 +91,41 @@ export default function DiscoverPage() {
     return matchesSearch && matchesCategory && matchesEventTypes;
   });
 
-  // Get current page of events
-  const indexOfLastEvent = page * itemsPerPage;
-  const indexOfFirstEvent = indexOfLastEvent - itemsPerPage;
-  const currentEvents = filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent);
-  const hasMoreEvents = filteredEvents.length > indexOfLastEvent;
-
-  const loadMore = () => {
-    setPage(prevPage => prevPage + 1);
-  };
+  // Get events to display
+  const displayEvents = filteredEvents.slice(0, displayCount);
+  const hasMoreEvents = filteredEvents.length > displayCount;
+  
+  // Load more events when scrolling to the bottom
+  const loadMoreEvents = useCallback(() => {
+    if (hasMoreEvents) {
+      setDisplayCount(prev => prev + itemsPerBatch);
+    }
+  }, [hasMoreEvents]);
+  
+  // Set up the intersection observer for infinite scrolling
+  useEffect(() => {
+    if (!observerTarget.current) return;
+    
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasMoreEvents && !isLoading) {
+        loadMoreEvents();
+      }
+    }, { 
+      rootMargin: '100px' // Load more content before reaching the bottom
+    });
+    
+    observer.observe(observerTarget.current);
+    
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [observerTarget, hasMoreEvents, isLoading, loadMoreEvents]);
 
   // Reset pagination when filters change
   useEffect(() => {
-    setPage(1);
+    setDisplayCount(8); // Reset to initial count when filters change
   }, [searchTerm, selectedCity, selectedCategory, selectedEventTypes]);
 
   return (
@@ -265,10 +288,10 @@ export default function DiscoverPage() {
 
             {isLoading ? (
               // Loading skeleton grid
-              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 auto-rows-fr">
-                {Array.from({ length: 8 }).map((_, index) => (
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 auto-rows-fr">
+                {Array.from({ length: 4 }).map((_, index) => (
                   <Card key={index} className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm">
-                    <Skeleton className="aspect-[4/3] w-full" />
+                    <Skeleton className="aspect-[3/4] w-full" />
                     <div className="p-4 space-y-2">
                       <Skeleton className="h-4 w-3/4" />
                       <Skeleton className="h-4 w-1/2" />
@@ -291,14 +314,14 @@ export default function DiscoverPage() {
             ) : (
               <>
                 {/* Responsive Grid Layout */}
-                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 auto-rows-fr">
-                  {currentEvents.map((event) => (
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 auto-rows-fr">
+                  {displayEvents.map((event: any) => (
                     <Card 
                       key={event.id} 
                       className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
                       onClick={() => setLocation(`/event/${event.id}`)}
                     >
-                      <div className="relative aspect-[4/3] overflow-hidden">
+                      <div className="relative aspect-[3/4] overflow-hidden">
                         <img
                           src={event.image || "/placeholder-event.jpg"}
                           alt={event.title}
@@ -342,7 +365,7 @@ export default function DiscoverPage() {
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-1 mt-3">
-                          {event.tags?.slice(0, 3).map((tag, index) => (
+                          {event.tags?.slice(0, 3).map((tag: string, index: number) => (
                             <Badge key={index} variant="outline" className="text-xs">
                               {tag}
                             </Badge>
@@ -353,16 +376,21 @@ export default function DiscoverPage() {
                   ))}
                 </div>
 
-                {/* Load More Button */}
+                {/* Intersection Observer Target for Infinite Scrolling */}
                 {hasMoreEvents && (
-                  <div className="flex justify-center mt-8">
-                    <Button 
-                      variant="outline" 
-                      onClick={loadMore}
-                      className="w-full md:w-auto"
-                    >
-                      Load More
-                    </Button>
+                  <div 
+                    ref={observerTarget} 
+                    className="h-10 w-full flex items-center justify-center mt-8 mb-4"
+                  >
+                    {isLoading ? (
+                      <div className="animate-pulse flex space-x-2">
+                        <div className="h-2 w-2 bg-muted-foreground rounded-full"></div>
+                        <div className="h-2 w-2 bg-muted-foreground rounded-full"></div>
+                        <div className="h-2 w-2 bg-muted-foreground rounded-full"></div>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Scroll for more events</p>
+                    )}
                   </div>
                 )}
               </>
