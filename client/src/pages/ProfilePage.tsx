@@ -252,6 +252,9 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
+    // Scroll to top when the profile page is loaded/changed
+    window.scrollTo(0, 0);
+    
     const fetchProfileData = async () => {
       try {
         // If we have no username to look up, use the current user data directly
@@ -309,20 +312,9 @@ export default function ProfilePage() {
     return <div>Profile not found</div>;
   }
   
-  // Determine the back path based on context and stored information
-  const determineBackPath = () => {
-    // Check if we came from an event page
-    try {
-      const lastEventPage = localStorage.getItem('lastEventPage');
-      if (lastEventPage && lastEventPage.startsWith('/event/')) {
-        return lastEventPage;
-      }
-    } catch (e) {
-      console.error('Failed to retrieve last event page:', e);
-    }
-    
-    // Default fallback based on whether we're viewing own profile or other profile
-    return currentUser && profileData.id === currentUser.id ? "/discover" : "/connect";
+  // Handle back button click
+  const handleBack = () => {
+    window.history.back();
   };
 
   return (
@@ -333,10 +325,10 @@ export default function ProfilePage() {
       <Button
         variant="ghost"
         className="text-white"
-        onClick={() => setLocation(determineBackPath())}
+        onClick={handleBack}
       >
         <ArrowLeft className="h-4 w-4 mr-2" />
-        {determineBackPath().startsWith('/event/') ? 'Back to Event' : 'Back'}
+        Back
       </Button>
     </div>
   </div>
@@ -352,7 +344,7 @@ export default function ProfilePage() {
                   <img 
                     src={profileData.profileImage} 
                     alt={profileData.fullName || profileData.username}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/80"></div>
                 </>

@@ -1,0 +1,49 @@
+Here’s a polished, step‑by‑step prompt for your Replit Agent—save it into your `attached_assets/pending_tasks.md` so the agent can always refer back:
+
+---
+
+**Title:** Three UI fixes for network & profiles  
+
+**Context:**  
+Working in `Neumada_diagnosis` on the My Network, Connect, and Profile Show pages. We’ve made many enhancements but need these last three tweaks:
+
+---
+
+### 1) Add a “Back” button on My Network  
+- **Where:** `client/src/pages/MyNetworkPage.tsx` (or wherever the My Network component lives)  
+- **What to do:**  
+  - At the top of the component, insert a `<Button>` or `<Link>` that navigates back (e.g. `onClick={() => history.back()}` or using Wouter’s `useLocation()[1]('/previous')`).  
+  - Style it consistently with other “Back” buttons in the app (same icon, padding, and margin).  
+
+### 2) Ensure all profile pictures fit correctly on Profile Show pages  
+- **Issue profiles:** Samuel Garcia, Adrian, Svet, Maya Santos  
+- **Where:** `client/src/pages/ProfilePage.tsx` (or similar)  
+- **What to do:**  
+  - Inspect the `<img>` or `<div>` wrapper that displays the user’s `profileImage`.  
+  - Change CSS from something like `object-cover` or `background-size: cover` to `object-contain` (or adjust `background-position`) so faces aren’t clipped.  
+  - Test each of the four problematic profiles to confirm full image visibility.  
+
+### 3) Scroll to top on Profile Show navigation  
+- **Where:** Same Profile Show component as above  
+- **What to do:**  
+  - In the route‑change handler (e.g. inside a `useEffect(() => { … }, [username])`), call `window.scrollTo(0, 0);` immediately after the component mounts.  
+  - Verify that every time you navigate to `/profile/:username`, the view resets to the top.  
+
+---
+
+**Steps to implement & verify:**  
+1. Clone/pull latest `main`.  
+2. Edit the three files above, making the precise changes.  
+3. Run `npm run dev` and manually test:  
+   - My Network page shows a working Back button.  
+   - Profile pages for **Samuel Garcia**, **Adrian**, **Svet**, and **Maya Santos** display full faces.  
+   - Navigating to any profile always starts at the top of the page.  
+4. Commit and push with message:  
+   ```
+   fix(ui): add back button, fix profile image fitting, scroll to top on profile
+   ```  
+5. Mark this task “Done” in `attached_assets/pending_tasks.md`.  
+
+---
+
+Save these instructions verbatim in `attached_assets/pending_tasks.md` so the agent can reference the exact steps and contexts as you complete them.

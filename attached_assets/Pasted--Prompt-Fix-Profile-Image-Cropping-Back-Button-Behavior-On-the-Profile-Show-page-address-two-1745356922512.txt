@@ -1,0 +1,74 @@
+**Prompt: Fix Profile Image Cropping & Back‐Button Behavior**
+
+On the Profile Show page, address two specific bugs:
+
+---
+
+### 1. Prevent Profile Picture Cropping  
+**Issue:** Faces are partially cut off when users upload profile images.  
+**Cause:** The image container likely uses a fixed `object-fit: cover;` without adjusting `object-position`.  
+
+**Steps to Fix:**
+1. **Locate the Profile Photo Component**  
+   - Open `src/components/ProfileHeader.tsx` (or wherever the profile image is rendered).
+2. **Adjust CSS on `<img>` Tag**  
+   - Replace or augment `className="object-cover"` with:  
+     ```tsx
+     className="object-cover object-center"
+     ```
+   - If you need finer control, use Tailwind’s `object-[position]`, e.g.:  
+     ```tsx
+     className="object-cover object-top"  // Faces tend to sit in the top half
+     ```
+3. **Ensure Container Aspect Ratio**  
+   - If the wrapper uses fixed dimensions, consider switching to a responsive aspect ratio:  
+     ```tsx
+     <div className="w-32 h-32 rounded-full overflow-hidden">
+       <img src={user.profileImage} alt="Profile" className="w-full h-full object-cover object-center" />
+     </div>
+     ```
+4. **Test with Multiple Image Orientations**  
+   - Upload both square and tall images; verify no faces are cut off.
+
+---
+
+### 2. Make “Back” Button Return to Previous Screen  
+**Issue:** The Back button always says “Back to event” and navigates to a hard‑coded route instead of the actual previous page.  
+**Desired:** Label “Back” and call `history.back()` (or Wouter’s `useLocation` back) to return to the last route.  
+
+**Steps to Fix:**
+1. **Find the Back‐Button Component**  
+   - Open the Profile Show page, e.g. `src/pages/ProfilePage.tsx`.
+2. **Replace Hard‑Coded Link with Dynamic Back**  
+   - Remove code like:  
+     ```tsx
+     <Link href="/events">
+       ← Back to event
+     </Link>
+     ```
+   - Import and use the router’s back functionality:  
+     ```tsx
+     import { useLocation } from "wouter";
+     // …
+     const [, setLocation] = useLocation();
+     const handleBack = () => window.history.back();
+     ```
+3. **Render a Generic “Back” Button**  
+   ```tsx
+   <button
+     onClick={handleBack}
+     className="text-sm font-medium underline"
+   >
+     ← Back
+   </button>
+   ```
+4. **Remove Any Hard‑Coded Labels**  
+   - Ensure the button text is simply “← Back” (without “to event”).
+5. **Verify Navigation**  
+   - From Discover → Profile, Back returns to Discover.  
+   - From Event → Host Profile, Back returns to Event.  
+   - From Connect → Profile, Back returns to Connect.
+
+---
+
+Please implement these changes in the Profile Show page component so that profile images always center correctly, and the Back button dynamically returns the user to their true previous page.
