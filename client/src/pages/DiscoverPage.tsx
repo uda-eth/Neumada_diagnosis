@@ -77,7 +77,7 @@ export default function DiscoverPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [page, setPage] = useState(1);
-  const itemsPerPage = 16; // Show 16 items (4x4 grid) per page
+  const itemsPerPage = 4; // Show 4 items (2x2 grid) per page
 
   const allEvents = fetchedEvents || [];
 
@@ -265,10 +265,10 @@ export default function DiscoverPage() {
 
             {isLoading ? (
               // Loading skeleton grid
-              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 auto-rows-fr">
-                {Array.from({ length: 8 }).map((_, index) => (
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 auto-rows-fr">
+                {Array.from({ length: 4 }).map((_, index) => (
                   <Card key={index} className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm">
-                    <Skeleton className="aspect-[4/3] w-full" />
+                    <Skeleton className="aspect-[3/4] w-full" />
                     <div className="p-4 space-y-2">
                       <Skeleton className="h-4 w-3/4" />
                       <Skeleton className="h-4 w-1/2" />
@@ -291,14 +291,14 @@ export default function DiscoverPage() {
             ) : (
               <>
                 {/* Responsive Grid Layout */}
-                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 auto-rows-fr">
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 auto-rows-fr">
                   {currentEvents.map((event) => (
                     <Card 
                       key={event.id} 
                       className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
                       onClick={() => setLocation(`/event/${event.id}`)}
                     >
-                      <div className="relative aspect-[4/3] overflow-hidden">
+                      <div className="relative aspect-[3/4] overflow-hidden">
                         <img
                           src={event.image || "/placeholder-event.jpg"}
                           alt={event.title}
