@@ -252,6 +252,9 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
+    // Scroll to top when the profile page is loaded/changed
+    window.scrollTo(0, 0);
+    
     const fetchProfileData = async () => {
       try {
         // If we have no username to look up, use the current user data directly
@@ -341,7 +344,7 @@ export default function ProfilePage() {
                   <img 
                     src={profileData.profileImage} 
                     alt={profileData.fullName || profileData.username}
-                    className="w-full h-full object-cover object-center"
+                    className="w-full h-full object-contain"
                   />
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/80"></div>
                 </>

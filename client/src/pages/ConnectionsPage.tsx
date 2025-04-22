@@ -7,8 +7,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { BackButton } from "@/components/ui/back-button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Check, X, UserCheck, UserPlus, Users, Clock } from "lucide-react";
+import { Check, X, UserCheck, UserPlus, Users, Clock, ArrowLeft } from "lucide-react";
 
 interface ConnectionUser {
   id: number;
@@ -122,7 +123,10 @@ export default function ConnectionsPage() {
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="container mx-auto py-8 px-4">
-        <h1 className="text-2xl font-bold mb-6">Your Network</h1>
+        <div className="flex items-center gap-3 mb-6">
+          <BackButton fallbackPath="/discover" />
+          <h1 className="text-2xl font-bold">Your Network</h1>
+        </div>
         
         <Tabs defaultValue="connections" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-8">
