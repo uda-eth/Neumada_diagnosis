@@ -99,6 +99,7 @@ const moods = [
 ];
 
 export function ConnectPage() {
+  const [, setLocation] = useLocation();
   const [selectedCity, setSelectedCity] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
@@ -395,35 +396,6 @@ export function ConnectPage() {
                                   ))}
                                 </div>
                               )}
-                              
-                              {/* Dating app-style action buttons */}
-                              <div className="flex items-center justify-center gap-4 mt-4">
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon"
-                                  className="h-10 w-10 rounded-full bg-destructive/10 text-destructive hover:bg-destructive/20"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    // Skip this user logic would go here
-                                  }}
-                                >
-                                  <X className="h-5 w-5" />
-                                </Button>
-                                
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon"
-                                  className="h-10 w-10 rounded-full bg-primary/10 text-primary hover:bg-primary/20"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setLocation(`/profile/${user.username}`);
-                                  }}
-                                >
-                                  <Heart className="h-5 w-5" />
-                                </Button>
-                              </div>
                             </div>
                           </div>
                         </CardContent>
