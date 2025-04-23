@@ -158,7 +158,7 @@ export function Layout({ children }: LayoutProps) {
         </div>
       </header>
 
-      <main className="flex-1 pb-28 md:pb-0">
+      <main className="flex-1 pb-24 md:pb-6">
         {children}
       </main>
 

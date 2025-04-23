@@ -27,19 +27,19 @@ export function PageHeader({
   
   return (
     <header className={`sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border ${className}`}>
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center gap-4">
+      <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-4">
+        <div className="flex items-center gap-2 sm:gap-4 overflow-visible w-full">
           {showBackButton && (
             <BackButton 
               fallbackPath={backButtonFallbackPath} 
               forceUsePathFallback={shouldForcePathFallback} 
             />
           )}
-          <h1 className="text-sm font-medium uppercase tracking-wider">
+          <h1 className="text-xs sm:text-sm font-medium uppercase tracking-wider truncate">
             {title}
           </h1>
           {children && (
-            <div className="ml-auto flex items-center gap-2">
+            <div className="ml-auto flex items-center flex-shrink-0 gap-2">
               {children}
             </div>
           )}

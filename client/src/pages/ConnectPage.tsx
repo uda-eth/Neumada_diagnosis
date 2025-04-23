@@ -181,29 +181,29 @@ export function ConnectPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
       <PageHeader
         title="Connect"
-        className="border-b border-border sticky top-0 z-50 bg-black/40 backdrop-blur-sm text-white mb-6"
+        className="border-b border-border sticky top-0 z-50 bg-black/40 backdrop-blur-sm text-white mb-4 sm:mb-6"
         backButtonFallbackPath="/discover"
       >
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1 sm:gap-4 flex-shrink-0">
           <Link href="/connections">
-            <Button variant="outline" size="sm" className="gap-2">
-              <UserCircle className="h-4 w-4" />
-              My Connections
+            <Button variant="outline" size="sm" className="gap-1 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm h-8">
+              <UserCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="truncate">Connections</span>
             </Button>
           </Link>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setIsFiltersVisible(!isFiltersVisible)}
-            className="gap-2"
+            className="gap-1 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm h-8"
           >
-            <Filter className="h-4 w-4" />
-            Filters
+            <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="truncate">Filters</span>
             {selectedMoods.length > 0 && (
-              <Badge variant="secondary" className="ml-2">
+              <Badge variant="secondary" className="ml-1 sm:ml-2 text-xs px-1.5">
                 {selectedMoods.length}
               </Badge>
             )}
@@ -216,7 +216,7 @@ export function ConnectPage() {
         <div className="flex flex-col md:flex-row gap-4">
           {/* Location Filter - Positioned at top-left */}
           <Select value={selectedCity} onValueChange={setSelectedCity}>
-            <SelectTrigger className="w-full md:w-[180px] bg-background/5 border-border">
+            <SelectTrigger className="w-full md:w-[180px] bg-background/5 border-border h-9 text-xs sm:text-sm">
               <SelectValue placeholder="Select city" />
             </SelectTrigger>
             <SelectContent>
@@ -228,25 +228,25 @@ export function ConnectPage() {
           </Select>
           
           {/* Mood Filter - Enhanced pill-style toggles with better visual feedback */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {moods.map((mood) => (
               <button
                 key={mood}
-                className={`rounded-full px-3 py-1 text-sm font-medium transition-colors 
+                className={`rounded-full px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-medium transition-colors 
                   ${selectedMoods.includes(mood) 
                     ? moodStyles[mood as keyof typeof moodStyles] + ' shadow-sm' 
                     : 'border border-border bg-background/5 hover:bg-accent/20'}`}
                 onClick={() => toggleFilter(mood)}
               >
                 {selectedMoods.includes(mood) && (
-                  <span className="mr-1">✓</span>
+                  <span className="mr-0.5 sm:mr-1">✓</span>
                 )}
                 {mood}
               </button>
             ))}
             {selectedMoods.length > 0 && (
               <button
-                className="rounded-full px-3 py-1 text-sm font-medium text-muted-foreground border border-border bg-background/5 hover:bg-accent/20"
+                className="rounded-full px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-medium text-muted-foreground border border-border bg-background/5 hover:bg-accent/20"
                 onClick={() => setSelectedMoods([])}
               >
                 Clear
@@ -257,16 +257,16 @@ export function ConnectPage() {
 
         {/* Additional filters - Expanded section */}
         {isFiltersVisible && (
-          <div className="space-y-4 bg-accent/5 p-4 rounded-lg border border-border">
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium">Search</h3>
+          <div className="space-y-3 sm:space-y-4 bg-accent/5 p-3 sm:p-4 rounded-lg border border-border">
+            <div className="space-y-1.5 sm:space-y-2">
+              <h3 className="text-xs sm:text-sm font-medium">Search</h3>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search by name..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-8 sm:pl-10 h-8 sm:h-9 text-xs sm:text-sm"
                 />
               </div>
             </div>
@@ -286,11 +286,11 @@ export function ConnectPage() {
       </div>
 
       {/* Enhanced grid layout with proper spacing and centering */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 w-full place-items-center">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 w-full">
         {isLoading ? (
           // Loading skeletons
           Array(6).fill(0).map((_, index) => (
-            <Card key={index} className="overflow-hidden h-full w-full max-w-sm">
+            <Card key={index} className="overflow-hidden h-full w-full">
               <CardContent className="p-0">
                 <div className="flex flex-col h-full">
                   <div className="relative w-full aspect-square overflow-hidden bg-muted">
@@ -312,7 +312,7 @@ export function ConnectPage() {
         ) : filteredUsers.length > 0 ? (
           // Real users from database
           filteredUsers.map((user) => (
-            <Link key={user.id} href={`/profile/${user.username}`} className="w-full max-w-sm h-full">
+            <Link key={user.id} href={`/profile/${user.username}`} className="block h-full w-full">
               <Card className="overflow-hidden hover:bg-accent/5 transition-colors cursor-pointer group h-full w-full">
                 <CardContent className="p-0">
                   <div className="flex flex-col h-full">
@@ -382,9 +382,19 @@ export function ConnectPage() {
           ))
         ) : (
           // No users found
-          <div className="col-span-1 sm:col-span-2 md:col-span-3 xl:col-span-4 py-12 text-center w-full">
-            <p className="text-muted-foreground">No users found matching your criteria.</p>
+          <div className="col-span-full py-12 text-center w-full">
+            <p className="text-muted-foreground text-lg">No users found matching your criteria.</p>
             <p className="text-sm mt-2">Try adjusting your filters or search terms.</p>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setSelectedMoods([]);
+                setSelectedCity("all"); 
+              }}
+              className="mt-4"
+            >
+              Clear All Filters
+            </Button>
           </div>
         )}
       </div>

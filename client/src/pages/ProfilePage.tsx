@@ -334,20 +334,20 @@ export default function ProfilePage() {
   </div>
 
 
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6">
         <div className="max-w-2xl mx-auto">
           {/* Profile Card with Image */}
           <Card className="overflow-hidden border-border/30 bg-black/30 mb-6">
             <div className="aspect-[3/2] sm:aspect-[16/9] relative">
               {profileData.profileImage ? (
-                <>
+                <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
                   <img 
                     src={profileData.profileImage} 
                     alt={profileData.fullName || profileData.username}
                     className="w-full h-full object-contain"
                   />
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/80"></div>
-                </>
+                </div>
               ) : (
                 <div className="w-full h-full bg-gradient-to-b from-purple-900/80 via-blue-900/80 to-black/90 flex items-center justify-center">
                   <div className="text-6xl font-bold text-white/20">
