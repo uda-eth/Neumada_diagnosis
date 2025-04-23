@@ -87,7 +87,7 @@ export default function InboxPage() {
 
   if (!user) {
     return (
-      <div className="container max-w-4xl py-8 mx-auto">
+      <div className="container max-w-4xl py-8 mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="w-full">
           <CardHeader>
             <CardTitle>Messages</CardTitle>
@@ -116,7 +116,7 @@ export default function InboxPage() {
   );
 
   return (
-    <div className="container max-w-4xl py-8 mx-auto">
+    <div className="container max-w-4xl py-8 mx-auto px-4 sm:px-6 lg:px-8">
       <PageHeader
         title="Messages"
         backButtonFallbackPath="/discover"
