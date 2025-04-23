@@ -95,7 +95,7 @@ export default function MessagesPage() {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-10 bg-black/40 backdrop-blur-sm border-b border-white/10">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
@@ -113,7 +113,7 @@ export default function MessagesPage() {
       </header>
 
       <div className="sticky top-16 z-10 bg-background/80 backdrop-blur-sm border-b border-accent">
-        <div className="container mx-auto px-4 py-3">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -127,7 +127,7 @@ export default function MessagesPage() {
       </div>
 
       <ScrollArea className="flex-1">
-        <div className="container mx-auto px-4 py-4 space-y-2">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-2">
           {filteredConversations.map((conv) => (
             <ConversationCard
               key={conv.user.id}
