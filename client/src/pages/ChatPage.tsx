@@ -184,7 +184,7 @@ export default function ChatPage() {
   
   if (!user) {
     return (
-      <div className="container max-w-4xl py-8 mx-auto">
+      <div className="container max-w-4xl py-8 mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="w-full">
           <CardHeader>
             <CardTitle>Messages</CardTitle>
@@ -208,7 +208,7 @@ export default function ChatPage() {
   }
   
   return (
-    <div className="container max-w-4xl py-8 mx-auto">
+    <div className="container max-w-4xl py-8 mx-auto px-4 sm:px-6 lg:px-8">
       <Card className="w-full">
         <CardHeader className="flex flex-row items-center border-b p-4">
           <Button

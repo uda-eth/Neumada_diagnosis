@@ -1,0 +1,58 @@
+**Title:** Improve Mobile Layout Spacing on Connect & Inbox Pages  
+
+**Objective:**  
+Ensure all key UI elements on mobile have comfortable spacing from the screen edges. Specifically:
+
+1. **Connect Page** (`/connect`): Add consistent horizontal padding so cards, filters, and headers aren’t flush against the viewport.  
+2. **Inbox Page** (`/inbox` or `/messages`): Apply the same padding to message list items, input fields, and headers.
+
+---
+
+### Instructions for the Agent:
+
+1. **Locate the Connect & Inbox Layout Wrappers**  
+   - **Connect:** `src/pages/ConnectPage.tsx` (or wherever the `<ConnectPage>` component is rendered).  
+   - **Inbox:** `src/pages/InboxPage.tsx` (or `MessagesPage.tsx` / `ChatPage.tsx`).
+
+2. **Wrap Content in Responsive Container**  
+   - Around the top-level JSX return, ensure a `<div>` or `<main>` uses Tailwind’s container and padding utilities:  
+     ```tsx
+     <main className="container mx-auto px-4 sm:px-6 lg:px-8">
+       {/* existing content */}
+     </main>
+     ```
+   - **Explanation:**  
+     - `px-4` gives 1rem horizontal padding on all mobiles.  
+     - `sm:px-6` increases to 1.5rem on small screens.  
+     - `lg:px-8` sets 2rem on large screens.
+
+3. **Adjust Inner Elements**  
+   - **Connect Filters & Cards:**  
+     - Remove any custom `mx-[-?]` or `px-0` on mobile.  
+     - Ensure filter dropdowns, pill buttons, and grid gaps respect the container padding.  
+   - **Inbox List & Composer:**  
+     - Add `px-2 sm:px-4` to each message bubble or list item wrapper.  
+     - Wrap the message input field in a padded container:  
+       ```tsx
+       <div className="px-4 pt-2 pb-4">
+         <Input ... />
+       </div>
+       ```
+
+4. **Verify on Real Devices / Emulators**  
+   - Test on viewport widths:  
+     - **360px** (small mobile)  
+     - **414px** (iPhone 11)  
+     - **768px** (small tablet)  
+   - Confirm no element touches the very edge of the screen.
+
+5. **Commit & Document**  
+   - **Commit message:**  
+     ```
+     style(mobile): add horizontal padding to Connect and Inbox pages
+     ```  
+   - (Optional) Add before/after screenshots under `attached_assets/`.
+
+---
+
+_Apply these changes so the Connect and Inbox pages look clean and comfortably spaced on all mobile screen sizes._
