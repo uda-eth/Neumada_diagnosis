@@ -1,0 +1,46 @@
+**Title:** Adjust Discover Page Event Grid Layout  
+
+**Context:**  
+On the Discover page (`/discover`) of your Next.js/React app, the event cards currently display in a 4-column grid, causing each card to be too small—users must scroll within each card to read details. We need to change the layout so each row contains **3** full-width event cards that show all essential information (image, title, date, price) without additional scrolling.
+
+---
+
+### Tasks:
+
+1. **Locate the Discover Grid Component**  
+   - File: `client/src/pages/DiscoverPage.tsx` (or wherever your `<Discover />` component lives).  
+   - Identify the wrapper `<div>` (or `<Grid>`) using Tailwind classes like `grid-cols-4`.
+
+2. **Update Tailwind Grid Classes**  
+   - Replace `grid-cols-4` with `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`  
+     ```diff
+     - <div className="grid grid-cols-4 gap-6">
+     + <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+     ```
+   - This ensures:  
+     - 1 column on mobile  
+     - 2 columns on small screens  
+     - 3 columns on large/desktop
+
+3. **Ensure Full Card Visibility**  
+   - Within each event card (`<Card>`):  
+     - Remove any fixed heights or `aspect-*` wrappers that crop content.  
+     - Use `h-auto` and `aspect-auto` so image and text flow naturally.  
+     - Confirm text (title, date, price) sits outside the image container and is visible without inner scrolling.  
+
+4. **Test Across Viewports**  
+   - Mobile (≤ 640px): 1 card per row  
+   - Tablet (641–1024px): 2 cards per row  
+   - Desktop (> 1024px): 3 cards per row  
+   - Verify that on page load each card’s image, title, date, and price are fully visible.
+
+5. **Commit & Document**  
+   - Commit message:  
+     ```
+     feat(ui): show 3 events per row on Discover and ensure full card visibility
+     ```  
+   - (Optional) Add a screenshot in `attached_assets/` showing the new 3-column layout.
+
+---
+
+Implement these changes in your Discover component, test them locally, then push for review.
