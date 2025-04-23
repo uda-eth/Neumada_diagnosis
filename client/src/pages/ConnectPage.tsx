@@ -1,12 +1,12 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MessageSquare, MapPin, Search, Filter, UserCircle } from "lucide-react";
+import { MessageSquare, MapPin, Search, Filter, UserCircle, Heart, X } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import {
   HoverCard,
@@ -17,6 +17,13 @@ import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious
+} from "@/components/ui/carousel";
 
 // Mood badge styles configuration
 // User interface based on the database schema
@@ -285,104 +292,155 @@ export function ConnectPage() {
         )}
       </div>
 
-      {/* Enhanced grid layout with proper spacing and centering */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 w-full">
+      {/* Dating app-style horizontal scrolling carousel */}
+      <div className="w-full">
         {isLoading ? (
-          // Loading skeletons
-          Array(6).fill(0).map((_, index) => (
-            <Card key={index} className="overflow-hidden h-full w-full">
-              <CardContent className="p-0">
-                <div className="flex flex-col h-full">
-                  <div className="relative w-full aspect-square overflow-hidden bg-muted">
-                    <Skeleton className="h-full w-full" />
-                  </div>
-                  <div className="p-3 space-y-2">
-                    <Skeleton className="h-5 w-3/4" />
-                    <Skeleton className="h-3 w-full" />
-                    <Skeleton className="h-3 w-full" />
-                    <div className="flex gap-1 mt-2">
-                      <Skeleton className="h-5 w-16" />
-                      <Skeleton className="h-5 w-16" />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        ) : filteredUsers.length > 0 ? (
-          // Real users from database
-          filteredUsers.map((user) => (
-            <Link key={user.id} href={`/profile/${user.username}`} className="block h-full w-full">
-              <Card className="overflow-hidden hover:bg-accent/5 transition-colors cursor-pointer group h-full w-full">
-                <CardContent className="p-0">
-                  <div className="flex flex-col h-full">
-                    <div className="relative w-full aspect-square overflow-hidden bg-muted">
-                      {user.profileImage ? (
-                        <img
-                          src={user.profileImage}
-                          alt={user.fullName || user.username}
-                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                      ) : (
-                        <div className="h-full w-full flex items-center justify-center bg-primary/10">
-                          <UserCircle className="h-20 w-20 text-primary/50" />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent" />
-                      <div className="absolute bottom-0 left-0 right-0 p-4">
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between">
-                            <h3 className="font-semibold text-base text-white truncate">
-                              {user.fullName || user.username}
-                              {user.age && `, ${user.age}`}
-                            </h3>
+          // Loading skeletons in carousel format
+          <Carousel className="w-full">
+            <CarouselContent>
+              {Array(6).fill(0).map((_, index) => (
+                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                  <div className="p-1">
+                    <Card className="overflow-hidden h-full w-full">
+                      <CardContent className="p-0">
+                        <div className="flex flex-col h-full">
+                          <div className="relative w-full aspect-[3/4] overflow-hidden bg-muted">
+                            <Skeleton className="h-full w-full" />
                           </div>
-                          {user.location && (
-                            <div className="flex items-center text-sm text-white/80">
-                              <MapPin className="h-3 w-3 mr-1" />
-                              <span className="truncate">{user.location}</span>
+                          <div className="p-3 space-y-2">
+                            <Skeleton className="h-5 w-3/4" />
+                            <Skeleton className="h-3 w-full" />
+                            <div className="flex gap-1 mt-2">
+                              <Skeleton className="h-5 w-16" />
+                              <Skeleton className="h-5 w-16" />
                             </div>
-                          )}
-                          {user.currentMoods && user.currentMoods.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {user.currentMoods.map((mood, index) => (
-                                <Badge
-                                  key={index}
-                                  variant="secondary"
-                                  className={`${moodStyles[mood as keyof typeof moodStyles] || 'bg-secondary'} text-xs`}
-                                >
-                                  {mood}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                    <div className="p-3">
-                      {user.bio && (
-                        <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
-                          {user.bio}
-                        </p>
-                      )}
-                      {user.interests && user.interests.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                          {user.interests.slice(0, 3).map((interest, idx) => (
-                            <Badge key={idx} variant="secondary" className="text-xs">
-                              {interest}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                      </CardContent>
+                    </Card>
                   </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
+        ) : filteredUsers.length > 0 ? (
+          // Real users from database in carousel format
+          <Carousel className="w-full">
+            <CarouselContent>
+              {filteredUsers.map((user) => (
+                <CarouselItem 
+                  key={user.id} 
+                  className="sm:basis-2/3 md:basis-1/2 lg:basis-1/3 xl:basis-1/4"
+                >
+                  <div className="p-1">
+                    <Link href={`/profile/${user.username}`} className="block h-full">
+                      <Card className="overflow-hidden hover:bg-accent/5 transition-colors cursor-pointer group h-full">
+                        <CardContent className="p-0">
+                          <div className="flex flex-col h-full">
+                            <div className="relative w-full aspect-[3/4] overflow-hidden bg-muted">
+                              {user.profileImage ? (
+                                <img
+                                  src={user.profileImage}
+                                  alt={user.fullName || user.username}
+                                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                />
+                              ) : (
+                                <div className="h-full w-full flex items-center justify-center bg-primary/10">
+                                  <UserCircle className="h-20 w-20 text-primary/50" />
+                                </div>
+                              )}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent" />
+                              <div className="absolute bottom-0 left-0 right-0 p-4">
+                                <div className="space-y-1">
+                                  <div className="flex items-center justify-between">
+                                    <h3 className="font-semibold text-base text-white truncate">
+                                      {user.fullName || user.username}
+                                      {user.age && `, ${user.age}`}
+                                    </h3>
+                                  </div>
+                                  {user.location && (
+                                    <div className="flex items-center text-sm text-white/80">
+                                      <MapPin className="h-3 w-3 mr-1" />
+                                      <span className="truncate">{user.location}</span>
+                                    </div>
+                                  )}
+                                  {user.currentMoods && user.currentMoods.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mt-2">
+                                      {user.currentMoods.map((mood, index) => (
+                                        <Badge
+                                          key={index}
+                                          variant="secondary"
+                                          className={`${moodStyles[mood as keyof typeof moodStyles] || 'bg-secondary'} text-xs`}
+                                        >
+                                          {mood}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="p-3">
+                              {user.bio && (
+                                <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                                  {user.bio}
+                                </p>
+                              )}
+                              {user.interests && user.interests.length > 0 && (
+                                <div className="flex flex-wrap gap-1">
+                                  {user.interests.slice(0, 3).map((interest, idx) => (
+                                    <Badge key={idx} variant="secondary" className="text-xs">
+                                      {interest}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
+                              
+                              {/* Dating app-style action buttons */}
+                              <div className="flex items-center justify-center gap-4 mt-4">
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  className="h-10 w-10 rounded-full bg-destructive/10 text-destructive hover:bg-destructive/20"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    // Skip this user logic would go here
+                                  }}
+                                >
+                                  <X className="h-5 w-5" />
+                                </Button>
+                                
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  className="h-10 w-10 rounded-full bg-primary/10 text-primary hover:bg-primary/20"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setLocation(`/profile/${user.username}`);
+                                  }}
+                                >
+                                  <Heart className="h-5 w-5" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <div className="hidden md:block">
+              <CarouselPrevious className="-left-5 sm:-left-8" />
+              <CarouselNext className="-right-5 sm:-right-8" />
+            </div>
+          </Carousel>
         ) : (
           // No users found
-          <div className="col-span-full py-12 text-center w-full">
+          <div className="py-12 text-center w-full">
             <p className="text-muted-foreground text-lg">No users found matching your criteria.</p>
             <p className="text-sm mt-2">Try adjusting your filters or search terms.</p>
             <Button 
