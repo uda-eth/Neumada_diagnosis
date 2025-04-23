@@ -187,14 +187,14 @@ export default function DiscoverPage() {
 
       <ScrollArea className="h-[calc(100vh-8rem)]">
         <main className="container mx-auto px-4 py-8 pb-24 md:pb-8">
-          <div className="mb-8 space-y-4">
+          <div className="mb-6 sm:mb-8 space-y-3 sm:space-y-4">
             {/* Search and Filter Section */}
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex flex-col md:flex-row gap-3 sm:gap-4">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Search className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <Input
                   placeholder={t('searchEvents')}
-                  className="pl-10 bg-background/5 border-border text-foreground"
+                  className="pl-8 sm:pl-10 bg-background/5 border-border text-foreground h-9 text-xs sm:text-sm"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -203,19 +203,22 @@ export default function DiscoverPage() {
               {/* Unified Filter Dropdown for both Mobile and Desktop */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-full md:w-[180px] justify-between">
-                    <span>Filter Events</span>
+                  <Button 
+                    variant="outline" 
+                    className="w-full md:w-[180px] justify-between h-9 text-xs sm:text-sm px-2 sm:px-4"
+                  >
+                    <span className="truncate">Filter Events</span>
                     {selectedEventTypes.length > 0 && (
-                      <Badge variant="secondary" className="ml-2">
+                      <Badge variant="secondary" className="ml-1 sm:ml-2 text-xs px-1.5">
                         {selectedEventTypes.length}
                       </Badge>
                     )}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-[280px]">
-                  <DropdownMenuLabel>Event Types</DropdownMenuLabel>
+                <DropdownMenuContent className="w-[240px] sm:w-[280px]">
+                  <DropdownMenuLabel className="text-xs sm:text-sm">Event Types</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <div className="max-h-[400px] overflow-y-auto">
+                  <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto">
                     {EVENT_TYPES.map((type) => (
                       <DropdownMenuCheckboxItem
                         key={type}
@@ -227,6 +230,7 @@ export default function DiscoverPage() {
                               : prev.filter(t => t !== type)
                           );
                         }}
+                        className="text-xs sm:text-sm"
                       >
                         {type}
                       </DropdownMenuCheckboxItem>
@@ -236,7 +240,7 @@ export default function DiscoverPage() {
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
-                        className="justify-center text-muted-foreground"
+                        className="justify-center text-muted-foreground text-xs sm:text-sm"
                         onClick={() => setSelectedEventTypes([])}
                       >
                         Clear all filters
@@ -249,12 +253,12 @@ export default function DiscoverPage() {
 
             {/* Selected Filters Display */}
             {selectedEventTypes.length > 0 && (
-              <div className="flex flex-wrap gap-2 py-4">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2 py-3 sm:py-4">
                 {selectedEventTypes.map((type) => (
                   <Badge
                     key={type}
                     variant="secondary"
-                    className="px-3 py-1 flex items-center gap-1"
+                    className="px-2 sm:px-3 py-0.5 sm:py-1 flex items-center gap-0.5 sm:gap-1 text-xs"
                   >
                     {type}
                     <button
@@ -262,9 +266,9 @@ export default function DiscoverPage() {
                         e.preventDefault();
                         setSelectedEventTypes(prev => prev.filter(t => t !== type));
                       }}
-                      className="ml-1 hover:text-destructive focus:outline-none"
+                      className="ml-0.5 sm:ml-1 hover:text-destructive focus:outline-none"
                     >
-                      <X className="h-3 w-3" />
+                      <X className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                     </button>
                   </Badge>
                 ))}
@@ -272,7 +276,7 @@ export default function DiscoverPage() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setSelectedEventTypes([])}
-                  className="text-muted-foreground hover:text-foreground"
+                  className="text-muted-foreground hover:text-foreground text-xs sm:text-sm h-6 sm:h-8 px-2 sm:px-3"
                 >
                   Clear all
                 </Button>
@@ -281,8 +285,8 @@ export default function DiscoverPage() {
           </div>
 
           {/* Event Grid */}
-          <div className="space-y-8">
-            <h2 className="text-sm font-medium text-muted-foreground mb-4">
+          <div className="space-y-6 sm:space-y-8">
+            <h2 className="text-xs sm:text-sm font-medium text-muted-foreground mb-3 sm:mb-4">
               {filteredEvents.length} Events Found
             </h2>
 
@@ -314,7 +318,7 @@ export default function DiscoverPage() {
             ) : (
               <>
                 {/* Responsive Grid Layout - 3 columns on large screens */}
-                <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+                <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                   {displayEvents.map((event: any) => (
                     <Card 
                       key={event.id} 
@@ -328,45 +332,45 @@ export default function DiscoverPage() {
                           className="object-cover w-full h-full"
                           loading="lazy"
                         />
-                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                        <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-black/80 to-transparent">
                           <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm font-medium text-white/60">
+                            <div className="max-w-[70%]">
+                              <p className="text-xs sm:text-sm font-medium text-white/60">
                                 {format(new Date(event.date), "EEE, MMM d, h:mm a")}
                               </p>
-                              <h3 className="text-lg font-semibold text-white mt-1 truncate">{event.title}</h3>
+                              <h3 className="text-sm sm:text-lg font-semibold text-white mt-0.5 sm:mt-1 truncate">{event.title}</h3>
                             </div>
                             <div className="text-right text-white z-10">
                               {event.price === "0" ? (
-                                <p className="font-semibold text-white text-lg">Free</p>
+                                <p className="font-semibold text-white text-sm sm:text-lg">Free</p>
                               ) : (
                                 <>
-                                  <p className="font-semibold text-white text-lg">${event.price}</p>
-                                  <p className="text-sm text-white/60">per person</p>
+                                  <p className="font-semibold text-white text-sm sm:text-lg">${event.price}</p>
+                                  <p className="text-xs sm:text-sm text-white/60">per person</p>
                                 </>
                               )}
                             </div>
                           </div>
                         </div>
                       </div>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-1">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm text-muted-foreground truncate">
+                      <CardContent className="p-3 sm:p-4">
+                        <div className="flex items-center justify-between flex-wrap gap-y-2">
+                          <div className="flex items-center space-x-1 min-w-0 max-w-[50%]">
+                            <MapPin className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 text-muted-foreground" />
+                            <span className="text-xs sm:text-sm text-muted-foreground truncate">
                               {event.location}
                             </span>
                           </div>
-                          <div className="flex items-center space-x-1">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm text-muted-foreground">
+                          <div className="flex items-center space-x-1 min-w-0 max-w-[50%]">
+                            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 text-muted-foreground" />
+                            <span className="text-xs sm:text-sm text-muted-foreground truncate">
                               {event.category}
                             </span>
                           </div>
                         </div>
-                        <div className="flex flex-wrap gap-1 mt-3">
+                        <div className="flex flex-wrap gap-1 mt-2 sm:mt-3">
                           {event.tags?.slice(0, 3).map((tag: string, index: number) => (
-                            <Badge key={index} variant="outline" className="text-xs">
+                            <Badge key={index} variant="outline" className="text-xs px-1.5 py-0.5 h-5">
                               {tag}
                             </Badge>
                           ))}
