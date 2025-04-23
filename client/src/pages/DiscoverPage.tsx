@@ -131,15 +131,15 @@ export default function DiscoverPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border sticky top-0 z-50 bg-black text-white">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <h1 className="text-sm font-medium uppercase tracking-[.5em] text-white">
+        <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-1 sm:gap-2 w-full overflow-visible">
+            <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-shrink-1">
+              <h1 className="text-xs sm:text-sm font-medium uppercase tracking-wider sm:tracking-[.5em] text-white truncate">
                 {t('discover')}
               </h1>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center">
                 <Select value={selectedCity} onValueChange={setSelectedCity}>
-                  <SelectTrigger className="w-[140px] md:w-[180px] bg-transparent border-border">
+                  <SelectTrigger className="w-[100px] sm:w-[140px] md:w-[180px] bg-transparent border-border text-xs sm:text-sm">
                     <SelectValue placeholder="Select city" />
                   </SelectTrigger>
                   <SelectContent>
@@ -153,7 +153,7 @@ export default function DiscoverPage() {
                 </Select>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
               <Button
                 variant="ghost"
                 size="sm"
@@ -173,10 +173,10 @@ export default function DiscoverPage() {
                 My Network
               </Button>
               <Button
-                className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white whitespace-nowrap px-2 md:px-4"
+                className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white whitespace-nowrap px-2 py-1 sm:py-2 md:px-4 text-xs sm:text-sm flex-shrink-0"
                 onClick={() => setLocation("/create")}
               >
-                <Plus className="h-5 w-5 md:mr-2" />
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5 md:mr-2" />
                 <span className="hidden md:inline">Create Event</span>
                 <span className="inline md:hidden">Create</span>
               </Button>
