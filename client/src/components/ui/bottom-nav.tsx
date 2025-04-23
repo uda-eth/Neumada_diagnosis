@@ -82,7 +82,7 @@ export function BottomNav() {
   return (
     <>
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[100] glass border-t border-border/10 shadow-lg pb-6">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[100] glass border-t border-border/10 shadow-lg pb-safe">
         <div className="flex justify-around items-center h-16 max-w-md mx-auto px-3">
           {mainNavItems.map(({ icon: Icon, label, href }) => {
             const isActive = location === href;
@@ -90,14 +90,14 @@ export function BottomNav() {
               <Link 
                 key={href} 
                 href={href}
-                className={`relative flex flex-col items-center justify-center gap-1 w-12 h-16 rounded-lg transition-all duration-300 ease-out touch-target interactive-hover ${
+                className={`relative flex flex-col items-center justify-center gap-1 w-12 h-14 rounded-lg transition-all duration-300 ease-out touch-target interactive-hover ${
                   isActive 
                     ? "text-white scale-105" 
                     : "text-foreground/60 hover:text-foreground"
                 }`}
               >
-                <Icon className="w-6 h-6 transition-transform" />
-                <span className="text-[10px] font-medium text-center">
+                <Icon className="w-5 h-5 transition-transform" />
+                <span className="text-[9px] font-medium text-center truncate max-w-full">
                   {label === 'concierge' ? 'Concierge' : t(label)}
                 </span>
               </Link>
@@ -106,9 +106,9 @@ export function BottomNav() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="relative flex flex-col items-center justify-center gap-1 w-12 h-16 rounded-lg transition-all duration-300 ease-out touch-target interactive-hover text-foreground/60 hover:text-foreground">
-                <Menu className="w-6 h-6 transition-transform" />
-                <span className="text-[10px] font-medium">Menu</span>
+              <button className="relative flex flex-col items-center justify-center gap-1 w-12 h-14 rounded-lg transition-all duration-300 ease-out touch-target interactive-hover text-foreground/60 hover:text-foreground">
+                <Menu className="w-5 h-5 transition-transform" />
+                <span className="text-[9px] font-medium truncate max-w-full">Menu</span>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-64">

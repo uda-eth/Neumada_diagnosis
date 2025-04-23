@@ -286,11 +286,11 @@ export function ConnectPage() {
       </div>
 
       {/* Enhanced grid layout with proper spacing and centering */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 w-full place-items-center">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 w-full">
         {isLoading ? (
           // Loading skeletons
           Array(6).fill(0).map((_, index) => (
-            <Card key={index} className="overflow-hidden h-full w-full max-w-sm">
+            <Card key={index} className="overflow-hidden h-full w-full">
               <CardContent className="p-0">
                 <div className="flex flex-col h-full">
                   <div className="relative w-full aspect-square overflow-hidden bg-muted">
@@ -312,7 +312,7 @@ export function ConnectPage() {
         ) : filteredUsers.length > 0 ? (
           // Real users from database
           filteredUsers.map((user) => (
-            <Link key={user.id} href={`/profile/${user.username}`} className="w-full max-w-sm h-full">
+            <Link key={user.id} href={`/profile/${user.username}`} className="block h-full w-full">
               <Card className="overflow-hidden hover:bg-accent/5 transition-colors cursor-pointer group h-full w-full">
                 <CardContent className="p-0">
                   <div className="flex flex-col h-full">
@@ -382,9 +382,19 @@ export function ConnectPage() {
           ))
         ) : (
           // No users found
-          <div className="col-span-1 sm:col-span-2 md:col-span-3 xl:col-span-4 py-12 text-center w-full">
-            <p className="text-muted-foreground">No users found matching your criteria.</p>
+          <div className="col-span-full py-12 text-center w-full">
+            <p className="text-muted-foreground text-lg">No users found matching your criteria.</p>
             <p className="text-sm mt-2">Try adjusting your filters or search terms.</p>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setSelectedMoods([]);
+                setSelectedCity("all"); 
+              }}
+              className="mt-4"
+            >
+              Clear All Filters
+            </Button>
           </div>
         )}
       </div>
