@@ -76,8 +76,8 @@ export default function DiscoverPage() {
   const { events: fetchedEvents, isLoading } = useEvents(undefined, selectedCity);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [displayCount, setDisplayCount] = useState(8); // Initially show 8 items (2 rows of 2x2)
-  const itemsPerBatch = 4; // Load 4 more items on each scroll
+  const [displayCount, setDisplayCount] = useState(9); // Initially show 9 items (3 rows of 3 columns)
+  const itemsPerBatch = 6; // Load 6 more items on each scroll (2 rows of 3 columns)
   const observerTarget = useRef(null);
   
   const allEvents = fetchedEvents || [];
@@ -125,7 +125,7 @@ export default function DiscoverPage() {
 
   // Reset pagination when filters change
   useEffect(() => {
-    setDisplayCount(8); // Reset to initial count when filters change
+    setDisplayCount(9); // Reset to initial count when filters change
   }, [searchTerm, selectedCity, selectedCategory, selectedEventTypes]);
 
   return (
@@ -288,10 +288,10 @@ export default function DiscoverPage() {
 
             {isLoading ? (
               // Loading skeleton grid
-              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 auto-rows-fr">
-                {Array.from({ length: 4 }).map((_, index) => (
+              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+                {Array.from({ length: 6 }).map((_, index) => (
                   <Card key={index} className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm">
-                    <Skeleton className="aspect-[3/4] w-full" />
+                    <Skeleton className="aspect-[2/3] w-full" />
                     <div className="p-4 space-y-2">
                       <Skeleton className="h-4 w-3/4" />
                       <Skeleton className="h-4 w-1/2" />
@@ -313,15 +313,15 @@ export default function DiscoverPage() {
               </div>
             ) : (
               <>
-                {/* Responsive Grid Layout */}
-                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 auto-rows-fr">
+                {/* Responsive Grid Layout - 3 columns on large screens */}
+                <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                   {displayEvents.map((event: any) => (
                     <Card 
                       key={event.id} 
-                      className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
+                      className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg h-auto"
                       onClick={() => setLocation(`/event/${event.id}`)}
                     >
-                      <div className="relative aspect-[3/4] overflow-hidden">
+                      <div className="relative aspect-[2/3] overflow-hidden">
                         <img
                           src={event.image || "/placeholder-event.jpg"}
                           alt={event.title}
