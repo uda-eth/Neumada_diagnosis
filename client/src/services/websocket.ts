@@ -22,11 +22,17 @@ const connectWebSocket = () => {
   socket.onopen = () => {
     reconnectAttempts = 0;
     console.log('WebSocket connection opened with userId:', userId);
-    // Send initial connection message
-    socket.send(JSON.stringify({
-      type: 'connect',
-      userId: userId
-    }));
+    
+    // Send initial connection message immediately
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({
+        type: 'connect',
+        userId: userId
+      }));
+      console.log('Sent connection identification with userId:', userId);
+    } else {
+      console.error('WebSocket not ready for sending user ID');
+    }
   };
 
   socket.onclose = (event) => {

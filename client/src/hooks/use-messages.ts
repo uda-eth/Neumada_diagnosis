@@ -355,6 +355,14 @@ export const useMessages = create<MessagesState>((set, get) => ({
     socket.onopen = () => {
       console.log('WebSocket connected');
       clearTimeout(connectionTimeout);
+      
+      // Immediately send the user ID to identify the connection
+      socket.send(JSON.stringify({
+        type: 'connect',
+        userId: userId
+      }));
+      console.log('Sent connection identification with userId:', userId);
+      
       set({ 
         socketConnected: true, 
         loading: false, 
