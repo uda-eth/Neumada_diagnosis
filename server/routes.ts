@@ -1810,7 +1810,7 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
   // Create WebSocket server
   const wss = new WebSocketServer({
     server: httpServer,
-    path: '/ws'
+    path: '/ws/chat'
   });
 
   // Store active connections and their ping states
