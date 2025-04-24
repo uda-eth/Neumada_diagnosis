@@ -326,7 +326,19 @@ export const useMessages = create<MessagesState>((set, get) => ({
   },
 
   connectSocket: (userId: number) => {
-    const { maxReconnectAttempts, reconnectAttempts, reconnectTimeout } = get();
+    const { maxReconnectAttempts, reconnectAttempts, reconnectTimeout, currentSocket, socketConnected } = get();
+
+    // Check if we already have an active connection
+    if (currentSocket && socketConnected && currentSocket.readyState === WebSocket.OPEN) {
+      console.log('WebSocket already connected, reusing existing connection');
+      return;
+    }
+    
+    // Close any existing socket before creating a new one
+    if (currentSocket) {
+      console.log('Closing existing WebSocket connection before creating a new one');
+      currentSocket.close();
+    }
 
     if (reconnectAttempts >= maxReconnectAttempts) {
       console.error('Max reconnection attempts reached');
@@ -391,10 +403,10 @@ export const useMessages = create<MessagesState>((set, get) => ({
         const data = JSON.parse(event.data);
         console.log('WebSocket message received:', data);
 
-        // Handle ping messages (keep-alive)
-        if (data.type === 'ping') {
-          // Just acknowledge ping, no state change needed
-          console.log('Received ping from server');
+        // Handle ping/pong messages (keep-alive)
+        if (data.type === 'ping' || data.type === 'pong') {
+          // Just acknowledge ping/pong, no state change needed
+          console.log(`Received ${data.type} from server`);
           return;
         }
 

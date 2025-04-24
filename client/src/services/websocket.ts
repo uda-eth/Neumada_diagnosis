@@ -75,6 +75,11 @@ const connectWebSocket = () => {
 // Don't connect automatically to prevent multiple connections
 // connectWebSocket(); // This is now handled by the useMessages hook
 
+// Add a helper function to check if a socket is already connected
+export const isSocketConnected = () => {
+  return socket && socket.readyState === WebSocket.OPEN;
+};
+
 // Export functions to send messages and reconnect
 export const sendWebSocketMessage = (receiverId: number, content: string) => {
   if (!socket || socket.readyState !== WebSocket.OPEN) {
