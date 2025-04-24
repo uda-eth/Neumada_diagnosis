@@ -1513,6 +1513,41 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         price = 0;
       }
 
+      // Process image upload to Cloudinary if a file was provided
+      let imageUrl = '';
+      if (req.file) {
+        try {
+          // Stream the buffer to Cloudinary
+          const bufferStream = new Readable();
+          bufferStream.push(req.file.buffer);
+          bufferStream.push(null);
+          
+          const result = await new Promise<any>((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+              { 
+                folder: `events/${currentUser.id}`,
+                public_id: `event-${Date.now()}`
+              },
+              (error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+              }
+            );
+            
+            bufferStream.pipe(uploadStream);
+          });
+          
+          imageUrl = result.secure_url;
+          console.log(`Uploaded event image to Cloudinary: ${imageUrl}`);
+        } 
+        catch (cloudinaryError) {
+          console.error("Error uploading to Cloudinary:", cloudinaryError);
+          imageUrl = getEventImage(req.body.category || 'Social');
+        }
+      } else {
+        imageUrl = getEventImage(req.body.category || 'Social');
+      }
+
       // Create event data object with all required fields from schema
       const eventData = {
         title: req.body.title,
@@ -1525,8 +1560,8 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         price: req.body.price ? req.body.price.toString() : '0', // Ensure price is a string
         date: new Date(req.body.date || new Date()),
         tags: tags,
-        image: req.file ? `/uploads/${req.file.filename}` : getEventImage(req.body.category || 'Social'),
-        image_url: req.file ? `/uploads/${req.file.filename}` : getEventImage(req.body.category || 'Social'),
+        image: imageUrl,
+        image_url: imageUrl, // Both image and image_url now use Cloudinary URL
         creatorId: currentUser.id,
         isPrivate: req.body.isPrivate === 'true',
         createdAt: new Date(),
