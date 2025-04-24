@@ -52,7 +52,8 @@ interface MessagesState {
   disconnectSocket: () => void;
 }
 
-export const useMessages = create<MessagesState>((set, get) => ({
+// Export the store directly so it can be accessed from other modules for cleanup operations
+export const useMessagesStore = create<MessagesState>((set, get) => ({
   messages: [],
   conversations: [],
   loading: false,
@@ -526,7 +527,9 @@ export const useMessages = create<MessagesState>((set, get) => ({
   disconnectSocket: () => {
     const { currentSocket, reconnectTimeout } = get();
     if (currentSocket) {
-      currentSocket.close();
+      console.log('Explicitly closing WebSocket connection from useMessages hook');
+      // Use code 1000 (normal closure) and provide a reason
+      currentSocket.close(1000, 'User logged out');
       set({ socketConnected: false, currentSocket: null, reconnectAttempts: 0, reconnectTimeout: null});
     }
     if (reconnectTimeout) {
@@ -534,6 +537,11 @@ export const useMessages = create<MessagesState>((set, get) => ({
     }
   }
 }));
+
+// Create a hook that returns the store's state and actions
+export function useMessages() {
+  return useMessagesStore();
+}
 
 export function useMessageNotifications() {
   const { toast } = useToast();

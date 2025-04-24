@@ -285,25 +285,19 @@ export function useUser() {
       
       // Disconnect any active WebSocket connection
       try {
-        // First try to disconnect using the useMessages hook if it's imported
-        import('./use-messages').then(({ useMessagesStore }) => {
-          if (useMessagesStore) {
-            useMessagesStore.getState().disconnectSocket();
-            console.log("Disconnected WebSocket from useMessagesStore");
-          }
-        }).catch(e => {
-          console.log("Could not import use-messages:", e);
-        });
+        // Disconnect using the global WebSocket service first
+        const websocketModule = require('../services/websocket');
+        if (websocketModule && websocketModule.disconnectWebSocket) {
+          websocketModule.disconnectWebSocket();
+          console.log("Disconnected WebSocket from websocket service");
+        }
         
-        // Also disconnect using the global WebSocket service
-        import('../services/websocket').then(({ disconnectWebSocket }) => {
-          if (disconnectWebSocket) {
-            disconnectWebSocket();
-            console.log("Disconnected WebSocket from websocket service");
-          }
-        }).catch(e => {
-          console.log("Could not import websocket service:", e);
-        });
+        // Then disconnect using the useMessages hook if needed
+        const messagesModule = require('./use-messages');
+        if (messagesModule && messagesModule.useMessagesStore) {
+          messagesModule.useMessagesStore.getState().disconnectSocket();
+          console.log("Disconnected WebSocket from useMessagesStore");
+        }
       } catch (error) {
         console.error("Error disconnecting WebSockets:", error);
       }
