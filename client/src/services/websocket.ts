@@ -66,8 +66,8 @@ const connectWebSocket = () => {
   };
 };
 
-// Connect when the module is imported
-connectWebSocket();
+// Don't connect automatically to prevent multiple connections
+// connectWebSocket(); // This is now handled by the useMessages hook
 
 // Export functions to send messages and reconnect
 export const sendWebSocketMessage = (receiverId: number, content: string) => {
