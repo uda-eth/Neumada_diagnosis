@@ -10,6 +10,19 @@ const connectWebSocket = () => {
     console.log('No user ID available, skipping WebSocket connection');
     return;
   }
+  
+  // Check if we already have an active connection
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    console.log('WebSocket already connected, reusing existing connection');
+    return;
+  }
+  
+  // Close any existing socket before creating a new one
+  if (socket && socket.readyState !== WebSocket.CLOSED) {
+    console.log('Closing existing WebSocket connection before creating a new one');
+    socket.close();
+    socket = null;
+  }
 
   // Base WebSocket URL (adjust based on your server settings)
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';

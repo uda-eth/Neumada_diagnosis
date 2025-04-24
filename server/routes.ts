@@ -1848,6 +1848,7 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
     
     // We'll wait for the client to send a message with the user ID
     let userId: number | null = null;
+    let msgCount = 0; // Track number of messages for debugging
     
     // Set a timeout to close the connection if no user ID is provided
     const userIdTimeout = setTimeout(() => {
@@ -1857,7 +1858,7 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
           type: 'error',
           message: 'No user ID provided'
         }));
-        ws.close();
+        ws.close(1000, 'No user ID provided');
       }
     }, 10000); // 10 seconds timeout
     
@@ -1933,15 +1934,21 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
     // Handle regular messages after connection is established
     const handleRegularMessages = async (message: any) => {
       try {
+        msgCount++;
         const data = JSON.parse(message.toString());
         if (!userId) return; // Safety check
         
-        console.log(`WebSocket message received from user ${userId}:`, JSON.stringify(data));
+        // Update the heartbeat
+        if (userId) heartbeat(userId);
+        
+        console.log(`WebSocket message #${msgCount} received from user ${userId}:`, JSON.stringify(data));
         
         // Check for ping message
         if (data.type === 'ping') {
           console.log(`Ping received from user ${userId}`);
-          ws.send(JSON.stringify({ type: 'pong' }));
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'pong' }));
+          }
           return;
         }
         

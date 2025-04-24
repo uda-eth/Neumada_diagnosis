@@ -469,13 +469,28 @@ export const useMessages = create<MessagesState>((set, get) => ({
     socket.onclose = (event) => {
       console.warn(`WebSocket closed (suppressed): ${event.code} ${event.reason}`);
       const { reconnectAttempts, maxReconnectAttempts, reconnectTimeout } = get();
+      
+      // Check if this is a normal closure (1000) or a user-initiated closure (1001)
+      // In these cases, don't automatically reconnect
+      if (event.code === 1000 || event.code === 1001) {
+        console.log('WebSocket closed normally, not attempting reconnect');
+        set({ 
+          socketConnected: false, 
+          currentSocket: null,
+          reconnectAttempts: 0,
+          reconnectTimeout: null
+        });
+        return;
+      }
 
       if (reconnectAttempts < maxReconnectAttempts) {
         if (reconnectTimeout) {
           clearTimeout(reconnectTimeout);
         }
+        
+        // Exponential backoff with a cap
         const timeout = Math.min(1000 * Math.pow(2, reconnectAttempts), 10000);
-        console.log(`Attempting reconnect in ${timeout}ms`);
+        console.log(`Attempting reconnect in ${timeout}ms (attempt ${reconnectAttempts + 1}/${maxReconnectAttempts})`);
 
         // Fix variable declaration to avoid shadowing
         let newReconnectTimeout = setTimeout(() => {
