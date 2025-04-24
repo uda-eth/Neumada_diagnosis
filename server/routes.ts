@@ -23,6 +23,11 @@ import { sql } from 'drizzle-orm';
 import premiumRouter from './premium';
 // Import object storage utilities
 import { uploadToObjectStorage } from './lib/objectStorage';
+// Import Cloudinary and stream utilities 
+import cloudinary from './lib/cloudinary';
+import { Readable } from 'stream';
+// Import new upload middleware
+import { upload as cloudinaryUpload } from './middleware/upload';
 
 const categories = [
   "Retail",
@@ -882,7 +887,7 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
   app.use('/api/premium', premiumRouter);
 
   // Profile image upload endpoint
-  app.post("/api/upload-profile-image", requireAuth, upload.single('image'), async (req, res) => {
+  app.post("/api/upload-profile-image", requireAuth, cloudinaryUpload.single('image'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No image file provided" });
@@ -894,33 +899,34 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
       let imageUrl = '';
 
       try {
-        // Upload to Replit Object Storage
+        // Stream the buffer to Cloudinary
+        const bufferStream = new Readable();
+        bufferStream.push(req.file.buffer);
+        bufferStream.push(null);
+
         const username = user.username || 'user';
-        const objectName = `profile-images/${username}-${Date.now()}${path.extname(req.file.originalname)}`;
         
-        // Check if STORAGE_TOKEN exists
-        if (!process.env.STORAGE_TOKEN) {
-          throw new Error('STORAGE_TOKEN not configured');
-        }
+        const result = await new Promise<any>((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            { 
+              folder: `profiles/${userId}`,
+              public_id: `${username}-${Date.now()}`
+            },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          );
+          
+          bufferStream.pipe(uploadStream);
+        });
         
-        // Upload to object storage
-        imageUrl = await uploadToObjectStorage(
-          req.file.path, 
-          req.file.mimetype, 
-          objectName
-        );
-        
-        console.log(`Uploaded profile image to object storage: ${imageUrl}`);
-        
-        // Delete local file after successful upload
-        fs.unlinkSync(req.file.path);
+        imageUrl = result.secure_url;
+        console.log(`Uploaded profile image to Cloudinary: ${imageUrl}`);
       } 
-      catch (storageError) {
-        console.error("Error uploading to object storage:", storageError);
-        
-        // Fallback to local storage
-        imageUrl = `/uploads/${req.file.filename}`;
-        console.log(`Fallback: Using local storage for profile image: ${imageUrl}`);
+      catch (cloudinaryError) {
+        console.error("Error uploading to Cloudinary:", cloudinaryError);
+        return res.status(500).json({ error: "Failed to upload image to Cloudinary" });
       }
 
       // No longer updating the user profile automatically
@@ -1399,7 +1405,7 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
     }
   });
 
-  app.post("/api/events", upload.single('image'), async (req, res) => {
+  app.post("/api/events", cloudinaryUpload.single('image'), async (req, res) => {
     try {
       // Use only user ID-based authentication methods (no session ID)
       let currentUser = null;
