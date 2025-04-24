@@ -52,7 +52,8 @@ interface MessagesState {
   disconnectSocket: () => void;
 }
 
-export const useMessages = create<MessagesState>((set, get) => ({
+// Export the store directly so it can be accessed from other modules for cleanup operations
+export const useMessagesStore = create<MessagesState>((set, get) => ({
   messages: [],
   conversations: [],
   loading: false,
@@ -326,7 +327,19 @@ export const useMessages = create<MessagesState>((set, get) => ({
   },
 
   connectSocket: (userId: number) => {
-    const { maxReconnectAttempts, reconnectAttempts, reconnectTimeout } = get();
+    const { maxReconnectAttempts, reconnectAttempts, reconnectTimeout, currentSocket, socketConnected } = get();
+
+    // Check if we already have an active connection
+    if (currentSocket && socketConnected && currentSocket.readyState === WebSocket.OPEN) {
+      console.log('WebSocket already connected, reusing existing connection');
+      return;
+    }
+    
+    // Close any existing socket before creating a new one
+    if (currentSocket) {
+      console.log('Closing existing WebSocket connection before creating a new one');
+      currentSocket.close();
+    }
 
     if (reconnectAttempts >= maxReconnectAttempts) {
       console.error('Max reconnection attempts reached');
@@ -341,7 +354,8 @@ export const useMessages = create<MessagesState>((set, get) => ({
 
     let wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     let wsHost = window.location.host;
-    const socket = new WebSocket(`${wsProtocol}//${wsHost}/ws/chat/${userId}`);
+    // Make sure to use the exact path that the server is configured with
+    const socket = new WebSocket(`${wsProtocol}//${wsHost}/ws/chat`);
 
     // Set a connection timeout
     const connectionTimeout = setTimeout(() => {
@@ -354,6 +368,14 @@ export const useMessages = create<MessagesState>((set, get) => ({
     socket.onopen = () => {
       console.log('WebSocket connected');
       clearTimeout(connectionTimeout);
+      
+      // Immediately send the user ID to identify the connection
+      socket.send(JSON.stringify({
+        type: 'connect',
+        userId: userId
+      }));
+      console.log('Sent connection identification with userId:', userId);
+      
       set({ 
         socketConnected: true, 
         loading: false, 
@@ -382,10 +404,10 @@ export const useMessages = create<MessagesState>((set, get) => ({
         const data = JSON.parse(event.data);
         console.log('WebSocket message received:', data);
 
-        // Handle ping messages (keep-alive)
-        if (data.type === 'ping') {
-          // Just acknowledge ping, no state change needed
-          console.log('Received ping from server');
+        // Handle ping/pong messages (keep-alive)
+        if (data.type === 'ping' || data.type === 'pong') {
+          // Just acknowledge ping/pong, no state change needed
+          console.log(`Received ${data.type} from server`);
           return;
         }
 
@@ -448,13 +470,28 @@ export const useMessages = create<MessagesState>((set, get) => ({
     socket.onclose = (event) => {
       console.warn(`WebSocket closed (suppressed): ${event.code} ${event.reason}`);
       const { reconnectAttempts, maxReconnectAttempts, reconnectTimeout } = get();
+      
+      // Check if this is a normal closure (1000) or a user-initiated closure (1001)
+      // In these cases, don't automatically reconnect
+      if (event.code === 1000 || event.code === 1001) {
+        console.log('WebSocket closed normally, not attempting reconnect');
+        set({ 
+          socketConnected: false, 
+          currentSocket: null,
+          reconnectAttempts: 0,
+          reconnectTimeout: null
+        });
+        return;
+      }
 
       if (reconnectAttempts < maxReconnectAttempts) {
         if (reconnectTimeout) {
           clearTimeout(reconnectTimeout);
         }
+        
+        // Exponential backoff with a cap
         const timeout = Math.min(1000 * Math.pow(2, reconnectAttempts), 10000);
-        console.log(`Attempting reconnect in ${timeout}ms`);
+        console.log(`Attempting reconnect in ${timeout}ms (attempt ${reconnectAttempts + 1}/${maxReconnectAttempts})`);
 
         // Fix variable declaration to avoid shadowing
         let newReconnectTimeout = setTimeout(() => {
@@ -490,7 +527,9 @@ export const useMessages = create<MessagesState>((set, get) => ({
   disconnectSocket: () => {
     const { currentSocket, reconnectTimeout } = get();
     if (currentSocket) {
-      currentSocket.close();
+      console.log('Explicitly closing WebSocket connection from useMessages hook');
+      // Use code 1000 (normal closure) and provide a reason
+      currentSocket.close(1000, 'User logged out');
       set({ socketConnected: false, currentSocket: null, reconnectAttempts: 0, reconnectTimeout: null});
     }
     if (reconnectTimeout) {
@@ -498,6 +537,11 @@ export const useMessages = create<MessagesState>((set, get) => ({
     }
   }
 }));
+
+// Create a hook that returns the store's state and actions
+export function useMessages() {
+  return useMessagesStore();
+}
 
 export function useMessageNotifications() {
   const { toast } = useToast();

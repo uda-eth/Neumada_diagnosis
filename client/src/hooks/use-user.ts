@@ -283,6 +283,25 @@ export function useUser() {
       queryClient.setQueryData(['user'], null);
       queryClient.invalidateQueries({ queryKey: ['user'] });
       
+      // Disconnect any active WebSocket connection
+      try {
+        // Disconnect using the global WebSocket service first
+        const websocketModule = require('../services/websocket');
+        if (websocketModule && websocketModule.disconnectWebSocket) {
+          websocketModule.disconnectWebSocket();
+          console.log("Disconnected WebSocket from websocket service");
+        }
+        
+        // Then disconnect using the useMessages hook if needed
+        const messagesModule = require('./use-messages');
+        if (messagesModule && messagesModule.useMessagesStore) {
+          messagesModule.useMessagesStore.getState().disconnectSocket();
+          console.log("Disconnected WebSocket from useMessagesStore");
+        }
+      } catch (error) {
+        console.error("Error disconnecting WebSockets:", error);
+      }
+      
       // Clear ALL localStorage cached data related to user session
       localStorage.removeItem('maly_user_data');
       localStorage.removeItem('maly_session_id');

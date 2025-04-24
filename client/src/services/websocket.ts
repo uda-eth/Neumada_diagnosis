@@ -10,11 +10,24 @@ const connectWebSocket = () => {
     console.log('No user ID available, skipping WebSocket connection');
     return;
   }
+  
+  // Check if we already have an active connection
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    console.log('WebSocket already connected, reusing existing connection');
+    return;
+  }
+  
+  // Close any existing socket before creating a new one
+  if (socket && socket.readyState !== WebSocket.CLOSED) {
+    console.log('Closing existing WebSocket connection before creating a new one');
+    socket.close();
+    socket = null;
+  }
 
   // Base WebSocket URL (adjust based on your server settings)
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   const host = window.location.host;
-  const wsUrl = `${protocol}//${host}/ws/chat/${userId}`;
+  const wsUrl = `${protocol}//${host}/ws/chat`;
   
   console.log('Connecting WebSocket using userId:', userId);
   socket = new WebSocket(wsUrl);
@@ -22,11 +35,17 @@ const connectWebSocket = () => {
   socket.onopen = () => {
     reconnectAttempts = 0;
     console.log('WebSocket connection opened with userId:', userId);
-    // Send initial connection message
-    socket.send(JSON.stringify({
-      type: 'connect',
-      userId: userId
-    }));
+    
+    // Send initial connection message immediately
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({
+        type: 'connect',
+        userId: userId
+      }));
+      console.log('Sent connection identification with userId:', userId);
+    } else {
+      console.error('WebSocket not ready for sending user ID');
+    }
   };
 
   socket.onclose = (event) => {
@@ -66,8 +85,13 @@ const connectWebSocket = () => {
   };
 };
 
-// Connect when the module is imported
-connectWebSocket();
+// Don't connect automatically to prevent multiple connections
+// connectWebSocket(); // This is now handled by the useMessages hook
+
+// Add a helper function to check if a socket is already connected
+export const isSocketConnected = () => {
+  return socket && socket.readyState === WebSocket.OPEN;
+};
 
 // Export functions to send messages and reconnect
 export const sendWebSocketMessage = (receiverId: number, content: string) => {
@@ -99,7 +123,22 @@ export const reconnectWebSocket = () => {
   connectWebSocket();
 };
 
+// Add a function to explicitly disconnect and cleanup WebSocket
+export const disconnectWebSocket = () => {
+  console.log('Explicitly disconnecting WebSocket due to user logout');
+  
+  if (socket) {
+    // Use the 1000 code for normal closure
+    socket.close(1000, 'User logged out');
+    socket = null;
+  }
+  
+  // Reset reconnection attempts
+  reconnectAttempts = 0;
+};
+
 export default {
   sendMessage: sendWebSocketMessage,
-  reconnect: reconnectWebSocket
+  reconnect: reconnectWebSocket,
+  disconnect: disconnectWebSocket
 };
