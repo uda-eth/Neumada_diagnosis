@@ -123,7 +123,22 @@ export const reconnectWebSocket = () => {
   connectWebSocket();
 };
 
+// Add a function to explicitly disconnect and cleanup WebSocket
+export const disconnectWebSocket = () => {
+  console.log('Explicitly disconnecting WebSocket due to user logout');
+  
+  if (socket) {
+    // Use the 1000 code for normal closure
+    socket.close(1000, 'User logged out');
+    socket = null;
+  }
+  
+  // Reset reconnection attempts
+  reconnectAttempts = 0;
+};
+
 export default {
   sendMessage: sendWebSocketMessage,
-  reconnect: reconnectWebSocket
+  reconnect: reconnectWebSocket,
+  disconnect: disconnectWebSocket
 };

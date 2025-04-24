@@ -283,6 +283,31 @@ export function useUser() {
       queryClient.setQueryData(['user'], null);
       queryClient.invalidateQueries({ queryKey: ['user'] });
       
+      // Disconnect any active WebSocket connection
+      try {
+        // First try to disconnect using the useMessages hook if it's imported
+        import('./use-messages').then(({ useMessagesStore }) => {
+          if (useMessagesStore) {
+            useMessagesStore.getState().disconnectSocket();
+            console.log("Disconnected WebSocket from useMessagesStore");
+          }
+        }).catch(e => {
+          console.log("Could not import use-messages:", e);
+        });
+        
+        // Also disconnect using the global WebSocket service
+        import('../services/websocket').then(({ disconnectWebSocket }) => {
+          if (disconnectWebSocket) {
+            disconnectWebSocket();
+            console.log("Disconnected WebSocket from websocket service");
+          }
+        }).catch(e => {
+          console.log("Could not import websocket service:", e);
+        });
+      } catch (error) {
+        console.error("Error disconnecting WebSockets:", error);
+      }
+      
       // Clear ALL localStorage cached data related to user session
       localStorage.removeItem('maly_user_data');
       localStorage.removeItem('maly_session_id');
