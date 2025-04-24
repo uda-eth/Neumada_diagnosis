@@ -341,7 +341,8 @@ export const useMessages = create<MessagesState>((set, get) => ({
 
     let wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     let wsHost = window.location.host;
-    const socket = new WebSocket(`${wsProtocol}//${wsHost}/ws/chat/${userId}`);
+    // Make sure to use the exact path that the server is configured with
+    const socket = new WebSocket(`${wsProtocol}//${wsHost}/ws/chat`);
 
     // Set a connection timeout
     const connectionTimeout = setTimeout(() => {
