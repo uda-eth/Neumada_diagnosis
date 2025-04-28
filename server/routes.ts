@@ -21,6 +21,7 @@ import { recordSubscriptionPayment, getUserPaymentHistory, getSubscriptionWithPa
 import { sql } from 'drizzle-orm';
 // Add import for premium router
 import premiumRouter from './premium';
+import aiRouter from './ai';
 // Import object storage utilities
 import { uploadToObjectStorage } from './lib/objectStorage';
 // Import Cloudinary and stream utilities 
@@ -885,6 +886,9 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
   
   // Mount premium router at /api/premium
   app.use('/api/premium', premiumRouter);
+  
+  // Mount AI router at /api/ai
+  app.use('/api/ai', aiRouter);
 
   // Profile image upload endpoint
   app.post("/api/upload-profile-image", requireAuth, cloudinaryUpload.single('image'), async (req, res) => {

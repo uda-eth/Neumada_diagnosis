@@ -162,19 +162,34 @@ export default function ChatbotPage() {
                             : "bg-gradient-to-r from-purple-600 via-pink-600 to-red-500"
                         }`}
                       >
-                        {message.role === 'assistant' && message.content.includes('1.') ? (
-                          <ol className="list-decimal list-inside space-y-2 text-sm">
-                            {message.content.split('\n')
-                              .filter(line => /^\d+\./.test(line))
-                              .map((line, index) => (
-                                <li key={index} className="pl-2">
+                        <div className="text-sm">
+                          {message.content.split('\n').map((line, idx) => {
+                            // Match numbered list items (1., 2., etc.)
+                            if (/^\d+\./.test(line)) {
+                              return (
+                                <li key={idx} className="pl-2 ml-4 list-item list-decimal">
                                   {line.replace(/^\d+\.\s*/, '')}
                                 </li>
-                              ))}
-                          </ol>
-                        ) : (
-                          <p className="text-sm">{message.content}</p>
-                        )}
+                              );
+                            }
+                            // Match bullet list items
+                            else if (line.startsWith('•')) {
+                              return (
+                                <li key={idx} className="pl-2 ml-4 list-item list-disc">
+                                  {line.slice(1).trim()}
+                                </li>
+                              );
+                            }
+                            // Regular paragraph text
+                            else if (line.trim()) {
+                              return <p key={idx} className="mb-2">{line}</p>;
+                            }
+                            // Empty lines become spacing
+                            else {
+                              return <div key={idx} className="h-2"></div>;
+                            }
+                          })}
+                        </div>
                       </div>
                     </motion.div>
                   ))}

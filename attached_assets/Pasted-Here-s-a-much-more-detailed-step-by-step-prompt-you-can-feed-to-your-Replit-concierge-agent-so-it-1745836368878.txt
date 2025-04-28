@@ -1,0 +1,93 @@
+Here’s a much more detailed, step-by-step prompt you can feed to your Replit “concierge” agent so it can pull live event data straight from your Postgres database and answer user questions with real info:
+
+---
+
+**Goal:** Give the AI direct, programmatic access to your `events` table so it can answer user queries (“What’s happening this weekend?”, “Tell me about event #17”) using up-to-date data.
+
+---
+
+### 1. Expose a secure “AI” API endpoint
+
+1. **Create** a new Express route `GET /api/ai/events` in your server (e.g. in `server/routes/ai.ts`).
+2. **Connect** to your database using your existing `db` client and `events` schema:
+
+   ```ts
+   import { Router } from "express";
+   import { db, events } from "@db/schema";
+   
+   export const aiRouter = Router();
+   
+   // Return all events (or filter by ?id=, ?date=, ?location=)
+   aiRouter.get("/api/ai/events", async (req, res, next) => {
+     try {
+       const { id, date, location } = req.query;
+       let query = db.select().from(events);
+       if (id)       query = query.where(events.id.eq(Number(id)));
+       if (date)     query = query.where(events.date.eq(new Date(date as string)));
+       if (location) query = query.where(events.city.eq(location as string));
+       const result = await query;
+       res.json(result);
+     } catch (err) {
+       next(err);
+     }
+   });
+   ```
+
+3. **Mount** `aiRouter` in your main `server/index.ts` (or wherever you register routes).
+
+4. **Secure** the endpoint (optional): if you don’t want it fully public, add middleware to check for an API key or internal header.
+
+---
+
+### 2. Wire the AI agent up to that endpoint
+
+In your concierge agent’s code (where it builds its knowledge context):
+
+1. **Fetch** live data at startup or on demand:
+
+   ```js
+   async function fetchLiveEvents(filters = {}) {
+     const qs = new URLSearchParams(filters).toString();
+     const res = await fetch(`${API_BASE_URL}/api/ai/events?${qs}`, {
+       headers: { "Content-Type": "application/json" }
+     });
+     return await res.json();
+   }
+   ```
+
+2. **Incorporate** these events into the AI’s “system prompt” or context window:
+
+   ```js
+   const events = await fetchLiveEvents();
+   systemPrompt += "\n\nCurrent events:\n" +
+     events.map(e => `• [${e.id}] ${e.title} on ${new Date(e.date).toLocaleString()} at ${e.location}`).join("\n");
+   ```
+
+3. **Update** your agent’s instruction template so that before answering any user question, it always refers to that up-to-date list.
+
+---
+
+### 3. Update agent configuration
+
+- **Environment Variable:** ensure `DATABASE_URL` is set in your Replit secrets so the server can connect.
+- **CORS:** if your AI agent is running in the browser, allow `fetch` from its origin to your new `/api/ai/events` route.
+- **Error Handling:** if the DB call fails, the agent should gracefully say “Sorry, I can’t load events right now” instead of crashing.
+
+---
+
+### 4. Example user flow
+
+- **User:** “What events are happening in New York this weekend?”  
+- **Agent (internally):**  
+  1. Calls `/api/ai/events?location=New%20York&date=2025-05-03`  
+  2. Fetches JSON list  
+  3. Filters by date range  
+  4. Replies:  
+     > “Here’s what’s on in New York this weekend:  
+     >  • [17] Sunset Salsa Social — Sat May 3 @ 7 PM  
+     >  • [18] Rooftop Yoga — Sun May 4 @ 8 AM  
+     >  • [19] Jazz Jam — Sun May 4 @ 5 PM”  
+
+---
+
+By following these steps, your concierge AI will always have live, accurate event data at its fingertips.
