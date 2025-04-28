@@ -18,7 +18,7 @@ aiRouter.get("/events", async (req, res, next) => {
     }
     
     if (location) {
-      filter.city = location;
+      filter.location = location;
     }
     
     // For date filtering, we need to do it after the initial query
@@ -35,8 +35,8 @@ aiRouter.get("/events", async (req, res, next) => {
             conditions.push(eq(events.id, filter.id));
           }
           
-          if (filter.city) {
-            conditions.push(eq(events.city, filter.city as string));
+          if (filter.location) {
+            conditions.push(eq(events.location, filter.location as string));
           }
           
           return and(...conditions);
