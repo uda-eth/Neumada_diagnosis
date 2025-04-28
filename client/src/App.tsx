@@ -25,6 +25,7 @@ import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import PaymentCancelPage from "./pages/PaymentCancelPage";
 import AdminPaymentsPage from "./pages/AdminPaymentsPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
+import AiEventDemoPage from "./pages/AiEventDemoPage";
 import AuthPage from "./pages/AuthPage";
 import { Layout } from "./components/ui/layout";
 import { ThemeProvider } from "./lib/theme-provider";
@@ -101,6 +102,7 @@ function AppContent() {
             <Route path="/translator" component={TranslatorPage} />
             <Route path="/profile-setup" component={ProfileGeneratorPage} />
             <Route path="/replit-profile" component={ReplitProfilePage} />
+            <Route path="/ai-events" component={AiEventDemoPage} />
             <Route path="/admin" component={AdminDashboardPage} />
             <Route path="/admin/payments" component={AdminPaymentsPage} />
             <Route path="/:rest*">
