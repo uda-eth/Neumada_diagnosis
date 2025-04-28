@@ -1,0 +1,96 @@
+**Refined Prompt for the Concierge Agent**
+
+> **Context:**  
+> You’ve wired up `/api/ai/events` and `/api/chat` so that when a user asks for events (e.g. “Are there any art events in Mexico City?”), you pull live data from Postgres and then pass only those events into your AI prompt. It’s almost perfect, but two issues remain:
+> 
+> 1. **Case‐sensitive city matching.**  
+>    - If the user types “mexico city” (all lowercase), your `parseFiltersFromText` regex doesn’t recognize it, so you fall back to “no events found.” You need to normalize both the user’s input and your stored city names to lowercase before matching—so “mexico city”, “Mexico City”, or even “MEXICO CITY” all work identically.  
+> 
+> 2. **Missing plain-language wrapper in the UI.**  
+>    - Your server logs show the AI is returning a full natural‐language answer (e.g. “Yes, there’s an exciting art event …”) followed by a bullet list. But your front‐end Chat component currently only renders the list items, dropping the lead‐in sentence. You need to adjust the chat‐rendering code so it displays the entire `response` string from `/api/chat`, not just the list.
+
+---
+
+### 1) Make city‐matching case-insensitive
+
+**Old `parseFiltersFromText`**  
+```ts
+function parseFiltersFromText(text: string) {
+  const category = /art/i.test(text) ? 'Art' : undefined;
+  const city     = /(Mexico City|Miami|New York)/i.exec(text)?.[0];
+  return { category, city };
+}
+```
+
+**Update to normalize lowercase**  
+```ts
+function parseFiltersFromText(text: string) {
+  const lower = text.toLowerCase();
+  const category = lower.includes('art') ? 'Art' : undefined;
+  // normalize city matching against a lowercase list
+  const cities = ['mexico city', 'miami', 'new york'];
+  const city = cities.find(c => lower.includes(c));
+  // convert back to proper case for query
+  const cityMap: Record<string,string> = {
+    'mexico city': 'Mexico City',
+    'miami':        'Miami',
+    'new york':     'New York'
+  };
+  return { category, city: city ? cityMap[city] : undefined };
+}
+```
+
+Also, in your **server** `/api/ai/events` handler, ensure you compare `events.city.toLowerCase()` against the lowercase query param:
+
+```ts
+// server/routes/ai.ts
+const cityParam = (req.query.city as string || '').toLowerCase();
+if (cityParam) {
+  q = q.where(sql`LOWER(${events.city}) = ${cityParam}`);
+}
+```
+
+---
+
+### 2) Render the full AI response (not just the list)
+
+In your Chat page component, you likely have something like:
+
+```tsx
+// ChatBubble.tsx
+return (
+  <div>
+    { aiResponse.items.map(item => <li key={item.id}>{item.title}</li>) }
+  </div>
+);
+```
+
+**Instead**, consume the entire `response` string:
+
+```tsx
+// ChatBubble.tsx (or wherever you render the AI reply)
+export function ChatBubble({ message }: { message: string }) {
+  return (
+    <div className="prose">
+      {message.split('\n').map((line, idx) => 
+        line.startsWith('•') 
+          ? <li key={idx} className="ml-4"> {line.slice(1).trim()} </li>
+          : <p key={idx}>{line}</p>
+      )}
+    </div>
+  );
+}
+
+// In your page:
+const { response } = await res.json();  // from POST /api/chat
+setChatHistory(prev => [...prev, { role: 'assistant', content: response }]);
+```
+
+This will:
+
+1. **Render any leading paragraph(s)** as `<p>`  
+2. **Render bullet lines** as `<li>` items in a list  
+
+---
+
+With these two changes in place, whether the user types “mexico city” or “Mexico City,” your agent will normalize the input and still find the correct events—and your chat UI will display the AI’s full natural-language answer **plus** the bullet list of matched events.

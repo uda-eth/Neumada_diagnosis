@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "../db";
 import { events } from "../db/schema";
-import { eq, and, gte, lte } from "drizzle-orm";
+import { eq, and, gte, lte, sql } from "drizzle-orm";
 
 export const aiRouter = Router();
 
@@ -27,11 +27,17 @@ aiRouter.get("/events", async (req, res, next) => {
       conditions.push(eq(events.id, Number(id)));
     }
     
-    // Handle city parameter (checks both city and location fields)
+    // Handle city parameter (checks both city and location fields) with case-insensitive matching
     if (city) {
-      conditions.push(eq(events.location, city));
+      // Use SQL LOWER function for case-insensitive comparison
+      conditions.push(
+        sql`LOWER(${events.location}) = ${city.toLowerCase()}`
+      );
     } else if (location) {
-      conditions.push(eq(events.location, location));
+      // Use SQL LOWER function for case-insensitive comparison
+      conditions.push(
+        sql`LOWER(${events.location}) = ${location.toLowerCase()}`
+      );
     }
     
     if (category) {

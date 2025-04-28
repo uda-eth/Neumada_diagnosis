@@ -30,12 +30,39 @@ export function parseFiltersFromText(text: string): { category?: string; city?: 
     }
   }
   
-  // Extract city name
+  // Extract city name and normalize it
+  // Define a map of city names in lowercase to properly-cased values
+  const cityMap: Record<string, string> = {
+    'mexico city': 'Mexico City',
+    'miami': 'Miami',
+    'new york': 'New York',
+    'chicago': 'Chicago',
+    'los angeles': 'Los Angeles',
+    'san francisco': 'San Francisco',
+    'berlin': 'Berlin',
+    'london': 'London',
+    'lisbon': 'Lisbon',
+    'tokyo': 'Tokyo',
+    'philadelphia': 'Philadelphia'
+  };
+  
   // Look for common patterns like "in [City]" or "at [City]"
   const cityMatch = text.match(/(?:in|at|from|near)\s+([^?.,]+)(?:[?,.]|$)/i);
   if (cityMatch && cityMatch[1]) {
-    // Use the capture group which contains just the city name
-    filters.city = cityMatch[1].trim();
+    const extractedCity = cityMatch[1].trim().toLowerCase();
+    
+    // Try to find a match in our city map
+    for (const [lowercaseCity, properCaseCity] of Object.entries(cityMap)) {
+      if (extractedCity.includes(lowercaseCity)) {
+        filters.city = properCaseCity;
+        break;
+      }
+    }
+    
+    // If no match was found in our map but we extracted something, use it as is
+    if (!filters.city && extractedCity) {
+      filters.city = cityMatch[1].trim(); // Use the original case from the user input
+    }
   }
   
   // Detect date ranges
