@@ -1,188 +1,105 @@
 /**
- * Utility functions for AI agents to fetch events data from the API
+ * Utility for AI agents to fetch and process events data
  */
 
 /**
- * Fetches events from the AI events API with optional filters
- * @param {Object} filters - Object containing filters to apply
- * @param {number} [filters.id] - Filter by specific event ID
- * @param {string} [filters.location] - Filter by location/city
- * @param {string} [filters.city] - Alternative to location for filtering by city name
- * @param {string} [filters.category] - Filter by event category
- * @param {string} [filters.dateFrom] - Filter events starting from this date
- * @param {string} [filters.dateTo] - Filter events up until this date 
- * @param {string} [filters.date] - Legacy parameter - filter by date (events on or after this date)
- * @returns {Promise<Array>} - Array of event objects
+ * Function to fetch events from the AI events API with formatting
+ * @param {Object} options - Filter options for events
+ * @param {string} options.city - City name to filter events by
+ * @param {string} options.category - Event category to filter by
+ * @param {string} options.dateFrom - Start date for event range (ISO date string)
+ * @param {string} options.dateTo - End date for event range (ISO date string)
+ * @returns {Promise<Array>} Formatted event data
  */
-export async function fetchLiveEvents(filters = {}) {
+export async function getEventsForAI(options = {}) {
   try {
-    // Convert filters to query string
+    // Build query params
     const queryParams = new URLSearchParams();
     
-    // Add each filter parameter if it exists
-    if (filters.id) queryParams.append('id', filters.id);
-    if (filters.location) queryParams.append('location', filters.location);
-    if (filters.city && !filters.location) queryParams.append('city', filters.city);
-    if (filters.category) queryParams.append('category', filters.category);
-    if (filters.dateFrom) queryParams.append('dateFrom', filters.dateFrom);
-    if (filters.dateTo) queryParams.append('dateTo', filters.dateTo);
-    if (filters.date && !filters.dateFrom) queryParams.append('date', filters.date);
+    if (options.city) queryParams.append('city', options.city);
+    if (options.category) queryParams.append('category', options.category);
+    if (options.dateFrom) queryParams.append('dateFrom', options.dateFrom);
+    if (options.dateTo) queryParams.append('dateTo', options.dateTo);
     
-    const qs = queryParams.toString();
-    
-    console.log("Fetching events with query:", qs);
-    
-    // Use relative URL to work in any environment
-    const res = await fetch(`/api/ai/events${qs ? `?${qs}` : ''}`, {
-      headers: { "Content-Type": "application/json" }
+    // Make the API request
+    const response = await fetch(`/api/ai/events?${queryParams.toString()}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
     });
     
-    if (!res.ok) {
-      console.error("Error fetching events:", res.status, res.statusText);
+    if (!response.ok) {
+      console.error('Failed to fetch events from AI API:', response.status);
       return [];
     }
     
-    return await res.json();
-  } catch (err) {
-    console.error("Failed to fetch events:", err);
+    const events = await response.json();
+    
+    // Format events for AI consumption
+    return events.map(event => ({
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      location: event.location,
+      date: event.date,
+      humanReadableDate: event.humanReadableDate,
+      category: event.category,
+      price: event.price?.toString() || 'Free',
+      image: event.image,
+      capacity: event.capacity,
+      host: event.hostId ? {
+        id: event.hostId,
+        // Host details would need to be populated separately if needed
+      } : null,
+      tags: event.tags?.split(',') || []
+    }));
+  } catch (error) {
+    console.error('Error fetching events data for AI:', error);
     return [];
   }
 }
 
 /**
- * Formats events into a readable string for AI context
- * @param {Array} events - Array of event objects 
- * @returns {string} - Formatted events string for AI context
+ * Function to format event data for presentation in AI assistant responses
+ * @param {Array} events - Events to format for presentation
+ * @returns {string} Formatted event text
  */
-export function formatEventsForAI(events) {
+export function formatEventsForAIResponse(events) {
   if (!events || events.length === 0) {
-    return "No events found.";
+    return "I couldn't find any events matching your criteria.";
   }
   
-  return events.map(e => {
-    // Use humanReadableDate if available, otherwise format the date
-    const date = e.humanReadableDate || new Date(e.date).toLocaleDateString('en-US', {
-      weekday: 'long',
-      month: 'long', 
-      day: 'numeric',
-      year: 'numeric'
-    });
-    
-    // Format the time separately for better readability
-    const time = new Date(e.date).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit'
-    });
-    
-    // Build a more detailed description for the AI
-    return `• [${e.id}] ${e.title}
-  Category: ${e.category}
-  Date: ${date} at ${time}
-  Location: ${e.location}
-  Price: ${e.price === '0' ? 'Free' : '$'+e.price}
-  Description: ${e.description?.slice(0, 100)}${e.description?.length > 100 ? '...' : ''}`;
-  }).join("\n\n");
+  return `Here are some events that match your query:\n\n${events.map((event, index) => `
+${index + 1}. **${event.title}**
+   📅 ${event.humanReadableDate || new Date(event.date).toLocaleDateString()}
+   📍 ${event.location}
+   💰 ${event.price === '0' ? 'Free' : '$' + event.price}
+   🏷️ ${event.category}
+   ${event.description ? `ℹ️ ${event.description.slice(0, 100)}${event.description.length > 100 ? '...' : ''}` : ''}
+  `).join('\n')}`;
 }
 
 /**
- * Finds events that match a specific date range (e.g., "this weekend")
- * @param {string} timeFrame - Time frame to search for ("today", "this weekend", "this week", "next week")
- * @returns {Promise<Array>} - Filtered array of events
+ * Detects relevant categories from user input
+ * @param {string} userInput - The user's query text
+ * @returns {string|null} Detected category or null if no match
  */
-export async function findEventsByTimeFrame(timeFrame) {
-  // Get all events first
-  const events = await fetchLiveEvents();
+export function detectEventCategory(userInput) {
+  const normalizedInput = userInput.toLowerCase();
   
-  // Get current date and set to midnight
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
+  const categoryMatchers = {
+    'music': ['music', 'concert', 'band', 'festival', 'dj', 'live music'],
+    'art': ['art', 'exhibition', 'gallery', 'museum', 'sculpture'],
+    'food': ['food', 'restaurant', 'dining', 'culinary', 'cuisine', 'eatery'],
+    'tech': ['tech', 'technology', 'coding', 'development', 'programming', 'software'],
+    'social': ['social', 'networking', 'meetup', 'mixer'],
+    'workshop': ['workshop', 'class', 'learn', 'education', 'course']
+  };
   
-  // Calculate date ranges based on timeFrame
-  let startDate, endDate;
-  
-  switch(timeFrame.toLowerCase()) {
-    case 'today':
-      startDate = now;
-      endDate = new Date(now);
-      endDate.setHours(23, 59, 59, 999);
-      break;
-      
-    case 'this weekend':
-      // Find the next Saturday and Sunday
-      startDate = new Date(now);
-      const dayToSaturday = (6 - now.getDay()) % 7; // Days until Saturday (0 = Sunday, 6 = Saturday)
-      startDate.setDate(now.getDate() + dayToSaturday);
-      endDate = new Date(startDate);
-      endDate.setDate(startDate.getDate() + 1); // Sunday
-      endDate.setHours(23, 59, 59, 999);
-      break;
-      
-    case 'this week':
-      startDate = now;
-      endDate = new Date(now);
-      // Set to end of coming Sunday
-      const daysToSunday = (7 - now.getDay()) % 7;
-      endDate.setDate(now.getDate() + daysToSunday);
-      endDate.setHours(23, 59, 59, 999);
-      break;
-      
-    case 'next week':
-      // Start from next Monday
-      startDate = new Date(now);
-      const daysToMonday = (8 - now.getDay()) % 7;
-      startDate.setDate(now.getDate() + daysToMonday);
-      endDate = new Date(startDate);
-      endDate.setDate(startDate.getDate() + 6); // To the following Sunday
-      endDate.setHours(23, 59, 59, 999);
-      break;
-      
-    default:
-      // Default to next 7 days if timeframe isn't recognized
-      startDate = now;
-      endDate = new Date(now);
-      endDate.setDate(now.getDate() + 7);
-      break;
+  for (const [category, keywords] of Object.entries(categoryMatchers)) {
+    if (keywords.some(keyword => normalizedInput.includes(keyword))) {
+      return category.charAt(0).toUpperCase() + category.slice(1); // Capitalize first letter
+    }
   }
   
-  // Filter events by date range
-  return events.filter(event => {
-    const eventDate = new Date(event.date);
-    return eventDate >= startDate && eventDate <= endDate;
-  });
-}
-
-/**
- * Example function showing how to use events in an AI context
- * @param {string} question - User question about events 
- * @returns {Promise<string>} - AI response to the user question
- */
-export async function getAIResponseAboutEvents(question) {
-  try {
-    // Fetch all events to have in context
-    const events = await fetchLiveEvents();
-    
-    // Format events for AI context
-    const eventsContext = formatEventsForAI(events);
-    
-    // This is where you would send the question and events context to your AI service
-    // For demonstration purposes, we're simulating a response
-    
-    // Simple keyword-based response for demo purposes
-    // In a real implementation, this would be replaced with an actual AI call
-    if (question.toLowerCase().includes('weekend')) {
-      const weekendEvents = await findEventsByTimeFrame('this weekend');
-      return `Here are events happening this weekend:\n\n${formatEventsForAI(weekendEvents)}`;
-    }
-    
-    if (question.toLowerCase().includes('today')) {
-      const todayEvents = await findEventsByTimeFrame('today');
-      return `Here are events happening today:\n\n${formatEventsForAI(todayEvents)}`;
-    }
-    
-    // Generic response with all events
-    return `Here are all upcoming events:\n\n${eventsContext}`;
-  } catch (err) {
-    console.error("Error generating AI response:", err);
-    return "Sorry, I couldn't load event information at the moment.";
-  }
+  return null;
 }
