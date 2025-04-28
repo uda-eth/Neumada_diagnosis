@@ -118,9 +118,8 @@ export async function handleChatMessage(req: Request, res: Response) {
       const matchingEvents = await queryEventsFromUserMessage(message);
       
       if (matchingEvents && matchingEvents.length > 0) {
-        // Import the formatEventsForAI function from our client-side utility
-        // to format event data for the AI
-        const formattedEvents = matchingEvents.map(event => {
+        // Format event data for the AI
+        const formattedEvents = matchingEvents.map((event: any, index: number) => {
           const date = event.humanReadableDate || new Date(event.date).toLocaleDateString('en-US', {
             weekday: 'long',
             month: 'long', 
@@ -149,7 +148,7 @@ export async function handleChatMessage(req: Request, res: Response) {
         const eventsPrompt = `You are an event-concierge responding to user questions. Based on the query "${message}", 
 I found the following events that match their criteria. Use ONLY these events to answer the user's question:
 
-${formattedEvents.map((event, index) => `
+${formattedEvents.map((event: any, index: number) => `
 EVENT ${index + 1}: ${event.title}
 - ID: ${event.id}
 - Category: ${event.category}
