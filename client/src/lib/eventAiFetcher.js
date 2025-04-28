@@ -7,7 +7,11 @@
  * @param {Object} filters - Object containing filters to apply
  * @param {number} [filters.id] - Filter by specific event ID
  * @param {string} [filters.location] - Filter by location/city
- * @param {string} [filters.date] - Filter by date (events on or after this date)
+ * @param {string} [filters.city] - Alternative to location for filtering by city name
+ * @param {string} [filters.category] - Filter by event category
+ * @param {string} [filters.dateFrom] - Filter events starting from this date
+ * @param {string} [filters.dateTo] - Filter events up until this date 
+ * @param {string} [filters.date] - Legacy parameter - filter by date (events on or after this date)
  * @returns {Promise<Array>} - Array of event objects
  */
 export async function fetchLiveEvents(filters = {}) {
@@ -18,9 +22,15 @@ export async function fetchLiveEvents(filters = {}) {
     // Add each filter parameter if it exists
     if (filters.id) queryParams.append('id', filters.id);
     if (filters.location) queryParams.append('location', filters.location);
-    if (filters.date) queryParams.append('date', filters.date);
+    if (filters.city && !filters.location) queryParams.append('city', filters.city);
+    if (filters.category) queryParams.append('category', filters.category);
+    if (filters.dateFrom) queryParams.append('dateFrom', filters.dateFrom);
+    if (filters.dateTo) queryParams.append('dateTo', filters.dateTo);
+    if (filters.date && !filters.dateFrom) queryParams.append('date', filters.date);
     
     const qs = queryParams.toString();
+    
+    console.log("Fetching events with query:", qs);
     
     // Use relative URL to work in any environment
     const res = await fetch(`/api/ai/events${qs ? `?${qs}` : ''}`, {
@@ -49,18 +59,29 @@ export function formatEventsForAI(events) {
     return "No events found.";
   }
   
-  return "Current events:\n" +
-    events.map(e => {
-      const date = new Date(e.date).toLocaleString(undefined, {
-        weekday: 'short',
-        month: 'short', 
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit'
-      });
-      
-      return `• [${e.id}] ${e.title} — ${date} @ ${e.location} (${e.category}, ${e.price === '0' ? 'Free' : '$'+e.price})`;
-    }).join("\n");
+  return events.map(e => {
+    // Use humanReadableDate if available, otherwise format the date
+    const date = e.humanReadableDate || new Date(e.date).toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long', 
+      day: 'numeric',
+      year: 'numeric'
+    });
+    
+    // Format the time separately for better readability
+    const time = new Date(e.date).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+    
+    // Build a more detailed description for the AI
+    return `• [${e.id}] ${e.title}
+  Category: ${e.category}
+  Date: ${date} at ${time}
+  Location: ${e.location}
+  Price: ${e.price === '0' ? 'Free' : '$'+e.price}
+  Description: ${e.description?.slice(0, 100)}${e.description?.length > 100 ? '...' : ''}`;
+  }).join("\n\n");
 }
 
 /**

@@ -5,24 +5,40 @@ import { eq, and, gte } from "drizzle-orm";
 
 export const aiRouter = Router();
 
-// Return all events (or filter by ?id=, ?date=, ?location=)
+// Enhanced events endpoint with more filtering options
 aiRouter.get("/events", async (req, res, next) => {
   try {
-    const { id, date, location } = req.query;
+    const { 
+      id, 
+      location, 
+      city,
+      category,
+      dateFrom,
+      dateTo,
+      date // kept for backward compatibility
+    } = req.query;
     
-    // Build filter object for Drizzle query
+    console.log("AI events endpoint request params:", req.query);
+    
+    // Build filter object for the query
     const filter: any = {};
     
     if (id && !isNaN(Number(id))) {
       filter.id = Number(id);
     }
     
+    // Handle either location or city parameter (location takes precedence)
     if (location) {
       filter.location = location;
+    } else if (city) {
+      filter.location = city; // Map city to location for backward compatibility
     }
     
-    // For date filtering, we need to do it after the initial query
-    // since it needs a comparison operator
+    if (category) {
+      filter.category = category;
+    }
+    
+    // Build query with all available filters
     let events;
     
     if (Object.keys(filter).length > 0) {
@@ -39,6 +55,10 @@ aiRouter.get("/events", async (req, res, next) => {
             conditions.push(eq(events.location, filter.location as string));
           }
           
+          if (filter.category) {
+            conditions.push(eq(events.category, filter.category as string));
+          }
+          
           return and(...conditions);
         }
       });
@@ -47,14 +67,48 @@ aiRouter.get("/events", async (req, res, next) => {
       events = await db.query.events.findMany();
     }
     
-    // Apply date filtering if needed
-    if (date) {
-      const dateObj = new Date(date as string);
-      events = events.filter(event => new Date(event.date) >= dateObj);
+    // Apply date filtering after the initial query
+    
+    // First check new parameters dateFrom/dateTo
+    if (dateFrom || dateTo || date) {
+      events = events.filter(event => {
+        const eventDate = new Date(event.date);
+        
+        // Check dateFrom (start date) filter
+        if (dateFrom) {
+          const fromDate = new Date(dateFrom as string);
+          if (eventDate < fromDate) return false;
+        }
+        
+        // Check dateTo (end date) filter
+        if (dateTo) {
+          const toDate = new Date(dateTo as string);
+          if (eventDate > toDate) return false;
+        }
+        
+        // Use legacy 'date' parameter if no dateFrom is provided
+        if (!dateFrom && date) {
+          const fromDate = new Date(date as string);
+          if (eventDate < fromDate) return false;
+        }
+        
+        return true;
+      });
     }
     
-    console.log(`AI events endpoint: Returning ${events.length} events`);
-    res.json(events);
+    // Add enhanced metadata
+    const eventsWithMetadata = events.map(event => ({
+      ...event,
+      humanReadableDate: new Date(event.date).toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      })
+    }));
+    
+    console.log(`AI events endpoint: Returning ${eventsWithMetadata.length} events`);
+    res.json(eventsWithMetadata);
   } catch (err) {
     console.error("Error in AI events endpoint:", err);
     next(err);

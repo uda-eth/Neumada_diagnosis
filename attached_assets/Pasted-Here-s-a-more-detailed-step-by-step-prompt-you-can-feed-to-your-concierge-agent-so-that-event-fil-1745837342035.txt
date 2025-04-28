@@ -1,0 +1,63 @@
+Here’s a more detailed, step-by-step prompt you can feed to your “concierge” agent so that event filtering and AI-driven queries work correctly—and only on the actual Concierge page, not the demo:
+
+---
+
+**Goal:**  
+1. Keep your existing filters on the Discover page working as-is.  
+2. On the **Concierge** page, let users ask natural-language questions like “Any art events in Mexico City?” and have the AI respond by pulling only the matching events from your database.
+
+---
+
+### 1. Move the AI query logic off the demo page  
+- **Remove** any AI-filtering code from `/pages/TestStoragePage.tsx` (or wherever your demo lives).  
+- **Ensure** that only your Concierge page component (e.g. `/pages/ConciergePage.tsx`) imports and calls the live-events endpoint.
+
+### 2. Expose a parameterized events API for AI use  
+1. In your Express server, add or update `/api/ai/events` to accept query parameters for `category`, `city`, `dateFrom`, `dateTo`, etc. For example:  
+   ```ts
+   aiRouter.get("/api/ai/events", async (req, res) => {
+     const { category, city, dateFrom, dateTo } = req.query;
+     let q = db.select().from(events);
+     if (category) q = q.where(eq(events.category, category as string));
+     if (city)     q = q.where(eq(events.city, city as string));
+     if (dateFrom) q = q.where(events.date.gte(new Date(dateFrom as string)));
+     if (dateTo)   q = q.where(events.date.lte(new Date(dateTo as string)));
+     const list = await q;
+     return res.json(list);
+   });
+   ```
+
+### 3. Wire up your Concierge page to use real filters  
+1. In `/pages/ConciergePage.tsx`, expose both the UI filters **and** a text-input where users can type:  
+   - “Show me art events in Mexico City this week”  
+   - “What social gatherings are happening tomorrow?”  
+2. On submit, **parse** that text into filter parameters (you can start with a simple keyword-match on `category` and `city` by scanning for known keywords).  
+3. **Fetch** only the matching events:  
+   ```ts
+   async function queryEvents({ category, city, dateFrom, dateTo }) {
+     const qs = new URLSearchParams({ category, city, dateFrom, dateTo }).toString();
+     const res = await fetch(`/api/ai/events?${qs}`);
+     return res.ok ? res.json() : [];
+   }
+   ```
+4. **Inject** those filtered events into the AI prompt context—rather than passing all events.
+
+### 4. Update your AI prompt template  
+- **Before:** “Here are all events: …”  
+- **After:**  
+  ```
+  You are an event-concierge.  Based on the user’s question, use only the following events:
+
+  {{#each events}}
+  • [{{this.id}}] {{this.title}} — {{this.category}} in {{this.city}} on {{formatDate this.date}}
+  {{/each}}
+
+  Then answer the user’s question directly.
+  ```
+
+### 5. Ensure demo page remains untouched  
+- Double-check that `/pages/TestStoragePage.tsx` **does not** import or render any of the AI query or “Concierge” logic.
+
+---
+
+By following these steps, your Discover filters stay as-is, your demo page remains a simple upload test, and your Concierge page will correctly interpret natural-language queries and return only the matching events.
