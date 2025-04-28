@@ -3,6 +3,90 @@
  */
 
 /**
+ * Fetches live events from the API
+ * @param {Object} options - Filter options for events
+ * @returns {Promise<Array>} Array of event objects
+ */
+export async function fetchLiveEvents(options = {}) {
+  try {
+    // Build query params
+    const queryParams = new URLSearchParams();
+    
+    if (options?.location || options?.city) {
+      queryParams.append('city', options?.location || options?.city);
+    }
+    if (options?.category) queryParams.append('category', options.category);
+    if (options?.dateFrom) queryParams.append('dateFrom', options.dateFrom);
+    if (options?.dateTo) queryParams.append('dateTo', options.dateTo);
+    
+    // Make the API request
+    const response = await fetch(`/api/ai/events?${queryParams.toString()}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    if (!response.ok) {
+      console.error('Failed to fetch events:', response.status);
+      return [];
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching live events:', error);
+    return [];
+  }
+}
+
+/**
+ * Formats events data for AI processing
+ * @param {Array} events - Array of event objects
+ * @returns {string} Formatted events text
+ */
+export function formatEventsForAI(events) {
+  if (!events || events.length === 0) {
+    return "No events available.";
+  }
+  
+  return events.map((event, index) => `
+Event #${index + 1}:
+- Title: ${event.title}
+- Date: ${event.humanReadableDate || new Date(event.date).toLocaleDateString()}
+- Location: ${event.location}
+- Category: ${event.category || 'Uncategorized'}
+- Price: ${event.price === '0' ? 'Free' : '$' + event.price}
+- Description: ${event.description ? event.description.slice(0, 150) + (event.description.length > 150 ? '...' : '') : 'No description available.'}
+`).join('\n');
+}
+
+/**
+ * Gets AI response about events based on a user question
+ * @param {string} question - The user's question about events
+ * @returns {Promise<string>} AI's response
+ */
+export async function getAIResponseAboutEvents(question) {
+  try {
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        message: question,
+        context: 'The user is asking about events: ' + question
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to get AI response');
+    }
+    
+    const data = await response.json();
+    return data.response || 'Sorry, I could not process your question about events.';
+  } catch (error) {
+    console.error('Error getting AI response:', error);
+    return 'Sorry, I encountered an error while processing your question.';
+  }
+}
+
+/**
  * Function to fetch events from the AI events API with formatting
  * @param {Object} options - Filter options for events
  * @param {string} options.city - City name to filter events by
