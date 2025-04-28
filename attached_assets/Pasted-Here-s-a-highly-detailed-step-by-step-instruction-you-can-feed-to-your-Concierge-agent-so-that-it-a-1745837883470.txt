@@ -1,0 +1,110 @@
+Here’s a highly detailed, step-by-step instruction you can feed to your Concierge agent so that it always pulls from your **live** Postgres events table—never falls back to a web search—and returns only matching events:
+
+---
+
+**1) Update your system prompt to forbid Internet lookups**  
+```text
+SYSTEM:
+You are Maly, an AI–powered event concierge.  
+**Do not** search the Internet for events—only use the array of events I provide you.  
+When a user asks “Are there any art events in Mexico City?”, you must:
+  1. Call our `/api/ai/events` endpoint (with `category=art` and `city=Mexico City`).
+  2. Receive back only your live events from the database.
+  3. Reply by listing those events or, if none are found, say “I found no matching events in our database.”  
+Only ever mention real events returned by `/api/ai/events`.  
+```
+
+**2) Implement a dedicated AI-only Events API**  
+In your Express app, add:
+```ts
+// server/routes/ai.ts
+import { Router } from 'express';
+import { db } from '@/db';
+import { events } from '@db/schema';
+import { eq } from 'drizzle-orm';
+
+export const aiRouter = Router();
+
+aiRouter.get('/events', async (req, res) => {
+  const { category, city } = req.query as Record<string,string>;
+  let q = db.select().from(events);
+  if (category) q = q.where(eq(events.category, category));
+  if (city)     q = q.where(eq(events.city, city));
+  const list = await q;
+  return res.json(list);
+});
+```
+And mount it in `server/index.ts` under `/api/ai`.
+
+**3) Change your ConciergePage to fetch only live events**  
+In `/pages/ConciergePage.tsx`:
+```ts
+async function fetchEvents({ category, city }) {
+  const qs = new URLSearchParams({ category, city }).toString();
+  const res = await fetch(`/api/ai/events?${qs}`, { credentials:'include' });
+  return res.ok ? res.json() : [];
+}
+
+async function handleUserQuery(userText) {
+  // 1. Parse userText for category & city keywords (e.g., “art” → category, “Mexico City” → city)
+  const { category, city } = parseFiltersFromText(userText);
+  // 2. Fetch only matching events
+  const events = await fetchEvents({ category, city });
+  // 3. Build the AI prompt
+  const prompt = `
+You are Maly, our event concierge.  Based on the user’s question:
+"${userText}"
+Use only the following events from the database:
+${events.map(e=>`• [${e.id}] ${e.title} — ${e.category} in ${e.city} on ${new Date(e.date).toLocaleDateString()}`).join('\n')}
+
+Answer the question concisely.
+`;
+  // 4. Send to Chat API with this exact prompt
+  const answer = await openai.chat.completions.create({ model:'gpt-4o-mini', messages:[{role:'system',content:prompt}] });
+  return answer.choices[0].message.content;
+}
+```
+**4) Ensure your parseFiltersFromText helper**  
+E.g.:
+```ts
+function parseFiltersFromText(text:string) {
+  const category = /art/i.test(text) ? 'Art' : undefined;
+  const city     = /(Mexico City|Miami|New York)/i.exec(text)?.[0];
+  return { category, city };
+}
+```
+
+**5) Wire it all up in your component**  
+```tsx
+export default function ConciergePage() {
+  const [userText, setUserText] = useState('');
+  const [reply, setReply] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    const ans = await handleUserQuery(userText);
+    setReply(ans);
+    setLoading(false);
+  };
+
+  return (
+    <div>
+      <textarea value={userText} onChange={e=>setUserText(e.target.value)} />
+      <button disabled={loading} onClick={handleSubmit}>
+        {loading ? 'Thinking…' : 'Ask Maly'}
+      </button>
+      <pre>{reply}</pre>
+    </div>
+  );
+}
+```
+
+---
+
+With this in place, every time someone asks “Any art events in Mexico City?”, your Concierge page will:
+
+1. Pull **only** from your Postgres DB via `/api/ai/events?category=Art&city=Mexico City`  
+2. Inject those real events into the AI prompt  
+3. Return a crisp, accurate answer—or a “no events found” message if the query yields zero results  
+4. **Never** fall back to a web search again.

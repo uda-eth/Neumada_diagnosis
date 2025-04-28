@@ -1,11 +1,11 @@
 import { Router } from "express";
 import { db } from "../db";
 import { events } from "../db/schema";
-import { eq, and, gte } from "drizzle-orm";
+import { eq, and, gte, lte } from "drizzle-orm";
 
 export const aiRouter = Router();
 
-// Enhanced events endpoint with more filtering options
+// Streamlined AI events endpoint focusing on direct DB filtering
 aiRouter.get("/events", async (req, res, next) => {
   try {
     const { 
@@ -16,88 +16,53 @@ aiRouter.get("/events", async (req, res, next) => {
       dateFrom,
       dateTo,
       date // kept for backward compatibility
-    } = req.query;
+    } = req.query as Record<string, string>;
     
     console.log("AI events endpoint request params:", req.query);
     
-    // Build filter object for the query
-    const filter: any = {};
+    // Build conditions array for the query
+    const conditions = [];
     
     if (id && !isNaN(Number(id))) {
-      filter.id = Number(id);
+      conditions.push(eq(events.id, Number(id)));
     }
     
-    // Handle either location or city parameter (location takes precedence)
-    if (location) {
-      filter.location = location;
-    } else if (city) {
-      filter.location = city; // Map city to location for backward compatibility
+    // Handle city parameter (checks both city and location fields)
+    if (city) {
+      conditions.push(eq(events.location, city));
+    } else if (location) {
+      conditions.push(eq(events.location, location));
     }
     
     if (category) {
-      filter.category = category;
+      conditions.push(eq(events.category, category));
     }
     
-    // Build query with all available filters
-    let events;
+    // Add date conditions directly to the query
+    if (dateFrom) {
+      const fromDate = new Date(dateFrom);
+      conditions.push(gte(events.date, fromDate));
+    } else if (date) {
+      // Use legacy date param if dateFrom not provided
+      const fromDate = new Date(date);
+      conditions.push(gte(events.date, fromDate));
+    }
     
-    if (Object.keys(filter).length > 0) {
-      // Query with filters
-      events = await db.query.events.findMany({
-        where: (events, { eq }) => {
-          const conditions = [];
-          
-          if (filter.id) {
-            conditions.push(eq(events.id, filter.id));
-          }
-          
-          if (filter.location) {
-            conditions.push(eq(events.location, filter.location as string));
-          }
-          
-          if (filter.category) {
-            conditions.push(eq(events.category, filter.category as string));
-          }
-          
-          return and(...conditions);
-        }
-      });
+    if (dateTo) {
+      const toDate = new Date(dateTo);
+      conditions.push(lte(events.date, toDate));
+    }
+    
+    // Execute query with all conditions
+    let result;
+    if (conditions.length > 0) {
+      result = await db.select().from(events).where(and(...conditions));
     } else {
-      // Query all events
-      events = await db.query.events.findMany();
+      result = await db.select().from(events);
     }
     
-    // Apply date filtering after the initial query
-    
-    // First check new parameters dateFrom/dateTo
-    if (dateFrom || dateTo || date) {
-      events = events.filter(event => {
-        const eventDate = new Date(event.date);
-        
-        // Check dateFrom (start date) filter
-        if (dateFrom) {
-          const fromDate = new Date(dateFrom as string);
-          if (eventDate < fromDate) return false;
-        }
-        
-        // Check dateTo (end date) filter
-        if (dateTo) {
-          const toDate = new Date(dateTo as string);
-          if (eventDate > toDate) return false;
-        }
-        
-        // Use legacy 'date' parameter if no dateFrom is provided
-        if (!dateFrom && date) {
-          const fromDate = new Date(date as string);
-          if (eventDate < fromDate) return false;
-        }
-        
-        return true;
-      });
-    }
-    
-    // Add enhanced metadata
-    const eventsWithMetadata = events.map(event => ({
+    // Add human-readable date format
+    const eventsWithMetadata = result.map(event => ({
       ...event,
       humanReadableDate: new Date(event.date).toLocaleDateString('en-US', {
         weekday: 'long',
