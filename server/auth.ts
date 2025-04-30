@@ -949,18 +949,34 @@ export function setupAuth(app: Express) {
   // OAuth callback route
   app.get('/api/auth/google/callback',
     passport.authenticate('google', {
-      successRedirect: '/',
       failureRedirect: '/auth?error=google_failed'
     }),
     (req, res) => {
       // This callback will only be called if authentication succeeds
-      // This gives us a chance to save the session in our database for API access
-      if (req.user) {
-        const sessionId = req.session.id;
-        console.log("Google OAuth successful, storing session ID:", sessionId);
+      console.log("Google OAuth callback - Authentication successful");
+      
+      if (!req.user) {
+        console.error("Google OAuth callback - No user found in request");
+        return res.redirect('/auth?error=google_user_missing');
+      }
+      
+      // Save the session explicitly
+      req.login(req.user, async (err) => {
+        if (err) {
+          console.error("Google OAuth login error:", err);
+          return res.redirect('/auth?error=google_session_error');
+        }
         
-        // Store session in database
-        (async () => {
+        const sessionId = req.session.id;
+        console.log("Google OAuth successful, user logged in, session ID:", sessionId);
+        
+        // Save session explicitly
+        req.session.save(async (err) => {
+          if (err) {
+            console.error("Google OAuth session save error:", err);
+            return res.redirect('/auth?error=session_save_error');
+          }
+          
           try {
             // Delete any expired sessions for this user
             await db.delete(sessions)
@@ -999,15 +1015,21 @@ export function setupAuth(app: Express) {
               }
             });
             
-            console.log("Google OAuth session stored successfully");
+            console.log("Google OAuth session stored successfully in database");
+            console.log("Redirecting user to homepage after Google authentication");
+            
+            // Include the session ID in the URL to help with client-side session recovery
+            const redirectUrl = new URL('/', `${req.protocol}://${req.get('host')}`);
+            redirectUrl.searchParams.append('sessionId', sessionId);
+            redirectUrl.searchParams.append('ts', Date.now().toString());
+            
+            return res.redirect(redirectUrl.toString());
           } catch (err) {
             console.error("Error storing Google OAuth session:", err);
+            return res.redirect('/auth?error=database_error');
           }
-        })();
-      }
-      
-      // Continue with the redirect
-      res.redirect('/');
+        });
+      });
     }
   );
 }
