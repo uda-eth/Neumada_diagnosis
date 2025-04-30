@@ -938,4 +938,76 @@ export function setupAuth(app: Express) {
       });
     }
   });
+  
+  // Google OAuth Routes
+  
+  // Route to start Google OAuth flow
+  app.get('/api/auth/google',
+    passport.authenticate('google', { scope: ['profile', 'email'] })
+  );
+
+  // OAuth callback route
+  app.get('/api/auth/google/callback',
+    passport.authenticate('google', {
+      successRedirect: '/',
+      failureRedirect: '/auth?error=google_failed'
+    }),
+    (req, res) => {
+      // This callback will only be called if authentication succeeds
+      // This gives us a chance to save the session in our database for API access
+      if (req.user) {
+        const sessionId = req.session.id;
+        console.log("Google OAuth successful, storing session ID:", sessionId);
+        
+        // Store session in database
+        (async () => {
+          try {
+            // Delete any expired sessions for this user
+            await db.delete(sessions)
+              .where(
+                or(
+                  eq(sessions.userId, req.user!.id),
+                  lte(sessions.expiresAt, new Date())
+                )
+              );
+
+            // Create new session
+            await db.insert(sessions).values({
+              id: sessionId,
+              userId: req.user!.id,
+              expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              data: { 
+                username: req.user!.username, 
+                email: req.user!.email,
+                lastLogin: new Date().toISOString(),
+                authMethod: 'google'
+              }
+            }).onConflictDoUpdate({
+              target: sessions.id,
+              set: {
+                userId: req.user!.id,
+                expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+                updatedAt: new Date(),
+                data: { 
+                  username: req.user!.username, 
+                  email: req.user!.email,
+                  lastLogin: new Date().toISOString(),
+                  authMethod: 'google'
+                }
+              }
+            });
+            
+            console.log("Google OAuth session stored successfully");
+          } catch (err) {
+            console.error("Error storing Google OAuth session:", err);
+          }
+        })();
+      }
+      
+      // Continue with the redirect
+      res.redirect('/');
+    }
+  );
 }

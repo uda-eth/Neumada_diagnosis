@@ -207,6 +207,27 @@ export default function AuthPage() {
         </CardHeader>
         <CardContent>
           
+          <a href="/api/auth/google">
+            <Button
+              variant="default"
+              className="w-full mb-4 flex items-center justify-center gap-2"
+            >
+              <img src="/assets/google-logo.svg" alt="Google logo" className="h-5" />
+              Continue with Google
+            </Button>
+          </a>
+          
+          <div className="relative mb-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-300" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="username">{isLogin ? "Username or Email" : "Username"}</Label>
