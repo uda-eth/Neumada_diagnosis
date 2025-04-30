@@ -1,0 +1,57 @@
+Maly Google Auth   Add “Sign in with Google” via Passport to Auth Flow
+Goal: Enable users to register and log in with their Google accounts from the /auth page.
+Environment variables (Already set in Secrets tab) :
+* GOOGLE_CLIENT_ID
+* GOOGLE_CLIENT_SECRET
+* GOOGLE_CALLBACK_URL 
+
+Instructions for the Agent:
+1. Install Dependencies npm install passport-google-oauth20
+2. Server-Side Setup
+    * In server/auth.ts (or wherever you configure Passport):
+        * Import and configure the Google strategy: import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+        * 
+        * passport.use(new GoogleStrategy({
+        *   clientID: process.env.GOOGLE_CLIENT_ID!,
+        *   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        *   callbackURL: process.env.GOOGLE_CALLBACK_URL!
+        * }, async (accessToken, refreshToken, profile, done) => {
+        *   // 1) Look up user by profile.id in your users table
+        *   // 2) If found, done(null, user)
+        *   // 3) If not, create new user record with:
+        *   //      username = profile.displayName
+        *   //      email = profile.emails[0].value
+        *   //      profileImage = profile.photos[0].value
+        *   //    then done(null, newUser)
+        * }));
+    * Routes // Kick off Google OAuth
+    * app.get('/api/auth/google',
+    *   passport.authenticate('google', { scope: ['profile', 'email'] })
+    * );
+    * 
+    * // OAuth callback
+    * app.get('/api/auth/google/callback',
+    *   passport.authenticate('google', {
+    *     successRedirect: '/',           // or /dashboard
+    *     failureRedirect: '/auth?error=google_failed'
+    *   })
+    * );
+    * Ensure serializeUser / deserializeUser remain unchanged to handle the new user objects.
+3. Client-Side Changes
+    * On AuthPage.tsx (or your /auth React page), above or beside your existing form submit button: <Button
+    *   variant="default"
+    *   as="a"
+    *   href="/api/auth/google"
+    *   className="w-full mb-4 flex items-center justify-center gap-2"
+    * >
+    *   <img src="/assets/google-logo.svg" alt="Google logo" className="h-5" />
+    *   Continue with Google
+    * </Button>
+    * Add any needed styling so the button matches your design system.
+
+1. Testing
+    * Restart your server.
+    * Visit /auth in the browser, click Continue with Google, complete the flow, and confirm you land on /dashboard (or /) with a valid session.
+    * Verify new Google-registered users appear correctly in your users table and their profile image is stored.
+
+Once you hand this prompt to the agent, it should be able to implement full Google OAuth signup/login on your /auth page.
