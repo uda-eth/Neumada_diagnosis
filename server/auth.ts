@@ -1,5 +1,6 @@
 import passport from "passport";
 import { IVerifyOptions, Strategy as LocalStrategy } from "passport-local";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { type Express, Request, Response, NextFunction } from "express";
 import session from "express-session";
 import createMemoryStore from "memorystore";
@@ -148,6 +149,88 @@ export function setupAuth(app: Express) {
       } catch (err) {
         console.error("Login error:", err);
         return done(err);
+      }
+    })
+  );
+  
+  // Configure Google OAuth Strategy
+  passport.use(
+    new GoogleStrategy({
+      clientID: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      callbackURL: process.env.GOOGLE_CALLBACK_URL!
+    }, async (accessToken, refreshToken, profile, done) => {
+      try {
+        console.log("Google authentication attempt for profile:", profile.id);
+        
+        // Look for existing user with this Google ID in your database
+        const [existingUser] = await db
+          .select()
+          .from(users)
+          .where(eq(users.email, profile.emails![0].value))
+          .limit(1);
+          
+        if (existingUser) {
+          console.log("Found existing user with Google email:", existingUser.email);
+          return done(null, existingUser);
+        }
+        
+        // If no user exists, create a new user
+        console.log("Creating new user from Google profile");
+        
+        // Generate random password for Google users
+        const randomPassword = Math.random().toString(36).slice(-10);
+        const hashedPassword = await crypto.hash(randomPassword);
+        
+        // Create username from display name (handle duplicates)
+        let username = profile.displayName.toLowerCase().replace(/\s+/g, '');
+        const emailUsername = profile.emails![0].value.split('@')[0];
+        
+        // Check if username exists
+        const [existingUsername] = await db
+          .select()
+          .from(users)
+          .where(eq(users.username, username))
+          .limit(1);
+          
+        if (existingUsername) {
+          // Use email username as fallback
+          username = emailUsername;
+          
+          // Check if that exists too
+          const [existingEmailUsername] = await db
+            .select()
+            .from(users)
+            .where(eq(users.username, username))
+            .limit(1);
+            
+          if (existingEmailUsername) {
+            // Add random numbers as last resort
+            username = `${emailUsername}${Math.floor(Math.random() * 1000)}`;
+          }
+        }
+        
+        // Create the new user
+        const [newUser] = await db
+          .insert(users)
+          .values({
+            username,
+            email: profile.emails![0].value,
+            password: hashedPassword,
+            fullName: profile.displayName || null,
+            profileImage: profile.photos ? profile.photos[0].value : null,
+            // Other fields set to default values
+            bio: null,
+            location: null,
+            interests: null
+          })
+          .returning();
+          
+        console.log("Created new user from Google profile:", newUser.username);
+        return done(null, newUser);
+      } catch (err) {
+        console.error("Google authentication error:", err);
+        return done(err as Error);
       }
     })
   );
