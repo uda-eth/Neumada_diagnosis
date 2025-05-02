@@ -1,0 +1,99 @@
+**Refining prompt for filtering**
+
+The task is to refine the prompt for adding date-based filtering to the mobile view. The structure involves four buttons: "Today's Events", "This Week", "This Month", and "Upcoming Events" for events beyond a month. We'll focus on mobile specifics, implementing buttons and defining the front-end logic, including React Query calls and breakpoints for UI sections. I'll mention UI components that are responsive and intuitive. Let's ensure that the filter works seamlessly on different screen sizes, helping users easily navigate events based on their timing.
+
+
+Thought for a few seconds
+
+
+**Enhance Mobile Date‑Filter UI & Logic**
+
+**Context**
+On mobile viewports, we need to give users a simple way to filter events by time period: Today, This Week, This Month, and Upcoming (more than one month away). These filters should appear as easy‑to‑tap buttons at the top of the Discover page.
+
+---
+
+### Prompt to the Replit Agent
+
+> **Goal:** Add a four‑option date filter to the mobile Discover page that updates which events are shown.
+>
+> **Files to Update:**
+>
+> * **Frontend:** `src/pages/DiscoverPage.tsx` (or `DiscoverPage.mobile.tsx` if you have a mobile‐specific file)
+> * **Maybe Backend:** `server/routes/events.ts` or wherever your `/api/events` handler lives, if you choose to push filtering down to the API
+>
+> **Tasks:**
+>
+> 1. **State Management**
+>
+>    * In your Discover component, create a new piece of state:
+>
+>      ```ts
+>      const [dateFilter, setDateFilter] = useState<'today'|'week'|'month'|'upcoming'>('today');
+>      ```
+> 2. **Mobile‑Only Filter Bar**
+>
+>    * At the very top of the event list (below any header), render a horizontally scrollable row of **four** buttons:
+>
+>      ```jsx
+>      <div className="sm:hidden overflow-x-auto py-2 px-4">
+>        {[
+>          { key: 'today', label: "Today's Events" },
+>          { key: 'week',  label: "Events This Week" },
+>          { key: 'month', label: "Events This Month" },
+>          { key: 'upcoming', label: "Upcoming Events" }
+>        ].map(({key, label}) => (
+>          <button
+>            key={key}
+>            onClick={() => setDateFilter(key)}
+>            className={`
+>              mr-3 whitespace-nowrap rounded-full px-3 py-1 text-sm font-medium
+>              ${dateFilter === key 
+>                ? 'bg-primary text-white' 
+>                : 'bg-background/5 text-muted-foreground hover:bg-accent/10'}
+>            `}
+>          >
+>            {label}
+>          </button>
+>        ))}
+>      </div>
+>      ```
+>    * Use Tailwind for spacing (`mr-3`), rounded pills, and an active state (`bg-primary text-white`).
+> 3. **Hook Filter into Data Fetch**
+>
+>    * **Option A (Client‐Side):**
+>      After fetching all events, apply a JavaScript filter before rendering:
+>
+>      ```ts
+>      const now = Date.now();
+>      const filteredByDate = events.filter(evt => {
+>        const diff = new Date(evt.date).getTime() - now;
+>        switch (dateFilter) {
+>          case 'today':   return diff >= 0 && diff < 24*60*60*1000;
+>          case 'week':    return diff >= 0 && diff < 7*24*60*60*1000;
+>          case 'month':   return diff >= 0 && diff < 30*24*60*60*1000;
+>          case 'upcoming':return diff >= 30*24*60*60*1000;
+>        }
+>      });
+>      ```
+>    * **Option B (API‐Side):**
+>      Append a `dateFilter` query param to your `/api/events` call:
+>
+>      ```ts
+>      const params = new URLSearchParams({ dateFilter });
+>      const response = await fetch(`/api/events?${params}`);
+>      ```
+>
+>      And update your backend to interpret `dateFilter` exactly as above.
+> 4. **Responsive Behavior**
+>
+>    * Ensure this filter bar only shows on **small** screens (`sm:hidden`). On larger viewports the existing desktop filters remain.
+>    * Verify at widths of 320px & 375px that users can swipe the filter row horizontally and tap each option.
+> 5. **Testing & UX**
+>
+>    * Tap each button and confirm that only events in the selected timeframe appear.
+>    * The active filter pill should remain highlighted until the user selects a different option.
+>    * No empty states—if there are no events in a given period, show a friendly “No events found” message.
+
+> **Deliverable:**
+> A mobile‑optimized date filter bar with four pill buttons that drive real‐time filtering of the event grid by Today, This Week, This Month, or Upcoming.
