@@ -73,6 +73,7 @@ export default function DiscoverPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>([]);
+  const [dateFilter, setDateFilter] = useState<'today'|'week'|'month'|'upcoming'>('today');
   const { events: fetchedEvents, isLoading } = useEvents(undefined, selectedCity);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -88,7 +89,33 @@ export default function DiscoverPage() {
     const matchesCategory = selectedCategory === "all" || event.category === selectedCategory;
     const matchesEventTypes = selectedEventTypes.length === 0 ||
                              event.tags?.some(tag => selectedEventTypes.includes(tag));
-    return matchesSearch && matchesCategory && matchesEventTypes;
+    
+    // Date-based filtering
+    const now = Date.now();
+    const eventDate = new Date(event.date).getTime();
+    const diff = eventDate - now;
+    
+    let matchesDateFilter = true;
+    switch (dateFilter) {
+      case 'today':
+        // Today's events (within next 24 hours)
+        matchesDateFilter = diff >= 0 && diff < 24*60*60*1000;
+        break;
+      case 'week':
+        // This week's events (within next 7 days)
+        matchesDateFilter = diff >= 0 && diff < 7*24*60*60*1000;
+        break;
+      case 'month':
+        // This month's events (within next 30 days)
+        matchesDateFilter = diff >= 0 && diff < 30*24*60*60*1000;
+        break;
+      case 'upcoming':
+        // Upcoming events (more than a month away)
+        matchesDateFilter = diff >= 30*24*60*60*1000;
+        break;
+    }
+    
+    return matchesSearch && matchesCategory && matchesEventTypes && matchesDateFilter;
   });
 
   // Get events to display
@@ -126,7 +153,7 @@ export default function DiscoverPage() {
   // Reset pagination when filters change
   useEffect(() => {
     setDisplayCount(9); // Reset to initial count when filters change
-  }, [searchTerm, selectedCity, selectedCategory, selectedEventTypes]);
+  }, [searchTerm, selectedCity, selectedCategory, selectedEventTypes, dateFilter]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -284,6 +311,31 @@ export default function DiscoverPage() {
             )}
           </div>
 
+          {/* Mobile Date Filter */}
+          <div className="sm:hidden overflow-x-auto py-2 px-4 mb-4">
+            <div className="flex space-x-3">
+              {[
+                { key: 'today', label: "Today's Events" },
+                { key: 'week', label: "Events This Week" },
+                { key: 'month', label: "Events This Month" },
+                { key: 'upcoming', label: "Upcoming Events" }
+              ].map(({key, label}) => (
+                <button
+                  key={key}
+                  onClick={() => setDateFilter(key as 'today'|'week'|'month'|'upcoming')}
+                  className={`
+                    whitespace-nowrap rounded-full px-3 py-1 text-sm font-medium
+                    ${dateFilter === key 
+                      ? 'bg-primary text-white' 
+                      : 'bg-background/5 text-muted-foreground hover:bg-accent/10'}
+                  `}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Event Grid */}
           <div className="space-y-6 sm:space-y-8">
             <h2 className="text-xs sm:text-sm font-medium text-muted-foreground mb-3 sm:mb-4">
@@ -311,6 +363,7 @@ export default function DiscoverPage() {
                   setSearchTerm("");
                   setSelectedCategory("all");
                   setSelectedEventTypes([]);
+                  setDateFilter("today");
                 }}>
                   Clear Filters
                 </Button>
