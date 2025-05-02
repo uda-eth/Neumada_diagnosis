@@ -1,0 +1,64 @@
+Optimize Mobile Event Grid Layout
+
+Context
+On mobile viewports, the Discover page currently renders only one event per row and the card is taller than the screen, forcing users to scroll just to see the bottom of the card (title, date, price). We need to display two full cards side‑by‑side on mobile, and ensure each card’s entire content fits into the initial viewport without vertical scrolling.
+
+Tasks
+Locate the Grid Container
+
+File: src/pages/DiscoverPage.tsx (or wherever the <div className="grid …"> lives).
+
+Update Grid Columns
+
+Change the grid classes so that the default (mobile) layout is 2 columns:
+
+diff
+Copy
+Edit
+- <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 …">
++ <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 …">
+Remove any explicit grid-cols-1 on the smallest breakpoint.
+
+Constrain Card Height for Mobile
+
+Remove or override any aspect-square or fixed-height classes on the <Card> so that height adapts to content.
+
+Add a max-height that fits within a standard mobile viewport (~600px height). For example:
+
+html
+Copy
+Edit
+<Card className="h-auto max-h-[calc(100vh-4rem)] overflow-hidden">
+where 4rem accounts for any header/nav.
+
+Ensure Full Content Visibility
+
+Inside each card, make sure the image uses object-cover without cropping off the bottom content:
+
+html
+Copy
+Edit
+<img className="w-full h-32 sm:h-40 object-cover" … />
+Adjust padding/margins so title/date/price sections aren’t pushed off‑screen.
+
+Spacing & Responsiveness
+
+Use gap-2 or gap-4 on the grid for comfortable horizontal/vertical spacing.
+
+Verify at viewport widths of 320px, 375px, and 640px that two cards render fully.
+
+Testing & Validation
+
+Manually test on mobile device emulators (Chrome DevTools).
+
+Snap a screenshot or record that both cards are fully visible without any vertical scroll.
+
+(Optional) Add a Storybook story or Jest + React Testing Library snapshot to lock in the new mobile layout.
+
+Acceptance Criteria
+
+Two cards per row at mobile widths (≤640px).
+
+No vertical scrolling required to view each card’s complete content (image, title, date, price).
+
+Layout degrades gracefully to single column only below a very narrow breakpoint (e.g. ≤280px).
