@@ -91,27 +91,41 @@ export default function DiscoverPage() {
                              event.tags?.some(tag => selectedEventTypes.includes(tag));
     
     // Date-based filtering
-    const now = Date.now();
-    const eventDate = new Date(event.date).getTime();
-    const diff = eventDate - now;
+    const now = new Date();
+    const eventDate = new Date(event.date);
+    
+    // Reset hours to start of day for proper comparison
+    const startOfToday = new Date(now);
+    startOfToday.setHours(0, 0, 0, 0);
+    
+    // Calculate end of today
+    const endOfToday = new Date(startOfToday);
+    endOfToday.setHours(23, 59, 59, 999);
+    
+    // Calculate start/end of week, month
+    const endOfWeek = new Date(startOfToday);
+    endOfWeek.setDate(startOfToday.getDate() + 7);
+    
+    const endOfMonth = new Date(startOfToday);
+    endOfMonth.setDate(startOfToday.getDate() + 30);
     
     let matchesDateFilter = true;
     switch (dateFilter) {
       case 'today':
-        // Today's events (within next 24 hours)
-        matchesDateFilter = diff >= 0 && diff < 24*60*60*1000;
+        // Today's events (events occurring today)
+        matchesDateFilter = eventDate >= startOfToday && eventDate <= endOfToday;
         break;
       case 'week':
         // This week's events (within next 7 days)
-        matchesDateFilter = diff >= 0 && diff < 7*24*60*60*1000;
+        matchesDateFilter = eventDate >= startOfToday && eventDate < endOfWeek;
         break;
       case 'month':
         // This month's events (within next 30 days)
-        matchesDateFilter = diff >= 0 && diff < 30*24*60*60*1000;
+        matchesDateFilter = eventDate >= startOfToday && eventDate < endOfMonth;
         break;
       case 'upcoming':
         // Upcoming events (more than a month away)
-        matchesDateFilter = diff >= 30*24*60*60*1000;
+        matchesDateFilter = eventDate >= endOfMonth;
         break;
     }
     
