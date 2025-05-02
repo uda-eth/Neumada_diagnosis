@@ -295,7 +295,7 @@ export default function DiscoverPage() {
               <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                 {Array.from({ length: 6 }).map((_, index) => (
                   <Card key={index} className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm h-auto max-h-[calc(100vh-8rem)]">
-                    <Skeleton className="aspect-[2/3] sm:aspect-[2/3] w-full" />
+                    <Skeleton className="aspect-[1/2] sm:aspect-[1/2] w-full" />
                     <div className="p-3 sm:p-4 space-y-2">
                       <Skeleton className="h-3 sm:h-4 w-3/4" />
                       <Skeleton className="h-3 sm:h-4 w-1/2" />
@@ -325,7 +325,7 @@ export default function DiscoverPage() {
                       className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg h-auto max-h-[calc(100vh-4rem)]"
                       onClick={() => setLocation(`/event/${event.id}`)}
                     >
-                      <div className="relative aspect-video sm:aspect-[2/3] overflow-hidden">
+                      <div className="relative aspect-[1/2] sm:aspect-[1/2] overflow-hidden">
                         <img
                           src={event.image || "/placeholder-event.jpg"}
                           alt={event.title}
