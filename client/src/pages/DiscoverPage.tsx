@@ -292,14 +292,14 @@ export default function DiscoverPage() {
 
             {isLoading ? (
               // Loading skeleton grid
-              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+              <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                 {Array.from({ length: 6 }).map((_, index) => (
-                  <Card key={index} className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm">
-                    <Skeleton className="aspect-[2/3] w-full" />
-                    <div className="p-4 space-y-2">
-                      <Skeleton className="h-4 w-3/4" />
-                      <Skeleton className="h-4 w-1/2" />
-                      <Skeleton className="h-4 w-5/6" />
+                  <Card key={index} className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm h-auto max-h-[calc(100vh-8rem)]">
+                    <Skeleton className="aspect-[2/3] sm:aspect-[2/3] w-full" />
+                    <div className="p-3 sm:p-4 space-y-2">
+                      <Skeleton className="h-3 sm:h-4 w-3/4" />
+                      <Skeleton className="h-3 sm:h-4 w-1/2" />
+                      <Skeleton className="h-3 sm:h-4 w-5/6" />
                     </div>
                   </Card>
                 ))}
@@ -318,59 +318,59 @@ export default function DiscoverPage() {
             ) : (
               <>
                 {/* Responsive Grid Layout - 3 columns on large screens */}
-                <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+                <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                   {displayEvents.map((event: any) => (
                     <Card 
                       key={event.id} 
-                      className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg h-auto"
+                      className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg h-auto max-h-[calc(100vh-4rem)]"
                       onClick={() => setLocation(`/event/${event.id}`)}
                     >
-                      <div className="relative aspect-[2/3] overflow-hidden">
+                      <div className="relative aspect-video sm:aspect-[2/3] overflow-hidden">
                         <img
                           src={event.image || "/placeholder-event.jpg"}
                           alt={event.title}
                           className="object-cover w-full h-full"
                           loading="lazy"
                         />
-                        <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-black/80 to-transparent">
+                        <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 md:p-4 bg-gradient-to-t from-black/80 to-transparent">
                           <div className="flex items-center justify-between">
                             <div className="max-w-[70%]">
-                              <p className="text-xs sm:text-sm font-medium text-white/60">
-                                {format(new Date(event.date), "EEE, MMM d, h:mm a")}
+                              <p className="text-[9px] sm:text-xs md:text-sm font-medium text-white/60">
+                                {format(new Date(event.date), "MMM d, h:mm a")}
                               </p>
-                              <h3 className="text-sm sm:text-lg font-semibold text-white mt-0.5 sm:mt-1 truncate">{event.title}</h3>
+                              <h3 className="text-xs sm:text-sm md:text-lg font-semibold text-white mt-0.5 truncate">{event.title}</h3>
                             </div>
                             <div className="text-right text-white z-10">
                               {event.price === "0" ? (
-                                <p className="font-semibold text-white text-sm sm:text-lg">Free</p>
+                                <p className="font-semibold text-white text-xs sm:text-sm md:text-lg">Free</p>
                               ) : (
                                 <>
-                                  <p className="font-semibold text-white text-sm sm:text-lg">${event.price}</p>
-                                  <p className="text-xs sm:text-sm text-white/60">per person</p>
+                                  <p className="font-semibold text-white text-xs sm:text-sm md:text-lg">${event.price}</p>
+                                  <p className="text-[8px] sm:text-xs md:text-sm text-white/60">per person</p>
                                 </>
                               )}
                             </div>
                           </div>
                         </div>
                       </div>
-                      <CardContent className="p-3 sm:p-4">
-                        <div className="flex items-center justify-between flex-wrap gap-y-2">
+                      <CardContent className="p-2 sm:p-3 md:p-4">
+                        <div className="flex items-center justify-between flex-wrap gap-y-1 sm:gap-y-2">
                           <div className="flex items-center space-x-1 min-w-0 max-w-[50%]">
-                            <MapPin className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 text-muted-foreground" />
-                            <span className="text-xs sm:text-sm text-muted-foreground truncate">
+                            <MapPin className="h-2.5 w-2.5 sm:h-3 md:h-4 sm:w-3 md:w-4 flex-shrink-0 text-muted-foreground" />
+                            <span className="text-[10px] sm:text-xs md:text-sm text-muted-foreground truncate">
                               {event.location}
                             </span>
                           </div>
                           <div className="flex items-center space-x-1 min-w-0 max-w-[50%]">
-                            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 text-muted-foreground" />
-                            <span className="text-xs sm:text-sm text-muted-foreground truncate">
+                            <Calendar className="h-2.5 w-2.5 sm:h-3 md:h-4 sm:w-3 md:w-4 flex-shrink-0 text-muted-foreground" />
+                            <span className="text-[10px] sm:text-xs md:text-sm text-muted-foreground truncate">
                               {event.category}
                             </span>
                           </div>
                         </div>
-                        <div className="flex flex-wrap gap-1 mt-2 sm:mt-3">
-                          {event.tags?.slice(0, 3).map((tag: string, index: number) => (
-                            <Badge key={index} variant="outline" className="text-xs px-1.5 py-0.5 h-5">
+                        <div className="flex flex-wrap gap-1 mt-1 sm:mt-2 md:mt-3">
+                          {event.tags?.slice(0, 2).map((tag: string, index: number) => (
+                            <Badge key={index} variant="outline" className="text-[9px] sm:text-xs px-1 sm:px-1.5 py-0 sm:py-0.5 h-4 sm:h-5">
                               {tag}
                             </Badge>
                           ))}
