@@ -510,55 +510,67 @@ export default function ProfileEditPage() {
                   <div>
                     <FormLabel className="flex items-center gap-2">
                       <Smile className="w-4 h-4" /> 
-                      Vibe
+                      Vibe and Mood Tags
                     </FormLabel>
-                    <FormDescription>Select your vibe preferences</FormDescription>
+                    <FormDescription>Select tags that represent your vibe and mood</FormDescription>
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {VIBE_AND_MOOD_TAGS.map(tag => (
-                        <Badge
-                          key={tag}
-                          variant={selectedInterests.includes(tag) ? "default" : "outline"}
-                          className="cursor-pointer hover:opacity-80 transition-opacity"
-                          onClick={() => {
-                            const newInterests = selectedInterests.includes(tag)
-                              ? selectedInterests.filter(i => i !== tag)
-                              : [...selectedInterests, tag];
-                            setSelectedInterests(newInterests);
-                            form.setValue("interests", newInterests);
-                          }}
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
+                      {VIBE_AND_MOOD_TAGS.map(tag => {
+                        const isInterest = selectedInterests.includes(tag);
+                        const isMood = selectedMoods.includes(tag);
+                        
+                        // Determine badge style based on selection states
+                        let variant = "outline";
+                        let className = "cursor-pointer hover:opacity-80 transition-opacity";
+                        
+                        if (isInterest && isMood) {
+                          // Tag is selected as both interest and mood
+                          variant = "default";
+                          className += " ring-2 ring-primary ring-opacity-50";
+                        } else if (isInterest) {
+                          // Tag is selected as interest only
+                          variant = "default";
+                        } else if (isMood) {
+                          // Tag is selected as mood only
+                          variant = "secondary";
+                        }
+                        
+                        return (
+                          <Badge
+                            key={tag}
+                            variant={variant as any}
+                            className={className}
+                            onClick={() => {
+                              // Toggle selection for both interest and mood at once
+                              const newInterests = isInterest
+                                ? selectedInterests.filter(i => i !== tag)
+                                : [...selectedInterests, tag];
+                              
+                              const newMoods = isMood
+                                ? selectedMoods.filter(m => m !== tag)
+                                : [...selectedMoods, tag];
+                              
+                              setSelectedInterests(newInterests);
+                              setSelectedMoods(newMoods);
+                              
+                              form.setValue("interests", newInterests);
+                              form.setValue("currentMoods", newMoods);
+                            }}
+                          >
+                            {tag}
+                          </Badge>
+                        );
+                      })}
                     </div>
-                    <FormMessage>{form.formState.errors.interests?.message}</FormMessage>
-                  </div>
-
-                  <div>
-                    <FormLabel className="flex items-center gap-2">
-                      <Smile className="w-4 h-4" /> 
-                      Current Mood
-                    </FormLabel>
-                    <FormDescription>What's your current mood?</FormDescription>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {VIBE_AND_MOOD_TAGS.map(tag => (
-                        <Badge
-                          key={tag}
-                          variant={selectedMoods.includes(tag) ? "default" : "outline"}
-                          className="cursor-pointer hover:opacity-80 transition-opacity"
-                          onClick={() => {
-                            const newMoods = selectedMoods.includes(tag)
-                              ? selectedMoods.filter(m => m !== tag)
-                              : [...selectedMoods, tag];
-                            setSelectedMoods(newMoods);
-                            form.setValue("currentMoods", newMoods);
-                          }}
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
+                    <div className="mt-3 space-y-1">
+                      <FormMessage>{form.formState.errors.interests?.message}</FormMessage>
+                      <FormMessage>{form.formState.errors.currentMoods?.message}</FormMessage>
                     </div>
-                    <FormMessage>{form.formState.errors.currentMoods?.message}</FormMessage>
+                    <div className="mt-4 text-sm text-muted-foreground">
+                      <p>Tags are used for both your profile preferences and current mood.</p>
+                      <p className="mt-1">Default (purple): Selected as your preferred vibe</p>
+                      <p className="mt-1">Secondary (gray): Selected as your current mood</p>
+                      <p className="mt-1">Ringed: Selected as both preferred vibe and current mood</p>
+                    </div>
                   </div>
                 </div>
               </Card>
