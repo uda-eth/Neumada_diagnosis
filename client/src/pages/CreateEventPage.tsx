@@ -29,7 +29,7 @@ import {
 import { PageHeader } from "@/components/ui/page-header";
 import { z } from "zod";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { EVENT_CATEGORIES } from "@/lib/constants";
+import { EVENT_CATEGORIES, VIBE_AND_MOOD_TAGS } from "@/lib/constants";
 import { useUser } from "@/hooks/use-user";
 import { ItineraryFormField } from "@/components/ItineraryFormField";
 
@@ -59,20 +59,8 @@ const eventSchema = z.object({
 // Define the form data type using the zod schema
 type FormData = z.infer<typeof eventSchema>;
 
-const interestTags = [
-  "Digital Nomads",
-  "Entrepreneurs",
-  "Artists",
-  "Tech",
-  "Music",
-  "Food",
-  "Travel",
-  "Sports",
-  "Wellness",
-  "Photography",
-  "Reading",
-  "Languages",
-];
+// Use the unified vibe and mood tags
+const interestTags = VIBE_AND_MOOD_TAGS;
 
 export default function CreateEventPage() {
   const [, setLocation] = useLocation();
@@ -299,7 +287,7 @@ export default function CreateEventPage() {
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-sm font-medium">Target audience is</h3>
+              <h3 className="text-sm font-medium">Vibe and Mood for this event</h3>
               <div className="grid grid-cols-3 gap-2">
                 {interestTags.map((tag) => (
                   <Button
