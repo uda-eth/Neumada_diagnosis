@@ -116,34 +116,25 @@ export const MOCK_EVENTS: Record<string, Event[]> = DIGITAL_NOMAD_CITIES.reduce(
   return acc;
 }, {} as Record<string, Event[]>);
 
-// Interest tags for user profiles
-export const INTEREST_TAGS = [
-  "Digital Marketing",
-  "Software Development",
-  "Content Creation",
-  "Photography",
-  "Entrepreneurship",
-  "Remote Work",
-  "Travel",
-  "Fitness",
-  "Languages",
-  "Art & Design",
-  "Music",
-  "Food & Cuisine"
+// Vibe and mood tags for user profiles, events, and filtering
+export const VIBE_AND_MOOD_TAGS = [
+  "Party & Nightlife",
+  "Fashion & Style",
+  "Networking & Business",
+  "Dining & Drinks",
+  "Outdoor & Nature",
+  "Wellness & Fitness",
+  "Creative & Artsy",
+  "Single & Social",
+  "Chill & Recharge",
+  "Adventure & Exploring",
+  "Spiritual & Intentional"
 ];
 
-export const MOOD_TAGS = [
-  "Working",
-  "Exploring",
-  "Networking",
-  "Learning",
-  "Teaching",
-  "Socializing",
-  "Focusing",
-  "Adventure",
-  "Relaxing",
-  "Creating"
-];
+// For backward compatibility, keeping INTEREST_TAGS and MOOD_TAGS
+// but pointing to the same list of VIBE_AND_MOOD_TAGS
+export const INTEREST_TAGS = VIBE_AND_MOOD_TAGS;
+export const MOOD_TAGS = VIBE_AND_MOOD_TAGS;
 
 export const MOCK_USER_PROFILES = {
   member: {

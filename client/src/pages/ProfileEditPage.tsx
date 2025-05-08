@@ -35,7 +35,7 @@ import {
   Smile,
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { DIGITAL_NOMAD_CITIES, MOOD_TAGS, INTEREST_TAGS } from "@/lib/constants";
+import { DIGITAL_NOMAD_CITIES, VIBE_AND_MOOD_TAGS } from "@/lib/constants";
 
 const profileSchema = z.object({
   username: z.string().optional(),
@@ -503,28 +503,31 @@ export default function ProfileEditPage() {
                 </div>
               </Card>
 
-              {/* Interests & Moods */}
+              {/* Vibe and Mood */}
               <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Interests & Moods</h2>
+                <h2 className="text-xl font-semibold mb-4">Vibe and Mood</h2>
                 <div className="space-y-6">
                   <div>
-                    <FormLabel>Interests</FormLabel>
-                    <FormDescription>Select your interests and expertise areas</FormDescription>
+                    <FormLabel className="flex items-center gap-2">
+                      <Smile className="w-4 h-4" /> 
+                      Vibe
+                    </FormLabel>
+                    <FormDescription>Select your vibe preferences</FormDescription>
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {INTEREST_TAGS.map(interest => (
+                      {VIBE_AND_MOOD_TAGS.map(tag => (
                         <Badge
-                          key={interest}
-                          variant={selectedInterests.includes(interest) ? "default" : "outline"}
+                          key={tag}
+                          variant={selectedInterests.includes(tag) ? "default" : "outline"}
                           className="cursor-pointer hover:opacity-80 transition-opacity"
                           onClick={() => {
-                            const newInterests = selectedInterests.includes(interest)
-                              ? selectedInterests.filter(i => i !== interest)
-                              : [...selectedInterests, interest];
+                            const newInterests = selectedInterests.includes(tag)
+                              ? selectedInterests.filter(i => i !== tag)
+                              : [...selectedInterests, tag];
                             setSelectedInterests(newInterests);
                             form.setValue("interests", newInterests);
                           }}
                         >
-                          {interest}
+                          {tag}
                         </Badge>
                       ))}
                     </div>
@@ -534,24 +537,24 @@ export default function ProfileEditPage() {
                   <div>
                     <FormLabel className="flex items-center gap-2">
                       <Smile className="w-4 h-4" /> 
-                      Current Moods
+                      Current Mood
                     </FormLabel>
-                    <FormDescription>What's your current focus or mood?</FormDescription>
+                    <FormDescription>What's your current mood?</FormDescription>
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {MOOD_TAGS.map(mood => (
+                      {VIBE_AND_MOOD_TAGS.map(tag => (
                         <Badge
-                          key={mood}
-                          variant={selectedMoods.includes(mood) ? "default" : "outline"}
+                          key={tag}
+                          variant={selectedMoods.includes(tag) ? "default" : "outline"}
                           className="cursor-pointer hover:opacity-80 transition-opacity"
                           onClick={() => {
-                            const newMoods = selectedMoods.includes(mood)
-                              ? selectedMoods.filter(m => m !== mood)
-                              : [...selectedMoods, mood];
+                            const newMoods = selectedMoods.includes(tag)
+                              ? selectedMoods.filter(m => m !== tag)
+                              : [...selectedMoods, tag];
                             setSelectedMoods(newMoods);
                             form.setValue("currentMoods", newMoods);
                           }}
                         >
-                          {mood}
+                          {tag}
                         </Badge>
                       ))}
                     </div>
