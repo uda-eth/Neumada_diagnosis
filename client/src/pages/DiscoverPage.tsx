@@ -349,6 +349,32 @@ export default function DiscoverPage() {
               ))}
             </div>
           </div>
+          
+          {/* Desktop Date Filter */}
+          <div className="hidden sm:block mb-6">
+            <div className="flex flex-wrap gap-3 justify-start">
+              {[
+                { key: 'today', label: "Today's Events" },
+                { key: 'week', label: "Events This Week" },
+                { key: 'month', label: "Events This Month" },
+                { key: 'upcoming', label: "Upcoming Events" }
+              ].map(({key, label}) => (
+                <Button
+                  key={key}
+                  variant={dateFilter === key ? "default" : "outline"}
+                  onClick={() => setDateFilter(key as 'today'|'week'|'month'|'upcoming')}
+                  className={`
+                    text-sm font-medium rounded-full px-4 py-2
+                    ${dateFilter === key 
+                      ? 'bg-primary text-white' 
+                      : ''}
+                  `}
+                >
+                  {label}
+                </Button>
+              ))}
+            </div>
+          </div>
 
           {/* Event Grid */}
           <div className="space-y-6 sm:space-y-8">
