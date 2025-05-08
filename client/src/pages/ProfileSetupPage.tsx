@@ -18,7 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { MapPin, Upload } from "lucide-react";
-import { DIGITAL_NOMAD_CITIES } from "@/lib/constants";
+import { DIGITAL_NOMAD_CITIES, VIBE_AND_MOOD_TAGS } from "@/lib/constants";
 
 const profileSchema = z.object({
   fullName: z.string().min(2, "Name must be at least 2 characters"),
@@ -27,29 +27,40 @@ const profileSchema = z.object({
   profession: z.string().min(2, "Profession is required"),
   location: z.string(),
   interests: z.array(z.string()).min(1, "Select at least one interest"),
-  currentMood: z.enum(["Dating", "Networking", "Parties", "Adventure", "Dining Out"]),
+  currentMood: z.enum([
+    "Party & Nightlife",
+    "Networking & Business",
+    "Adventure & Exploring",
+    "Dining & Drinks",
+    "Creative & Artsy"
+  ]),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
-const interests = [
-  "Digital Marketing",
-  "Software Development",
-  "Content Creation",
-  "Photography",
-  "Entrepreneurship",
-  "Remote Work",
-  "Travel",
-  "Fitness",
-  "Languages",
-  "Art & Design",
-  "Music",
-  "Food & Cuisine",
-];
+// Use interests from the unified VIBE_AND_MOOD_TAGS list
+const interests = VIBE_AND_MOOD_TAGS;
 
-const moods = ["Dating", "Networking", "Parties", "Adventure", "Dining Out"] as const;
+// Use moods from the unified VIBE_AND_MOOD_TAGS list
+// We need to cast it to match the expected type in the form schema
+const moods = ["Party & Nightlife", "Networking & Business", "Adventure & Exploring", "Dining & Drinks", "Creative & Artsy"] as const;
 
+// Unified mood style definitions for consistent visual appearance
 const moodStyles = {
+  // New vibe and mood tags
+  "Party & Nightlife": "bg-purple-500/20 text-purple-500 hover:bg-purple-500/30",
+  "Fashion & Style": "bg-pink-500/20 text-pink-500 hover:bg-pink-500/30",
+  "Networking & Business": "bg-blue-500/20 text-blue-500 hover:bg-blue-500/30",
+  "Dining & Drinks": "bg-green-500/20 text-green-500 hover:bg-green-500/30",
+  "Outdoor & Nature": "bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30",
+  "Wellness & Fitness": "bg-teal-500/20 text-teal-500 hover:bg-teal-500/30",
+  "Creative & Artsy": "bg-violet-500/20 text-violet-500 hover:bg-violet-500/30",
+  "Single & Social": "bg-rose-500/20 text-rose-500 hover:bg-rose-500/30",
+  "Chill & Recharge": "bg-cyan-500/20 text-cyan-500 hover:bg-cyan-500/30",
+  "Adventure & Exploring": "bg-orange-500/20 text-orange-500 hover:bg-orange-500/30",
+  "Spiritual & Intentional": "bg-amber-500/20 text-amber-500 hover:bg-amber-500/30",
+  
+  // Legacy tags for backward compatibility
   "Dating": "bg-pink-500/20 text-pink-500 hover:bg-pink-500/30",
   "Networking": "bg-blue-500/20 text-blue-500 hover:bg-blue-500/30",
   "Parties": "bg-purple-500/20 text-purple-500 hover:bg-purple-500/30",
@@ -72,7 +83,7 @@ export default function ProfileSetupPage() {
       profession: "",
       location: "Mexico City",
       interests: [],
-      currentMood: "Networking",
+      currentMood: "Networking & Business",
     },
   });
 
@@ -265,11 +276,11 @@ export default function ProfileSetupPage() {
                 />
               </div>
 
-              {/* Interests & Mood */}
+              {/* Vibe and Mood */}
               <div className="glass p-6 rounded-lg border border-white/10 space-y-4">
                 <div>
-                  <FormLabel>Interests</FormLabel>
-                  <FormDescription className="text-white/60">Select your interests and expertise areas</FormDescription>
+                  <FormLabel>Vibe and Mood</FormLabel>
+                  <FormDescription className="text-white/60">Select your vibes and interests</FormDescription>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {interests.map(interest => (
                       <Badge
@@ -296,8 +307,8 @@ export default function ProfileSetupPage() {
                   name="currentMood"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Current Mood</FormLabel>
-                      <FormDescription className="text-white/60">What's your current focus?</FormDescription>
+                      <FormLabel>Active Vibe</FormLabel>
+                      <FormDescription className="text-white/60">What's your primary focus right now?</FormDescription>
                       <div className="flex flex-wrap gap-2 mt-2">
                         {moods.map(mood => (
                           <Badge
