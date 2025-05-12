@@ -9,6 +9,7 @@ import { db } from "@db";
 import { eq, or, lte } from "drizzle-orm";
 import { checkAuthentication } from './middleware/auth.middleware';
 import { upload, getFileUrl } from './utils/fileUpload';
+import fs from 'fs';
 
 // Define the User type to match our schema
 type UserType = {
@@ -311,8 +312,44 @@ export function setupAuth(app: Express) {
         nextLocation
       } = req.body;
       
-      // Handle the uploaded profile image
-      const profileImage = req.file ? getFileUrl(req.file.filename) : null;
+      // Handle the uploaded profile image (with Cloudinary support)
+      let profileImage = null;
+      
+      if (req.file) {
+        try {
+          // Import required modules
+          const cloudinary = (await import('./lib/cloudinary')).default;
+          const { Readable } = await import('stream');
+          
+          // Stream the buffer to Cloudinary
+          const bufferStream = new Readable();
+          bufferStream.push(req.file.buffer || fs.readFileSync(req.file.path));
+          bufferStream.push(null);
+          
+          const result = await new Promise<any>((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+              { 
+                folder: `profiles/${Date.now()}`,
+                public_id: `${username}-profile-${Date.now()}`
+              },
+              (error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+              }
+            );
+            
+            bufferStream.pipe(uploadStream);
+          });
+          
+          profileImage = result.secure_url;
+          console.log(`Uploaded profile image to Cloudinary: ${profileImage}`);
+        } 
+        catch (cloudinaryError) {
+          console.error("Error uploading to Cloudinary during registration:", cloudinaryError);
+          // Fallback to local storage if Cloudinary fails
+          profileImage = req.file ? getFileUrl(req.file.filename) : null;
+        }
+      }
 
       // Basic validation
       if (!username || !password || !email) {
