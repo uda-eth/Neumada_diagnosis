@@ -345,7 +345,7 @@ export default function ProfilePage() {
                   <img 
                     src={profileData.profileImage} 
                     alt={profileData.fullName || profileData.username}
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/80"></div>
                 </div>
