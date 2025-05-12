@@ -522,12 +522,12 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
           
-          {/* Current Mood Section */}
+          {/* Mood & Vibe Section */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Smile className="h-4 w-4 text-primary" />
-                <h2 className="text-base font-semibold">Current Mood</h2>
+                <h2 className="text-base font-semibold">Mood & Vibe</h2>
               </div>
               
               {/* Only show change mood button if viewing own profile */}
@@ -549,7 +549,7 @@ export default function ProfilePage() {
               )}
             </div>
             
-            {/* Current Mood Display */}
+            {/* Mood & Vibe Display */}
             {!isUpdatingMood ? (
               <div className="bg-black/20 rounded-xl p-4 border border-border/20">
                 {profileData.currentMoods && profileData.currentMoods.length > 0 ? (
@@ -566,14 +566,14 @@ export default function ProfilePage() {
                 ) : (
                   <p className="text-muted-foreground text-sm italic">
                     {currentUser && profileData.id === currentUser.id 
-                      ? "You haven't shared your current mood yet."
-                      : "This user hasn't shared their current mood yet."}
+                      ? "You haven't shared your mood & vibe preferences yet."
+                      : "This user hasn't shared their mood & vibe preferences yet."}
                   </p>
                 )}
               </div>
             ) : (
               <div className="bg-black/20 rounded-xl p-4 border border-border/20 space-y-3">
-                <p className="text-xs text-muted-foreground">Select your current mood:</p>
+                <p className="text-xs text-muted-foreground">Select your mood & vibe preferences:</p>
                 <div className="flex flex-wrap gap-2">
                   {moods.map((mood) => (
                     <Button
@@ -599,15 +599,14 @@ export default function ProfilePage() {
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-3">
                 <Heart className="h-4 w-4 text-red-400" />
-                <h2 className="text-base font-semibold">Interests</h2>
+                <h2 className="text-base font-semibold">Mood & Vibe</h2>
               </div>
               <div className="bg-black/20 rounded-xl p-4 border border-border/20">
                 <div className="flex flex-wrap gap-2">
                   {profileData.interests.map((interest, index) => (
                     <Badge 
                       key={index}
-                      variant="outline"
-                      className="py-1.5 px-3 text-sm border-red-500/20 text-red-400/90 hover:border-red-500/40 rounded-full"
+                      className={`py-1.5 px-3 text-sm font-medium ${moodStyles[interest as keyof typeof moodStyles] || 'border-red-500/20 text-red-400/90 hover:border-red-500/40'} rounded-full`}
                     >
                       {interest}
                     </Badge>
