@@ -1,7 +1,47 @@
 import { type Event } from "@db/schema";
 
+// Cities organized by region, but stored in a flat array for the UI
 export const DIGITAL_NOMAD_CITIES = [
-  "Mexico City"
+  // North America
+  "Mexico City",
+  "Puerto Escondido",
+  "New York City",
+  "Miami",
+  "Los Angeles",
+  "Tulum",
+  "Austin",
+  "Toronto",
+  
+  // South & Central America
+  "São Paulo",
+  "Rio de Janeiro",
+  "Costa Rica",
+  "Medellín",
+  "Buenos Aires",
+  "Lima",
+  "Cartagena",
+  
+  // Europe
+  "Lisbon",
+  "Barcelona",
+  "Berlin",
+  "Paris",
+  "Amsterdam",
+  "London",
+  "Mykonos",
+  "Ibiza",
+  
+  // Middle East
+  "Dubai",
+  "Tel Aviv",
+  
+  // Asia & Oceania
+  "Bali",
+  "Bangkok",
+  "Tokyo",
+  "Seoul",
+  "Ho Chi Minh City",
+  "Sydney"
 ];
 
 export const DEFAULT_CITY = "Mexico City";
