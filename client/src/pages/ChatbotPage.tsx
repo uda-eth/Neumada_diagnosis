@@ -6,7 +6,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useChat } from "@/hooks/use-chat";
 import { 
   Loader2, Send, Bot, User, Globe,
-  Utensils, Building, Compass, MapPin, PalmtreeIcon
+  Wine, HeartHandshake, Plane, 
+  Building, MapPin
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DIGITAL_NOMAD_CITIES } from "@/lib/constants";
@@ -14,34 +15,22 @@ import { DIGITAL_NOMAD_CITIES } from "@/lib/constants";
 // Quick prompts for the most common questions
 const quickPrompts = [
   {
-    text: "Best Restaurants & Local Food",
-    icon: Utensils,
-    prompt: "What are the best restaurants and local food spots?",
-    ariaLabel: "Find best restaurants"
+    text: "Best Rooftops",
+    icon: Wine,
+    prompt: "What are the best rooftop bars and restaurants with views?",
+    ariaLabel: "Find best rooftops"
   },
   {
-    text: "Best Places to Work",
-    icon: Building,
-    prompt: "Where are the best cafes and coworking spaces to work from?",
-    ariaLabel: "Find work-friendly places"
+    text: "Best Date Spots",
+    icon: HeartHandshake,
+    prompt: "What are the most romantic and impressive date spots?",
+    ariaLabel: "Find best date spots"
   },
   {
-    text: "Best Neighborhoods",
-    icon: MapPin,
-    prompt: "Which are the best neighborhoods to stay in?",
-    ariaLabel: "Find best neighborhoods"
-  },
-  {
-    text: "Must-See Attractions",
-    icon: Compass,
-    prompt: "What are the must-see attractions and things to do?",
-    ariaLabel: "Find attractions"
-  },
-  {
-    text: "Weekend Getaways",
-    icon: PalmtreeIcon,
-    prompt: "What are the best day trips or weekend getaways from here?",
-    ariaLabel: "Find weekend getaways"
+    text: "Best Day Trips",
+    icon: Plane,
+    prompt: "What are the best day trips from here?",
+    ariaLabel: "Find best day trips"
   }
 ];
 
