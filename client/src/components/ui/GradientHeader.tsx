@@ -42,7 +42,7 @@ export function GradientHeader({
   const shouldForcePathFallback = forceUsePathFallback || isProfilePage;
 
   return (
-    <header className={`sticky top-0 z-10 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 border-b border-border ${className}`}>
+    <header className={`sticky top-0 z-10 bg-black border-b border-border ${className}`}>
       <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-4">
         <div className="flex items-center gap-2 sm:gap-4 overflow-visible w-full">
           {showBackButton && (
@@ -52,8 +52,8 @@ export function GradientHeader({
             />
           )}
           <div className="flex items-center gap-2">
-            <Icon className="w-5 h-5 text-white" aria-hidden="true" />
-            <h1 className="text-sm font-medium uppercase tracking-[.5em] text-white">
+            <Icon className="w-5 h-5 text-primary" aria-hidden="true" />
+            <h1 className="text-sm font-medium uppercase tracking-[.5em] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
               {title}
             </h1>
           </div>

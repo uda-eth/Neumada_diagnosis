@@ -184,7 +184,7 @@ export default function DiscoverPage() {
       >
         <div className="flex items-center gap-1 sm:gap-2">
           <Select value={selectedCity} onValueChange={setSelectedCity}>
-            <SelectTrigger className="w-[100px] sm:w-[140px] md:w-[180px] bg-transparent border-white/20 text-xs sm:text-sm text-white">
+            <SelectTrigger className="w-[100px] sm:w-[140px] md:w-[180px] bg-transparent border-border text-xs sm:text-sm">
               <SelectValue placeholder="Select city" />
             </SelectTrigger>
             <SelectContent>
@@ -202,7 +202,7 @@ export default function DiscoverPage() {
             variant="ghost"
             size="sm"
             onClick={() => setLocation("/connect")}
-            className="hidden md:inline-flex items-center text-white"
+            className="hidden md:inline-flex items-center"
           >
             <Users className="h-5 w-5 mr-2" />
             Connect
@@ -211,13 +211,13 @@ export default function DiscoverPage() {
             variant="ghost"
             size="sm"
             onClick={() => setLocation("/connections")}
-            className="hidden md:inline-flex items-center text-white"
+            className="hidden md:inline-flex items-center"
           >
             <UserCircle className="h-5 w-5 mr-2" />
             My Network
           </Button>
           <Button
-            className="bg-white/20 hover:bg-white/30 text-white whitespace-nowrap px-2 py-1 sm:py-2 md:px-4 text-xs sm:text-sm flex-shrink-0"
+            className="bg-primary/10 hover:bg-primary/20 whitespace-nowrap px-2 py-1 sm:py-2 md:px-4 text-xs sm:text-sm flex-shrink-0"
             onClick={() => setLocation("/create")}
           >
             <Plus className="h-4 w-4 sm:h-5 sm:w-5 md:mr-2" />

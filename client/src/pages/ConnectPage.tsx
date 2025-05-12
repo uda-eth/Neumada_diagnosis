@@ -205,7 +205,7 @@ export function ConnectPage() {
       >
         <div className="flex items-center gap-1 sm:gap-4 flex-shrink-0">
           <Link href="/connections">
-            <Button variant="outline" size="sm" className="gap-1 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm h-8 bg-white/10 border-white/20 text-white hover:bg-white/20">
+            <Button variant="outline" size="sm" className="gap-1 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm h-8">
               <UserCircle className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="truncate">Connections</span>
             </Button>
@@ -214,7 +214,7 @@ export function ConnectPage() {
             variant="ghost"
             size="sm"
             onClick={() => setIsFiltersVisible(!isFiltersVisible)}
-            className="gap-1 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm h-8 text-white hover:bg-white/10"
+            className="gap-1 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm h-8"
           >
             <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
             <span className="truncate">Filters</span>

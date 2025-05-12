@@ -87,7 +87,7 @@ export default function ChatbotPage() {
         <select 
           value={selectedCity}
           onChange={(e) => setSelectedCity(e.target.value)}
-          className="bg-transparent border border-white/20 rounded-md px-2 py-1 text-sm text-white focus-visible"
+          className="bg-transparent border border-border rounded-md px-2 py-1 text-sm focus-visible"
           aria-label="Select a city"
         >
           {DIGITAL_NOMAD_CITIES.map(city => (
