@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DIGITAL_NOMAD_CITIES } from "@/lib/constants";
+import { PageHeader } from "@/components/ui/page-header";
 
 // Quick prompts for the most common questions
 const quickPrompts = [
@@ -81,10 +82,11 @@ export default function ChatbotPage() {
         <Card className="flex-1 bg-black/40 border-white/10 shadow-card overflow-hidden">
           <CardContent className="p-4 flex flex-col h-[calc(100vh-16rem)]">
             <div className="flex items-center justify-between gap-3 pb-4 border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <Globe className="w-5 h-5 text-primary" />
-                <h1 className="text-sm font-medium uppercase tracking-[.5em] gradient-text">Concierge</h1>
-              </div>
+              <PageHeader 
+                title="Concierge"
+                showBackButton={false}
+                className="!p-0 !m-0 !border-0 !bg-transparent flex-1"
+              />
               <select 
                 value={selectedCity}
                 onChange={(e) => setSelectedCity(e.target.value)}
