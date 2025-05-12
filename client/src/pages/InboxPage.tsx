@@ -120,7 +120,7 @@ export default function InboxPage() {
       <PageHeader
         title="Messages"
         backButtonFallbackPath="/discover"
-        className="mb-4 border-b border-border bg-black/40 backdrop-blur-sm text-white"
+        className="mb-4"
       />
       <Card className="w-full">
         <CardHeader className="flex flex-row items-center justify-between">
