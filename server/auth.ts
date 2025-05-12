@@ -172,7 +172,7 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/register", async (req, res, next) => {
+  app.post("/api/register", upload.single('profileImage'), async (req, res, next) => {
     try {
       console.log("Registration attempt:", req.body);
       const { 
@@ -180,16 +180,17 @@ export function setupAuth(app: Express) {
         email,
         password, 
         fullName, 
-        bio, 
         location, 
         interests,
         profession,
-        profileImage,
         currentMoods,
         age,
         gender,
         nextLocation
       } = req.body;
+      
+      // Handle the uploaded profile image
+      const profileImage = req.file ? getFileUrl(req.file.filename) : null;
 
       if (!username || !password || !email) {
         return res.status(400).send("Username, email, and password are required");
@@ -256,7 +257,6 @@ export function setupAuth(app: Express) {
             email,
             password: hashedPassword,
             fullName: fullName || null,
-            bio: bio || null,
             location: location || null,
             interests: processedInterests,
             profileImage: profileImage || null,
@@ -395,7 +395,6 @@ export function setupAuth(app: Express) {
             email,
             password: hashedPassword,
             fullName: fullName || null,
-            bio: bio || null,
             location: location || null,
             interests: processedInterests,
             profileImage: profileImage || null,
