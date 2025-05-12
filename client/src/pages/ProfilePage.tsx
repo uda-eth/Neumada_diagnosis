@@ -552,16 +552,29 @@ export default function ProfilePage() {
             {/* Mood & Vibe Display */}
             {!isUpdatingMood ? (
               <div className="bg-black/20 rounded-xl p-4 border border-border/20">
-                {profileData.currentMoods && profileData.currentMoods.length > 0 ? (
+                {((profileData.currentMoods && profileData.currentMoods.length > 0) || (profileData.interests && profileData.interests.length > 0)) ? (
                   <div className="flex flex-wrap gap-2">
-                    {profileData.currentMoods.map((mood, index) => (
-                      <Badge 
-                        key={index}
-                        className={`py-1.5 px-3 text-sm font-medium ${moodStyles[mood as keyof typeof moodStyles] || ''} rounded-full`}
-                      >
-                        {mood}
-                      </Badge>
-                    ))}
+                    {/* First display currentMoods if available */}
+                    {profileData.currentMoods && profileData.currentMoods.length > 0 ? 
+                      profileData.currentMoods.map((mood, index) => (
+                        <Badge 
+                          key={`mood-${index}`}
+                          className={`py-1.5 px-3 text-sm font-medium ${moodStyles[mood as keyof typeof moodStyles] || ''} rounded-full`}
+                        >
+                          {mood}
+                        </Badge>
+                      ))
+                    : 
+                      /* Otherwise fall back to interests for backward compatibility */
+                      profileData.interests && profileData.interests.map((interest, index) => (
+                        <Badge 
+                          key={`interest-${index}`}
+                          className={`py-1.5 px-3 text-sm font-medium ${moodStyles[interest as keyof typeof moodStyles] || ''} rounded-full`}
+                        >
+                          {interest}
+                        </Badge>
+                      ))
+                    }
                   </div>
                 ) : (
                   <p className="text-muted-foreground text-sm italic">
