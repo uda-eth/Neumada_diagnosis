@@ -1,0 +1,92 @@
+🎯 Objective
+Unify the styling and iconography of all top‑of‑page headers (Discover, Connect, Create, Concierge, Inbox) so they exactly match the existing “Concierge” header on the /companion page—including its SVG logo/icon displayed beside the title.
+
+🛠 Implementation Plan
+1. Extract Concierge Header Markup & SVG
+Open /src/pages/CompanionPage.tsx (or wherever the Concierge header lives).
+
+Copy:
+
+The SVG element or <Icon> component used.
+
+The container’s Tailwind classes (e.g. flex items-center gap-2 …).
+
+The <h1> classes.
+
+2. Create a Reusable PageHeader Component
+In src/components/ui/, create PageHeader.tsx:
+
+tsx
+Copy
+Edit
+import ConciergeIcon from '@/assets/concierge-icon.svg'; // or wherever the SVG resides
+
+interface PageHeaderProps {
+  title: string;
+  showIcon?: boolean;
+}
+
+export function PageHeader({ title, showIcon = true }: PageHeaderProps) {
+  return (
+    <header className="flex items-center gap-2 px-4 py-6 bg-background/5 border-b border-border">
+      {showIcon && (
+        <ConciergeIcon className="h-6 w-6 text-primary" aria-hidden="true" />
+      )}
+      <h1 className="text-2xl font-bold tracking-tight text-foreground">
+        {title}
+      </h1>
+    </header>
+  );
+}
+Ensure the classes and SVG props match the original Concierge look exactly.
+
+3. Replace Headers on All Pages
+For each feature page—Discover, Connect, Create, Companion, Inbox—do:
+
+Remove existing header/SVG block.
+
+Import and render your new <PageHeader> at the top:
+
+tsx
+Copy
+Edit
+import { PageHeader } from '@/components/ui/PageHeader';
+
+export default function DiscoverPage() {
+  return (
+    <>
+      <PageHeader title="Discover" />
+      {/* …rest of page */}
+    </>
+  );
+}
+Repeat for ConnectPage.tsx, CreatePage.tsx, CompanionPage.tsx (title=”Concierge”), and InboxPage.tsx (title=”Inbox”).
+
+4. Responsive & Accessibility
+Responsive: Verify icon and text align on mobile/tablet/desktop.
+
+Accessibility:
+
+SVG has aria-hidden="true" (or provide aria-label if decorative).
+
+<h1> remains the primary page heading.
+
+5. Automated Tests
+Create __tests__/PageHeader.test.tsx to assert:
+
+Rendering with title prop.
+
+SVG present when showIcon=true.
+
+No SVG when showIcon=false (if you choose to hide it on any page).
+
+Class names and markup exactly match the companion header snapshot.
+
+Mount each page component and verify <PageHeader> appears with correct title and icon.
+
+6. Documentation
+Update README.md under “UI Components” with PageHeader usage, props, and an SVG snippet.
+
+Include a screenshot of the unified header.
+
+Deliverable: A single PR that centralizes header + SVG into PageHeader, updates all five feature pages, includes tests ensuring 100% header coverage, and visually matches the original Concierge header everywhere.
