@@ -10,9 +10,24 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { VIBE_AND_MOOD_TAGS } from "@/lib/constants";
 
 // Mood badge styles configuration
 const moodStyles = {
+  // New vibe and mood tags
+  "Party & Nightlife": "bg-purple-500/20 text-purple-500 hover:bg-purple-500/30",
+  "Fashion & Style": "bg-pink-500/20 text-pink-500 hover:bg-pink-500/30",
+  "Networking & Business": "bg-blue-500/20 text-blue-500 hover:bg-blue-500/30",
+  "Dining & Drinks": "bg-green-500/20 text-green-500 hover:bg-green-500/30",
+  "Outdoor & Nature": "bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30",
+  "Wellness & Fitness": "bg-teal-500/20 text-teal-500 hover:bg-teal-500/30",
+  "Creative & Artsy": "bg-violet-500/20 text-violet-500 hover:bg-violet-500/30",
+  "Single & Social": "bg-rose-500/20 text-rose-500 hover:bg-rose-500/30",
+  "Chill & Recharge": "bg-cyan-500/20 text-cyan-500 hover:bg-cyan-500/30",
+  "Adventure & Exploring": "bg-orange-500/20 text-orange-500 hover:bg-orange-500/30",
+  "Spiritual & Intentional": "bg-amber-500/20 text-amber-500 hover:bg-amber-500/30",
+  
+  // Keep legacy styles for backward compatibility
   "Dating": "bg-pink-500/20 text-pink-500 hover:bg-pink-500/30",
   "Networking": "bg-blue-500/20 text-blue-500 hover:bg-blue-500/30",
   "Parties": "bg-purple-500/20 text-purple-500 hover:bg-purple-500/30",
@@ -68,21 +83,7 @@ export default function ProfilePage() {
   const queryClient = useQueryClient();
   
   // Available moods for selection
-  const moods = [
-    "Dating",
-    "Networking",
-    "Parties",
-    "Adventure",
-    "Dining Out",
-    "Working",
-    "Exploring",
-    "Learning",
-    "Teaching",
-    "Socializing",
-    "Focusing",
-    "Relaxing",
-    "Creating"
-  ];
+  const moods = VIBE_AND_MOOD_TAGS;
   
   // If we're at /profile (without a username), we want to show the current user's profile
   // And redirect to /profile/{username} for proper routing

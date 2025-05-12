@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { MapPin, Users, Search, Plus, Star, Calendar, X, UserCircle } from "lucide-react";
 import { format } from "date-fns";
-import { DIGITAL_NOMAD_CITIES } from "@/lib/constants";
+import { DIGITAL_NOMAD_CITIES, VIBE_AND_MOOD_TAGS } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTranslation } from "@/lib/translations";
@@ -24,28 +24,8 @@ import {
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 
-// Event types for filtering
-const EVENT_TYPES = [
-  "Afterhours",
-  "Art", 
-  "Cultural",
-  "Festivals",
-  "Food & Drink",
-  "Free",
-  "Galleries",
-  "Intimate",
-  "Music",
-  "Networking",
-  "Outdoor",
-  "Parties",
-  "Spiritual",
-  "Sports",
-  "Tech",
-  "VIP",
-  "Wellness",
-  "Workshops",
-  "Yoga"
-] as const;
+// Use unified vibe and mood taxonomy for filtering events
+const EVENT_TYPES = VIBE_AND_MOOD_TAGS;
 
 const categories = [
   "Concerts",
@@ -248,7 +228,7 @@ export default function DiscoverPage() {
                     variant="outline" 
                     className="w-full md:w-[180px] justify-between h-9 text-xs sm:text-sm px-2 sm:px-4"
                   >
-                    <span className="truncate">Filter Events</span>
+                    <span className="truncate">Vibe and Mood</span>
                     {selectedEventTypes.length > 0 && (
                       <Badge variant="secondary" className="ml-1 sm:ml-2 text-xs px-1.5">
                         {selectedEventTypes.length}
@@ -257,7 +237,7 @@ export default function DiscoverPage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-[240px] sm:w-[280px]">
-                  <DropdownMenuLabel className="text-xs sm:text-sm">Event Types</DropdownMenuLabel>
+                  <DropdownMenuLabel className="text-xs sm:text-sm">Vibe and Mood</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto">
                     {EVENT_TYPES.map((type) => (
