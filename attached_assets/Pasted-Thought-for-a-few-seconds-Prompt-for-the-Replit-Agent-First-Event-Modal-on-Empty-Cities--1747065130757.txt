@@ -1,0 +1,93 @@
+Thought for a few seconds
+
+
+**Prompt for the Replit Agent: “First‑Event” Modal on Empty Cities**
+
+---
+
+### 🎯 **Objective**
+
+When a user selects a city in which no events yet exist, your task is to surface a friendly “Be the first!” modal that invites them to create the inaugural event and rally their friends to join Maly.
+
+---
+
+### 🛠 **Implementation Plan**
+
+#### 1. **API / Data**
+
+* **Verify** that the existing events–by–city endpoint (`GET /api/events?city=<city>`) returns an empty array (`[]`) when no events exist.
+* **No backend changes** should be required unless you need to expose a count flag—front end can infer “no events” from an empty list.
+
+#### 2. **Front‑End Changes**
+
+##### a) DiscoverPage (or EventsList component)
+
+1. **After** fetching `events` for the selected city, detect:
+
+   ```ts
+   const isEmptyCity = selectedCity !== 'all' && events.length === 0;
+   ```
+2. **Manage** a `showFirstEventModal` state (`boolean`) that becomes `true` when `isEmptyCity` and resets to `false` on modal close or city change.
+
+##### b) FirstEventModal Component
+
+* **Create** `src/components/FirstEventModal.tsx`:
+
+  ```tsx
+  import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+  import { Button } from '@/components/ui/button';
+
+  interface FirstEventModalProps {
+    cityName: string;
+    open: boolean;
+    onClose: () => void;
+  }
+
+  export function FirstEventModal({ cityName, open, onClose }: FirstEventModalProps) {
+    return (
+      <Dialog open={open} onOpenChange={onClose}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Be the first in {cityName}!</DialogTitle>
+          </DialogHeader>
+          <p className="my-4 text-sm text-muted-foreground">
+            No events have been created in {cityName} yet.  
+            Would you like to create the first one and invite your friends?
+          </p>
+          <DialogFooter className="flex justify-end gap-2">
+            <Button variant="outline" onClick={onClose}>Maybe Later</Button>
+            <Button onClick={() => window.location.href = '/create'}>Create Event</Button>
+            <Button onClick={() => window.location.href = '/invite'}>Invite Friends</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+  ```
+* **Import** and **render** `<FirstEventModal>` in your DiscoverPage, passing `selectedCity`, `showFirstEventModal`, and a handler to close the modal.
+
+##### c) UX Details
+
+* **Only** show the modal once per city selection.
+* **Dismissible** via “Maybe Later” or the “×” close icon.
+* **Accessible**: ensure focus trap, ARIA labels.
+
+#### 3. **Automated Tests**
+
+* Write **5–7 React Testing Library** tests in `__tests__/FirstEventModal.test.tsx` verifying:
+
+  1. **Doesn’t render** when `events.length > 0`.
+  2. **Renders** when `events.length === 0` and `selectedCity !== 'all'`.
+  3. **“Create Event”** button navigates to `/create`.
+  4. **“Invite Friends”** button navigates to `/invite`.
+  5. **Modal closes** on “Maybe Later”.
+  6. **Modal does not show** again after close until city changes.
+
+#### 4. **Documentation**
+
+* **Update** README under **“Features”** / **“Discover”** to describe the new “Be the first!” flow.
+* Include **screenshot** or code snippet showing how to trigger and dismiss the modal.
+
+---
+
+> **Deliverable:** A single PR that implements the above, with **all tests passing**, modal styled consistently with the existing UI library, and README updated.

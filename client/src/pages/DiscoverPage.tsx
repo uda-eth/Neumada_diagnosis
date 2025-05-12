@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTranslation } from "@/lib/translations";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FirstEventModal } from "@/components/FirstEventModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,6 +61,8 @@ export default function DiscoverPage() {
   const [displayCount, setDisplayCount] = useState(9); // Initially show 9 items (3 rows of 3 columns)
   const itemsPerBatch = 6; // Load 6 more items on each scroll (2 rows of 3 columns)
   const observerTarget = useRef(null);
+  const [showFirstEventModal, setShowFirstEventModal] = useState(false);
+  const [seenEmptyCities, setSeenEmptyCities] = useState<string[]>([]);
   
   const allEvents = fetchedEvents || [];
 
@@ -149,8 +152,31 @@ export default function DiscoverPage() {
     setDisplayCount(9); // Reset to initial count when filters change
   }, [searchTerm, selectedCity, selectedCategory, selectedEventTypes, dateFilter]);
 
+  // Check for empty city and show modal if needed
+  useEffect(() => {
+    // Only check if we have a valid city (not 'all') and data is loaded
+    const isEmptyCity = selectedCity !== 'all' && !isLoading && allEvents.length === 0;
+    
+    // Show modal if this is an empty city and we haven't shown it before for this city
+    if (isEmptyCity && !seenEmptyCities.includes(selectedCity)) {
+      setShowFirstEventModal(true);
+    }
+  }, [selectedCity, allEvents, isLoading, seenEmptyCities]);
+  
+  // Handle modal close
+  const handleModalClose = () => {
+    setShowFirstEventModal(false);
+    // Add this city to the list of seen empty cities so we don't show the modal again
+    setSeenEmptyCities(prev => [...prev, selectedCity]);
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <FirstEventModal 
+        cityName={selectedCity} 
+        open={showFirstEventModal} 
+        onClose={handleModalClose} 
+      />
       <header className="border-b border-border sticky top-0 z-50 bg-black text-white">
         <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between gap-1 sm:gap-2 w-full overflow-visible">
