@@ -10,6 +10,7 @@ import { eq, or, lte } from "drizzle-orm";
 import { checkAuthentication } from './middleware/auth.middleware';
 import { upload, getFileUrl } from './utils/fileUpload';
 import fs from 'fs';
+import path from 'path';
 
 // Define the User type to match our schema
 type UserType = {
@@ -298,6 +299,18 @@ export function setupAuth(app: Express) {
   app.post("/api/register-redirect", upload.single('profileImage'), async (req, res) => {
     try {
       console.log("Registration+redirect attempt:", req.body);
+      console.log("File upload received:", req.file ? "Yes" : "No");
+      if (req.file) {
+        console.log("File details:", {
+          fieldname: req.file.fieldname,
+          originalname: req.file.originalname,
+          mimetype: req.file.mimetype,
+          size: req.file.size,
+          buffer: req.file.buffer ? "Buffer present" : "No buffer",
+          path: req.file.path || "No path"
+        });
+      }
+      
       const { 
         username, 
         email,
@@ -321,11 +334,17 @@ export function setupAuth(app: Express) {
           const cloudinary = (await import('./lib/cloudinary')).default;
           const { Readable } = await import('stream');
           
+          // Ensure we have a buffer to stream
+          if (!req.file.buffer && req.file.path) {
+            console.log("Reading file from disk path:", req.file.path);
+          }
+          
           // Stream the buffer to Cloudinary
           const bufferStream = new Readable();
           bufferStream.push(req.file.buffer || fs.readFileSync(req.file.path));
           bufferStream.push(null);
           
+          console.log("Starting Cloudinary upload...");
           const result = await new Promise<any>((resolve, reject) => {
             const uploadStream = cloudinary.uploader.upload_stream(
               { 
@@ -333,7 +352,10 @@ export function setupAuth(app: Express) {
                 public_id: `${username}-profile-${Date.now()}`
               },
               (error, result) => {
-                if (error) reject(error);
+                if (error) {
+                  console.error("Cloudinary upload stream error:", error);
+                  reject(error);
+                }
                 else resolve(result);
               }
             );
@@ -342,12 +364,13 @@ export function setupAuth(app: Express) {
           });
           
           profileImage = result.secure_url;
-          console.log(`Uploaded profile image to Cloudinary: ${profileImage}`);
+          console.log(`Successfully uploaded profile image to Cloudinary: ${profileImage}`);
         } 
         catch (cloudinaryError) {
           console.error("Error uploading to Cloudinary during registration:", cloudinaryError);
           // Fallback to local storage if Cloudinary fails
-          profileImage = req.file ? getFileUrl(req.file.filename) : null;
+          profileImage = req.file.path ? getFileUrl(path.basename(req.file.path)) : null;
+          console.log("Using fallback local storage path:", profileImage);
         }
       }
 
