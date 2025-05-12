@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MessageSquare, MapPin, Search, Filter, UserCircle, Heart, X } from "lucide-react";
-import { PageHeader } from "@/components/ui/page-header";
+import { GradientHeader } from "@/components/ui/GradientHeader";
 import {
   HoverCard,
   HoverCardContent,
@@ -199,9 +199,8 @@ export function ConnectPage() {
 
   return (
     <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
-      <PageHeader
+      <GradientHeader
         title="Connect"
-        className="border-b border-border sticky top-0 z-50 bg-black/40 backdrop-blur-sm text-white mb-4 sm:mb-6"
         backButtonFallbackPath="/discover"
       >
         <div className="flex items-center gap-1 sm:gap-4 flex-shrink-0">
@@ -226,7 +225,7 @@ export function ConnectPage() {
             )}
           </Button>
         </div>
-      </PageHeader>
+      </GradientHeader>
 
       <div className="mb-8 space-y-4">
         {/* Location and Mood filters - Primary Filters */}

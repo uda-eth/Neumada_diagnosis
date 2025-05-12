@@ -1,0 +1,111 @@
+Thought for a couple of seconds
+
+
+**Updated Prompt for the Replit Agent: “Gradient Page Headers with Per‑Page Icons”**
+
+---
+
+### 🎯 **Goal**
+
+Give every top‑of‑page header (Discover, Connect, Create, Concierge, Inbox) the **exact same gradient styling** currently used on the Concierge header, and include a **distinct SVG icon** beside each title.
+
+---
+
+### 📋 **Step-by‑Step Instructions**
+
+#### 1. **Inspect the Existing Concierge Header**
+
+* Open the `/src/pages/CompanionPage.tsx` (or wherever the Concierge header lives).
+* Copy:
+
+  * **Container gradient classes** (e.g. `bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500`).
+  * **Padding/margin** and **typography** classes on the `<h1>`.
+  * The **SVG icon element** or `<Icon>` import used.
+
+#### 2. **Create a Reusable `GradientHeader` Component**
+
+* In `src/components/ui/GradientHeader.tsx`, create:
+
+  ```tsx
+  import React from "react";
+  import ConciergeIcon from "@/assets/concierge-icon.svg"; // original SVG
+  // Import page‑specific icons:
+  import { MapPin, UserCircle, PlusCircle, Chat, Inbox } from "lucide-react";
+
+  const iconMap = {
+    Discover: MapPin,
+    Connect: UserCircle,
+    Create: PlusCircle,
+    Concierge: ConciergeIcon,  // or wrap SVG as ReactComponent
+    Inbox: Inbox,
+  };
+
+  interface GradientHeaderProps {
+    title: keyof typeof iconMap;
+  }
+
+  export function GradientHeader({ title }: GradientHeaderProps) {
+    const Icon = iconMap[title];
+    return (
+      <header
+        className="flex items-center gap-3 px-6 py-4
+                   bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500
+                   text-white"
+      >
+        <Icon className="h-6 w-6" aria-hidden="true" />
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {title}
+        </h1>
+      </header>
+    );
+  }
+  ```
+* **Ensure** the gradient classes, spacing, and text styles **match exactly** the Concierge page.
+
+#### 3. **Replace Existing Headers on All Feature Pages**
+
+For each page component (`DiscoverPage.tsx`, `ConnectPage.tsx`, `CreatePage.tsx`, `CompanionPage.tsx`, `InboxPage.tsx`):
+
+1. **Remove** any hard‑coded header/gradient markup.
+2. **Import** and **render** your new `<GradientHeader>` at the very top:
+
+   ```tsx
+   import { GradientHeader } from "@/components/ui/GradientHeader";
+
+   export default function DiscoverPage() {
+     return (
+       <>
+         <GradientHeader title="Discover" />
+         {/* …rest of page content… */}
+       </>
+     );
+   }
+   ```
+3. Repeat with `title="Connect"`, `"Create"`, `"Concierge"`, and `"Inbox"`.
+
+#### 4. **Verify Responsive & Accessibility**
+
+* **Responsive**: Test mobile/tablet/desktop to confirm gradient & icon scale.
+* **ARIA**: Ensure each `<Icon>` has `aria-hidden="true"` (decorative).
+
+#### 5. **Write Automated Tests**
+
+Create `__tests__/GradientHeader.test.tsx` to assert:
+
+1. Renders correct **gradient classes** for the container.
+2. Renders the **correct icon** for each `title` prop.
+3. Renders the **correct text** for each `title`.
+4. Matches a **snapshot** of the Concierge header markup exactly.
+
+Mount each page and verify:
+
+* `<GradientHeader>` appears with matching gradient, icon, and title.
+
+---
+
+> **Deliverable:** A single Pull Request that:
+>
+> * Introduces `GradientHeader` with the exact Concierge gradient and iconography.
+> * Updates all five pages to use `GradientHeader`.
+> * Includes tests verifying gradient, icons, and titles match the original.
+> * Leaves no hard‑coded headers behind.

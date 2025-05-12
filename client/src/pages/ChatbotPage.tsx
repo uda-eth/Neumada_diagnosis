@@ -10,6 +10,7 @@ import {
   Building, MapPin
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { GradientHeader } from "@/components/ui/GradientHeader";
 import { DIGITAL_NOMAD_CITIES } from "@/lib/constants";
 
 // Quick prompts for the most common questions
@@ -77,26 +78,28 @@ export default function ChatbotPage() {
 
   return (
     <div className="min-h-screen bg-[#121212] text-white p-4">
+      <GradientHeader 
+        title="Concierge"
+        className="mb-4"
+        showBackButton={true}
+        backButtonFallbackPath="/discover"
+      >
+        <select 
+          value={selectedCity}
+          onChange={(e) => setSelectedCity(e.target.value)}
+          className="bg-transparent border border-border rounded-md px-2 py-1 text-sm focus-visible"
+          aria-label="Select a city"
+        >
+          {DIGITAL_NOMAD_CITIES.map(city => (
+            <option key={city} value={city}>{city}</option>
+          ))}
+        </select>
+      </GradientHeader>
+      
       <div className="max-w-2xl mx-auto flex flex-col gap-4">
         <Card className="flex-1 bg-black/40 border-white/10 shadow-card overflow-hidden">
           <CardContent className="p-4 flex flex-col h-[calc(100vh-16rem)]">
-            <div className="flex items-center justify-between gap-3 pb-4 border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <Globe className="w-5 h-5 text-primary" />
-                <h1 className="text-sm font-medium uppercase tracking-[.5em] gradient-text">Concierge</h1>
-              </div>
-              <select 
-                value={selectedCity}
-                onChange={(e) => setSelectedCity(e.target.value)}
-                className="bg-black/40 border border-white/10 rounded-md px-2 py-1 text-sm focus-visible"
-                aria-label="Select a city"
-              >
-                {DIGITAL_NOMAD_CITIES.map(city => (
-                  <option key={city} value={city}>{city}</option>
-                ))}
-              </select>
-            </div>
-
+            {/* Quick prompts section */}
             <div className="py-4 border-b border-white/10">
               <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex gap-2 pb-2">

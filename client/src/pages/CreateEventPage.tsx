@@ -26,7 +26,7 @@ import {
   Loader2,
   ChevronsUpDown
 } from "lucide-react";
-import { PageHeader } from "@/components/ui/page-header";
+import { GradientHeader } from "@/components/ui/GradientHeader";
 import { z } from "zod";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { EVENT_CATEGORIES, VIBE_AND_MOOD_TAGS } from "@/lib/constants";
@@ -227,8 +227,8 @@ export default function CreateEventPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <PageHeader 
-        title="Create Event"
+      <GradientHeader 
+        title="Create"
         backButtonFallbackPath="/"
       />
 
