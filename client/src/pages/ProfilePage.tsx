@@ -361,7 +361,7 @@ export default function ProfilePage() {
               <div className="absolute bottom-0 left-0 right-0 p-4">
                 <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight mb-2">
                   {profileData.fullName || profileData.username}
-                  {profileData.age && <span className="ml-2 text-lg sm:text-xl font-normal">{profileData.age}</span>}
+                  {/* Age is now hidden in profile display as requested */}
                 </h1>
                 
                 <div className="flex flex-wrap gap-2">
