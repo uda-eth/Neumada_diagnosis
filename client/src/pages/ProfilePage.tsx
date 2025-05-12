@@ -339,18 +339,18 @@ export default function ProfilePage() {
         <div className="max-w-2xl mx-auto">
           {/* Profile Card with Image */}
           <Card className="overflow-hidden border-border/30 bg-black/30 mb-6">
-            <div className="aspect-[3/2] sm:aspect-[16/9] relative">
+            <div className="min-h-[300px] max-h-[500px] relative">
               {profileData.profileImage ? (
-                <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+                <div className="relative w-full h-full flex items-center justify-center overflow-hidden py-4">
                   <img 
                     src={profileData.profileImage} 
                     alt={profileData.fullName || profileData.username}
-                    className="w-full h-full object-cover"
+                    className="max-h-[450px] max-w-full object-contain"
                   />
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/80"></div>
                 </div>
               ) : (
-                <div className="w-full h-full bg-gradient-to-b from-purple-900/80 via-blue-900/80 to-black/90 flex items-center justify-center">
+                <div className="min-h-[300px] w-full bg-gradient-to-b from-purple-900/80 via-blue-900/80 to-black/90 flex items-center justify-center">
                   <div className="text-6xl font-bold text-white/20">
                     {profileData.username[0].toUpperCase()}
                   </div>
