@@ -8,6 +8,7 @@ import { users, sessions } from "@db/schema";
 import { db } from "@db";
 import { eq, or, lte } from "drizzle-orm";
 import { checkAuthentication } from './middleware/auth.middleware';
+import { upload, getFileUrl } from './utils/fileUpload';
 
 // Define the User type to match our schema
 type UserType = {
@@ -16,7 +17,6 @@ type UserType = {
   email: string;
   password: string;
   fullName: string | null;
-  bio: string | null;
   profileImage: string | null;
   location: string | null;
   interests: string[] | null;
@@ -37,7 +37,6 @@ declare global {
       email: string;
       password: string;
       fullName: string | null;
-      bio: string | null;
       profileImage: string | null;
       location: string | null;
       interests: string[] | null;
@@ -294,8 +293,8 @@ export function setupAuth(app: Express) {
     }
   });
 
-  // Add a direct registration-with-redirect endpoint
-  app.post("/api/register-redirect", async (req, res) => {
+  // Add a direct registration-with-redirect endpoint with file upload support
+  app.post("/api/register-redirect", upload.single('profileImage'), async (req, res) => {
     try {
       console.log("Registration+redirect attempt:", req.body);
       const { 
@@ -303,16 +302,17 @@ export function setupAuth(app: Express) {
         email,
         password, 
         fullName, 
-        bio, 
         location, 
         interests,
         profession,
-        profileImage,
         currentMoods,
         age,
         gender,
         nextLocation
       } = req.body;
+      
+      // Handle the uploaded profile image
+      const profileImage = req.file ? getFileUrl(req.file.filename) : null;
 
       // Basic validation
       if (!username || !password || !email) {
