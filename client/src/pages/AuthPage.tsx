@@ -21,10 +21,11 @@ const registerSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  fullName: z.string().optional(),
-  bio: z.string().optional(),
+  fullName: z.string().optional(), // Changed to "name" in the UI but keeping field name the same in schema
   location: z.string().optional(),
-  interests: z.string().optional(),
+  interests: z.string().optional(), // Changed to vibe/mood filters in UI
+  age: z.string().optional(),
+  profileImage: z.any().optional(), // For profile picture upload
 });
 
 export default function AuthPage() {
@@ -34,10 +35,12 @@ export default function AuthPage() {
     email: "",
     password: "",
     fullName: "",
-    bio: "",
     location: "",
     interests: "",
+    age: "",
+    profileImage: null as File | null,
   });
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isReplitEnv, setIsReplitEnv] = useState(false);
   const [replitData, setReplitData] = useState<any>(null);
@@ -128,6 +131,21 @@ export default function AuthPage() {
     }
   }, [toast]);
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Type cast to avoid type issues
+      setFormData(prev => ({ ...prev, profileImage: file }));
+      
+      // Create a preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -139,14 +157,38 @@ export default function AuthPage() {
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = isLogin ? '/api/login-redirect' : '/api/register-redirect';
+      form.encType = 'multipart/form-data'; // Important for file uploads
       
-      // Add all form fields
+      // Create a FormData object for file upload
+      const formDataObj = new FormData();
+      
+      // Add all form fields to FormData
       Object.entries(formData).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
+          if (key === 'profileImage' && value) {
+            // Handle the file separately
+            formDataObj.append('profileImage', value);
+          } else {
+            formDataObj.append(key, value as string);
+          }
+        }
+      });
+      
+      // Special handling for interests in registration
+      if (!isLogin && formData.interests) {
+        // Process interests as an array
+        const interests = formData.interests.split(',').map(i => i.trim());
+        formDataObj.delete('interests');
+        formDataObj.append('interests', JSON.stringify(interests));
+      }
+      
+      // For direct form submission
+      Object.entries(formData).forEach(([key, value]) => {
+        if (key !== 'profileImage' && value !== undefined && value !== null && value !== '') {
           const input = document.createElement('input');
           input.type = 'hidden';
           input.name = key;
-          input.value = value;
+          input.value = value as string;
           form.appendChild(input);
         }
       });
@@ -165,6 +207,21 @@ export default function AuthPage() {
         interestsInput.name = 'interests';
         interestsInput.value = JSON.stringify(interests);
         form.appendChild(interestsInput);
+      }
+      
+      // Handle file upload using a file input
+      if (formData.profileImage && !isLogin) {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.name = 'profileImage';
+        fileInput.style.display = 'none';
+        
+        // Create a DataTransfer object and add the file
+        const dt = new DataTransfer();
+        dt.items.add(formData.profileImage as any);
+        fileInput.files = dt.files;
+        
+        form.appendChild(fileInput);
       }
       
       // Append to document and submit
@@ -254,10 +311,10 @@ export default function AuthPage() {
             {!isLogin && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
+                  <Label htmlFor="fullName">Name</Label>
                   <Input
                     id="fullName"
-                    placeholder="Enter your full name"
+                    placeholder="Enter your name"
                     value={formData.fullName}
                     onChange={(e) =>
                       setFormData({ ...formData, fullName: e.target.value })
@@ -266,13 +323,14 @@ export default function AuthPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="bio">Bio</Label>
-                  <Textarea
-                    id="bio"
-                    placeholder="Tell us about yourself"
-                    value={formData.bio}
+                  <Label htmlFor="age">Age <span className="text-xs text-muted-foreground">(will not be displayed)</span></Label>
+                  <Input
+                    id="age"
+                    type="number"
+                    placeholder="Enter your age"
+                    value={formData.age}
                     onChange={(e) =>
-                      setFormData({ ...formData, bio: e.target.value })
+                      setFormData({ ...formData, age: e.target.value })
                     }
                   />
                 </div>
@@ -290,14 +348,34 @@ export default function AuthPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="interests">Interests</Label>
+                  <Label htmlFor="interests">Vibes & Moods</Label>
                   <Input
                     id="interests"
-                    placeholder="Travel, Photography, etc. (comma-separated)"
+                    placeholder="Adventurous, Chill, Foodie, etc. (comma-separated)"
                     value={formData.interests}
                     onChange={(e) =>
                       setFormData({ ...formData, interests: e.target.value })
                     }
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="profileImage">Profile Picture</Label>
+                  {imagePreview && (
+                    <div className="mb-2">
+                      <img 
+                        src={imagePreview} 
+                        alt="Profile preview" 
+                        className="w-24 h-24 rounded-full object-cover border"
+                      />
+                    </div>
+                  )}
+                  <Input
+                    id="profileImage"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="cursor-pointer"
                   />
                 </div>
               </>
