@@ -173,86 +173,78 @@ export default function AuthPage() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     setIsSubmitting(true);
     
     try {
-      // Create a form for direct server-side submission and redirect
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = isLogin ? '/api/login-redirect' : '/api/register-redirect';
-      form.encType = 'multipart/form-data'; // Important for file uploads
-      
-      // Create a FormData object for file upload
-      const formDataObj = new FormData();
-      
-      // Add all form fields to FormData
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          if (key === 'profileImage' && value) {
-            // Handle the file separately
-            formDataObj.append('profileImage', value);
-          } else {
-            formDataObj.append(key, value as string);
-          }
-        }
-      });
-      
-      // Handle selected moods as interests
-      if (!isLogin && selectedMoods.length > 0) {
-        formDataObj.delete('interests');
-        formDataObj.append('interests', JSON.stringify(selectedMoods));
+      // For login, use traditional form submission
+      if (isLogin) {
+        const loginForm = document.createElement('form');
+        loginForm.method = 'POST';
+        loginForm.action = '/api/login-redirect';
+        
+        // Add form fields
+        const usernameInput = document.createElement('input');
+        usernameInput.type = 'hidden';
+        usernameInput.name = 'username';
+        usernameInput.value = formData.username;
+        loginForm.appendChild(usernameInput);
+        
+        const passwordInput = document.createElement('input');
+        passwordInput.type = 'hidden';
+        passwordInput.name = 'password';
+        passwordInput.value = formData.password;
+        loginForm.appendChild(passwordInput);
+        
+        document.body.appendChild(loginForm);
+        loginForm.submit();
+        return; // Early return for login
       }
       
-      // For direct form submission
+      // For registration with file upload, use FormData and fetch
+      // This approach works best when there's a file to upload
+      const registrationData = new FormData();
+      
+      // Add all regular form fields except profileImage
       Object.entries(formData).forEach(([key, value]) => {
         if (key !== 'profileImage' && value !== undefined && value !== null && value !== '') {
-          const input = document.createElement('input');
-          input.type = 'hidden';
-          input.name = key;
-          input.value = value as string;
-          form.appendChild(input);
+          registrationData.append(key, value as string);
         }
       });
       
-      // Special handling for moods/interests in registration
-      if (!isLogin && selectedMoods.length > 0) {
-        // Replace the interests field with the selected moods
-        const interestsField = form.querySelector('input[name="interests"]');
-        if (interestsField) {
-          form.removeChild(interestsField);
+      // Add moods as interests
+      if (selectedMoods.length > 0) {
+        registrationData.append('interests', JSON.stringify(selectedMoods));
+      }
+      
+      // Add profile image if present
+      if (formData.profileImage) {
+        registrationData.append('profileImage', formData.profileImage);
+        console.log("Added profile image to form data:", formData.profileImage.name);
+      }
+      
+      // We're using fetch API with FormData for proper file handling
+      try {
+        const response = await fetch('/api/register-redirect', {
+          method: 'POST',
+          body: registrationData
+        });
+        
+        if (response.redirected) {
+          window.location.href = response.url;
+        } else if (response.ok) {
+          window.location.href = '/';
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Registration failed');
         }
-        
-        const interestsInput = document.createElement('input');
-        interestsInput.type = 'hidden';
-        interestsInput.name = 'interests';
-        interestsInput.value = JSON.stringify(selectedMoods);
-        form.appendChild(interestsInput);
+      } catch (fetchError: any) {
+        console.error("Fetch error during registration:", fetchError);
+        throw fetchError;
       }
-      
-      // Handle file upload using a file input
-      if (formData.profileImage && !isLogin) {
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.name = 'profileImage';
-        fileInput.style.display = 'none';
-        
-        // Create a DataTransfer object and add the file
-        const dt = new DataTransfer();
-        dt.items.add(formData.profileImage as any);
-        fileInput.files = dt.files;
-        
-        form.appendChild(fileInput);
-      }
-      
-      // Append to document and submit
-      document.body.appendChild(form);
-      form.submit();
-      
-      // We don't set isSubmitting back to false here because we're navigating away
     } catch (error: any) {
       console.error("Form submission error:", error);
       toast({
