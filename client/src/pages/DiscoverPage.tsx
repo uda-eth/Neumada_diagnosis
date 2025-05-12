@@ -15,6 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTranslation } from "@/lib/translations";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FirstEventModal } from "@/components/FirstEventModal";
+import { GradientHeader } from "@/components/ui/GradientHeader";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -177,60 +178,54 @@ export default function DiscoverPage() {
         open={showFirstEventModal} 
         onClose={handleModalClose} 
       />
-      <header className="border-b border-border sticky top-0 z-50 bg-black text-white">
-        <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-4">
-          <div className="flex items-center justify-between gap-1 sm:gap-2 w-full overflow-visible">
-            <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-shrink-1">
-              <h1 className="text-xs sm:text-sm font-medium uppercase tracking-wider sm:tracking-[.5em] text-white truncate">
-                {t('discover')}
-              </h1>
-              <div className="flex items-center">
-                <Select value={selectedCity} onValueChange={setSelectedCity}>
-                  <SelectTrigger className="w-[100px] sm:w-[140px] md:w-[180px] bg-transparent border-border text-xs sm:text-sm">
-                    <SelectValue placeholder="Select city" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Locations</SelectItem>
-                    {DIGITAL_NOMAD_CITIES.map((city) => (
-                      <SelectItem key={city} value={city}>
-                        {city}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setLocation("/connect")}
-                className="hidden md:inline-flex items-center text-white"
-              >
-                <Users className="h-5 w-5 mr-2" />
-                Connect
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setLocation("/connections")}
-                className="hidden md:inline-flex items-center text-white"
-              >
-                <UserCircle className="h-5 w-5 mr-2" />
-                My Network
-              </Button>
-              <Button
-                className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white whitespace-nowrap px-2 py-1 sm:py-2 md:px-4 text-xs sm:text-sm flex-shrink-0"
-                onClick={() => setLocation("/create")}
-              >
-                <Plus className="h-4 w-4 sm:h-5 sm:w-5 md:mr-2" />
-                <span className="hidden md:inline">Create Event</span>
-                <span className="inline md:hidden">Create</span>
-              </Button>
-            </div>
-          </div>
+      <GradientHeader 
+        title="Discover"
+        showBackButton={false}
+      >
+        <div className="flex items-center gap-1 sm:gap-2">
+          <Select value={selectedCity} onValueChange={setSelectedCity}>
+            <SelectTrigger className="w-[100px] sm:w-[140px] md:w-[180px] bg-transparent border-white/20 text-xs sm:text-sm text-white">
+              <SelectValue placeholder="Select city" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Locations</SelectItem>
+              {DIGITAL_NOMAD_CITIES.map((city) => (
+                <SelectItem key={city} value={city}>
+                  {city}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-      </header>
+        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setLocation("/connect")}
+            className="hidden md:inline-flex items-center text-white"
+          >
+            <Users className="h-5 w-5 mr-2" />
+            Connect
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setLocation("/connections")}
+            className="hidden md:inline-flex items-center text-white"
+          >
+            <UserCircle className="h-5 w-5 mr-2" />
+            My Network
+          </Button>
+          <Button
+            className="bg-white/20 hover:bg-white/30 text-white whitespace-nowrap px-2 py-1 sm:py-2 md:px-4 text-xs sm:text-sm flex-shrink-0"
+            onClick={() => setLocation("/create")}
+          >
+            <Plus className="h-4 w-4 sm:h-5 sm:w-5 md:mr-2" />
+            <span className="hidden md:inline">Create Event</span>
+            <span className="inline md:hidden">Create</span>
+          </Button>
+        </div>
+      </GradientHeader>
 
       <ScrollArea className="h-[calc(100vh-8rem)]">
         <main className="container mx-auto px-4 py-8 pb-24 md:pb-8">
