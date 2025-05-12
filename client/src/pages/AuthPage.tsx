@@ -3,7 +3,6 @@ import { useUser } from "@/hooks/use-user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ExternalLink } from "lucide-react";
 import { Label } from "@/components/ui/label";
@@ -11,6 +10,8 @@ import { Separator } from "@/components/ui/separator";
 import { useLocation } from "wouter";
 import { z } from "zod";
 import { Logo } from "@/components/ui/logo";
+import { Badge } from "@/components/ui/badge";
+import { VIBE_AND_MOOD_TAGS } from "@/lib/constants";
 
 const loginSchema = z.object({
   username: z.string().min(3, "Username or email must be provided"),
@@ -21,11 +22,27 @@ const registerSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  fullName: z.string().optional(),
-  bio: z.string().optional(),
+  fullName: z.string().optional(), // Changed to "name" in the UI but keeping field name the same in schema
   location: z.string().optional(),
-  interests: z.string().optional(),
+  interests: z.string().optional(), // Changed to vibe/mood filters in UI
+  age: z.string().optional(),
+  profileImage: z.any().optional(), // For profile picture upload
 });
+
+// Mood style definitions for consistent visual appearance
+const moodStyles = {
+  "Party & Nightlife": "bg-purple-500/20 text-purple-500 hover:bg-purple-500/30",
+  "Fashion & Style": "bg-pink-500/20 text-pink-500 hover:bg-pink-500/30",
+  "Networking & Business": "bg-blue-500/20 text-blue-500 hover:bg-blue-500/30",
+  "Dining & Drinks": "bg-green-500/20 text-green-500 hover:bg-green-500/30",
+  "Outdoor & Nature": "bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30",
+  "Wellness & Fitness": "bg-teal-500/20 text-teal-500 hover:bg-teal-500/30",
+  "Creative & Artsy": "bg-violet-500/20 text-violet-500 hover:bg-violet-500/30",
+  "Single & Social": "bg-rose-500/20 text-rose-500 hover:bg-rose-500/30",
+  "Chill & Recharge": "bg-cyan-500/20 text-cyan-500 hover:bg-cyan-500/30",
+  "Adventure & Exploring": "bg-orange-500/20 text-orange-500 hover:bg-orange-500/30",
+  "Spiritual & Intentional": "bg-amber-500/20 text-amber-500 hover:bg-amber-500/30",
+};
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -34,10 +51,13 @@ export default function AuthPage() {
     email: "",
     password: "",
     fullName: "",
-    bio: "",
     location: "",
     interests: "",
+    age: "",
+    profileImage: null as File | null,
   });
+  const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isReplitEnv, setIsReplitEnv] = useState(false);
   const [replitData, setReplitData] = useState<any>(null);
@@ -128,50 +148,103 @@ export default function AuthPage() {
     }
   }, [toast]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Type cast to avoid type issues
+      setFormData(prev => ({ ...prev, profileImage: file }));
+      
+      // Create a preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  
+  const handleMoodToggle = (mood: string) => {
+    setSelectedMoods(prev => {
+      if (prev.includes(mood)) {
+        return prev.filter(m => m !== mood);
+      } else {
+        return [...prev, mood];
+      }
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     setIsSubmitting(true);
     
     try {
-      // Create a form for direct server-side submission and redirect
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = isLogin ? '/api/login-redirect' : '/api/register-redirect';
+      // For login, use traditional form submission
+      if (isLogin) {
+        const loginForm = document.createElement('form');
+        loginForm.method = 'POST';
+        loginForm.action = '/api/login-redirect';
+        
+        // Add form fields
+        const usernameInput = document.createElement('input');
+        usernameInput.type = 'hidden';
+        usernameInput.name = 'username';
+        usernameInput.value = formData.username;
+        loginForm.appendChild(usernameInput);
+        
+        const passwordInput = document.createElement('input');
+        passwordInput.type = 'hidden';
+        passwordInput.name = 'password';
+        passwordInput.value = formData.password;
+        loginForm.appendChild(passwordInput);
+        
+        document.body.appendChild(loginForm);
+        loginForm.submit();
+        return; // Early return for login
+      }
       
-      // Add all form fields
+      // For registration with file upload, use FormData and fetch
+      // This approach works best when there's a file to upload
+      const registrationData = new FormData();
+      
+      // Add all regular form fields except profileImage
       Object.entries(formData).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          const input = document.createElement('input');
-          input.type = 'hidden';
-          input.name = key;
-          input.value = value;
-          form.appendChild(input);
+        if (key !== 'profileImage' && value !== undefined && value !== null && value !== '') {
+          registrationData.append(key, value as string);
         }
       });
       
-      // Special handling for interests in registration
-      if (!isLogin && formData.interests) {
-        // Replace the interests field with the processed array
-        const interestsField = form.querySelector('input[name="interests"]');
-        if (interestsField) {
-          form.removeChild(interestsField);
-        }
-        
-        const interests = formData.interests.split(',').map(i => i.trim());
-        const interestsInput = document.createElement('input');
-        interestsInput.type = 'hidden';
-        interestsInput.name = 'interests';
-        interestsInput.value = JSON.stringify(interests);
-        form.appendChild(interestsInput);
+      // Add moods as interests
+      if (selectedMoods.length > 0) {
+        registrationData.append('interests', JSON.stringify(selectedMoods));
       }
       
-      // Append to document and submit
-      document.body.appendChild(form);
-      form.submit();
+      // Add profile image if present
+      if (formData.profileImage) {
+        registrationData.append('profileImage', formData.profileImage);
+        console.log("Added profile image to form data:", formData.profileImage.name);
+      }
       
-      // We don't set isSubmitting back to false here because we're navigating away
+      // We're using fetch API with FormData for proper file handling
+      try {
+        const response = await fetch('/api/register-redirect', {
+          method: 'POST',
+          body: registrationData
+        });
+        
+        if (response.redirected) {
+          window.location.href = response.url;
+        } else if (response.ok) {
+          window.location.href = '/';
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Registration failed');
+        }
+      } catch (fetchError: any) {
+        console.error("Fetch error during registration:", fetchError);
+        throw fetchError;
+      }
     } catch (error: any) {
       console.error("Form submission error:", error);
       toast({
@@ -254,10 +327,10 @@ export default function AuthPage() {
             {!isLogin && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
+                  <Label htmlFor="fullName">Name</Label>
                   <Input
                     id="fullName"
-                    placeholder="Enter your full name"
+                    placeholder="Enter your name"
                     value={formData.fullName}
                     onChange={(e) =>
                       setFormData({ ...formData, fullName: e.target.value })
@@ -266,13 +339,14 @@ export default function AuthPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="bio">Bio</Label>
-                  <Textarea
-                    id="bio"
-                    placeholder="Tell us about yourself"
-                    value={formData.bio}
+                  <Label htmlFor="age">Age <span className="text-xs text-muted-foreground">(will not be displayed)</span></Label>
+                  <Input
+                    id="age"
+                    type="number"
+                    placeholder="Enter your age"
+                    value={formData.age}
                     onChange={(e) =>
-                      setFormData({ ...formData, bio: e.target.value })
+                      setFormData({ ...formData, age: e.target.value })
                     }
                   />
                 </div>
@@ -290,14 +364,43 @@ export default function AuthPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="interests">Interests</Label>
+                  <Label htmlFor="moods">Mood & Vibe</Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {VIBE_AND_MOOD_TAGS.map(mood => {
+                      const isSelected = selectedMoods.includes(mood);
+                      // @ts-ignore - Type safety handled through known values
+                      const moodStyle = moodStyles[mood] || "bg-gray-500/20 text-gray-500 hover:bg-gray-500/30";
+                      
+                      return (
+                        <Badge
+                          key={mood}
+                          className={`cursor-pointer transition-all ${isSelected ? moodStyle + ' font-medium' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                          onClick={() => handleMoodToggle(mood)}
+                        >
+                          {mood}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="profileImage">Profile Picture</Label>
+                  {imagePreview && (
+                    <div className="mb-2">
+                      <img 
+                        src={imagePreview} 
+                        alt="Profile preview" 
+                        className="w-24 h-24 rounded-full object-cover border"
+                      />
+                    </div>
+                  )}
                   <Input
-                    id="interests"
-                    placeholder="Travel, Photography, etc. (comma-separated)"
-                    value={formData.interests}
-                    onChange={(e) =>
-                      setFormData({ ...formData, interests: e.target.value })
-                    }
+                    id="profileImage"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="cursor-pointer"
                   />
                 </div>
               </>

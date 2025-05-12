@@ -8,6 +8,9 @@ import { users, sessions } from "@db/schema";
 import { db } from "@db";
 import { eq, or, lte } from "drizzle-orm";
 import { checkAuthentication } from './middleware/auth.middleware';
+import { upload, getFileUrl } from './utils/fileUpload';
+import fs from 'fs';
+import path from 'path';
 
 // Define the User type to match our schema
 type UserType = {
@@ -16,7 +19,6 @@ type UserType = {
   email: string;
   password: string;
   fullName: string | null;
-  bio: string | null;
   profileImage: string | null;
   location: string | null;
   interests: string[] | null;
@@ -37,7 +39,6 @@ declare global {
       email: string;
       password: string;
       fullName: string | null;
-      bio: string | null;
       profileImage: string | null;
       location: string | null;
       interests: string[] | null;
@@ -173,7 +174,7 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/register", async (req, res, next) => {
+  app.post("/api/register", upload.single('profileImage'), async (req, res, next) => {
     try {
       console.log("Registration attempt:", req.body);
       const { 
@@ -181,16 +182,17 @@ export function setupAuth(app: Express) {
         email,
         password, 
         fullName, 
-        bio, 
         location, 
         interests,
         profession,
-        profileImage,
         currentMoods,
         age,
         gender,
         nextLocation
       } = req.body;
+      
+      // Handle the uploaded profile image
+      const profileImage = req.file ? getFileUrl(req.file.filename) : null;
 
       if (!username || !password || !email) {
         return res.status(400).send("Username, email, and password are required");
@@ -257,7 +259,6 @@ export function setupAuth(app: Express) {
             email,
             password: hashedPassword,
             fullName: fullName || null,
-            bio: bio || null,
             location: location || null,
             interests: processedInterests,
             profileImage: profileImage || null,
@@ -294,25 +295,84 @@ export function setupAuth(app: Express) {
     }
   });
 
-  // Add a direct registration-with-redirect endpoint
-  app.post("/api/register-redirect", async (req, res) => {
+  // Add a direct registration-with-redirect endpoint with file upload support
+  app.post("/api/register-redirect", upload.single('profileImage'), async (req, res) => {
     try {
       console.log("Registration+redirect attempt:", req.body);
+      console.log("File upload received:", req.file ? "Yes" : "No");
+      if (req.file) {
+        console.log("File details:", {
+          fieldname: req.file.fieldname,
+          originalname: req.file.originalname,
+          mimetype: req.file.mimetype,
+          size: req.file.size,
+          buffer: req.file.buffer ? "Buffer present" : "No buffer",
+          path: req.file.path || "No path"
+        });
+      }
+      
       const { 
         username, 
         email,
         password, 
         fullName, 
-        bio, 
         location, 
         interests,
         profession,
-        profileImage,
         currentMoods,
         age,
         gender,
         nextLocation
       } = req.body;
+      
+      // Handle the uploaded profile image (with Cloudinary support)
+      let profileImage = null;
+      
+      if (req.file) {
+        try {
+          // Import required modules
+          const cloudinary = (await import('./lib/cloudinary')).default;
+          const { Readable } = await import('stream');
+          
+          // Ensure we have a buffer to stream
+          if (!req.file.buffer && req.file.path) {
+            console.log("Reading file from disk path:", req.file.path);
+          }
+          
+          // Stream the buffer to Cloudinary
+          const bufferStream = new Readable();
+          bufferStream.push(req.file.buffer || fs.readFileSync(req.file.path));
+          bufferStream.push(null);
+          
+          console.log("Starting Cloudinary upload...");
+          const result = await new Promise<any>((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+              { 
+                folder: `profiles/${Date.now()}`,
+                public_id: `${username}-profile-${Date.now()}`
+              },
+              (error, result) => {
+                if (error) {
+                  console.error("Cloudinary upload stream error:", error);
+                  reject(error);
+                }
+                else resolve(result);
+              }
+            );
+            
+            bufferStream.pipe(uploadStream);
+          });
+          
+          profileImage = result.secure_url;
+          console.log(`Successfully uploaded profile image to Cloudinary: ${profileImage}`);
+        } 
+        catch (cloudinaryError) {
+          console.error("Error uploading to Cloudinary during registration:", cloudinaryError);
+          // Fallback to local storage if Cloudinary fails
+          profileImage = req.file.path ? getFileUrl(path.basename(req.file.path)) : null;
+          console.log("Using fallback local storage path:", profileImage);
+        }
+      }
 
       // Basic validation
       if (!username || !password || !email) {
@@ -395,7 +455,6 @@ export function setupAuth(app: Express) {
             email,
             password: hashedPassword,
             fullName: fullName || null,
-            bio: bio || null,
             location: location || null,
             interests: processedInterests,
             profileImage: profileImage || null,

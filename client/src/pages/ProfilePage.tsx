@@ -361,7 +361,7 @@ export default function ProfilePage() {
               <div className="absolute bottom-0 left-0 right-0 p-4">
                 <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight mb-2">
                   {profileData.fullName || profileData.username}
-                  {profileData.age && <span className="ml-2 text-lg sm:text-xl font-normal">{profileData.age}</span>}
+                  {/* Age is now hidden in profile display as requested */}
                 </h1>
                 
                 <div className="flex flex-wrap gap-2">
@@ -522,12 +522,12 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
           
-          {/* Current Mood Section */}
+          {/* Mood & Vibe Section */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Smile className="h-4 w-4 text-primary" />
-                <h2 className="text-base font-semibold">Current Mood</h2>
+                <h2 className="text-base font-semibold">Mood & Vibe</h2>
               </div>
               
               {/* Only show change mood button if viewing own profile */}
@@ -549,31 +549,44 @@ export default function ProfilePage() {
               )}
             </div>
             
-            {/* Current Mood Display */}
+            {/* Mood & Vibe Display */}
             {!isUpdatingMood ? (
               <div className="bg-black/20 rounded-xl p-4 border border-border/20">
-                {profileData.currentMoods && profileData.currentMoods.length > 0 ? (
+                {((profileData.currentMoods && profileData.currentMoods.length > 0) || (profileData.interests && profileData.interests.length > 0)) ? (
                   <div className="flex flex-wrap gap-2">
-                    {profileData.currentMoods.map((mood, index) => (
-                      <Badge 
-                        key={index}
-                        className={`py-1.5 px-3 text-sm font-medium ${moodStyles[mood as keyof typeof moodStyles] || ''} rounded-full`}
-                      >
-                        {mood}
-                      </Badge>
-                    ))}
+                    {/* First display currentMoods if available */}
+                    {profileData.currentMoods && profileData.currentMoods.length > 0 ? 
+                      profileData.currentMoods.map((mood, index) => (
+                        <Badge 
+                          key={`mood-${index}`}
+                          className={`py-1.5 px-3 text-sm font-medium ${moodStyles[mood as keyof typeof moodStyles] || ''} rounded-full`}
+                        >
+                          {mood}
+                        </Badge>
+                      ))
+                    : 
+                      /* Otherwise fall back to interests for backward compatibility */
+                      profileData.interests && profileData.interests.map((interest, index) => (
+                        <Badge 
+                          key={`interest-${index}`}
+                          className={`py-1.5 px-3 text-sm font-medium ${moodStyles[interest as keyof typeof moodStyles] || ''} rounded-full`}
+                        >
+                          {interest}
+                        </Badge>
+                      ))
+                    }
                   </div>
                 ) : (
                   <p className="text-muted-foreground text-sm italic">
                     {currentUser && profileData.id === currentUser.id 
-                      ? "You haven't shared your current mood yet."
-                      : "This user hasn't shared their current mood yet."}
+                      ? "You haven't shared your mood & vibe preferences yet."
+                      : "This user hasn't shared their mood & vibe preferences yet."}
                   </p>
                 )}
               </div>
             ) : (
               <div className="bg-black/20 rounded-xl p-4 border border-border/20 space-y-3">
-                <p className="text-xs text-muted-foreground">Select your current mood:</p>
+                <p className="text-xs text-muted-foreground">Select your mood & vibe preferences:</p>
                 <div className="flex flex-wrap gap-2">
                   {moods.map((mood) => (
                     <Button
@@ -594,28 +607,7 @@ export default function ProfilePage() {
             )}
           </div>
           
-          {/* Interests Section */}
-          {profileData.interests && profileData.interests.length > 0 && (
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-3">
-                <Heart className="h-4 w-4 text-red-400" />
-                <h2 className="text-base font-semibold">Interests</h2>
-              </div>
-              <div className="bg-black/20 rounded-xl p-4 border border-border/20">
-                <div className="flex flex-wrap gap-2">
-                  {profileData.interests.map((interest, index) => (
-                    <Badge 
-                      key={index}
-                      variant="outline"
-                      className="py-1.5 px-3 text-sm border-red-500/20 text-red-400/90 hover:border-red-500/40 rounded-full"
-                    >
-                      {interest}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
+          {/* We removed the duplicate Mood & Vibe section (previously called "Interests") */}
         </div>
       </div>
     </div>
