@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import { MessageSquare, Search, XCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PageHeader } from '@/components/ui/page-header';
+import { GradientHeader } from '@/components/ui/GradientHeader';
 
 export default function InboxPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -117,8 +117,8 @@ export default function InboxPage() {
 
   return (
     <div className="container max-w-4xl py-8 mx-auto px-4 sm:px-6 lg:px-8">
-      <PageHeader
-        title="Messages"
+      <GradientHeader
+        title="Inbox"
         backButtonFallbackPath="/discover"
         className="mb-4"
       />
