@@ -99,6 +99,7 @@ export default function ChatbotPage() {
       <div className="max-w-2xl mx-auto flex flex-col gap-4">
         <Card className="flex-1 bg-black/40 border-white/10 shadow-card overflow-hidden">
           <CardContent className="p-4 flex flex-col h-[calc(100vh-16rem)]">
+            {/* Quick prompts section */}
             <div className="py-4 border-b border-white/10">
               <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex gap-2 pb-2">
