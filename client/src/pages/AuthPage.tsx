@@ -3,7 +3,6 @@ import { useUser } from "@/hooks/use-user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ExternalLink } from "lucide-react";
 import { Label } from "@/components/ui/label";
@@ -11,6 +10,8 @@ import { Separator } from "@/components/ui/separator";
 import { useLocation } from "wouter";
 import { z } from "zod";
 import { Logo } from "@/components/ui/logo";
+import { Badge } from "@/components/ui/badge";
+import { VIBE_AND_MOOD_TAGS } from "@/lib/constants";
 
 const loginSchema = z.object({
   username: z.string().min(3, "Username or email must be provided"),
@@ -28,6 +29,21 @@ const registerSchema = z.object({
   profileImage: z.any().optional(), // For profile picture upload
 });
 
+// Mood style definitions for consistent visual appearance
+const moodStyles = {
+  "Party & Nightlife": "bg-purple-500/20 text-purple-500 hover:bg-purple-500/30",
+  "Fashion & Style": "bg-pink-500/20 text-pink-500 hover:bg-pink-500/30",
+  "Networking & Business": "bg-blue-500/20 text-blue-500 hover:bg-blue-500/30",
+  "Dining & Drinks": "bg-green-500/20 text-green-500 hover:bg-green-500/30",
+  "Outdoor & Nature": "bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30",
+  "Wellness & Fitness": "bg-teal-500/20 text-teal-500 hover:bg-teal-500/30",
+  "Creative & Artsy": "bg-violet-500/20 text-violet-500 hover:bg-violet-500/30",
+  "Single & Social": "bg-rose-500/20 text-rose-500 hover:bg-rose-500/30",
+  "Chill & Recharge": "bg-cyan-500/20 text-cyan-500 hover:bg-cyan-500/30",
+  "Adventure & Exploring": "bg-orange-500/20 text-orange-500 hover:bg-orange-500/30",
+  "Spiritual & Intentional": "bg-amber-500/20 text-amber-500 hover:bg-amber-500/30",
+};
+
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
@@ -40,6 +56,7 @@ export default function AuthPage() {
     age: "",
     profileImage: null as File | null,
   });
+  const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isReplitEnv, setIsReplitEnv] = useState(false);
@@ -145,6 +162,16 @@ export default function AuthPage() {
       reader.readAsDataURL(file);
     }
   };
+  
+  const handleMoodToggle = (mood: string) => {
+    setSelectedMoods(prev => {
+      if (prev.includes(mood)) {
+        return prev.filter(m => m !== mood);
+      } else {
+        return [...prev, mood];
+      }
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -174,12 +201,10 @@ export default function AuthPage() {
         }
       });
       
-      // Special handling for interests in registration
-      if (!isLogin && formData.interests) {
-        // Process interests as an array
-        const interests = formData.interests.split(',').map(i => i.trim());
+      // Handle selected moods as interests
+      if (!isLogin && selectedMoods.length > 0) {
         formDataObj.delete('interests');
-        formDataObj.append('interests', JSON.stringify(interests));
+        formDataObj.append('interests', JSON.stringify(selectedMoods));
       }
       
       // For direct form submission
@@ -193,19 +218,18 @@ export default function AuthPage() {
         }
       });
       
-      // Special handling for interests in registration
-      if (!isLogin && formData.interests) {
-        // Replace the interests field with the processed array
+      // Special handling for moods/interests in registration
+      if (!isLogin && selectedMoods.length > 0) {
+        // Replace the interests field with the selected moods
         const interestsField = form.querySelector('input[name="interests"]');
         if (interestsField) {
           form.removeChild(interestsField);
         }
         
-        const interests = formData.interests.split(',').map(i => i.trim());
         const interestsInput = document.createElement('input');
         interestsInput.type = 'hidden';
         interestsInput.name = 'interests';
-        interestsInput.value = JSON.stringify(interests);
+        interestsInput.value = JSON.stringify(selectedMoods);
         form.appendChild(interestsInput);
       }
       
@@ -348,15 +372,24 @@ export default function AuthPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="interests">Vibes & Moods</Label>
-                  <Input
-                    id="interests"
-                    placeholder="Adventurous, Chill, Foodie, etc. (comma-separated)"
-                    value={formData.interests}
-                    onChange={(e) =>
-                      setFormData({ ...formData, interests: e.target.value })
-                    }
-                  />
+                  <Label htmlFor="moods">Mood & Vibe</Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {VIBE_AND_MOOD_TAGS.map(mood => {
+                      const isSelected = selectedMoods.includes(mood);
+                      // @ts-ignore - Type safety handled through known values
+                      const moodStyle = moodStyles[mood] || "bg-gray-500/20 text-gray-500 hover:bg-gray-500/30";
+                      
+                      return (
+                        <Badge
+                          key={mood}
+                          className={`cursor-pointer transition-all ${isSelected ? moodStyle + ' font-medium' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                          onClick={() => handleMoodToggle(mood)}
+                        >
+                          {mood}
+                        </Badge>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div className="space-y-2">
