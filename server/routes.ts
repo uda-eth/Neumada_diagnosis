@@ -29,6 +29,8 @@ import cloudinary from './lib/cloudinary';
 import { Readable } from 'stream';
 // Import new upload middleware
 import { upload as cloudinaryUpload } from './middleware/upload';
+// Import referral service
+import { generateReferralCode, recordReferral, buildShareUrl, getShareMessage } from './services/referralService';
 
 const categories = [
   "Retail",
@@ -890,6 +892,78 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
   // Mount AI router at /api/ai
   app.use('/api/ai', aiRouter);
 
+  // Referral endpoints
+  // Get user's referral code
+  app.get('/api/referral/code', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as { id: number };
+      const referralCode = await generateReferralCode(user.id);
+      
+      return res.status(200).json({ 
+        success: true, 
+        referralCode 
+      });
+    } catch (error) {
+      console.error("Error generating referral code:", error);
+      return res.status(500).json({ 
+        success: false, 
+        error: "Failed to generate referral code" 
+      });
+    }
+  });
+
+  // Get share link for content
+  app.get('/api/referral/share-link', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as { id: number };
+      const contentType = req.query.type as 'event' | 'profile' | 'invite';
+      const contentId = req.query.id as string;
+      
+      if (!contentType) {
+        return res.status(400).json({ success: false, error: "Content type is required" });
+      }
+      
+      const referralCode = await generateReferralCode(user.id);
+      const shareUrl = buildShareUrl(contentType, contentId, referralCode);
+      
+      return res.status(200).json({ 
+        success: true, 
+        shareUrl,
+        referralCode
+      });
+    } catch (error) {
+      console.error("Error generating share link:", error);
+      return res.status(500).json({ 
+        success: false, 
+        error: "Failed to generate share link" 
+      });
+    }
+  });
+
+  // Record when a user signs up from a referral link
+  app.post('/api/referral/record', requireAuth, async (req, res) => {
+    try {
+      const { referralCode } = req.body;
+      const user = req.user as { id: number };
+      
+      if (!referralCode) {
+        return res.status(400).json({ success: false, error: "Referral code is required" });
+      }
+      
+      const result = await recordReferral(referralCode, user.id);
+      
+      return res.status(200).json({ 
+        success: result
+      });
+    } catch (error) {
+      console.error("Error recording referral:", error);
+      return res.status(500).json({ 
+        success: false, 
+        error: "Failed to record referral" 
+      });
+    }
+  });
+  
   // Profile image upload endpoint
   app.post("/api/upload-profile-image", requireAuth, cloudinaryUpload.single('image'), async (req, res) => {
     try {
@@ -1088,12 +1162,15 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         const moodArray = Array.isArray(moods) ? moods : [moods];
         console.log(`Applying mood filters at database level: ${moodArray.join(', ')}`);
 
-        // Use SQL to directly apply the && operator (array overlap)
-        // For JSONB arrays (which currentMoods is), we need to use jsonb_array_elements and check if any value is in our list
-        query = query.where(sql`EXISTS (
-          SELECT 1 FROM jsonb_array_elements_text(${users.currentMoods}) as mood
-          WHERE mood IN (${sql.join(moodArray, sql`, `)})
-        )`);
+        // DEBUG: Log user moods before filtering
+        console.log("DEBUG: About to filter users by the following moods:", moodArray);
+        
+        // Use a more compatible approach for JSONB arrays
+        const jsonMoodArray = JSON.stringify(moodArray);
+        query = query.where(sql`${users.currentMoods}::jsonb && ${jsonMoodArray}::jsonb`);
+        
+        // Log query plan for debugging
+        console.log("Filtering users whose currentMoods contain ANY of:", moodArray);
       }
       
       // Log the query parameters for debugging

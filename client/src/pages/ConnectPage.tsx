@@ -13,6 +13,15 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -42,10 +51,13 @@ interface User {
   birthLocation?: string | null;
   nextLocation?: string | null;
   interests?: string[] | null;
-  currentMoods?: string[] | null;
+  // Important: currentMoods can be in multiple formats from the database
+  currentMoods?: string[] | string | null;
   profession?: string | null;
   age?: number | null;
   createdAt?: Date | string | null;
+  // Additional fields to match events
+  tags?: string[]; // We will map currentMoods to tags for consistent filtering
 }
 
 const moodStyles = {
@@ -105,7 +117,9 @@ const interests = [
 import { useUser } from "@/hooks/use-user";
 import { VIBE_AND_MOOD_TAGS } from "@/lib/constants";
 
-const moods = VIBE_AND_MOOD_TAGS;
+// Use the same EVENT_TYPES constant as the Discover page uses
+const EVENT_TYPES = VIBE_AND_MOOD_TAGS;
+const moods = EVENT_TYPES; // For backward compatibility
 
 export function ConnectPage() {
   const [, setLocation] = useLocation();
@@ -123,9 +137,9 @@ export function ConnectPage() {
     error,
     refetch
   } = useQuery<User[]>({
-    queryKey: ['users', selectedCity, selectedMoods, currentUser?.id],
+    queryKey: ['users', selectedCity, currentUser?.id],
     queryFn: async () => {
-      // Build query parameters
+      // Build query parameters - now only using location/city filter
       const params = new URLSearchParams();
       
       if (selectedCity !== 'all') {
@@ -136,25 +150,11 @@ export function ConnectPage() {
         params.append('currentUserId', currentUser.id.toString());
       }
       
-      // Add moods as array parameters - ensure this is working
-      if (selectedMoods.length > 0) {
-        // Try multiple parameter formats to ensure compatibility with server
-        // Format 1: Standard array notation as 'moods[]'
-        selectedMoods.forEach(mood => {
-          params.append('moods[]', mood);
-        });
-        
-        // Format 2: Also add as 'moods' parameter for frameworks that might handle it differently
-        params.append('moods', selectedMoods.join(','));
-        
-        console.log(`Including mood filters: ${selectedMoods.join(', ')}`);
-      }
-      
       // Log the query for debugging
       const queryString = params.toString();
       console.log(`Fetching users with filters: ${queryString}`);
       
-      // Use the properly formatted query string
+      // Use the properly formatted query string - no longer sending moods in the API call
       const response = await fetch(`/api/users/browse?${queryString}`);
       
       if (!response.ok) {
@@ -163,7 +163,77 @@ export function ConnectPage() {
       
       const results = await response.json();
       console.log(`Received ${results.length} users from server`);
-      return results;
+      
+      // Process users to ensure they have tags for compatibility with event filtering
+      const processedUsers = results.map((user: User) => {
+        // Create tags array from BOTH interests and currentMoods for compatibility with event filtering
+        let moodArray: string[] = [];
+        
+        // First check interests since you mentioned that's where they're stored
+        if (user.interests) {
+          if (Array.isArray(user.interests)) {
+            moodArray = [...user.interests];
+          } else if (typeof user.interests === 'string') {
+            try {
+              // Try parsing as JSON string
+              const parsed = JSON.parse(user.interests as string);
+              if (Array.isArray(parsed)) {
+                moodArray = [...parsed];
+              }
+            } catch (e) {
+              // If it fails, try treating as comma-separated string
+              if (typeof user.interests === 'string') {
+                moodArray = (user.interests as string).split(',').map((m: string) => m.trim());
+              }
+            }
+          }
+        }
+        
+        // Also check currentMoods as a backup
+        if (user.currentMoods) {
+          let currentMoodsArray: string[] = [];
+          
+          if (Array.isArray(user.currentMoods)) {
+            currentMoodsArray = user.currentMoods;
+          } else if (typeof user.currentMoods === 'string') {
+            try {
+              // Try parsing as JSON string
+              const parsed = JSON.parse(user.currentMoods as string);
+              if (Array.isArray(parsed)) {
+                currentMoodsArray = parsed;
+              }
+            } catch (e) {
+              // If it fails, try treating as comma-separated string
+              if (typeof user.currentMoods === 'string') {
+                currentMoodsArray = (user.currentMoods as string).split(',').map((m: string) => m.trim());
+              }
+            }
+          }
+          
+          // Merge with interests
+          moodArray = [...moodArray, ...currentMoodsArray];
+        }
+        
+        // Debug log to check what moods/interests we found
+        console.log(`User ${user.fullName || user.username}:`, {
+          interests: user.interests,
+          currentMoods: user.currentMoods,
+          combinedTags: moodArray
+        });
+        
+        // Add tags property for compatibility with event filtering
+        return {
+          ...user,
+          tags: moodArray // This makes filtering work exactly like in the Discover page
+        };
+      });
+      
+      // Debug: Check the structure after processing
+      processedUsers.forEach((user: User) => {
+        console.log(`User ${user.fullName || user.username} has tags:`, user.tags);
+      });
+      
+      return processedUsers;
     },
     refetchOnWindowFocus: false
   });
@@ -178,13 +248,28 @@ export function ConnectPage() {
     }
   }, [error, toast]);
 
-  // Filter the user results client-side for search terms only
+  // Filter users exactly like the Discover page filters events
   const filteredUsers = users?.filter(user => {
+    // Check if user matches search term
     const matchesSearch = !searchTerm || 
       (user.fullName && user.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (user.username && user.username.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    return matchesSearch;
+    // Use the tags property we added during API response processing
+    // This makes it work EXACTLY like the Discover page filter
+    const matchesMoods = selectedMoods.length === 0 ||
+                      (user.tags?.some(tag => selectedMoods.includes(tag)));
+    
+    // Debug logs to understand filtering
+    if (selectedMoods.length > 0) {
+      console.log(`User ${user.fullName || user.username} has tags:`, 
+        user.tags, 
+        `Matches filters (${selectedMoods.join(', ')}):`, 
+        matchesMoods);
+    }
+    
+    // Both conditions must be satisfied, exactly like in Discover page
+    return matchesSearch && matchesMoods;
   }) || [];
 
   const toggleFilter = (item: string) => {
@@ -243,32 +328,90 @@ export function ConnectPage() {
             </SelectContent>
           </Select>
           
-          {/* Mood Filter - Enhanced pill-style toggles with better visual feedback */}
-          <div className="flex flex-wrap gap-1.5 sm:gap-2">
-            {moods.map((mood) => (
-              <button
-                key={mood}
-                className={`rounded-full px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-medium transition-colors 
-                  ${selectedMoods.includes(mood) 
-                    ? moodStyles[mood as keyof typeof moodStyles] + ' shadow-sm' 
-                    : 'border border-border bg-background/5 hover:bg-accent/20'}`}
-                onClick={() => toggleFilter(mood)}
-              >
-                {selectedMoods.includes(mood) && (
-                  <span className="mr-0.5 sm:mr-1">✓</span>
+          {/* Mood Filter - Dropdown exactly like in Discover page */}
+          <div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  className="w-full md:w-[180px] justify-between h-9 text-xs sm:text-sm px-2 sm:px-4"
+                >
+                  <span className="truncate">Vibe and Mood</span>
+                  {selectedMoods.length > 0 && (
+                    <Badge variant="secondary" className="ml-1 sm:ml-2 text-xs px-1.5">
+                      {selectedMoods.length}
+                    </Badge>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-[240px] sm:w-[280px]">
+                <DropdownMenuLabel className="text-xs sm:text-sm">Vibe and Mood</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto">
+                  {moods.map((mood) => (
+                    <DropdownMenuCheckboxItem
+                      key={mood}
+                      checked={selectedMoods.includes(mood)}
+                      onCheckedChange={(checked) => {
+                        console.log(`Updated moods: ${checked ? [...selectedMoods, mood].join(", ") : selectedMoods.filter(m => m !== mood).join(", ")}`);
+                        setSelectedMoods(prev =>
+                          checked
+                            ? [...prev, mood]
+                            : prev.filter(m => m !== mood)
+                        );
+                      }}
+                      className="text-xs sm:text-sm"
+                    >
+                      {mood}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </div>
+                {selectedMoods.length > 0 && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="justify-center text-muted-foreground text-xs sm:text-sm"
+                      onClick={() => setSelectedMoods([])}
+                    >
+                      Clear all filters
+                    </DropdownMenuItem>
+                  </>
                 )}
-                {mood}
-              </button>
-            ))}
-            {selectedMoods.length > 0 && (
-              <button
-                className="rounded-full px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-medium text-muted-foreground border border-border bg-background/5 hover:bg-accent/20"
-                onClick={() => setSelectedMoods([])}
-              >
-                Clear
-              </button>
-            )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
+          
+          {/* Selected Filters Display - Exactly like in Discover page */}
+          {selectedMoods.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 py-3 sm:py-4">
+              {selectedMoods.map((mood) => (
+                <Badge
+                  key={mood}
+                  variant="secondary"
+                  className="px-2 sm:px-3 py-0.5 sm:py-1 flex items-center gap-0.5 sm:gap-1 text-xs"
+                >
+                  {mood}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setSelectedMoods(prev => prev.filter(m => m !== mood));
+                    }}
+                    className="ml-0.5 sm:ml-1 hover:text-destructive focus:outline-none"
+                  >
+                    <X className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                  </button>
+                </Badge>
+              ))}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedMoods([])}
+                className="text-muted-foreground hover:text-foreground text-xs sm:text-sm h-6 sm:h-8 px-2 sm:px-3"
+              >
+                Clear all
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Additional filters - Expanded section */}
@@ -373,9 +516,9 @@ export function ConnectPage() {
                                       <span className="truncate">{user.location}</span>
                                     </div>
                                   )}
-                                  {user.currentMoods && user.currentMoods.length > 0 && (
+                                  {user.tags && user.tags.length > 0 && (
                                     <div className="flex flex-wrap gap-1 mt-2">
-                                      {user.currentMoods.map((mood, index) => (
+                                      {user.tags.slice(0, 3).map((mood, index) => (
                                         <Badge
                                           key={index}
                                           variant="secondary"
@@ -395,33 +538,19 @@ export function ConnectPage() {
                                   {user.bio}
                                 </p>
                               )}
-                              {/* Display Mood & Vibe (using interests or currentMoods) */}
-                              {((user.currentMoods && user.currentMoods.length > 0) || (user.interests && user.interests.length > 0)) && (
+                              {/* Display Mood & Vibe (using tags which combines interests and currentMoods) */}
+                              {user.tags && user.tags.length > 0 && (
                                 <div className="flex flex-wrap gap-1">
                                   <span className="text-xs text-muted-foreground mr-1">Mood & Vibe:</span>
-                                  {/* First try to display currentMoods if available */}
-                                  {user.currentMoods && user.currentMoods.length > 0 ? 
-                                    user.currentMoods.slice(0, 3).map((mood, idx) => (
-                                      <Badge 
-                                        key={`mood-${idx}`} 
-                                        variant="secondary" 
-                                        className={`text-xs ${moodStyles[mood as keyof typeof moodStyles] || ''}`}
-                                      >
-                                        {mood}
-                                      </Badge>
-                                    ))
-                                  : 
-                                    /* Otherwise use interests for backward compatibility */
-                                    user.interests && user.interests.slice(0, 3).map((interest, idx) => (
-                                      <Badge 
-                                        key={`interest-${idx}`} 
-                                        variant="secondary" 
-                                        className={`text-xs ${moodStyles[interest as keyof typeof moodStyles] || ''}`}
-                                      >
-                                        {interest}
-                                      </Badge>
-                                    ))
-                                  }
+                                  {user.tags.slice(0, 3).map((mood, idx) => (
+                                    <Badge 
+                                      key={`mood-${idx}`} 
+                                      variant="secondary" 
+                                      className={`text-xs ${moodStyles[mood as keyof typeof moodStyles] || ''}`}
+                                    >
+                                      {mood}
+                                    </Badge>
+                                  ))}
                                 </div>
                               )}
                             </div>

@@ -2,7 +2,7 @@ import { useParams, useLocation, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@/hooks/use-user";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, UserPlus2, Star, Users, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { MessageSquare, UserPlus2, Star, Users, CheckCircle, XCircle, Loader2, Share2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { loadStripe, Stripe } from '@stripe/stripe-js';
 import { v4 as uuidv4 } from 'uuid'; // Make sure to install uuid: npm install uuid @types/uuid
 import { EventItinerary } from "@/components/EventItinerary";
+import { ReferralShareButton } from "@/components/ReferralShareButton";
 
 // Define the Event type with all fields
 const EventSchema = z.object({
@@ -575,29 +576,44 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
           </div>
         </div>
 
-        {/* Interested and Attending Buttons */}
-        {user && user.id !== event.creatorId && (
-          <div className="mt-6 flex gap-4">
-            <Button
-              variant={userStatus === 'interested' ? "default" : "outline"}
-              className={`flex-1 ${userStatus === 'interested' ? 'bg-blue-700 hover:bg-blue-800' : ''}`}
-              onClick={() => handleParticipationChange('interested')}
-              disabled={participateMutation.isPending}
-            >
-              <Star className="h-4 w-4 mr-2" />
-              {userStatus === 'interested' ? 'Interested ✓' : 'Interested'}
-            </Button>
-            <Button
-              variant={userStatus === 'attending' ? "default" : "outline"}
-              className={`flex-1 ${userStatus === 'attending' ? 'bg-green-700 hover:bg-green-800' : ''}`}
-              onClick={() => handleParticipationChange('attending')}
-              disabled={participateMutation.isPending}
-            >
-              <Users className="h-4 w-4 mr-2" />
-              {userStatus === 'attending' ? 'Attending ✓' : 'Attending'}
-            </Button>
-          </div>
-        )}
+        {/* Interested, Attending and Share Buttons */}
+        <div className="mt-6 flex gap-4">
+          {user && user.id !== event.creatorId && (
+            <>
+              <Button
+                variant={userStatus === 'interested' ? "default" : "outline"}
+                className={`flex-1 ${userStatus === 'interested' ? 'bg-blue-700 hover:bg-blue-800' : ''}`}
+                onClick={() => handleParticipationChange('interested')}
+                disabled={participateMutation.isPending}
+              >
+                <Star className="h-4 w-4 mr-2" />
+                {userStatus === 'interested' ? 'Interested ✓' : 'Interested'}
+              </Button>
+              <Button
+                variant={userStatus === 'attending' ? "default" : "outline"}
+                className={`flex-1 ${userStatus === 'attending' ? 'bg-green-700 hover:bg-green-800' : ''}`}
+                onClick={() => handleParticipationChange('attending')}
+                disabled={participateMutation.isPending}
+              >
+                <Users className="h-4 w-4 mr-2" />
+                {userStatus === 'attending' ? 'Attending ✓' : 'Attending'}
+              </Button>
+            </>
+          )}
+          
+          {/* Share Button - Always visible for all users */}
+          <ReferralShareButton
+            contentType="event"
+            contentId={event.id}
+            title={`Check out ${event.title} on Maly`}
+            text={`${user?.fullName || user?.username || 'Someone'} has invited you to ${event.title} on Maly.`}
+            variant="outline"
+            className={user && user.id !== event.creatorId ? 'flex-none' : 'flex-1'}
+          >
+            <Share2 className="h-4 w-4 mr-2" />
+            Share
+          </ReferralShareButton>
+        </div>
 
         {/* Description */}
         <div className="space-y-2">
