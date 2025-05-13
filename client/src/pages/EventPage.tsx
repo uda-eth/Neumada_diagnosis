@@ -418,12 +418,12 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
 
       {/* Event Image */}
       {event.image && (
-        <div className="container mx-auto px-4 mb-6">
+        <div className="container mx-auto px-2 sm:px-4 mb-4 sm:mb-6">
           <div className="rounded-lg overflow-hidden">
             <img
               src={event.image}
               alt={event.title}
-              className="w-full object-contain max-h-[70vh]"
+              className="w-full object-cover sm:object-contain max-h-[40vh] sm:max-h-[70vh]"
             />
           </div>
         </div>
@@ -431,19 +431,65 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
 
       {/* Event Details */}
       <div className="container mx-auto px-4 py-6 space-y-6">
+        {/* Status Buttons (mobile only) */}
+        <div className="sm:hidden flex flex-col gap-3 pb-4 border-b border-white/10">
+          <h3 className="text-sm font-medium text-white/60 mb-2">Your Status</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              variant={userStatus === 'interested' ? "default" : "outline"}
+              className={`${userStatus === 'interested' ? 'bg-blue-700 hover:bg-blue-800' : ''}`}
+              onClick={() => handleParticipationChange('interested')}
+              disabled={participateMutation.isPending}
+              size="sm"
+            >
+              <Star className="h-3 w-3 mr-1" />
+              Interested
+              {userStatus === 'interested' && <CheckCircle className="h-3 w-3 ml-1" />}
+            </Button>
+            <Button
+              variant={userStatus === 'attending' ? "default" : "outline"}
+              className={`${userStatus === 'attending' ? 'bg-green-700 hover:bg-green-800' : ''}`}
+              onClick={() => handleParticipationChange('attending')}
+              disabled={participateMutation.isPending}
+              size="sm"
+            >
+              <Users className="h-3 w-3 mr-1" />
+              Attending
+              {userStatus === 'attending' && <CheckCircle className="h-3 w-3 ml-1" />}
+            </Button>
+          </div>
+        </div>
+
+        {/* Title and Meta */}
+        <div className="mt-2 md:mt-0">
+          <h1 className="text-xl sm:text-2xl font-bold leading-tight">{event.title}</h1>
+          <div className="mt-2 text-white/60 text-sm">
+            <div className="flex items-center gap-1 mb-1.5">
+              <span className="font-medium">{format(new Date(event.date), "EEE, MMM d")}</span>
+            </div>
+            <div className="flex items-center gap-1 mb-1.5">
+              <span>{format(new Date(event.date), "h:mm a")} -{" "}
+              {format(new Date(event.date).setHours(new Date(event.date).getHours() + 2), "h:mm a")}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span>{event.location}</span>
+            </div>
+          </div>
+        </div>
+
         {/* Attendees Section */}
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 mt-4 sm:mt-6">
           {/* Attending Users */}
           <div className="space-y-3">
             <h3 className="text-sm font-medium text-white/60">
               Attending
             </h3>
-            <div className="flex items-center gap-4">
-              <div className="flex -space-x-3" onClick={() => handleViewAllUsers('attending')} style={{cursor: 'pointer'}}>
+            <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+              <div className="flex -space-x-2 sm:-space-x-3" onClick={() => handleViewAllUsers('attending')} style={{cursor: 'pointer'}}>
                 {attendingUsers.map((user) => (
                   <Avatar 
                     key={user.id} 
-                    className="ring-2 ring-background w-12 h-12 border-2 border-black/40"
+                    className="ring-2 ring-background w-8 h-8 sm:w-12 sm:h-12 border-2 border-black/40"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleUserClick(user.username || user.id);
@@ -461,10 +507,10 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
               {attendingCount > 5 && (
                 <Button 
                   variant="ghost" 
-                  className="text-sm text-white/60 hover:text-white"
+                  className="text-xs sm:text-sm text-white/60 hover:text-white h-8 px-2 sm:px-3"
                   onClick={() => handleViewAllUsers('attending')}
                 >
-                  +{attendingCount - 5} more attending
+                  +{attendingCount - 5} more
                 </Button>
               )}
             </div>
@@ -475,12 +521,12 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
             <h3 className="text-sm font-medium text-white/60">
               Interested
             </h3>
-            <div className="flex items-center gap-4">
-              <div className="flex -space-x-3" onClick={() => handleViewAllUsers('interested')} style={{cursor: 'pointer'}}>
+            <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+              <div className="flex -space-x-2 sm:-space-x-3" onClick={() => handleViewAllUsers('interested')} style={{cursor: 'pointer'}}>
                 {interestedUsers.map((user) => (
                   <Avatar 
                     key={user.id} 
-                    className="ring-2 ring-background w-12 h-12 border-2 border-black/40"
+                    className="ring-2 ring-background w-8 h-8 sm:w-12 sm:h-12 border-2 border-black/40"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleUserClick(user.username || user.id);
@@ -498,26 +544,13 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
               {interestedCount > 5 && (
                 <Button 
                   variant="ghost" 
-                  className="text-sm text-white/60 hover:text-white"
+                  className="text-xs sm:text-sm text-white/60 hover:text-white h-8 px-2 sm:px-3"
                   onClick={() => handleViewAllUsers('interested')}
                 >
-                  +{interestedCount - 5} more interested
+                  +{interestedCount - 5} more
                 </Button>
               )}
             </div>
-          </div>
-        </div>
-
-        {/* Title and Meta */}
-        <div>
-          <h1 className="text-2xl font-bold">{event.title}</h1>
-          <div className="mt-2 text-white/60">
-            <p>{format(new Date(event.date), "EEE, MMM d")}</p>
-            <p className="mt-1">
-              {format(new Date(event.date), "h:mm a")} -{" "}
-              {format(new Date(event.date).setHours(new Date(event.date).getHours() + 2), "h:mm a")}
-            </p>
-            <p className="mt-1">{event.location}</p>
           </div>
         </div>
 
@@ -539,13 +572,13 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
             </div>
             {event.price !== null && ((typeof event.price === 'string' ? parseFloat(event.price) > 0 : event.price > 0)) ? (
               <Button 
-                className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
+                className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white whitespace-nowrap"
                 onClick={() => setLocation(`/event/${event.id}/tickets`)}
               >
                 Get Tickets
               </Button>
             ) : (
-              <div className="flex flex-col gap-4 w-full">
+              <div className="hidden sm:flex flex-col gap-4 w-full">
                 <Button 
                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
                   onClick={() => handleParticipate('attending')}
@@ -576,8 +609,8 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
           </div>
         </div>
 
-        {/* Interested, Attending and Share Buttons */}
-        <div className="mt-6 flex gap-4">
+        {/* Interested, Attending and Share Buttons - for tablet and desktop */}
+        <div className="hidden sm:flex gap-4">
           {user && user.id !== event.creatorId && (
             <>
               <Button
@@ -610,6 +643,23 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
             variant="outline"
             className={`${user && user.id !== event.creatorId ? 'flex-none' : 'flex-1'} whitespace-nowrap max-w-fit`}
           >
+            <Share2 className="h-4 w-4 mr-2" />
+            Share
+          </ReferralShareButton>
+        </div>
+        
+        {/* Mobile Share Button */}
+        <div className="flex sm:hidden justify-end">
+          <ReferralShareButton
+            contentType="event"
+            contentId={event.id}
+            title={`Check out ${event.title} on Maly`}
+            text={`${user?.fullName || user?.username || 'Someone'} has invited you to ${event.title} on Maly.`}
+            variant="outline"
+            className="whitespace-nowrap"
+            size="sm"
+          >
+            <Share2 className="h-4 w-4 mr-1" />
             Share
           </ReferralShareButton>
         </div>
@@ -617,7 +667,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
         {/* Description */}
         <div className="space-y-2">
           <h2 className="text-lg font-semibold">About this event</h2>
-          <p className="text-white/80 whitespace-pre-wrap">
+          <p className="text-white/80 whitespace-pre-wrap text-sm sm:text-base">
             {event.description}
           </p>
         </div>
@@ -626,9 +676,9 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
         {event.creatorId && (
           <div className="py-4 border-t border-white/10">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <Avatar 
-                  className="h-12 w-12"
+                  className="h-10 w-10 sm:h-12 sm:w-12"
                   onClick={() => handleUserClick(event.creatorUsername || event.creatorId as number)}
                   style={{cursor: 'pointer'}}
                 >
@@ -641,29 +691,29 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                 </Avatar>
                 <div>
                   <div 
-                    className="font-medium hover:underline cursor-pointer"
+                    className="font-medium hover:underline cursor-pointer text-sm sm:text-base"
                     onClick={() => handleUserClick(event.creatorUsername || event.creatorId as number)}
                   >
                     {event.creatorName ? getFirstName(event.creatorName) : "Event Host"}
                   </div>
-                  <div className="text-sm text-white/60">Event Organizer</div>
+                  <div className="text-xs sm:text-sm text-white/60">Event Organizer</div>
                 </div>
               </div>
-              {/* Message and Follow buttons removed */}
             </div>
           </div>
         )}
 
         {/* Display error message if exists */}
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <span className="block sm:inline">{error}</span>
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg text-sm relative mb-4" role="alert">
+            <span className="block">{error}</span>
           </div>
         )}
 
-        {/* Add Purchase Button */} 
+        {/* Add Purchase Button - only show on desktop/tablet */ 
+        /* (mobile uses bottom fixed button) */}
         {canPurchase && (
-          <div className="mt-4">
+          <div className="mt-4 hidden sm:block">
             <Button
               className="w-full mt-4 font-semibold"
               onClick={handlePurchase}
@@ -682,18 +732,23 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
             </Button>
           </div>
         )}
+        
+        {/* Add spacing at the bottom for mobile to account for fixed bottom button */}
+        {user && user.id !== event.creatorId && event.price && (
+          <div className="h-20 sm:h-0"></div>
+        )}
       </div>
 
-      {/* Bottom Actions */}
+      {/* Bottom Actions - Mobile */}
       {user && user.id !== event.creatorId && event.price && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-black/80 backdrop-blur-lg border-t border-white/10">
-          <div className="container mx-auto max-w-2xl">
+        <div className="fixed bottom-0 left-0 right-0 p-3 bg-black/90 backdrop-blur-lg border-t border-white/10 z-10">
+          <div className="container mx-auto">
             <Button
-              className="w-full h-12"
+              className="w-full h-12 text-sm sm:text-base rounded-lg bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700"
               onClick={() => setLocation(`/event/${id}/tickets`)}
               disabled={participateMutation.isPending}
             >
-              {isPrivateEvent ? "Request Access" : `Buy Tickets • $${typeof event.price === 'string' ? event.price : event.price?.toString()}`}
+              {isPrivateEvent ? "Request Access" : `I'll be attending • $${typeof event.price === 'string' ? event.price : event.price?.toString()}`}
             </Button>
           </div>
         </div>
