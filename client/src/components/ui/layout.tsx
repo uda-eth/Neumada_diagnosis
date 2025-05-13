@@ -157,12 +157,12 @@ export function Layout({ children }: LayoutProps) {
         </div>
       </header>
 
-      <main className={`flex-1 ${!location.startsWith('/event/') ? 'pb-24' : 'pb-0'} md:pb-6`}>
+      <main className={`flex-1 ${!location.startsWith('/event/') && !location.startsWith('/edit-event/') ? 'pb-24' : 'pb-0'} md:pb-6`}>
         {children}
       </main>
 
-      {/* Hide bottom navigation on event pages */}
-      {!location.startsWith('/event/') && (
+      {/* Hide bottom navigation on event pages and edit event pages */}
+      {!location.startsWith('/event/') && !location.startsWith('/edit-event/') && (
         <div className="md:hidden fixed bottom-0 left-0 right-0 z-50">
           <BottomNav />
         </div>
