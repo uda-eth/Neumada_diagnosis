@@ -6,7 +6,6 @@ import {
   Users,
   Calendar,
   Bot,
-  Moon,
   MessageSquare,
   MapPin,
   Filter,
@@ -130,13 +129,12 @@ export default function TutorialPage() {
                       variants={fadeIn}
                     >
                       <h3 className="text-xl font-medium mb-4">Navigation</h3>
-                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {[
                           { icon: Globe, label: "Discover" },
                           { icon: Users, label: "Connect" },
                           { icon: Calendar, label: "Create" },
                           { icon: Bot, label: "Concierge" },
-                          { icon: Moon, label: "Settings" },
                         ].map(({ icon: Icon, label }) => (
                           <motion.div
                             key={label}
