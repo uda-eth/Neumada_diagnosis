@@ -2701,8 +2701,10 @@ app.post('/api/events/:eventId/participate', isAuthenticated, async (req: Reques
     const { status } = req.body;
 
     // Validate status
-    if (!status || !['interested', 'attending', 'not_participating'].includes(status)) {
-      return res.status(400).json({ error: 'Invalid status value. Must be "interested", "attending", or "not_participating".' });
+    if (!status || !['interested', 'attending', 'not_attending', 'attending+interested'].includes(status)) {
+      return res.status(400).json({ 
+        error: 'Invalid status value. Must be "interested", "attending", "attending+interested", or "not_attending".' 
+      });
     }
 
     // Find the event to make sure it exists
@@ -2735,8 +2737,8 @@ app.post('/api/events/:eventId/participate', isAuthenticated, async (req: Reques
       });
     }
 
-    // Handle removal of participation (not_participating)
-    if (status === 'not_participating') {
+    // Handle removal of participation (not_attending)
+    if (status === 'not_attending') {
       if (existingRecord) {
         // If the user has a completed ticket, don't allow them to remove attendance status
         if (existingRecord.paymentStatus === 'completed' && existingRecord.ticketIdentifier) {
@@ -2766,10 +2768,10 @@ app.post('/api/events/:eventId/participate', isAuthenticated, async (req: Reques
             eq(eventParticipants.eventId, parseInt(eventId))
           ));
 
-        return res.json({ status: 'not_participating' });
+        return res.json({ status: 'not_attending' });
       } else {
         // No record to delete
-        return res.json({ status: 'not_participating' });
+        return res.json({ status: 'not_attending' });
       }
     }
 
