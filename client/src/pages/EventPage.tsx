@@ -62,7 +62,7 @@ const EventSchema = z.object({
 type Event = z.infer<typeof EventSchema>;
 
 // Define participation status types
-type ParticipationStatus = 'attending' | 'interested' | 'not_attending';
+type ParticipationStatus = 'attending' | 'interested' | 'not_attending' | 'attending+interested';
 
 // Type for attendee/interested user
 interface EventUser {
@@ -181,15 +181,16 @@ export default function EventPage() {
       setUserStatus(variables);
 
       // Show success message
-      const messages = {
+      const messages: Record<ParticipationStatus, string> = {
         attending: "You are now attending this event!",
         interested: "You are now interested in this event",
-        not_attending: "You are no longer participating in this event"
+        not_attending: "You are no longer participating in this event",
+        'attending+interested': "You are now attending and interested in this event!"
       };
 
       toast({
         title: "Success",
-        description: messages[variables],
+        description: messages[variables] || "Your participation status has been updated",
       });
 
       // Invalidate queries to refresh data
@@ -495,17 +496,80 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
       return;
     }
 
-    // Toggle status if already in that state
-    const newStatus = userStatus === status ? 'not_attending' : status;
+    let newStatus: ParticipationStatus;
+    
+    // Handle special cases for the combined 'attending+interested' status 
+    if (status === 'interested') {
+      // If currently attending+interested, toggle off interested
+      if (userStatus === 'attending+interested') {
+        newStatus = 'attending';
+      }
+      // If just attending, add interested
+      else if (userStatus === 'attending') {
+        newStatus = 'attending+interested' as ParticipationStatus;
+      }
+      // If already interested, toggle off
+      else if (userStatus === 'interested') {
+        newStatus = 'not_attending';
+      }
+      // Otherwise set to interested
+      else {
+        newStatus = 'interested';
+      }
+    }
+    // For attending status, now handled differently with tickets
+    else if (status === 'attending') {
+      const isPaidEvent = event.price !== null && (
+        typeof event.price === 'string' 
+          ? parseFloat(event.price) > 0 
+          : event.price > 0
+      );
+      
+      if (isPaidEvent) {
+        // For paid events, redirect to ticket page
+        setLocation(`/event/${event.id}/tickets`);
+        return;
+      } else {
+        // For free events, show get free ticket prompt
+        toast({
+          title: "Free Ticket Required",
+          description: "You need to get a free ticket to attend this event.",
+          action: (
+            <Button className="bg-blue-500 hover:bg-blue-600" onClick={handleGetFreeTicket}>
+              Get Free Ticket
+            </Button>
+          )
+        });
+        return;
+      }
+    }
+    // For not attending
+    else {
+      newStatus = 'not_attending';
+    }
 
     try {
       await participateMutation.mutateAsync(newStatus);
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update participation status. Please try again.",
-      });
+    } catch (error: any) {
+      // Special handling for free ticket requirement
+      if (error?.message === "free_ticket_required") {
+        // Ask user if they want to get a free ticket
+        toast({
+          title: "Ticket Required",
+          description: "You need to register for a free ticket to attend this event.",
+          action: (
+            <Button className="bg-blue-500 hover:bg-blue-600" onClick={handleGetFreeTicket}>
+              Get Free Ticket
+            </Button>
+          )
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to update participation status. Please try again.",
+        });
+      }
     }
   };
 
@@ -545,26 +609,26 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
           <h3 className="text-sm font-medium text-white/60 mb-2">Your Status</h3>
           <div className="grid grid-cols-2 gap-3">
             <Button
-              variant={userStatus === 'interested' ? "default" : "outline"}
-              className={`${userStatus === 'interested' ? 'bg-blue-700 hover:bg-blue-800' : ''}`}
+              variant={(userStatus === 'interested' || userStatus === 'attending+interested') ? "default" : "outline"}
+              className={`${(userStatus === 'interested' || userStatus === 'attending+interested') ? 'bg-blue-700 hover:bg-blue-800' : ''}`}
               onClick={() => handleParticipationChange('interested')}
               disabled={participateMutation.isPending}
               size="sm"
             >
               <Star className="h-3 w-3 mr-1" />
               Interested
-              {userStatus === 'interested' && <CheckCircle className="h-3 w-3 ml-1" />}
+              {(userStatus === 'interested' || userStatus === 'attending+interested') && <CheckCircle className="h-3 w-3 ml-1" />}
             </Button>
             <Button
-              variant={userStatus === 'attending' ? "default" : "outline"}
-              className={`${userStatus === 'attending' ? 'bg-green-700 hover:bg-green-800' : ''}`}
+              variant={(userStatus === 'attending' || userStatus === 'attending+interested') ? "default" : "outline"}
+              className={`${(userStatus === 'attending' || userStatus === 'attending+interested') ? 'bg-green-700 hover:bg-green-800' : ''}`}
               onClick={() => handleParticipationChange('attending')}
               disabled={participateMutation.isPending}
               size="sm"
             >
               <Users className="h-3 w-3 mr-1" />
               Attending
-              {userStatus === 'attending' && <CheckCircle className="h-3 w-3 ml-1" />}
+              {(userStatus === 'attending' || userStatus === 'attending+interested') && <CheckCircle className="h-3 w-3 ml-1" />}
             </Button>
           </div>
         </div>
@@ -756,22 +820,22 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
           {user && user.id !== event.creatorId && (
             <>
               <Button
-                variant={userStatus === 'interested' ? "default" : "outline"}
-                className={`flex-1 ${userStatus === 'interested' ? 'bg-blue-700 hover:bg-blue-800' : ''}`}
+                variant={(userStatus === 'interested' || userStatus === 'attending+interested') ? "default" : "outline"}
+                className={`flex-1 ${(userStatus === 'interested' || userStatus === 'attending+interested') ? 'bg-blue-700 hover:bg-blue-800' : ''}`}
                 onClick={() => handleParticipationChange('interested')}
                 disabled={participateMutation.isPending}
               >
                 <Star className="h-4 w-4 mr-2" />
-                {userStatus === 'interested' ? 'Interested ✓' : 'Interested'}
+                {(userStatus === 'interested' || userStatus === 'attending+interested') ? 'Interested ✓' : 'Interested'}
               </Button>
               <Button
-                variant={userStatus === 'attending' ? "default" : "outline"}
-                className={`flex-1 ${userStatus === 'attending' ? 'bg-green-700 hover:bg-green-800' : ''}`}
+                variant={(userStatus === 'attending' || userStatus === 'attending+interested') ? "default" : "outline"}
+                className={`flex-1 ${(userStatus === 'attending' || userStatus === 'attending+interested') ? 'bg-green-700 hover:bg-green-800' : ''}`}
                 onClick={() => handleParticipationChange('attending')}
                 disabled={participateMutation.isPending}
               >
                 <Users className="h-4 w-4 mr-2" />
-                {userStatus === 'attending' ? 'Attending ✓' : 'Attending'}
+                {(userStatus === 'attending' || userStatus === 'attending+interested') ? 'Attending ✓' : 'Attending'}
               </Button>
             </>
           )}
