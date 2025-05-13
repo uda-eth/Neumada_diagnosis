@@ -283,13 +283,50 @@ export default function EventPage() {
 
     try {
       await participateMutation.mutateAsync(status);
-    } catch (error) {
+    } catch (error: any) {
+      // Special handling for free ticket requirement
+      if (error?.message === "free_ticket_required") {
+        // Ask user if they want to get a free ticket
+        toast({
+          title: "Ticket Required",
+          description: "You need to register for a free ticket to attend this event.",
+          action: (
+            <Button className="bg-blue-500 hover:bg-blue-600" onClick={handleGetFreeTicket}>
+              Get Free Ticket
+            </Button>
+          )
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to update participation status. Please try logging in again.",
+        });
+        setLocation('/auth');
+      }
+    }
+  };
+  
+  const handleGetFreeTicket = async () => {
+    if (!user) {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update participation status. Please try logging in again.",
+        title: "Authentication Required",
+        description: "Please log in to get a ticket",
+        variant: "destructive"
       });
       setLocation('/auth');
+      return;
+    }
+    
+    setIsProcessing(true);
+    
+    try {
+      await freeTicketMutation.mutateAsync();
+    } catch (error) {
+      // Error handling is already in the mutation
+      console.error("Failed to get free ticket:", error);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -642,41 +679,74 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                 {event.price ? `$${event.price}` : 'Free'}
               </p>
             </div>
+            
+            {/* For paid events - Get Ticket button */}
             {event.price !== null && ((typeof event.price === 'string' ? parseFloat(event.price) > 0 : event.price > 0)) ? (
               <Button 
                 className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white whitespace-nowrap"
                 onClick={() => setLocation(`/event/${event.id}/tickets`)}
+                disabled={isProcessing}
               >
-                Get Tickets
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : "Get Tickets"}
               </Button>
             ) : (
-              <div className="hidden sm:flex flex-col gap-4 w-full">
-                <Button 
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
-                  onClick={() => handleParticipate('attending')}
-                  disabled={participateMutation.isPending}
-                >
-                  {userStatus === 'attending' ? "I'm attending ✓" : "I'll be attending"}
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full border-gray-600 text-white hover:bg-gray-800"
-                  onClick={() => handleParticipate('interested')}
-                  disabled={participateMutation.isPending}
-                >
-                  {userStatus === 'interested' ? "I'm interested ✓" : "I'm interested"}
-                </Button>
-                {userStatus !== 'not_attending' && (
-                  <Button 
-                    variant="destructive" 
-                    className="w-full"
-                    onClick={() => handleParticipate('not_attending')}
-                    disabled={participateMutation.isPending}
-                  >
-                    Cancel Participation
-                  </Button>
-                )}
-              </div>
+              // For free events - Get FREE Ticket button
+              <Button 
+                className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white whitespace-nowrap"
+                onClick={handleGetFreeTicket}
+                disabled={isProcessing || userStatus.includes('attending')}
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : userStatus.includes('attending') ? (
+                  <>
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Attending
+                  </>
+                ) : "Get FREE Ticket"}
+              </Button>
+            )}
+          </div>
+          
+          {/* Interest status - always shown regardless of paid/free status */}
+          <div className="flex flex-col gap-4 w-full">
+            <Button 
+              variant="outline" 
+              className={`w-full border-gray-600 text-white hover:bg-gray-800
+                ${(userStatus === 'interested' || userStatus === 'attending+interested') 
+                  ? 'bg-blue-700/20 border-blue-600' 
+                  : ''
+                }`}
+              onClick={() => handleParticipate('interested')}
+              disabled={participateMutation.isPending}
+            >
+              {userStatus === 'interested' || userStatus === 'attending+interested' ? (
+                <><CheckCircle className="mr-2 h-4 w-4" /> Interested</>
+              ) : (
+                <>
+                  <Star className="mr-2 h-4 w-4" /> Mark as interested
+                </>
+              )}
+            </Button>
+            
+            {/* Show "Not interested" button if user has any participation status */}
+            {(userStatus === 'interested' || userStatus === 'attending' || userStatus === 'attending+interested') && (
+              <Button 
+                variant="destructive" 
+                className="w-full"
+                onClick={() => handleParticipate('not_attending')}
+                disabled={participateMutation.isPending}
+              >
+                <XCircle className="mr-2 h-4 w-4" /> Cancel participation
+              </Button>
             )}
           </div>
         </div>
