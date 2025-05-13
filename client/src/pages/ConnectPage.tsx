@@ -538,33 +538,19 @@ export function ConnectPage() {
                                   {user.bio}
                                 </p>
                               )}
-                              {/* Display Mood & Vibe (using interests or currentMoods) */}
-                              {((user.currentMoods && user.currentMoods.length > 0) || (user.interests && user.interests.length > 0)) && (
+                              {/* Display Mood & Vibe (using tags which combines interests and currentMoods) */}
+                              {user.tags && user.tags.length > 0 && (
                                 <div className="flex flex-wrap gap-1">
                                   <span className="text-xs text-muted-foreground mr-1">Mood & Vibe:</span>
-                                  {/* First try to display currentMoods if available */}
-                                  {user.currentMoods && user.currentMoods.length > 0 ? 
-                                    user.currentMoods.slice(0, 3).map((mood, idx) => (
-                                      <Badge 
-                                        key={`mood-${idx}`} 
-                                        variant="secondary" 
-                                        className={`text-xs ${moodStyles[mood as keyof typeof moodStyles] || ''}`}
-                                      >
-                                        {mood}
-                                      </Badge>
-                                    ))
-                                  : 
-                                    /* Otherwise use interests for backward compatibility */
-                                    user.interests && user.interests.slice(0, 3).map((interest, idx) => (
-                                      <Badge 
-                                        key={`interest-${idx}`} 
-                                        variant="secondary" 
-                                        className={`text-xs ${moodStyles[interest as keyof typeof moodStyles] || ''}`}
-                                      >
-                                        {interest}
-                                      </Badge>
-                                    ))
-                                  }
+                                  {user.tags.slice(0, 3).map((mood, idx) => (
+                                    <Badge 
+                                      key={`mood-${idx}`} 
+                                      variant="secondary" 
+                                      className={`text-xs ${moodStyles[mood as keyof typeof moodStyles] || ''}`}
+                                    >
+                                      {mood}
+                                    </Badge>
+                                  ))}
                                 </div>
                               )}
                             </div>
