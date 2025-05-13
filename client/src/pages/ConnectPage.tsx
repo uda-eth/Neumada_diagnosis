@@ -345,7 +345,7 @@ export function ConnectPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-[240px] sm:w-[280px]">
-                <DropdownMenuLabel className="text-xs sm:text-sm">Vibe and Mood</DropdownMenuLabel>
+                <DropdownMenuLabel className="text-xs sm:text-sm">Find people with similar vibes</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto">
                   {moods.map((mood) => (

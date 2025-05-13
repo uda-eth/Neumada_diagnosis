@@ -364,7 +364,7 @@ export default function AuthPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="moods">Mood & Vibe</Label>
+                  <Label htmlFor="moods">Choose your vibe</Label>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {VIBE_AND_MOOD_TAGS.map(mood => {
                       const isSelected = selectedMoods.includes(mood);
