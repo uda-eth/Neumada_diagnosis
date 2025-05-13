@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useUser } from "@/hooks/use-user";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, ArrowLeft, MapPin, Mail, Briefcase, Calendar, UserPlus, Check, X, UserCheck, Smile, Heart, Edit3, UserCircle } from "lucide-react";
+import { Loader2, ArrowLeft, MapPin, Mail, Briefcase, Calendar, UserPlus, Check, X, UserCheck, Smile, Heart, Edit3, UserCircle, Share2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
+import { ReferralShareButton } from "@/components/ReferralShareButton";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
@@ -396,6 +397,19 @@ export default function ProfilePage() {
                     Edit Profile
                   </Button>
                 )}
+                
+                {/* Share Profile Button - always visible */}
+                <ReferralShareButton
+                  contentType="profile"
+                  contentId={profileData.username || profileData.id}
+                  title={`Check out ${profileData.fullName || profileData.username}'s profile on Maly`}
+                  text={`${currentUser?.fullName || currentUser?.username || 'Someone'} has invited you to connect with ${profileData.fullName || profileData.username} on Maly.`}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  <Share2 className="h-4 w-4" />
+                  Share Profile
+                </ReferralShareButton>
                 
                 {/* Connection Button - only show if viewing profile of other user and user is logged in */}
                 {currentUser && profileData.id !== currentUser.id && (
