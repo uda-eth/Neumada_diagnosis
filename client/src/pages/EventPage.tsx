@@ -837,6 +837,18 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                 <Users className="h-4 w-4 mr-2" />
                 {(userStatus === 'attending' || userStatus === 'attending+interested') ? 'Attending ✓' : 'Attending'}
               </Button>
+              
+              {/* Cancel participation button for desktop */}
+              {(userStatus === 'interested' || userStatus === 'attending' || userStatus === 'attending+interested') && (
+                <Button 
+                  variant="destructive" 
+                  className="flex-1"
+                  onClick={() => handleParticipate('not_attending')}
+                  disabled={participateMutation.isPending}
+                >
+                  <XCircle className="h-4 w-4 mr-2" /> Cancel participation
+                </Button>
+              )}
             </>
           )}
           
