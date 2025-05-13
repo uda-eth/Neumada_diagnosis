@@ -5,6 +5,7 @@ import { Redirect } from "@/components/ui/redirect";
 import EventPage from "./pages/EventPage";
 import ProfilePage from "./pages/ProfilePage";
 import CreateEventPage from "./pages/CreateEventPage";
+import EditEventPage from "./pages/EditEventPage";
 import TestCreateEventPage from "./pages/TestCreateEventPage";
 import ChatbotPage from "./pages/ChatbotPage";
 import ConnectPage from "./pages/ConnectPage";
@@ -84,6 +85,7 @@ function AppContent() {
             <Route path="/event/onda-linda-festival" component={OndaLindaFestivalPage} />
             <Route path="/event/:id/tickets" component={EventTicketsPage} />
             <Route path="/event/:id" component={EventPage} />
+            <Route path="/edit-event/:id" component={EditEventPage} />
             <Route path="/profile" component={ProfilePage} />
             <Route path="/profile/:username" component={ProfilePage} />
             <Route path="/create" component={CreateEventPage} />

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useLocation } from "wouter";
+import { useState, useEffect } from "react";
+import { useParams, useLocation } from "wouter";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
@@ -22,9 +22,10 @@ import {
 } from "@/components/ui/select";
 import { 
   CalendarIcon, 
-  Plus, 
+  Save, 
   Loader2,
-  ChevronsUpDown
+  ChevronsUpDown,
+  Plus
 } from "lucide-react";
 import { GradientHeader } from "@/components/ui/GradientHeader";
 import { z } from "zod";
@@ -32,8 +33,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { VIBE_AND_MOOD_TAGS, DIGITAL_NOMAD_CITIES } from "@/lib/constants";
 import { useUser } from "@/hooks/use-user";
 import { ItineraryFormField } from "@/components/ItineraryFormField";
+import { useQuery } from "@tanstack/react-query";
 
-// Define a simple schema for our form
 // Define a schema for itinerary items
 const itineraryItemSchema = z.object({
   startTime: z.string().min(1, "Start time is required"),
@@ -41,6 +42,7 @@ const itineraryItemSchema = z.object({
   description: z.string().min(1, "Description is required"),
 });
 
+// Event schema without the category field
 const eventSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
@@ -53,8 +55,6 @@ const eventSchema = z.object({
     .default(() => new Date().toISOString()),
   // Add itinerary field (optional array of itinerary items)
   itinerary: z.array(itineraryItemSchema).optional().default([]),
-  // Include category field even though we don't show it in the UI anymore
-  category: z.string().default("Other"),
 });
 
 // Define the form data type using the zod schema
@@ -63,7 +63,8 @@ type FormData = z.infer<typeof eventSchema>;
 // Use the unified vibe and mood tags
 const interestTags = VIBE_AND_MOOD_TAGS;
 
-export default function CreateEventPage() {
+export default function EditEventPage() {
+  const { id } = useParams();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { user } = useUser();
@@ -71,6 +72,7 @@ export default function CreateEventPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isLoadingEvent, setIsLoadingEvent] = useState(true);
 
   // Use our simplified schema
   const form = useForm<FormData>({
@@ -82,11 +84,70 @@ export default function CreateEventPage() {
       date: new Date().toISOString(),
       price: 0,
       isPrivate: false,
-      itinerary: [], // Initialize with empty array
-      // Include a default category even though we don't show it in the UI anymore
-      category: "Other"
+      itinerary: [] // Initialize with empty array
     },
   });
+
+  // Fetch existing event data
+  const { data: event, isLoading, error } = useQuery({
+    queryKey: [`/api/events/${id}`],
+    queryFn: async () => {
+      const response = await fetch(`/api/events/${id}`, {
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error fetching event: ${response.status}`);
+      }
+
+      return response.json();
+    },
+  });
+
+  // Set form values from the fetched event data
+  useEffect(() => {
+    if (event && !isLoading) {
+      // Only allow editing if the user is the creator
+      if (user?.id !== event.creatorId) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "You can only edit your own events"
+        });
+        setLocation("/");
+        return;
+      }
+
+      // Parse the price correctly
+      let eventPrice = 0;
+      if (event.price !== null) {
+        eventPrice = typeof event.price === 'string' ? parseFloat(event.price) : event.price;
+      }
+
+      // Set form values
+      form.reset({
+        title: event.title,
+        description: event.description,
+        location: event.location,
+        date: new Date(event.date).toISOString(),
+        price: eventPrice,
+        isPrivate: event.isPrivate === true,
+        itinerary: event.itinerary || []
+      });
+
+      // Set selected tags
+      if (event.tags && Array.isArray(event.tags)) {
+        setSelectedTags(event.tags);
+      }
+
+      // Set image preview if available
+      if (event.image || event.image_url) {
+        setImagePreview(event.image || event.image_url || null);
+      }
+
+      setIsLoadingEvent(false);
+    }
+  }, [event, isLoading, form, user, toast, setLocation]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -100,9 +161,9 @@ export default function CreateEventPage() {
     }
   };
 
-  // The main function to publish events
-  const publishEvent = async () => {
-    // Manually trigger validation for all fields and log current form values
+  // Function to update the event
+  const updateEvent = async () => {
+    // Manually trigger validation for all fields
     console.log("Current form values:", form.getValues());
 
     const isValid = await form.trigger();
@@ -126,12 +187,21 @@ export default function CreateEventPage() {
       return;
     }
 
-    // Only proceed if we have a user
+    // Only proceed if we have a user and verify they are the event creator
     if (!user) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "You must be logged in to create events"
+        description: "You must be logged in to edit events"
+      });
+      return;
+    }
+
+    if (user.id !== event.creatorId) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "You can only edit your own events"
       });
       return;
     }
@@ -164,32 +234,21 @@ export default function CreateEventPage() {
       formData.append('tags', JSON.stringify(selectedTags));
       console.log("Added tags:", selectedTags);
 
-      // Add the isDraft flag (always false since we removed draft functionality)
-      formData.append('isDraft', 'false');
-
       // Add the image file if it exists
       if (selectedFile) {
         formData.append('image', selectedFile);
         console.log("Added image file:", selectedFile.name);
       } else {
-        console.log("No image file selected");
+        console.log("No new image file selected");
       }
 
-      // Make the API call with credentials
-      console.log("Submitting event");
-
-      // Get the current user ID from the user object
-      if (user?.id) {
-        formData.append('userId', user.id.toString());
-        console.log("Adding userId to form data:", user.id);
-      }
-
-      // Get the sessionId from localStorage - using the correct key 'maly_session_id'
+      // Get the sessionId from localStorage
       const sessionId = localStorage.getItem('maly_session_id');
       console.log("Using sessionId for authentication:", sessionId ? "yes" : "no");
 
-      const response = await fetch('/api/events', {
-        method: 'POST',
+      // Make the PUT request to update the event
+      const response = await fetch(`/api/events/${id}`, {
+        method: 'PUT',
         body: formData,
         headers: {
           // Include session ID in custom header
@@ -206,38 +265,47 @@ export default function CreateEventPage() {
       }
 
       const result = await response.json();
-      console.log("Event created successfully:", result);
+      console.log("Event updated successfully:", result);
 
       toast({
         title: "Success",
-        description: "Event published successfully"
+        description: "Event updated successfully"
       });
 
-      // Redirect back to the main page
-      setLocation("/");
+      // Redirect back to the event page
+      setLocation(`/event/${id}`);
     } catch (error) {
-      console.error("Error creating event:", error);
+      console.error("Error updating event:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create event"
+        description: error instanceof Error ? error.message : "Failed to update event"
       });
     } finally {
       setLoading(false);
     }
   };
 
+  if (isLoadingEvent || isLoading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Loading event details...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-black text-white">
       <GradientHeader 
-        title="Create"
-        backButtonFallbackPath="/"
+        title="Edit Event"
+        backButtonFallbackPath={`/event/${id}`}
       />
 
       <ScrollArea className="flex-1" style={{ height: 'calc(100vh - 140px)' }}>
         <div className="container mx-auto px-4 py-8 space-y-8 max-w-2xl">
             <div className="space-y-4">
-              <p className="text-sm text-white/60">Let's get started!</p>
+              <p className="text-sm text-white/60">Update your event</p>
               <div className="relative aspect-[3/2] bg-white/5 rounded-lg overflow-hidden">
                 {imagePreview ? (
                   <img
@@ -253,6 +321,19 @@ export default function CreateEventPage() {
                         Add photos or flyer for your event
                       </span>
                     </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                  </label>
+                )}
+                
+                {/* Add a button to change image if preview exists */}
+                {imagePreview && (
+                  <label className="absolute bottom-2 right-2 bg-black/80 text-white px-3 py-1.5 rounded-md text-sm cursor-pointer hover:bg-black">
+                    Change Image
                     <input
                       type="file"
                       accept="image/*"
@@ -336,8 +417,6 @@ export default function CreateEventPage() {
                 <p className="text-red-500 text-xs">{form.formState.errors.location.message}</p>
               )}
             </div>
-
-
 
             {/* Date Picker */}
             <div className="space-y-2">
@@ -433,36 +512,9 @@ export default function CreateEventPage() {
                 <ItineraryFormField name="itinerary" />
               </FormProvider>
               {form.formState.errors.itinerary && (
-                <p className="text-red-500 text-xs">Please check itinerary details</p>
+                <p className="text-red-500 text-xs">Please complete all itinerary items</p>
               )}
             </div>
-
-            {/* Publication Button */}
-            <div className="space-y-4">
-              <div className="flex gap-4">
-                <Button
-                  type="button"
-                  className="flex-1 h-12 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white"
-                  disabled={loading}
-                  onClick={publishEvent}
-                >
-                  Publish Event
-                </Button>
-              </div>
-            </div>
-          </div>
-
-        <div className="container mx-auto max-w-2xl px-4 pb-32">
-          <div className="rounded-lg overflow-hidden relative">
-            <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded z-10">
-              Premium Ad Partner
-            </div>
-            <img
-              src="/attached_assets/Screenshot 2025-03-05 at 1.56.31 AM.png"
-              alt="American Express Platinum - The world is yours with Platinum"
-              className="w-full object-cover"
-            />
-          </div>
         </div>
       </ScrollArea>
 
@@ -472,10 +524,10 @@ export default function CreateEventPage() {
             type="button"
             className="w-full h-12 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white transition-all duration-200"
             disabled={loading}
-            onClick={publishEvent}
+            onClick={updateEvent}
           >
-            <Plus className="h-5 w-5 mr-2" />
-            <span>{loading ? "Creating..." : "Create Event"}</span>
+            <Save className="h-5 w-5 mr-2" />
+            <span>{loading ? "Updating..." : "Update Event"}</span>
           </Button>
         </div>
       </div>

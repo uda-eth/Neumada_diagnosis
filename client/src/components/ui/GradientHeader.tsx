@@ -13,6 +13,7 @@ const iconMap = {
   Discover: MapPin,
   Connect: UserCircle,
   Create: PlusCircle,
+  "Edit Event": PlusCircle,
   Concierge: Globe,
   Inbox: InboxIcon,
 };
