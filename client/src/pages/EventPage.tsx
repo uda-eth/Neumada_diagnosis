@@ -431,33 +431,50 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
 
       {/* Event Details */}
       <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Status Buttons (mobile only) */}
+        {/* Status Buttons or Edit Button (mobile only) */}
         <div className="sm:hidden flex flex-col gap-3 pb-4 border-b border-white/10">
-          <h3 className="text-sm font-medium text-white/60 mb-2">Your Status</h3>
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              variant={userStatus === 'interested' ? "default" : "outline"}
-              className={`${userStatus === 'interested' ? 'bg-blue-700 hover:bg-blue-800' : ''}`}
-              onClick={() => handleParticipationChange('interested')}
-              disabled={participateMutation.isPending}
-              size="sm"
-            >
-              <Star className="h-3 w-3 mr-1" />
-              Interested
-              {userStatus === 'interested' && <CheckCircle className="h-3 w-3 ml-1" />}
-            </Button>
-            <Button
-              variant={userStatus === 'attending' ? "default" : "outline"}
-              className={`${userStatus === 'attending' ? 'bg-green-700 hover:bg-green-800' : ''}`}
-              onClick={() => handleParticipationChange('attending')}
-              disabled={participateMutation.isPending}
-              size="sm"
-            >
-              <Users className="h-3 w-3 mr-1" />
-              Attending
-              {userStatus === 'attending' && <CheckCircle className="h-3 w-3 ml-1" />}
-            </Button>
-          </div>
+          {user && user.id === event.creatorId ? (
+            <>
+              <h3 className="text-sm font-medium text-white/60 mb-2">Event Options</h3>
+              <Button
+                variant="default"
+                className="w-full bg-blue-700 hover:bg-blue-800"
+                onClick={() => setLocation(`/edit-event/${event.id}`)}
+                size="sm"
+              >
+                <PencilIcon className="h-4 w-4 mr-2" />
+                Edit Event
+              </Button>
+            </>
+          ) : (
+            <>
+              <h3 className="text-sm font-medium text-white/60 mb-2">Your Status</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  variant={userStatus === 'interested' ? "default" : "outline"}
+                  className={`${userStatus === 'interested' ? 'bg-blue-700 hover:bg-blue-800' : ''}`}
+                  onClick={() => handleParticipationChange('interested')}
+                  disabled={participateMutation.isPending}
+                  size="sm"
+                >
+                  <Star className="h-3 w-3 mr-1" />
+                  Interested
+                  {userStatus === 'interested' && <CheckCircle className="h-3 w-3 ml-1" />}
+                </Button>
+                <Button
+                  variant={userStatus === 'attending' ? "default" : "outline"}
+                  className={`${userStatus === 'attending' ? 'bg-green-700 hover:bg-green-800' : ''}`}
+                  onClick={() => handleParticipationChange('attending')}
+                  disabled={participateMutation.isPending}
+                  size="sm"
+                >
+                  <Users className="h-3 w-3 mr-1" />
+                  Attending
+                  {userStatus === 'attending' && <CheckCircle className="h-3 w-3 ml-1" />}
+                </Button>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Title and Meta */}
@@ -570,7 +587,20 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                 {event.price ? `$${event.price}` : 'Free'}
               </p>
             </div>
-            {event.price !== null && ((typeof event.price === 'string' ? parseFloat(event.price) > 0 : event.price > 0)) ? (
+            {/* Only show ticket/attendance buttons if not the creator */}
+            {user && user.id === event.creatorId ? (
+              <div className="hidden sm:block">
+                {/* Desktop edit button for event creator */}
+                <Button
+                  variant="default"
+                  className="w-full bg-blue-700 hover:bg-blue-800 mt-4"
+                  onClick={() => setLocation(`/edit-event/${event.id}`)}
+                >
+                  <PencilIcon className="h-4 w-4 mr-2" />
+                  Edit Event
+                </Button>
+              </div>
+            ) : event.price !== null && ((typeof event.price === 'string' ? parseFloat(event.price) > 0 : event.price > 0)) ? (
               <Button 
                 className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white whitespace-nowrap"
                 onClick={() => setLocation(`/event/${event.id}/tickets`)}
@@ -724,7 +754,8 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
 
         {/* Add Purchase Button - only show on desktop/tablet */ 
         /* (mobile uses bottom fixed button) */}
-        {canPurchase && (
+        {/* Don't show the purchase button if user is the event creator */}
+        {canPurchase && user && user.id !== event.creatorId && (
           <div className="mt-4 hidden sm:block">
             <Button
               className="w-full mt-4 font-semibold"
@@ -746,24 +777,46 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
         )}
         
         {/* Add spacing at the bottom for mobile to account for fixed bottom button */}
-        {user && user.id !== event.creatorId && event.price && (
+        {user && (
+          // For regular users viewing a paid event
+          (user.id !== event.creatorId && event.price) || 
+          // Or for event creators (to account for the Edit button)
+          (user.id === event.creatorId)
+        ) && (
           <div className="h-20 sm:h-0"></div>
         )}
       </div>
 
       {/* Bottom Actions - Mobile */}
-      {user && user.id !== event.creatorId && event.price && (
-        <div className="fixed bottom-0 left-0 right-0 p-3 bg-black/90 backdrop-blur-lg border-t border-white/10 z-10">
-          <div className="container mx-auto">
-            <Button
-              className="w-full h-12 text-sm sm:text-base rounded-lg bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700"
-              onClick={() => setLocation(`/event/${id}/tickets`)}
-              disabled={participateMutation.isPending}
-            >
-              {isPrivateEvent ? "Request Access" : `I'll be attending • $${typeof event.price === 'string' ? event.price : event.price?.toString()}`}
-            </Button>
+      {user && (
+        user.id === event.creatorId ? (
+          // Edit Button for Event Host (Mobile)
+          <div className="fixed bottom-0 left-0 right-0 p-3 bg-black/90 backdrop-blur-lg border-t border-white/10 z-10 sm:hidden">
+            <div className="container mx-auto">
+              <Button
+                className="w-full h-12 text-sm sm:text-base rounded-lg bg-blue-700 hover:bg-blue-800"
+                onClick={() => setLocation(`/edit-event/${event.id}`)}
+                disabled={false}
+              >
+                <PencilIcon className="h-4 w-4 mr-2" />
+                Edit Event
+              </Button>
+            </div>
           </div>
-        </div>
+        ) : event.price ? (
+          // Get Tickets Button for Regular Users (Mobile)
+          <div className="fixed bottom-0 left-0 right-0 p-3 bg-black/90 backdrop-blur-lg border-t border-white/10 z-10 sm:hidden">
+            <div className="container mx-auto">
+              <Button
+                className="w-full h-12 text-sm sm:text-base rounded-lg bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700"
+                onClick={() => setLocation(`/event/${id}/tickets`)}
+                disabled={participateMutation.isPending}
+              >
+                {isPrivateEvent ? "Request Access" : `I'll be attending • $${typeof event.price === 'string' ? event.price : event.price?.toString()}`}
+              </Button>
+            </div>
+          </div>
+        ) : null
       )}
     </div>
   );
