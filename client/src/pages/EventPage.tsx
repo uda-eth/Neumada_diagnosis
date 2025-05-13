@@ -163,7 +163,16 @@ export default function EventPage() {
         credentials: "include",
       });
 
-      if (!response.ok) throw new Error("Failed to update participation status");
+      if (!response.ok) {
+        const data = await response.json();
+        
+        // Handle case where free ticket is needed
+        if (data.needsTicket) {
+          throw new Error("free_ticket_required");
+        }
+        
+        throw new Error(data.error || "Failed to update participation status");
+      }
 
       return response.json();
     },
@@ -187,11 +196,74 @@ export default function EventPage() {
       queryClient.invalidateQueries({ queryKey: [`/api/events/${id}`] });
       queryClient.invalidateQueries({ queryKey: [`/api/events/${id}/participation`, user?.id] });
     },
-    onError: () => {
+    onError: (error: Error) => {
+      // Special handling for free ticket requirement
+      if (error.message === "free_ticket_required") {
+        // Let the handleParticipate function deal with this
+        throw error;
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to update participation status",
+        });
+      }
+    },
+  });
+  
+  // Mutation for requesting free tickets
+  const freeTicketMutation = useMutation({
+    mutationFn: async () => {
+      const sessionId = localStorage.getItem('maly_session_id');
+      const response = await fetch(`/api/events/${id}/free-ticket`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "X-Session-ID": sessionId || ''
+        },
+        credentials: "include"
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to get free ticket");
+      }
+
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Update local state to reflect attendance
+      setUserStatus('attending');
+
+      // Store ticket data for QR code generation
+      if (data.participantId && data.ticketIdentifier) {
+        const ticketData = {
+          participantId: data.participantId,
+          ticketIdentifier: data.ticketIdentifier,
+          eventId: parseInt(id || '0'),
+          timestamp: Date.now()
+        };
+        
+        localStorage.setItem('temp_ticket_data', JSON.stringify(ticketData));
+        
+        // Navigate to success page to show QR code
+        setLocation(`/payment-success?free_ticket=true`);
+      } else {
+        toast({
+          title: "Success",
+          description: "You're now registered for this free event!",
+        });
+      }
+
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: [`/api/events/${id}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/events/${id}/participation`, user?.id] });
+    },
+    onError: (error: Error) => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to update participation status",
+        description: error.message || "Failed to get free ticket",
       });
     },
   });

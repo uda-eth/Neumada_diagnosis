@@ -2775,14 +2775,57 @@ app.post('/api/events/:eventId/participate', isAuthenticated, async (req: Reques
 
     // Handle adding or updating participation status
     if (existingRecord) {
-      // Update existing record if status changed
+      // Special handling for users with tickets - they should remain "attending"
+      // but can also be marked as "interested" simultaneously
+      if (existingRecord.paymentStatus === 'completed' && existingRecord.ticketIdentifier) {
+        if (status === 'interested') {
+          // Allow user to toggle interest status even if attending
+          const hasInterestStatus = existingRecord.status.includes('interested');
+          
+          // Create a composite status if needed - "attending+interested"
+          let newStatus = hasInterestStatus ? 'attending' : 'attending+interested';
+          
+          // Increment/decrement interested count based on the toggle action
+          if (!hasInterestStatus) {
+            // Add interest
+            await db.update(events)
+              .set({ interestedCount: (event.interestedCount || 0) + 1 })
+              .where(eq(events.id, parseInt(eventId)));
+          } else {
+            // Remove interest
+            await db.update(events)
+              .set({ interestedCount: Math.max((event.interestedCount || 0) - 1, 0) })
+              .where(eq(events.id, parseInt(eventId)));
+          }
+          
+          // Update the record with composite status
+          await db.update(eventParticipants)
+            .set({ 
+              status: newStatus,
+              [eventParticipants.updatedAt.name]: new Date()
+            })
+            .where(and(
+              eq(eventParticipants.userId, currentUser.id),
+              eq(eventParticipants.eventId, parseInt(eventId))
+            ));
+            
+          return res.json({ status: newStatus });
+        } else if (status === 'attending') {
+          // If they want to mark as attending but already have a ticket, return current status
+          return res.json({ status: existingRecord.status });
+        }
+      }
+
+      // Regular update flow for non-ticket holders
       if (existingRecord.status !== status) {
         // First decrement the counter for the old status
-        if (existingRecord.status === 'interested') {
+        if (existingRecord.status === 'interested' || existingRecord.status.includes('interested')) {
           await db.update(events)
             .set({ interestedCount: Math.max((event.interestedCount || 0) - 1, 0) })
             .where(eq(events.id, parseInt(eventId)));
-        } else if (existingRecord.status === 'attending') {
+        } 
+        
+        if (existingRecord.status === 'attending' || existingRecord.status.includes('attending')) {
           await db.update(events)
             .set({ attendingCount: Math.max((event.attendingCount || 0) - 1, 0) })
             .where(eq(events.id, parseInt(eventId)));
@@ -2803,7 +2846,6 @@ app.post('/api/events/:eventId/participate', isAuthenticated, async (req: Reques
         await db.update(eventParticipants)
           .set({ 
             status,
-            // Use the column directly instead of a property name
             [eventParticipants.updatedAt.name]: new Date()
           })
           .where(and(
@@ -3129,6 +3171,117 @@ app.post('/api/events/:eventId/participate', isAuthenticated, async (req: Reques
   });
 
   // ... other routes ...
+
+  // --- Free Ticket Registration Endpoint ---
+  app.post('/api/events/:eventId/free-ticket', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const currentUser = req.user as Express.User;
+      const { eventId } = req.params;
+      const eventIdNum = parseInt(eventId, 10);
+      
+      if (isNaN(eventIdNum)) {
+        return res.status(400).json({ error: 'Invalid event ID' });
+      }
+      
+      // Find the event to make sure it exists and is free
+      const event = await db.query.events.findFirst({
+        where: eq(events.id, eventIdNum)
+      });
+      
+      if (!event) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+      
+      // Verify event is free (price is 0, null, empty string, etc.)
+      const isPaid = event.price && (typeof event.price === 'string' ? parseFloat(event.price) > 0 : event.price > 0);
+      if (isPaid) {
+        return res.status(400).json({ error: 'This endpoint is only for free events' });
+      }
+      
+      // Check if user already has a ticket for this event
+      const existingRecord = await db.query.eventParticipants.findFirst({
+        where: and(
+          eq(eventParticipants.userId, currentUser.id),
+          eq(eventParticipants.eventId, eventIdNum)
+        )
+      });
+      
+      if (existingRecord && existingRecord.paymentStatus === 'completed' && existingRecord.ticketIdentifier) {
+        return res.status(409).json({ 
+          error: 'You already have a ticket for this event',
+          participantId: existingRecord.id,
+          ticketIdentifier: existingRecord.ticketIdentifier
+        });
+      }
+      
+      // Generate a unique ticket identifier
+      const ticketIdentifier = uuidv4();
+      
+      // If user has an existing record, update it
+      if (existingRecord) {
+        // Check if status changed for counter update
+        const newStatus = existingRecord.status === 'interested' ? 'attending+interested' : 'attending';
+        const statusChanged = existingRecord.status !== newStatus && 
+                             !existingRecord.status.includes('attending');
+        
+        // Update attendance counter if needed
+        if (statusChanged) {
+          await db.update(events)
+            .set({ attendingCount: (event.attendingCount || 0) + 1 })
+            .where(eq(events.id, eventIdNum));
+        }
+        
+        // Update existing record
+        const updatedParticipant = await db.update(eventParticipants)
+          .set({
+            paymentStatus: 'completed',
+            ticketIdentifier: ticketIdentifier,
+            purchaseDate: new Date(),
+            status: newStatus, // Always mark as attending
+            updatedAt: new Date()
+          })
+          .where(eq(eventParticipants.id, existingRecord.id))
+          .returning();
+        
+        return res.status(200).json({
+          success: true,
+          message: 'Free ticket registered successfully',
+          participantId: updatedParticipant[0].id,
+          ticketIdentifier: ticketIdentifier
+        });
+      } else {
+        // Create new record
+        const newParticipant = await db.insert(eventParticipants)
+          .values({
+            userId: currentUser.id,
+            eventId: eventIdNum,
+            status: 'attending',
+            ticketQuantity: 1,
+            paymentStatus: 'completed',
+            ticketIdentifier: ticketIdentifier,
+            purchaseDate: new Date(),
+            createdAt: new Date(),
+            updatedAt: new Date()
+          })
+          .returning();
+        
+        // Update attendance counter
+        await db.update(events)
+          .set({ attendingCount: (event.attendingCount || 0) + 1 })
+          .where(eq(events.id, eventIdNum));
+        
+        return res.status(200).json({
+          success: true,
+          message: 'Free ticket registered successfully',
+          participantId: newParticipant[0].id,
+          ticketIdentifier: ticketIdentifier
+        });
+      }
+    } catch (error) {
+      console.error('Error registering free ticket:', error);
+      return res.status(500).json({ error: 'Failed to register free ticket' });
+    }
+  });
 
   // --- QR Code Download Endpoint --- 
   app.get('/api/tickets/:participantId/qr', requireAuth, async (req: Request, res: Response) => {
@@ -3623,12 +3776,36 @@ app.post('/api/events/:eventId/participate', isAuthenticated, async (req: Reques
 
       // Update the event participant record
       console.log(`[Webhook] Updating participant record ID: ${participantRecord.id} to status 'completed' and setting paymentIntentId to ${paymentIntentId}`);
+      
+      // Always mark user as attending when purchasing a ticket
+      // If they were previously interested, use a combined status
+      const newStatus = participantRecord.status === 'interested' ? 'attending+interested' : 'attending';
+      
+      // Check if status changed for counter update
+      const statusChanged = participantRecord.status !== newStatus && 
+                            !participantRecord.status.includes('attending');
+      
+      // Update attendance counter if needed
+      if (statusChanged) {
+        // Get the event to update counters
+        const eventToUpdate = await db.query.events.findFirst({
+          where: eq(events.id, eventId)
+        });
+        
+        if (eventToUpdate) {
+          await db.update(events)
+            .set({ attendingCount: (eventToUpdate.attendingCount || 0) + 1 })
+            .where(eq(events.id, eventId));
+        }
+      }
+      
       const updateResult = await db.update(eventParticipants)
         .set({
           paymentStatus: 'completed',
           paymentIntentId: paymentIntentId, // Update with the actual Payment Intent ID
           ticketIdentifier: ticketIdentifier,
           purchaseDate: new Date(),
+          status: newStatus, // Always mark as attending
           updatedAt: new Date()
         })
         .where(eq(eventParticipants.id, participantRecord.id)) // Update by the specific participant record ID
