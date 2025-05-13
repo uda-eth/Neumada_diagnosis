@@ -354,7 +354,7 @@ export function ConnectPage() {
               <Select value={selectedCity} onValueChange={setSelectedCity}>
                 <SelectTrigger className="w-full bg-background/5 border-border h-9 text-xs sm:text-sm flex justify-between items-center">
                   <SelectValue placeholder="Select city" />
-                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground ml-2" />
+                  {/* Removed duplicate ChevronDown icon */}
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Cities</SelectItem>
@@ -364,7 +364,6 @@ export function ConnectPage() {
                 </SelectContent>
               </Select>
             </div>
-            
             {/* Vibe and Mood Filter */}
             <div className="space-y-1.5 sm:space-y-2">
               <h3 className="text-xs sm:text-sm font-medium">Vibe</h3>
