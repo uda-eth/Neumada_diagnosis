@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MessageSquare, MapPin, Search, Filter, UserCircle, Heart, X } from "lucide-react";
+import { MessageSquare, MapPin, Search, Filter, UserCircle, Heart, X, ChevronDown } from "lucide-react";
 import { GradientHeader } from "@/components/ui/GradientHeader";
 import {
   HoverCard,
@@ -313,112 +313,120 @@ export function ConnectPage() {
       </GradientHeader>
 
       <div className="mb-8 space-y-4">
-        {/* Location and Mood filters - Primary Filters */}
-        <div className="flex flex-col md:flex-row gap-4">
-          {/* Location Filter - Positioned at top-left */}
-          <Select value={selectedCity} onValueChange={setSelectedCity}>
-            <SelectTrigger className="w-full md:w-[180px] bg-background/5 border-border h-9 text-xs sm:text-sm">
-              <SelectValue placeholder="Select city" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Cities</SelectItem>
-              {cities.map((city) => (
-                <SelectItem key={city} value={city}>{city}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          {/* Mood Filter - Dropdown exactly like in Discover page */}
-          <div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className="w-full md:w-[180px] justify-between h-9 text-xs sm:text-sm px-2 sm:px-4"
-                >
-                  <span className="truncate">Vibe and Mood</span>
-                  {selectedMoods.length > 0 && (
-                    <Badge variant="secondary" className="ml-1 sm:ml-2 text-xs px-1.5">
-                      {selectedMoods.length}
-                    </Badge>
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-[240px] sm:w-[280px]">
-                <DropdownMenuLabel className="text-xs sm:text-sm">Find people with similar vibes</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto">
-                  {moods.map((mood) => (
-                    <DropdownMenuCheckboxItem
-                      key={mood}
-                      checked={selectedMoods.includes(mood)}
-                      onCheckedChange={(checked) => {
-                        console.log(`Updated moods: ${checked ? [...selectedMoods, mood].join(", ") : selectedMoods.filter(m => m !== mood).join(", ")}`);
-                        setSelectedMoods(prev =>
-                          checked
-                            ? [...prev, mood]
-                            : prev.filter(m => m !== mood)
-                        );
-                      }}
-                      className="text-xs sm:text-sm"
-                    >
-                      {mood}
-                    </DropdownMenuCheckboxItem>
-                  ))}
-                </div>
-                {selectedMoods.length > 0 && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="justify-center text-muted-foreground text-xs sm:text-sm"
-                      onClick={() => setSelectedMoods([])}
-                    >
-                      Clear all filters
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          
-          {/* Selected Filters Display - Exactly like in Discover page */}
-          {selectedMoods.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 sm:gap-2 py-3 sm:py-4">
-              {selectedMoods.map((mood) => (
-                <Badge
-                  key={mood}
-                  variant="secondary"
-                  className="px-2 sm:px-3 py-0.5 sm:py-1 flex items-center gap-0.5 sm:gap-1 text-xs"
-                >
-                  {mood}
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setSelectedMoods(prev => prev.filter(m => m !== mood));
-                    }}
-                    className="ml-0.5 sm:ml-1 hover:text-destructive focus:outline-none"
-                  >
-                    <X className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                  </button>
-                </Badge>
-              ))}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedMoods([])}
-                className="text-muted-foreground hover:text-foreground text-xs sm:text-sm h-6 sm:h-8 px-2 sm:px-3"
+        {/* Selected Filters Display - Shown even when filters are hidden */}
+        {selectedMoods.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 sm:gap-2 py-3 sm:py-4">
+            {selectedMoods.map((mood) => (
+              <Badge
+                key={mood}
+                variant="secondary"
+                className="px-2 sm:px-3 py-0.5 sm:py-1 flex items-center gap-0.5 sm:gap-1 text-xs"
               >
-                Clear all
-              </Button>
-            </div>
-          )}
-        </div>
+                {mood}
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setSelectedMoods(prev => prev.filter(m => m !== mood));
+                  }}
+                  className="ml-0.5 sm:ml-1 hover:text-destructive focus:outline-none"
+                >
+                  <X className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                </button>
+              </Badge>
+            ))}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedMoods([])}
+              className="text-muted-foreground hover:text-foreground text-xs sm:text-sm h-6 sm:h-8 px-2 sm:px-3"
+            >
+              Clear all
+            </Button>
+          </div>
+        )}
 
-        {/* Additional filters - Expanded section */}
+        {/* Expanded filters section */}
         {isFiltersVisible && (
           <div className="space-y-3 sm:space-y-4 bg-accent/5 p-3 sm:p-4 rounded-lg border border-border">
+            {/* City Filter with carrot icon */}
             <div className="space-y-1.5 sm:space-y-2">
-              <h3 className="text-xs sm:text-sm font-medium">Search</h3>
+              <h3 className="text-xs sm:text-sm font-medium flex items-center justify-between">
+                <span>All Cities</span>
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+              </h3>
+              <Select value={selectedCity} onValueChange={setSelectedCity}>
+                <SelectTrigger className="w-full bg-background/5 border-border h-9 text-xs sm:text-sm">
+                  <SelectValue placeholder="Select city" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Cities</SelectItem>
+                  {cities.map((city) => (
+                    <SelectItem key={city} value={city}>{city}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Vibe and Mood Filter with carrot icon */}
+            <div className="space-y-1.5 sm:space-y-2">
+              <h3 className="text-xs sm:text-sm font-medium flex items-center justify-between">
+                <span>Vibe and Mood</span>
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+              </h3>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-between h-9 text-xs sm:text-sm px-2 sm:px-4"
+                  >
+                    <span className="truncate">Select vibes</span>
+                    {selectedMoods.length > 0 && (
+                      <Badge variant="secondary" className="ml-1 sm:ml-2 text-xs px-1.5">
+                        {selectedMoods.length}
+                      </Badge>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-[240px] sm:w-[280px]">
+                  <DropdownMenuLabel className="text-xs sm:text-sm">Find people with similar vibes</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto">
+                    {moods.map((mood) => (
+                      <DropdownMenuCheckboxItem
+                        key={mood}
+                        checked={selectedMoods.includes(mood)}
+                        onCheckedChange={(checked) => {
+                          console.log(`Updated moods: ${checked ? [...selectedMoods, mood].join(", ") : selectedMoods.filter(m => m !== mood).join(", ")}`);
+                          setSelectedMoods(prev =>
+                            checked
+                              ? [...prev, mood]
+                              : prev.filter(m => m !== mood)
+                          );
+                        }}
+                        className="text-xs sm:text-sm"
+                      >
+                        {mood}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </div>
+                  {selectedMoods.length > 0 && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="justify-center text-muted-foreground text-xs sm:text-sm"
+                        onClick={() => setSelectedMoods([])}
+                      >
+                        Clear all filters
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            
+            {/* Search by name */}
+            <div className="space-y-1.5 sm:space-y-2">
+              <h3 className="text-xs sm:text-sm font-medium">Search by name</h3>
               <div className="relative">
                 <Search className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
                 <Input
@@ -429,8 +437,6 @@ export function ConnectPage() {
                 />
               </div>
             </div>
-
-            {/* Interests filter removed - now only filtering by moods */}
           </div>
         )}
 
