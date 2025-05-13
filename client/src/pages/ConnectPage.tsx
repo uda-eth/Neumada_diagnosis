@@ -348,15 +348,13 @@ export function ConnectPage() {
         {/* Expanded filters section */}
         {isFiltersVisible && (
           <div className="space-y-3 sm:space-y-4 bg-accent/5 p-3 sm:p-4 rounded-lg border border-border">
-            {/* City Filter with carrot icon */}
+            {/* City Filter */}
             <div className="space-y-1.5 sm:space-y-2">
-              <h3 className="text-xs sm:text-sm font-medium flex items-center justify-between">
-                <span>All Cities</span>
-                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-              </h3>
+              <h3 className="text-xs sm:text-sm font-medium">Cities</h3>
               <Select value={selectedCity} onValueChange={setSelectedCity}>
-                <SelectTrigger className="w-full bg-background/5 border-border h-9 text-xs sm:text-sm">
+                <SelectTrigger className="w-full bg-background/5 border-border h-9 text-xs sm:text-sm flex justify-between items-center">
                   <SelectValue placeholder="Select city" />
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground ml-2" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Cities</SelectItem>
@@ -367,12 +365,9 @@ export function ConnectPage() {
               </Select>
             </div>
             
-            {/* Vibe and Mood Filter with carrot icon */}
+            {/* Vibe and Mood Filter */}
             <div className="space-y-1.5 sm:space-y-2">
-              <h3 className="text-xs sm:text-sm font-medium flex items-center justify-between">
-                <span>Vibe and Mood</span>
-                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-              </h3>
+              <h3 className="text-xs sm:text-sm font-medium">Vibe</h3>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button 
@@ -380,11 +375,14 @@ export function ConnectPage() {
                     className="w-full justify-between h-9 text-xs sm:text-sm px-2 sm:px-4"
                   >
                     <span className="truncate">Select vibes</span>
-                    {selectedMoods.length > 0 && (
-                      <Badge variant="secondary" className="ml-1 sm:ml-2 text-xs px-1.5">
-                        {selectedMoods.length}
-                      </Badge>
-                    )}
+                    <div className="flex items-center">
+                      {selectedMoods.length > 0 && (
+                        <Badge variant="secondary" className="mr-1.5 text-xs px-1.5">
+                          {selectedMoods.length}
+                        </Badge>
+                      )}
+                      <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                    </div>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-[240px] sm:w-[280px]">
@@ -430,7 +428,7 @@ export function ConnectPage() {
               <div className="relative">
                 <Search className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search by name..."
+                  placeholder="..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-8 sm:pl-10 h-8 sm:h-9 text-xs sm:text-sm"
