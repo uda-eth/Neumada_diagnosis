@@ -24,7 +24,8 @@ import {
   CalendarIcon, 
   Save, 
   Loader2,
-  ChevronsUpDown
+  ChevronsUpDown,
+  Plus
 } from "lucide-react";
 import { GradientHeader } from "@/components/ui/GradientHeader";
 import { z } from "zod";

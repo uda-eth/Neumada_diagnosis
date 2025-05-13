@@ -1329,6 +1329,7 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
     }
   });
 
+  // Get a specific event by ID
   app.get("/api/events/:id", async (req, res) => {
     try {
       const { id } = req.params;
@@ -1482,6 +1483,137 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
       if (error instanceof Error) {
           message = error.message;
       }
+      res.status(500).json({ error: message });
+    }
+  });
+
+  // Update an existing event
+  app.put("/api/events/:id", cloudinaryUpload.single('image'), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const eventId = parseInt(id);
+      
+      // Authenticate the user
+      let currentUser = null;
+
+      // Method 1: Check if user is authenticated via passport
+      if (req.isAuthenticated() && req.user) {
+        currentUser = req.user;
+        console.log("User authenticated via passport for event update:", currentUser.username);
+      }
+      
+      // Method 2: Check X-User-ID header
+      if (!currentUser) {
+        const headerUserId = req.headers['x-user-id'] as string;
+        
+        if (headerUserId) {
+          console.log("Trying to authenticate via User-ID header for event update:", headerUserId);
+          
+          try {
+            const userId = parseInt(headerUserId);
+            const [user] = await db.select()
+              .from(users)
+              .where(eq(users.id, userId))
+              .limit(1);
+              
+            if (user) {
+              currentUser = user;
+              console.log("User authenticated via User-ID header for event update:", user.username);
+            }
+          } catch (err) {
+            console.error("Error checking user by header ID:", err);
+          }
+        }
+      }
+
+      if (!currentUser) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      // Verify this event exists and the user is the creator
+      const [existingEvent] = await db.select()
+        .from(events)
+        .where(eq(events.id, eventId))
+        .limit(1);
+
+      if (!existingEvent) {
+        return res.status(404).json({ error: "Event not found" });
+      }
+
+      if (existingEvent.creatorId !== currentUser.id) {
+        return res.status(403).json({ error: "You can only edit your own events" });
+      }
+
+      // Process form data
+      const {
+        title,
+        description,
+        location,
+        date,
+        price,
+        isPrivate,
+        tags,
+        itinerary
+      } = req.body;
+
+      // Create the update object
+      const updateData: any = {
+        title,
+        description,
+        location,
+        date: new Date(date),
+        updatedAt: new Date(),
+      };
+
+      // Add optional fields if they exist
+      if (price !== undefined) {
+        updateData.price = typeof price === 'string' ? parseFloat(price) : price;
+      }
+
+      if (isPrivate !== undefined) {
+        updateData.isPrivate = isPrivate === 'true' || isPrivate === true;
+      }
+
+      if (tags) {
+        try {
+          updateData.tags = JSON.parse(tags);
+        } catch (e) {
+          console.error("Error parsing tags:", e);
+        }
+      }
+
+      if (itinerary) {
+        try {
+          updateData.itinerary = JSON.parse(itinerary);
+        } catch (e) {
+          console.error("Error parsing itinerary:", e);
+        }
+      }
+
+      // If a new image was uploaded, add it to the update data
+      if (req.file) {
+        updateData.image = req.file.path;
+        updateData.image_url = req.file.path;
+      }
+
+      // Update the event in the database
+      await db.update(events)
+        .set(updateData)
+        .where(eq(events.id, eventId));
+
+      // Fetch the updated event
+      const [updatedEvent] = await db.select()
+        .from(events)
+        .where(eq(events.id, eventId))
+        .limit(1);
+
+      res.status(200).json({ 
+        message: "Event updated successfully", 
+        event: updatedEvent 
+      });
+    } catch (error) {
+      console.error("Error updating event:", error);
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
       res.status(500).json({ error: message });
     }
   });
