@@ -1553,7 +1553,8 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         price,
         isPrivate,
         tags,
-        itinerary
+        itinerary,
+        category
       } = req.body;
 
       // Create the update object
@@ -1562,6 +1563,8 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         description,
         location,
         date: new Date(date),
+        // Include category field with a default value to avoid NOT NULL constraint violation
+        category: category || 'Other',
         updatedAt: new Date(),
       };
 
@@ -1768,7 +1771,7 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         description: req.body.description,
         location: req.body.location,
         city: req.body.city || 'Unknown',
-        category: req.body.category,
+        category: req.body.category || 'Other', // Add default category value
         ticketType: req.body.price && parseFloat(req.body.price) > 0 ? 'paid' : 'free',
         capacity: parseInt(req.body.capacity || '10'),
         price: req.body.price ? req.body.price.toString() : '0', // Ensure price is a string

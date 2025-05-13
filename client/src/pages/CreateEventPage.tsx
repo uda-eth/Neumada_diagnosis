@@ -53,6 +53,8 @@ const eventSchema = z.object({
     .default(() => new Date().toISOString()),
   // Add itinerary field (optional array of itinerary items)
   itinerary: z.array(itineraryItemSchema).optional().default([]),
+  // Include category field even though we don't show it in the UI anymore
+  category: z.string().default("Other"),
 });
 
 // Define the form data type using the zod schema
@@ -80,7 +82,9 @@ export default function CreateEventPage() {
       date: new Date().toISOString(),
       price: 0,
       isPrivate: false,
-      itinerary: [] // Initialize with empty array
+      itinerary: [], // Initialize with empty array
+      // Include a default category even though we don't show it in the UI anymore
+      category: "Other"
     },
   });
 
