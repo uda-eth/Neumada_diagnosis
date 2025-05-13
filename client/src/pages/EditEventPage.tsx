@@ -302,9 +302,8 @@ export default function EditEventPage() {
         backButtonFallbackPath={`/event/${id}`}
       />
 
-      {/* Reduced height to make space for the bottom button */}
-      <ScrollArea className="flex-1" style={{ height: 'calc(100vh - 200px)' }}>
-        <div className="container mx-auto px-4 py-8 pb-16 space-y-8 max-w-2xl">
+      <ScrollArea className="flex-1" style={{ height: 'calc(100vh - 140px)' }}>
+        <div className="container mx-auto px-4 py-8 space-y-8 max-w-2xl">
             <div className="space-y-4">
               <p className="text-sm text-white/60">Update your event</p>
               <div className="relative aspect-[3/2] bg-white/5 rounded-lg overflow-hidden">
@@ -454,8 +453,7 @@ export default function EditEventPage() {
               )}
             </div>
 
-            {/* Add extra padding at the bottom for last section */}
-            <div className="space-y-4 pb-16">
+            <div className="space-y-4">
               <div className="flex gap-4">
                 <Button
                   type="button"
@@ -520,17 +518,16 @@ export default function EditEventPage() {
         </div>
       </ScrollArea>
 
-      {/* Fixed sticky button for all devices, with extra padding and styling for mobile */}
-      <div className="fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-lg border-t border-white/10 z-50">
+      <div className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-lg border-t border-white/10">
         <div className="container mx-auto max-w-2xl p-4">
           <Button
             type="button"
-            className="w-full h-14 sm:h-12 text-base sm:text-sm font-medium bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white transition-all duration-200 rounded-md shadow-lg"
+            className="w-full h-12 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white transition-all duration-200"
             disabled={loading}
             onClick={updateEvent}
           >
             <Save className="h-5 w-5 mr-2" />
-            <span>{loading ? "Updating..." : "Re-Publish Event"}</span>
+            <span>{loading ? "Updating..." : "Update Event"}</span>
           </Button>
         </div>
       </div>
