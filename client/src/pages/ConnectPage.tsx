@@ -160,6 +160,13 @@ export function ConnectPage() {
       
       const results = await response.json();
       console.log(`Received ${results.length} users from server`);
+      
+      // Debug: Check the structure of user moods in the response
+      results.forEach((user: User) => {
+        console.log(`User ${user.fullName || user.username} has currentMoods:`, 
+          Array.isArray(user.currentMoods) ? user.currentMoods : "NO MOODS ARRAY");
+      });
+      
       return results;
     },
     refetchOnWindowFocus: false
