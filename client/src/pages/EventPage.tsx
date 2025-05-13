@@ -195,6 +195,45 @@ export default function EventPage() {
       });
     },
   });
+  
+  // Delete event mutation
+  const deleteEventMutation = useMutation({
+    mutationFn: async () => {
+      const sessionId = localStorage.getItem('maly_session_id');
+      const response = await fetch(`/api/events/${id}`, {
+        method: "DELETE",
+        headers: { 
+          "Content-Type": "application/json",
+          "X-Session-ID": sessionId || ''
+        },
+        credentials: "include",
+      });
+
+      if (!response.ok) throw new Error("Failed to delete event");
+
+      return response.json();
+    },
+    onSuccess: () => {
+      // Show success message
+      toast({
+        title: "Success",
+        description: "Event deleted successfully",
+      });
+
+      // Redirect to the events page
+      setLocation('/');
+      
+      // Invalidate events list query to refresh data
+      queryClient.invalidateQueries({ queryKey: ['/api/events'] });
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete event",
+      });
+    },
+  });
 
   const handleParticipate = async (status: ParticipationStatus) => {
     const sessionId = localStorage.getItem('maly_session_id');
@@ -239,6 +278,44 @@ export default function EventPage() {
       console.error("Logout error:", error);
       // Force redirect to auth even if logout fails
       setLocation("/auth");
+    }
+  };
+  
+  // Function to handle event deletion with confirmation
+  const handleDeleteEvent = async () => {
+    // Check if user is authenticated
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Authentication Required",
+        description: "You must be logged in to delete events",
+      });
+      setLocation('/auth');
+      return;
+    }
+    
+    // Verify that the current user is the event creator
+    if (user.id !== event.creatorId) {
+      toast({
+        variant: "destructive",
+        title: "Permission Denied",
+        description: "You can only delete events you've created",
+      });
+      return;
+    }
+    
+    // Ask for confirmation before deleting
+    if (window.confirm(`Are you sure you want to delete "${event.title}"? This action cannot be undone.`)) {
+      try {
+        await deleteEventMutation.mutateAsync();
+      } catch (error) {
+        console.error("Delete event error:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to delete event. Please try again.",
+        });
+      }
     }
   };
 
@@ -600,7 +677,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
             </div>
             {/* Only show ticket/attendance buttons if not the creator */}
             {user && user.id === event.creatorId ? (
-              <div className="hidden sm:block">
+              <div className="hidden sm:block space-y-2">
                 {/* Desktop edit button for event creator */}
                 <Button
                   variant="default"
@@ -609,6 +686,16 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                 >
                   <PencilIcon className="h-4 w-4 mr-2" />
                   Edit Event
+                </Button>
+                
+                {/* Desktop delete button for event creator */}
+                <Button
+                  variant="destructive"
+                  className="w-full"
+                  onClick={() => handleDeleteEvent()}
+                >
+                  <XCircle className="h-4 w-4 mr-2" />
+                  Delete Event
                 </Button>
               </div>
             ) : event.price !== null && ((typeof event.price === 'string' ? parseFloat(event.price) > 0 : event.price > 0)) ? (
@@ -801,16 +888,25 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
       {/* Bottom Actions - Mobile */}
       {user && (
         user.id === event.creatorId ? (
-          // Edit Button for Event Host (Mobile)
+          // Actions for Event Host (Mobile)
           <div className="fixed bottom-0 left-0 right-0 p-3 bg-black/90 backdrop-blur-lg border-t border-white/10 z-10 sm:hidden">
-            <div className="container mx-auto">
+            <div className="container mx-auto grid grid-cols-2 gap-2">
               <Button
-                className="w-full h-12 text-sm sm:text-base rounded-lg bg-blue-700 hover:bg-blue-800"
+                className="h-12 text-sm sm:text-base rounded-lg bg-blue-700 hover:bg-blue-800"
                 onClick={() => setLocation(`/edit-event/${event.id}`)}
                 disabled={false}
               >
                 <PencilIcon className="h-4 w-4 mr-2" />
                 Edit Event
+              </Button>
+              <Button
+                className="h-12 text-sm sm:text-base rounded-lg"
+                variant="destructive"
+                onClick={() => handleDeleteEvent()}
+                disabled={false}
+              >
+                <XCircle className="h-4 w-4 mr-2" />
+                Delete Event
               </Button>
             </div>
           </div>
