@@ -13,6 +13,15 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -105,7 +114,9 @@ const interests = [
 import { useUser } from "@/hooks/use-user";
 import { VIBE_AND_MOOD_TAGS } from "@/lib/constants";
 
-const moods = VIBE_AND_MOOD_TAGS;
+// Use the same EVENT_TYPES constant as the Discover page uses
+const EVENT_TYPES = VIBE_AND_MOOD_TAGS;
+const moods = EVENT_TYPES; // For backward compatibility
 
 export function ConnectPage() {
   const [, setLocation] = useLocation();
@@ -164,18 +175,24 @@ export function ConnectPage() {
     }
   }, [error, toast]);
 
-  // Filter the user results client-side for search terms AND moods/tags
+  // Filter users exactly like the Discover page filters events
   const filteredUsers = users?.filter(user => {
     // Check if user matches search term
     const matchesSearch = !searchTerm || 
       (user.fullName && user.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (user.username && user.username.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    // Check if user matches selected moods (same logic as Discover page)
-    const matchesMoods = selectedMoods.length === 0 || 
-      (user.currentMoods && user.currentMoods.some(mood => selectedMoods.includes(mood)));
+    // Check if user matches selected moods - EXACT same logic as Discover page uses for events
+    const matchesMoods = selectedMoods.length === 0 ||
+                        (user.currentMoods && user.currentMoods.some(mood => selectedMoods.includes(mood)));
     
-    // Both conditions must be satisfied
+    // Debug logs to help understand why filtering might not be working
+    if (selectedMoods.length > 0) {
+      console.log(`User ${user.fullName} has moods:`, user.currentMoods);
+      console.log(`Matches selected moods (${selectedMoods.join(', ')}):`, matchesMoods);
+    }
+    
+    // Both conditions must be satisfied, exactly like in Discover page
     return matchesSearch && matchesMoods;
   }) || [];
 
@@ -235,32 +252,90 @@ export function ConnectPage() {
             </SelectContent>
           </Select>
           
-          {/* Mood Filter - Enhanced pill-style toggles with better visual feedback */}
-          <div className="flex flex-wrap gap-1.5 sm:gap-2">
-            {moods.map((mood) => (
-              <button
-                key={mood}
-                className={`rounded-full px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-medium transition-colors 
-                  ${selectedMoods.includes(mood) 
-                    ? moodStyles[mood as keyof typeof moodStyles] + ' shadow-sm' 
-                    : 'border border-border bg-background/5 hover:bg-accent/20'}`}
-                onClick={() => toggleFilter(mood)}
-              >
-                {selectedMoods.includes(mood) && (
-                  <span className="mr-0.5 sm:mr-1">✓</span>
+          {/* Mood Filter - Dropdown exactly like in Discover page */}
+          <div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  className="w-full md:w-[180px] justify-between h-9 text-xs sm:text-sm px-2 sm:px-4"
+                >
+                  <span className="truncate">Vibe and Mood</span>
+                  {selectedMoods.length > 0 && (
+                    <Badge variant="secondary" className="ml-1 sm:ml-2 text-xs px-1.5">
+                      {selectedMoods.length}
+                    </Badge>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-[240px] sm:w-[280px]">
+                <DropdownMenuLabel className="text-xs sm:text-sm">Vibe and Mood</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto">
+                  {moods.map((mood) => (
+                    <DropdownMenuCheckboxItem
+                      key={mood}
+                      checked={selectedMoods.includes(mood)}
+                      onCheckedChange={(checked) => {
+                        console.log(`Updated moods: ${checked ? [...selectedMoods, mood].join(", ") : selectedMoods.filter(m => m !== mood).join(", ")}`);
+                        setSelectedMoods(prev =>
+                          checked
+                            ? [...prev, mood]
+                            : prev.filter(m => m !== mood)
+                        );
+                      }}
+                      className="text-xs sm:text-sm"
+                    >
+                      {mood}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </div>
+                {selectedMoods.length > 0 && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="justify-center text-muted-foreground text-xs sm:text-sm"
+                      onClick={() => setSelectedMoods([])}
+                    >
+                      Clear all filters
+                    </DropdownMenuItem>
+                  </>
                 )}
-                {mood}
-              </button>
-            ))}
-            {selectedMoods.length > 0 && (
-              <button
-                className="rounded-full px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-medium text-muted-foreground border border-border bg-background/5 hover:bg-accent/20"
-                onClick={() => setSelectedMoods([])}
-              >
-                Clear
-              </button>
-            )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
+          
+          {/* Selected Filters Display - Exactly like in Discover page */}
+          {selectedMoods.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 py-3 sm:py-4">
+              {selectedMoods.map((mood) => (
+                <Badge
+                  key={mood}
+                  variant="secondary"
+                  className="px-2 sm:px-3 py-0.5 sm:py-1 flex items-center gap-0.5 sm:gap-1 text-xs"
+                >
+                  {mood}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setSelectedMoods(prev => prev.filter(m => m !== mood));
+                    }}
+                    className="ml-0.5 sm:ml-1 hover:text-destructive focus:outline-none"
+                  >
+                    <X className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                  </button>
+                </Badge>
+              ))}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedMoods([])}
+                className="text-muted-foreground hover:text-foreground text-xs sm:text-sm h-6 sm:h-8 px-2 sm:px-3"
+              >
+                Clear all
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Additional filters - Expanded section */}
