@@ -166,25 +166,60 @@ export function ConnectPage() {
       
       // Process users to ensure they have tags for compatibility with event filtering
       const processedUsers = results.map((user: User) => {
-        // Create tags array from currentMoods for compatibility with event filtering
+        // Create tags array from BOTH interests and currentMoods for compatibility with event filtering
         let moodArray: string[] = [];
         
-        if (user.currentMoods) {
-          if (Array.isArray(user.currentMoods)) {
-            moodArray = user.currentMoods;
-          } else if (typeof user.currentMoods === 'string') {
+        // First check interests since you mentioned that's where they're stored
+        if (user.interests) {
+          if (Array.isArray(user.interests)) {
+            moodArray = [...user.interests];
+          } else if (typeof user.interests === 'string') {
             try {
               // Try parsing as JSON string
-              const parsed = JSON.parse(user.currentMoods as string);
-              moodArray = Array.isArray(parsed) ? parsed : [];
+              const parsed = JSON.parse(user.interests as string);
+              if (Array.isArray(parsed)) {
+                moodArray = [...parsed];
+              }
             } catch (e) {
               // If it fails, try treating as comma-separated string
-              if (typeof user.currentMoods === 'string') {
-                moodArray = (user.currentMoods as string).split(',').map((m: string) => m.trim());
+              if (typeof user.interests === 'string') {
+                moodArray = (user.interests as string).split(',').map((m: string) => m.trim());
               }
             }
           }
         }
+        
+        // Also check currentMoods as a backup
+        if (user.currentMoods) {
+          let currentMoodsArray: string[] = [];
+          
+          if (Array.isArray(user.currentMoods)) {
+            currentMoodsArray = user.currentMoods;
+          } else if (typeof user.currentMoods === 'string') {
+            try {
+              // Try parsing as JSON string
+              const parsed = JSON.parse(user.currentMoods as string);
+              if (Array.isArray(parsed)) {
+                currentMoodsArray = parsed;
+              }
+            } catch (e) {
+              // If it fails, try treating as comma-separated string
+              if (typeof user.currentMoods === 'string') {
+                currentMoodsArray = (user.currentMoods as string).split(',').map((m: string) => m.trim());
+              }
+            }
+          }
+          
+          // Merge with interests
+          moodArray = [...moodArray, ...currentMoodsArray];
+        }
+        
+        // Debug log to check what moods/interests we found
+        console.log(`User ${user.fullName || user.username}:`, {
+          interests: user.interests,
+          currentMoods: user.currentMoods,
+          combinedTags: moodArray
+        });
         
         // Add tags property for compatibility with event filtering
         return {
@@ -481,9 +516,9 @@ export function ConnectPage() {
                                       <span className="truncate">{user.location}</span>
                                     </div>
                                   )}
-                                  {user.currentMoods && user.currentMoods.length > 0 && (
+                                  {user.tags && user.tags.length > 0 && (
                                     <div className="flex flex-wrap gap-1 mt-2">
-                                      {user.currentMoods.map((mood, index) => (
+                                      {user.tags.slice(0, 3).map((mood, index) => (
                                         <Badge
                                           key={index}
                                           variant="secondary"
