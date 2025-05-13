@@ -123,9 +123,9 @@ export function ConnectPage() {
     error,
     refetch
   } = useQuery<User[]>({
-    queryKey: ['users', selectedCity, selectedMoods, currentUser?.id],
+    queryKey: ['users', selectedCity, currentUser?.id],
     queryFn: async () => {
-      // Build query parameters
+      // Build query parameters - now only using location/city filter
       const params = new URLSearchParams();
       
       if (selectedCity !== 'all') {
@@ -136,25 +136,11 @@ export function ConnectPage() {
         params.append('currentUserId', currentUser.id.toString());
       }
       
-      // Add moods as array parameters - ensure this is working
-      if (selectedMoods.length > 0) {
-        // Try multiple parameter formats to ensure compatibility with server
-        // Format 1: Standard array notation as 'moods[]'
-        selectedMoods.forEach(mood => {
-          params.append('moods[]', mood);
-        });
-        
-        // Format 2: Also add as 'moods' parameter for frameworks that might handle it differently
-        params.append('moods', selectedMoods.join(','));
-        
-        console.log(`Including mood filters: ${selectedMoods.join(', ')}`);
-      }
-      
       // Log the query for debugging
       const queryString = params.toString();
       console.log(`Fetching users with filters: ${queryString}`);
       
-      // Use the properly formatted query string
+      // Use the properly formatted query string - no longer sending moods in the API call
       const response = await fetch(`/api/users/browse?${queryString}`);
       
       if (!response.ok) {
@@ -178,13 +164,19 @@ export function ConnectPage() {
     }
   }, [error, toast]);
 
-  // Filter the user results client-side for search terms only
+  // Filter the user results client-side for search terms AND moods/tags
   const filteredUsers = users?.filter(user => {
+    // Check if user matches search term
     const matchesSearch = !searchTerm || 
       (user.fullName && user.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (user.username && user.username.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    return matchesSearch;
+    // Check if user matches selected moods (same logic as Discover page)
+    const matchesMoods = selectedMoods.length === 0 || 
+      (user.currentMoods && user.currentMoods.some(mood => selectedMoods.includes(mood)));
+    
+    // Both conditions must be satisfied
+    return matchesSearch && matchesMoods;
   }) || [];
 
   const toggleFilter = (item: string) => {
