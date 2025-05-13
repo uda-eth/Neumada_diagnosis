@@ -102,12 +102,12 @@ export default function CreateEventPage() {
   const publishEvent = async () => {
     // Manually trigger validation for all fields and log current form values
     console.log("Current form values:", form.getValues());
-    
+
     const isValid = await form.trigger();
-    
+
     if (!isValid) {
       console.log("Form validation errors:", form.formState.errors);
-      
+
       // Create a more specific error message based on which fields failed validation
       const errorFields = Object.keys(form.formState.errors)
         .map(field => {
@@ -115,7 +115,7 @@ export default function CreateEventPage() {
           return `${field}: ${form.formState.errors[errorField]?.message}`;
         })
         .join(', ');
-      
+
       toast({
         variant: "destructive",
         title: "Validation Error",
@@ -136,14 +136,14 @@ export default function CreateEventPage() {
 
     try {
       setLoading(true);
-      
+
       // Get data from the form
       const data = form.getValues();
       console.log("Form data to be submitted:", data);
-      
+
       // Create a FormData object for the API call
       const formData = new FormData();
-      
+
       // Add all form fields
       Object.entries(data).forEach(([key, value]) => {
         if (value !== null && value !== undefined) {
@@ -157,14 +157,14 @@ export default function CreateEventPage() {
           }
         }
       });
-      
+
       // Add the selected tags
       formData.append('tags', JSON.stringify(selectedTags));
       console.log("Added tags:", selectedTags);
-      
+
       // Add the isDraft flag (always false since we removed draft functionality)
       formData.append('isDraft', 'false');
-      
+
       // Add the image file if it exists
       if (selectedFile) {
         formData.append('image', selectedFile);
@@ -172,20 +172,20 @@ export default function CreateEventPage() {
       } else {
         console.log("No image file selected");
       }
-      
+
       // Make the API call with credentials
       console.log("Submitting event");
-      
+
       // Get the current user ID from the user object
       if (user?.id) {
         formData.append('userId', user.id.toString());
         console.log("Adding userId to form data:", user.id);
       }
-      
+
       // Get the sessionId from localStorage - using the correct key 'maly_session_id'
       const sessionId = localStorage.getItem('maly_session_id');
       console.log("Using sessionId for authentication:", sessionId ? "yes" : "no");
-      
+
       const response = await fetch('/api/events', {
         method: 'POST',
         body: formData,
@@ -197,20 +197,20 @@ export default function CreateEventPage() {
         },
         credentials: 'include', // Include credentials like cookies
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `Error: ${response.status}`);
       }
-      
+
       const result = await response.json();
       console.log("Event created successfully:", result);
-      
+
       toast({
         title: "Success",
         description: "Event published successfully"
       });
-      
+
       // Redirect back to the main page
       setLocation("/");
     } catch (error) {
@@ -287,7 +287,7 @@ export default function CreateEventPage() {
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-sm font-medium">Vibe and Mood for this event</h3>
+              <h3 className="text-sm font-medium">Vibes for this event</h3>
               <div className="grid grid-cols-3 gap-2">
                 {interestTags.map((tag) => (
                   <Button
