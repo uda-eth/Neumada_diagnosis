@@ -18,7 +18,6 @@ export default function TestCreateEventPage() {
       formData.append('title', 'Test Event ' + new Date().toLocaleTimeString());
       formData.append('description', 'This is an automatically generated test event');
       formData.append('location', 'Mexico City');
-      formData.append('category', 'Social');
       formData.append('date', new Date().toISOString());
 
       // Get the stored session ID
