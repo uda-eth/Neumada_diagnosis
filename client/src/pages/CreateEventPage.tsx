@@ -29,7 +29,7 @@ import {
 import { GradientHeader } from "@/components/ui/GradientHeader";
 import { z } from "zod";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { EVENT_CATEGORIES, VIBE_AND_MOOD_TAGS, DIGITAL_NOMAD_CITIES } from "@/lib/constants";
+import { VIBE_AND_MOOD_TAGS, DIGITAL_NOMAD_CITIES } from "@/lib/constants";
 import { useUser } from "@/hooks/use-user";
 import { ItineraryFormField } from "@/components/ItineraryFormField";
 
@@ -45,7 +45,6 @@ const eventSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   location: z.string().min(3, "Location is required"),
-  category: z.string().default("Social"),
   price: z.coerce.number().min(0).default(0),
   isPrivate: z.boolean().default(false),
   // Add a proper date validator to ensure valid dates
@@ -81,7 +80,6 @@ export default function CreateEventPage() {
       date: new Date().toISOString(),
       price: 0,
       isPrivate: false,
-      category: "Social",
       itinerary: [] // Initialize with empty array
     },
   });
@@ -335,28 +333,7 @@ export default function CreateEventPage() {
               )}
             </div>
 
-            {/* Event Category Selector */}
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium">Event Category</h3>
-              <Select
-                value={form.watch("category")}
-                onValueChange={(value) => form.setValue("category", value)}
-              >
-                <SelectTrigger className="w-full h-12 bg-white/5 border-white/10 hover:bg-white/10">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {EVENT_CATEGORIES.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {form.formState.errors.category && (
-                <p className="text-red-500 text-xs">{form.formState.errors.category.message}</p>
-              )}
-            </div>
+
 
             {/* Date Picker */}
             <div className="space-y-2">
