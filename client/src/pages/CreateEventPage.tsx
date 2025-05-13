@@ -29,7 +29,7 @@ import {
 import { GradientHeader } from "@/components/ui/GradientHeader";
 import { z } from "zod";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { EVENT_CATEGORIES, VIBE_AND_MOOD_TAGS } from "@/lib/constants";
+import { EVENT_CATEGORIES, VIBE_AND_MOOD_TAGS, DIGITAL_NOMAD_CITIES } from "@/lib/constants";
 import { useUser } from "@/hooks/use-user";
 import { ItineraryFormField } from "@/components/ItineraryFormField";
 
@@ -314,11 +314,22 @@ export default function CreateEventPage() {
             </div>
 
             <div className="space-y-4">
-              <Input
-                {...form.register("location")}
-                className="bg-white/5 border-0 h-12"
-                placeholder="Event location"
-              />
+              <h3 className="text-sm font-medium">Event Location</h3>
+              <Select
+                value={form.watch("location")}
+                onValueChange={(value) => form.setValue("location", value)}
+              >
+                <SelectTrigger className="w-full h-12 bg-white/5 border-white/10 hover:bg-white/10">
+                  <SelectValue placeholder="Select a city" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DIGITAL_NOMAD_CITIES.map((city) => (
+                    <SelectItem key={city} value={city}>
+                      {city}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {form.formState.errors.location && (
                 <p className="text-red-500 text-xs">{form.formState.errors.location.message}</p>
               )}
