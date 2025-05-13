@@ -19,7 +19,7 @@ interface FirstEventModalProps {
 export function FirstEventModal({ cityName, open, onClose }: FirstEventModalProps) {
   const [, setLocation] = useLocation();
   const { user } = useUser();
-  const { getShareLink, copyShareLink } = useReferral();
+  const { getShareLink } = useReferral();
   const [showInviteOptions, setShowInviteOptions] = useState(false);
   const [inviteUrl, setInviteUrl] = useState('');
   const [copied, setCopied] = useState(false);

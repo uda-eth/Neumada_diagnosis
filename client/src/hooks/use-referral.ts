@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 
 type ContentType = 'event' | 'profile' | 'invite';
@@ -7,24 +6,6 @@ type ContentType = 'event' | 'profile' | 'invite';
 export function useReferral() {
   const [isCopied, setIsCopied] = useState(false);
   const { toast } = useToast();
-
-  // Get user's referral code
-  const { data: referralData, isLoading, error } = useQuery({
-    queryKey: ['/api/referral/code'],
-    queryFn: async () => {
-      const response = await fetch('/api/referral/code', {
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error fetching referral code: ${response.status}`);
-      }
-
-      return response.json();
-    },
-    // Don't refetch on window focus to avoid too many API calls
-    refetchOnWindowFocus: false,
-  });
 
   // Get share link for a specific content
   const getShareLink = async (type: ContentType, id?: string | number) => {
@@ -51,35 +32,6 @@ export function useReferral() {
     }
   };
 
-  // Copy share link to clipboard
-  const copyShareLink = async (type: ContentType, id?: string | number, customToast = true) => {
-    try {
-      const shareLink = await getShareLink(type, id);
-      
-      await navigator.clipboard.writeText(shareLink);
-      setIsCopied(true);
-      
-      if (customToast) {
-        toast({
-          title: "Link copied!",
-          description: "Share link copied to clipboard",
-          variant: "default",
-        });
-      }
-      
-      setTimeout(() => setIsCopied(false), 2000);
-      return shareLink;
-    } catch (err) {
-      console.error("Failed to copy link: ", err);
-      toast({
-        title: "Copy failed",
-        description: "Could not copy link to clipboard",
-        variant: "destructive",
-      });
-      return null;
-    }
-  };
-
   // Handle Web Share API (for mobile devices)
   const shareContent = async (
     type: ContentType, 
@@ -88,8 +40,13 @@ export function useReferral() {
     text = "Check this out on Maly!"
   ) => {
     if (!navigator.share) {
-      // If Web Share API is not available, fall back to clipboard
-      return copyShareLink(type, id);
+      // If Web Share API is not available, use our custom share dialog through ReferralShareButton
+      toast({
+        title: "Sharing not supported",
+        description: "Use the share dialog to copy the link instead",
+        variant: "default",
+      });
+      return false;
     }
 
     try {
@@ -117,12 +74,8 @@ export function useReferral() {
   };
 
   return {
-    referralCode: referralData?.referralCode,
-    isLoading,
-    error,
     isCopied,
     getShareLink,
-    copyShareLink,
     shareContent
   };
 }
