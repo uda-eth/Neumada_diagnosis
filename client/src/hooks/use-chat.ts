@@ -12,7 +12,7 @@ export function useChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
-      content: "Hi, I'm Maly—your AI-powered, community-driven chat concierge. How can I assist you today?",
+      content: "Hi, I'm Maly — like your local friend with great taste. I'll help you know where to go, who to know, and what to do.",
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
