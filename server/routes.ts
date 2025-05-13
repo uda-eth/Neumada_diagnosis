@@ -4082,5 +4082,86 @@ app.post('/api/events/:eventId/participate', isAuthenticated, async (req: Reques
     }
   });
 
+  // Delete Event
+  app.delete("/api/events/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const eventId = parseInt(id);
+      
+      // Authenticate the user
+      let currentUser = null;
+
+      // Method 1: Check if user is authenticated via passport
+      if (req.isAuthenticated() && req.user) {
+        currentUser = req.user;
+        console.log("User authenticated via passport for event deletion:", currentUser.username);
+      }
+      
+      // Method 2: Check X-Session-ID header for API auth
+      if (!currentUser) {
+        const sessionId = req.headers['x-session-id'] as string || req.cookies?.session_id;
+        
+        if (sessionId) {
+          console.log("Trying to authenticate via session ID for event deletion:", sessionId);
+          
+          try {
+            const [session] = await db.select()
+              .from(sessions)
+              .where(eq(sessions.id, sessionId))
+              .limit(1);
+              
+            if (session && session.userId) {
+              const [user] = await db.select()
+                .from(users)
+                .where(eq(users.id, session.userId))
+                .limit(1);
+                
+              if (user) {
+                currentUser = user;
+                console.log("User authenticated via session for event deletion:", user.username);
+              }
+            }
+          } catch (err) {
+            console.error("Error checking session:", err);
+          }
+        }
+      }
+
+      if (!currentUser) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      // Verify this event exists and the user is the creator
+      const [existingEvent] = await db.select()
+        .from(events)
+        .where(eq(events.id, eventId))
+        .limit(1);
+
+      if (!existingEvent) {
+        return res.status(404).json({ error: "Event not found" });
+      }
+
+      if (existingEvent.creatorId !== currentUser.id) {
+        return res.status(403).json({ error: "You can only delete your own events" });
+      }
+
+      // First delete all event participants
+      await db.delete(eventParticipants)
+        .where(eq(eventParticipants.eventId, eventId));
+      
+      // Then delete the event
+      await db.delete(events)
+        .where(eq(events.id, eventId));
+
+      return res.json({ 
+        message: "Event deleted successfully",
+        eventId: eventId
+      });
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      res.status(500).json({ error: "Failed to delete event" });
+    }
+  });
+
   return { app, httpServer };
 }

@@ -436,15 +436,26 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
           {user && user.id === event.creatorId ? (
             <>
               <h3 className="text-sm font-medium text-white/60 mb-2">Event Options</h3>
-              <Button
-                variant="default"
-                className="w-full bg-blue-700 hover:bg-blue-800"
-                onClick={() => setLocation(`/edit-event/${event.id}`)}
-                size="sm"
-              >
-                <PencilIcon className="h-4 w-4 mr-2" />
-                Edit Event
-              </Button>
+              <div className="flex flex-col gap-2">
+                <Button
+                  variant="default"
+                  className="w-full bg-blue-700 hover:bg-blue-800"
+                  onClick={() => setLocation(`/edit-event/${event.id}`)}
+                  size="sm"
+                >
+                  <PencilIcon className="h-4 w-4 mr-2" />
+                  Edit Event
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="w-full"
+                  onClick={() => handleDeleteEvent()}
+                  size="sm"
+                >
+                  <XCircle className="h-4 w-4 mr-2" />
+                  Delete Event
+                </Button>
+              </div>
             </>
           ) : (
             <>
