@@ -1486,6 +1486,7 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
     }
   });
 
+  // Create a new event
   app.post("/api/events", cloudinaryUpload.single('image'), async (req, res) => {
     try {
       // Use only user ID-based authentication methods (no session ID)
