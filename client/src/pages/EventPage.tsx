@@ -2,7 +2,7 @@ import { useParams, useLocation, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@/hooks/use-user";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, UserPlus2, Star, Users, CheckCircle, XCircle, Loader2, Share2 } from "lucide-react";
+import { MessageSquare, UserPlus2, Star, Users, CheckCircle, XCircle, Loader2, Share2, PencilIcon } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -632,6 +632,18 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                 {userStatus === 'attending' ? 'Attending ✓' : 'Attending'}
               </Button>
             </>
+          )}
+          
+          {/* Edit Button - Only visible for event creators */}
+          {user && user.id === event.creatorId && (
+            <Button
+              variant="outline"
+              className="flex-1 whitespace-nowrap"
+              onClick={() => setLocation(`/edit-event/${event.id}`)}
+            >
+              <PencilIcon className="h-4 w-4 mr-2" />
+              Edit Event
+            </Button>
           )}
           
           {/* Share Button - Always visible for all users */}
