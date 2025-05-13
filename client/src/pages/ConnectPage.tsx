@@ -220,44 +220,20 @@ export function ConnectPage() {
       (user.fullName && user.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (user.username && user.username.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    // Check if user matches selected moods - EXACT same logic as Discover page uses for events
-    // This needs to handle different possible formats of currentMoods
-    let matchesMoods = false;
-    
-    if (selectedMoods.length === 0) {
-      // No mood filters selected, all users match
-      matchesMoods = true;
-    } else if (user.currentMoods) {
-      // Handle both string array and JSON string formats
-      let moodArray: string[] = [];
-      
-      if (Array.isArray(user.currentMoods)) {
-        // Array format
-        moodArray = user.currentMoods;
-      } else if (typeof user.currentMoods === 'string') {
-        try {
-          // Try parsing as JSON string
-          const parsed = JSON.parse(user.currentMoods);
-          moodArray = Array.isArray(parsed) ? parsed : [];
-        } catch (e) {
-          // If it fails, treat as a comma-separated string
-          moodArray = user.currentMoods.split(',').map(m => m.trim());
-        }
-      }
-      
-      // Now check if ANY selected mood matches ANY user mood
-      matchesMoods = moodArray.some(mood => selectedMoods.includes(mood));
-    }
+    // Use the tags property we added during API response processing
+    // This makes it work EXACTLY like the Discover page filter
+    const matchesMoods = selectedMoods.length === 0 ||
+                      (user.tags?.some(tag => selectedMoods.includes(tag)));
     
     // Debug logs to understand filtering
     if (selectedMoods.length > 0) {
-      console.log(`User ${user.fullName || user.username} has moods:`, 
-        user.currentMoods, 
+      console.log(`User ${user.fullName || user.username} has tags:`, 
+        user.tags, 
         `Matches filters (${selectedMoods.join(', ')}):`, 
         matchesMoods);
     }
     
-    // Both conditions must be satisfied
+    // Both conditions must be satisfied, exactly like in Discover page
     return matchesSearch && matchesMoods;
   }) || [];
 
