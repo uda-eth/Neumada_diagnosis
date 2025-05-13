@@ -2722,15 +2722,38 @@ app.post('/api/events/:eventId/participate', isAuthenticated, async (req: Reques
       )
     });
 
+    // Check if this is a free event
+    const isPaid = event.price && (typeof event.price === 'string' ? parseFloat(event.price) > 0 : event.price > 0);
+    const isFree = !isPaid;
+
+    // For free events, don't allow direct attendance status without a ticket
+    // Exception: the user is trying to remove their status
+    if (isFree && status === 'attending' && (!existingRecord || existingRecord.paymentStatus !== 'completed')) {
+      return res.status(400).json({ 
+        error: 'For free events, you need to get a ticket first to be marked as attending',
+        needsTicket: true
+      });
+    }
+
     // Handle removal of participation (not_participating)
     if (status === 'not_participating') {
       if (existingRecord) {
+        // If the user has a completed ticket, don't allow them to remove attendance status
+        if (existingRecord.paymentStatus === 'completed' && existingRecord.ticketIdentifier) {
+          return res.status(400).json({ 
+            error: 'You have already purchased a ticket for this event and cannot remove your attendance',
+            hasTicket: true
+          });
+        }
+        
         // Decrement appropriate counter based on previous status
-        if (existingRecord.status === 'interested') {
+        if (existingRecord.status === 'interested' || existingRecord.status.includes('interested')) {
           await db.update(events)
             .set({ interestedCount: Math.max((event.interestedCount || 0) - 1, 0) })
             .where(eq(events.id, parseInt(eventId)));
-        } else if (existingRecord.status === 'attending') {
+        } 
+        
+        if (existingRecord.status === 'attending' || existingRecord.status.includes('attending')) {
           await db.update(events)
             .set({ attendingCount: Math.max((event.attendingCount || 0) - 1, 0) })
             .where(eq(events.id, parseInt(eventId)));
