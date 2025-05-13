@@ -73,14 +73,14 @@ export function FirstEventModal({ cityName, open, onClose }: FirstEventModalProp
   
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent aria-describedby="first-event-description">
         <DialogHeader>
           <DialogTitle>Be the first in {cityName}!</DialogTitle>
         </DialogHeader>
         
         {!showInviteOptions ? (
           <>
-            <p className="my-4 text-sm text-muted-foreground">
+            <p id="first-event-description" className="my-4 text-sm text-muted-foreground">
               No events have been created in {cityName} yet.  
               Would you like to create the first one and invite your friends?
             </p>
