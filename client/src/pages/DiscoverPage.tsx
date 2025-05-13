@@ -55,12 +55,12 @@ export default function DiscoverPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>([]);
-  const [dateFilter, setDateFilter] = useState<'today'|'week'|'month'|'upcoming'>('today');
+  // Removed dateFilter state, as we'll always show all events organized by date
   const { events: fetchedEvents, isLoading } = useEvents(undefined, selectedCity);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [displayCount, setDisplayCount] = useState(9); // Initially show 9 items (3 rows of 3 columns)
-  const itemsPerBatch = 6; // Load 6 more items on each scroll (2 rows of 3 columns)
+  const [displayCount, setDisplayCount] = useState(24); // Increased initial count to display more items
+  const itemsPerBatch = 12; // Load more items on each scroll
   const observerTarget = useRef(null);
   const [showFirstEventModal, setShowFirstEventModal] = useState(false);
   const [seenEmptyCities, setSeenEmptyCities] = useState<string[]>([]);
@@ -74,51 +74,50 @@ export default function DiscoverPage() {
     const matchesEventTypes = selectedEventTypes.length === 0 ||
                              event.tags?.some(tag => selectedEventTypes.includes(tag));
     
-    // Date-based filtering
-    const now = new Date();
-    const eventDate = new Date(event.date);
-    
-    // Reset hours to start of day for proper comparison
-    const startOfToday = new Date(now);
-    startOfToday.setHours(0, 0, 0, 0);
-    
-    // Calculate end of today
-    const endOfToday = new Date(startOfToday);
-    endOfToday.setHours(23, 59, 59, 999);
-    
-    // Calculate start/end of week, month
-    const endOfWeek = new Date(startOfToday);
-    endOfWeek.setDate(startOfToday.getDate() + 7);
-    
-    const endOfMonth = new Date(startOfToday);
-    endOfMonth.setDate(startOfToday.getDate() + 30);
-    
-    let matchesDateFilter = true;
-    switch (dateFilter) {
-      case 'today':
-        // Today's events (events occurring today)
-        matchesDateFilter = eventDate >= startOfToday && eventDate <= endOfToday;
-        break;
-      case 'week':
-        // This week's events (within next 7 days)
-        matchesDateFilter = eventDate >= startOfToday && eventDate < endOfWeek;
-        break;
-      case 'month':
-        // This month's events (within next 30 days)
-        matchesDateFilter = eventDate >= startOfToday && eventDate < endOfMonth;
-        break;
-      case 'upcoming':
-        // Upcoming events (more than a month away)
-        matchesDateFilter = eventDate >= endOfMonth;
-        break;
-    }
-    
-    return matchesSearch && matchesCategory && matchesEventTypes && matchesDateFilter;
+    return matchesSearch && matchesCategory && matchesEventTypes;
   });
 
-  // Get events to display
-  const displayEvents = filteredEvents.slice(0, displayCount);
-  const hasMoreEvents = filteredEvents.length > displayCount;
+  // Date utilities for categorizing events
+  const now = new Date();
+  
+  // Reset hours to start of day for proper comparison
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
+  
+  // Calculate end of today
+  const endOfToday = new Date(startOfToday);
+  endOfToday.setHours(23, 59, 59, 999);
+  
+  // Calculate start/end of week, month
+  const endOfWeek = new Date(startOfToday);
+  endOfWeek.setDate(startOfToday.getDate() + 7);
+  
+  const endOfMonth = new Date(startOfToday);
+  endOfMonth.setDate(startOfToday.getDate() + 30);
+
+  // Group events by date categories
+  const groupedEvents = {
+    today: filteredEvents.filter(event => {
+      const eventDate = new Date(event.date);
+      return eventDate >= startOfToday && eventDate <= endOfToday;
+    }),
+    week: filteredEvents.filter(event => {
+      const eventDate = new Date(event.date);
+      return eventDate > endOfToday && eventDate < endOfWeek;
+    }),
+    month: filteredEvents.filter(event => {
+      const eventDate = new Date(event.date);
+      return eventDate >= endOfWeek && eventDate < endOfMonth;
+    }),
+    upcoming: filteredEvents.filter(event => {
+      const eventDate = new Date(event.date);
+      return eventDate >= endOfMonth;
+    })
+  };
+
+  // Create a flattened list of all filtered events for display count
+  const allFilteredEvents = [...filteredEvents];
+  const hasMoreEvents = allFilteredEvents.length > displayCount;
   
   // Load more events when scrolling to the bottom
   const loadMoreEvents = useCallback(() => {
@@ -150,8 +149,8 @@ export default function DiscoverPage() {
 
   // Reset pagination when filters change
   useEffect(() => {
-    setDisplayCount(9); // Reset to initial count when filters change
-  }, [searchTerm, selectedCity, selectedCategory, selectedEventTypes, dateFilter]);
+    setDisplayCount(24); // Reset to initial count when filters change
+  }, [searchTerm, selectedCity, selectedCategory, selectedEventTypes]);
 
   // Check for empty city and show modal if needed
   useEffect(() => {
@@ -326,58 +325,9 @@ export default function DiscoverPage() {
             )}
           </div>
 
-          {/* Mobile Date Filter */}
-          <div className="sm:hidden overflow-x-auto py-2 px-4 mb-4">
-            <div className="flex space-x-3">
-              {[
-                { key: 'today', label: "Today's Events" },
-                { key: 'week', label: "Events This Week" },
-                { key: 'month', label: "Events This Month" },
-                { key: 'upcoming', label: "Upcoming Events" }
-              ].map(({key, label}) => (
-                <button
-                  key={key}
-                  onClick={() => setDateFilter(key as 'today'|'week'|'month'|'upcoming')}
-                  className={`
-                    whitespace-nowrap rounded-full px-3 py-1 text-sm font-medium
-                    ${dateFilter === key 
-                      ? 'bg-primary text-white' 
-                      : 'bg-background/5 text-muted-foreground hover:bg-accent/10'}
-                  `}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-          
-          {/* Desktop Date Filter */}
-          <div className="hidden sm:block mb-6">
-            <div className="flex flex-wrap gap-3 justify-start">
-              {[
-                { key: 'today', label: "Today's Events" },
-                { key: 'week', label: "Events This Week" },
-                { key: 'month', label: "Events This Month" },
-                { key: 'upcoming', label: "Upcoming Events" }
-              ].map(({key, label}) => (
-                <Button
-                  key={key}
-                  variant={dateFilter === key ? "default" : "outline"}
-                  onClick={() => setDateFilter(key as 'today'|'week'|'month'|'upcoming')}
-                  className={`
-                    text-sm font-medium rounded-full px-4 py-2
-                    ${dateFilter === key 
-                      ? 'bg-primary text-white' 
-                      : ''}
-                  `}
-                >
-                  {label}
-                </Button>
-              ))}
-            </div>
-          </div>
+          {/* Date filters removed - vertical section headers will be used instead */}
 
-          {/* Event Grid */}
+          {/* Event Grid with Date Categories */}
           <div className="space-y-6 sm:space-y-8">
             <h2 className="text-xs sm:text-sm font-medium text-muted-foreground mb-3 sm:mb-4">
               {filteredEvents.length} Events Found
@@ -404,75 +354,286 @@ export default function DiscoverPage() {
                   setSearchTerm("");
                   setSelectedCategory("all");
                   setSelectedEventTypes([]);
-                  setDateFilter("today");
                 }}>
                   Clear Filters
                 </Button>
               </div>
             ) : (
-              <>
-                {/* Responsive Grid Layout - 3 columns on large screens */}
-                <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
-                  {displayEvents.map((event: any) => (
-                    <Card 
-                      key={event.id} 
-                      className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg h-auto max-h-[calc(100vh-4rem)]"
-                      onClick={() => setLocation(`/event/${event.id}`)}
-                    >
-                      <div className="relative aspect-[1/2] sm:aspect-[1/2] overflow-hidden">
-                        <img
-                          src={event.image || "/placeholder-event.jpg"}
-                          alt={event.title}
-                          className="object-cover w-full h-full"
-                          loading="lazy"
-                        />
-                        <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 md:p-4 bg-gradient-to-t from-black/80 to-transparent">
-                          <div className="flex items-center justify-between">
-                            <div className="max-w-[70%]">
-                              <p className="text-[9px] sm:text-xs md:text-sm font-medium text-white/60">
-                                {format(new Date(event.date), "MMM d, h:mm a")}
-                              </p>
-                              <h3 className="text-xs sm:text-sm md:text-lg font-semibold text-white mt-0.5 truncate">{event.title}</h3>
+              <div className="space-y-10">
+                {/* Today's Events Section */}
+                {groupedEvents.today.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="py-2 px-4">
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">TODAYS EVENTS</h2>
+                    </div>
+                    <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+                      {groupedEvents.today.map((event: any) => (
+                        <Card 
+                          key={event.id} 
+                          className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg h-auto max-h-[calc(100vh-4rem)]"
+                          onClick={() => setLocation(`/event/${event.id}`)}
+                        >
+                          <div className="relative aspect-[1/2] sm:aspect-[1/2] overflow-hidden">
+                            <img
+                              src={event.image || "/placeholder-event.jpg"}
+                              alt={event.title}
+                              className="object-cover w-full h-full"
+                              loading="lazy"
+                            />
+                            <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 md:p-4 bg-gradient-to-t from-black/80 to-transparent">
+                              <div className="flex items-center justify-between">
+                                <div className="max-w-[70%]">
+                                  <p className="text-[9px] sm:text-xs md:text-sm font-medium text-white/60">
+                                    {format(new Date(event.date), "MMM d, h:mm a")}
+                                  </p>
+                                  <h3 className="text-xs sm:text-sm md:text-lg font-semibold text-white mt-0.5 truncate">{event.title}</h3>
+                                </div>
+                                <div className="text-right text-white z-10">
+                                  {event.price === "0" ? (
+                                    <p className="font-semibold text-white text-xs sm:text-sm md:text-lg">Free</p>
+                                  ) : (
+                                    <>
+                                      <p className="font-semibold text-white text-xs sm:text-sm md:text-lg">${event.price}</p>
+                                      <p className="text-[8px] sm:text-xs md:text-sm text-white/60">per person</p>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
                             </div>
-                            <div className="text-right text-white z-10">
-                              {event.price === "0" ? (
-                                <p className="font-semibold text-white text-xs sm:text-sm md:text-lg">Free</p>
-                              ) : (
-                                <>
-                                  <p className="font-semibold text-white text-xs sm:text-sm md:text-lg">${event.price}</p>
-                                  <p className="text-[8px] sm:text-xs md:text-sm text-white/60">per person</p>
-                                </>
+                          </div>
+                          <CardContent className="p-2 sm:p-3 md:p-4">
+                            <div className="flex items-center justify-between flex-wrap gap-y-1 sm:gap-y-2">
+                              <div className="flex items-center space-x-1 min-w-0 max-w-[50%]">
+                                <MapPin className="h-2.5 w-2.5 sm:h-3 md:h-4 sm:w-3 md:w-4 flex-shrink-0 text-muted-foreground" />
+                                <span className="text-[10px] sm:text-xs md:text-sm text-muted-foreground truncate">
+                                  {event.location}
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-1 min-w-0 max-w-[50%]">
+                                <Calendar className="h-2.5 w-2.5 sm:h-3 md:h-4 sm:w-3 md:w-4 flex-shrink-0 text-muted-foreground" />
+                                <span className="text-[10px] sm:text-xs md:text-sm text-muted-foreground truncate">
+                                  {event.category}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex flex-wrap gap-1 mt-1 sm:mt-2 md:mt-3">
+                              {event.tags?.slice(0, 2).map((tag: string, index: number) => (
+                                <Badge key={index} variant="outline" className="text-[9px] sm:text-xs px-1 sm:px-1.5 py-0 sm:py-0.5 h-4 sm:h-5">
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Events This Week Section */}
+                {groupedEvents.week.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="py-2 px-4">
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">EVENTS THIS WEEK</h2>
+                    </div>
+                    <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+                      {groupedEvents.week.map((event: any) => (
+                        <Card 
+                          key={event.id} 
+                          className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg h-auto max-h-[calc(100vh-4rem)]"
+                          onClick={() => setLocation(`/event/${event.id}`)}
+                        >
+                          <div className="relative aspect-[1/2] sm:aspect-[1/2] overflow-hidden">
+                            <img
+                              src={event.image || "/placeholder-event.jpg"}
+                              alt={event.title}
+                              className="object-cover w-full h-full"
+                              loading="lazy"
+                            />
+                            <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 md:p-4 bg-gradient-to-t from-black/80 to-transparent">
+                              <div className="flex items-center justify-between">
+                                <div className="max-w-[70%]">
+                                  <p className="text-[9px] sm:text-xs md:text-sm font-medium text-white/60">
+                                    {format(new Date(event.date), "MMM d, h:mm a")}
+                                  </p>
+                                  <h3 className="text-xs sm:text-sm md:text-lg font-semibold text-white mt-0.5 truncate">{event.title}</h3>
+                                </div>
+                                <div className="text-right text-white z-10">
+                                  {event.price === "0" ? (
+                                    <p className="font-semibold text-white text-xs sm:text-sm md:text-lg">Free</p>
+                                  ) : (
+                                    <>
+                                      <p className="font-semibold text-white text-xs sm:text-sm md:text-lg">${event.price}</p>
+                                      <p className="text-[8px] sm:text-xs md:text-sm text-white/60">per person</p>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <CardContent className="p-2 sm:p-3 md:p-4">
+                            <div className="flex items-center justify-between flex-wrap gap-y-1 sm:gap-y-2">
+                              <div className="flex items-center space-x-1 min-w-0 max-w-[50%]">
+                                <MapPin className="h-2.5 w-2.5 sm:h-3 md:h-4 sm:w-3 md:w-4 flex-shrink-0 text-muted-foreground" />
+                                <span className="text-[10px] sm:text-xs md:text-sm text-muted-foreground truncate">
+                                  {event.location}
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-1 min-w-0 max-w-[50%]">
+                                <Calendar className="h-2.5 w-2.5 sm:h-3 md:h-4 sm:w-3 md:w-4 flex-shrink-0 text-muted-foreground" />
+                                <span className="text-[10px] sm:text-xs md:text-sm text-muted-foreground truncate">
+                                  {event.category}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex flex-wrap gap-1 mt-1 sm:mt-2 md:mt-3">
+                              {event.tags?.slice(0, 2).map((tag: string, index: number) => (
+                                <Badge key={index} variant="outline" className="text-[9px] sm:text-xs px-1 sm:px-1.5 py-0 sm:py-0.5 h-4 sm:h-5">
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Events This Month Section */}
+                {groupedEvents.month.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="py-2 px-4">
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">EVENTS THIS MONTH</h2>
+                    </div>
+                    <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+                      {groupedEvents.month.map((event: any) => (
+                        <Card 
+                          key={event.id} 
+                          className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg h-auto max-h-[calc(100vh-4rem)]"
+                          onClick={() => setLocation(`/event/${event.id}`)}
+                        >
+                          <div className="relative aspect-[1/2] sm:aspect-[1/2] overflow-hidden">
+                            <img
+                              src={event.image || "/placeholder-event.jpg"}
+                              alt={event.title}
+                              className="object-cover w-full h-full"
+                              loading="lazy"
+                            />
+                            <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 md:p-4 bg-gradient-to-t from-black/80 to-transparent">
+                              <div className="flex items-center justify-between">
+                                <div className="max-w-[70%]">
+                                  <p className="text-[9px] sm:text-xs md:text-sm font-medium text-white/60">
+                                    {format(new Date(event.date), "MMM d, h:mm a")}
+                                  </p>
+                                  <h3 className="text-xs sm:text-sm md:text-lg font-semibold text-white mt-0.5 truncate">{event.title}</h3>
+                                </div>
+                                <div className="text-right text-white z-10">
+                                  {event.price === "0" ? (
+                                    <p className="font-semibold text-white text-xs sm:text-sm md:text-lg">Free</p>
+                                  ) : (
+                                    <>
+                                      <p className="font-semibold text-white text-xs sm:text-sm md:text-lg">${event.price}</p>
+                                      <p className="text-[8px] sm:text-xs md:text-sm text-white/60">per person</p>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <CardContent className="p-2 sm:p-3 md:p-4">
+                            <div className="flex items-center text-[10px] sm:text-xs mt-1 gap-2">
+                              <Badge variant="outline" className="text-[8px] sm:text-[10px] md:text-xs px-1.5 py-0.5 whitespace-nowrap">
+                                {event.category || "Event"}
+                              </Badge>
+                              {event.tags && event.tags[0] && (
+                                <Badge variant="outline" className="text-[8px] sm:text-[10px] md:text-xs px-1.5 py-0.5 whitespace-nowrap">
+                                  {event.tags[0]}
+                                </Badge>
                               )}
                             </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Upcoming Events Section */}
+                {groupedEvents.upcoming.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="py-2 px-4">
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">UPCOMING EVENTS</h2>
+                    </div>
+                    <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+                      {groupedEvents.upcoming.map((event: any) => (
+                        <Card 
+                          key={event.id} 
+                          className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg h-auto max-h-[calc(100vh-4rem)]"
+                          onClick={() => setLocation(`/event/${event.id}`)}
+                        >
+                          <div className="relative aspect-[1/2] sm:aspect-[1/2] overflow-hidden">
+                            <img
+                              src={event.image || "/placeholder-event.jpg"}
+                              alt={event.title}
+                              className="object-cover w-full h-full"
+                              loading="lazy"
+                            />
+                            <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 md:p-4 bg-gradient-to-t from-black/80 to-transparent">
+                              <div className="flex items-center justify-between">
+                                <div className="max-w-[70%]">
+                                  <p className="text-[9px] sm:text-xs md:text-sm font-medium text-white/60">
+                                    {format(new Date(event.date), "MMM d, h:mm a")}
+                                  </p>
+                                  <h3 className="text-xs sm:text-sm md:text-lg font-semibold text-white mt-0.5 truncate">{event.title}</h3>
+                                </div>
+                                <div className="text-right text-white z-10">
+                                  {event.price === "0" ? (
+                                    <p className="font-semibold text-white text-xs sm:text-sm md:text-lg">Free</p>
+                                  ) : (
+                                    <>
+                                      <p className="font-semibold text-white text-xs sm:text-sm md:text-lg">${event.price}</p>
+                                      <p className="text-[8px] sm:text-xs md:text-sm text-white/60">per person</p>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                      <CardContent className="p-2 sm:p-3 md:p-4">
-                        <div className="flex items-center justify-between flex-wrap gap-y-1 sm:gap-y-2">
-                          <div className="flex items-center space-x-1 min-w-0 max-w-[50%]">
-                            <MapPin className="h-2.5 w-2.5 sm:h-3 md:h-4 sm:w-3 md:w-4 flex-shrink-0 text-muted-foreground" />
-                            <span className="text-[10px] sm:text-xs md:text-sm text-muted-foreground truncate">
-                              {event.location}
-                            </span>
-                          </div>
-                          <div className="flex items-center space-x-1 min-w-0 max-w-[50%]">
-                            <Calendar className="h-2.5 w-2.5 sm:h-3 md:h-4 sm:w-3 md:w-4 flex-shrink-0 text-muted-foreground" />
-                            <span className="text-[10px] sm:text-xs md:text-sm text-muted-foreground truncate">
-                              {event.category}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex flex-wrap gap-1 mt-1 sm:mt-2 md:mt-3">
-                          {event.tags?.slice(0, 2).map((tag: string, index: number) => (
-                            <Badge key={index} variant="outline" className="text-[9px] sm:text-xs px-1 sm:px-1.5 py-0 sm:py-0.5 h-4 sm:h-5">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                          <CardContent className="p-2 sm:p-3 md:p-4">
+                            <div className="flex items-center text-[10px] sm:text-xs mt-1 gap-2">
+                              <Badge variant="outline" className="text-[8px] sm:text-[10px] md:text-xs px-1.5 py-0.5 whitespace-nowrap">
+                                {event.category || "Event"}
+                              </Badge>
+                              {event.tags && event.tags[0] && (
+                                <Badge variant="outline" className="text-[8px] sm:text-[10px] md:text-xs px-1.5 py-0.5 whitespace-nowrap">
+                                  {event.tags[0]}
+                                </Badge>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* No Events Message */}
+                {groupedEvents.today.length === 0 && 
+                 groupedEvents.week.length === 0 && 
+                 groupedEvents.month.length === 0 && 
+                 groupedEvents.upcoming.length === 0 && (
+                  <div className="flex flex-col items-center justify-center p-8 text-center">
+                    <p className="text-lg text-muted-foreground mb-4">No events match your search criteria</p>
+                    <Button variant="outline" onClick={() => {
+                      setSearchTerm("");
+                      setSelectedCategory("all");
+                      setSelectedEventTypes([]);
+                    }}>
+                      Clear Filters
+                    </Button>
+                  </div>
+                )}
 
                 {/* Intersection Observer Target for Infinite Scrolling */}
                 {hasMoreEvents && (
@@ -491,7 +652,7 @@ export default function DiscoverPage() {
                     )}
                   </div>
                 )}
-              </>
+              </div>
             )}
           </div>
         </main>
