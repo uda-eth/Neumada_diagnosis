@@ -364,7 +364,7 @@ export default function DiscoverPage() {
                 {groupedEvents.today.length > 0 && (
                   <div className="space-y-4">
                     <div className="py-2 px-4">
-                      <h2 className="text-base md:text-lg font-semibold text-gray-300">Today's Events</h2>
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">TODAYS EVENTS</h2>
                     </div>
                     <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                       {groupedEvents.today.map((event: any) => (
@@ -434,7 +434,7 @@ export default function DiscoverPage() {
                 {groupedEvents.week.length > 0 && (
                   <div className="space-y-4">
                     <div className="py-2 px-4">
-                      <h2 className="text-base md:text-lg font-semibold text-gray-300">Events This Week</h2>
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">EVENTS THIS WEEK</h2>
                     </div>
                     <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                       {groupedEvents.week.map((event: any) => (
@@ -504,7 +504,7 @@ export default function DiscoverPage() {
                 {groupedEvents.month.length > 0 && (
                   <div className="space-y-4">
                     <div className="py-2 px-4">
-                      <h2 className="text-base md:text-lg font-semibold text-gray-300">Events This Month</h2>
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">EVENTS THIS MONTH</h2>
                     </div>
                     <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                       {groupedEvents.month.map((event: any) => (
@@ -563,7 +563,7 @@ export default function DiscoverPage() {
                 {groupedEvents.upcoming.length > 0 && (
                   <div className="space-y-4">
                     <div className="py-2 px-4">
-                      <h2 className="text-base md:text-lg font-semibold text-gray-300">Upcoming Events</h2>
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">UPCOMING EVENTS</h2>
                     </div>
                     <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                       {groupedEvents.upcoming.map((event: any) => (
