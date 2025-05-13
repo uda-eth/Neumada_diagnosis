@@ -363,8 +363,8 @@ export default function DiscoverPage() {
                 {/* Today's Events Section */}
                 {groupedEvents.today.length > 0 && (
                   <div className="space-y-4">
-                    <div className="bg-gray-100 dark:bg-gray-800 py-2 px-4 rounded">
-                      <h2 className="text-base md:text-lg font-semibold">Today's Events</h2>
+                    <div className="py-2 px-4">
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">Today's Events</h2>
                     </div>
                     <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                       {groupedEvents.today.map((event: any) => (
@@ -433,8 +433,8 @@ export default function DiscoverPage() {
                 {/* Events This Week Section */}
                 {groupedEvents.week.length > 0 && (
                   <div className="space-y-4">
-                    <div className="bg-gray-100 dark:bg-gray-800 py-2 px-4 rounded">
-                      <h2 className="text-base md:text-lg font-semibold">Events This Week</h2>
+                    <div className="py-2 px-4">
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">Events This Week</h2>
                     </div>
                     <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                       {groupedEvents.week.map((event: any) => (
@@ -503,8 +503,8 @@ export default function DiscoverPage() {
                 {/* Events This Month Section */}
                 {groupedEvents.month.length > 0 && (
                   <div className="space-y-4">
-                    <div className="bg-gray-100 dark:bg-gray-800 py-2 px-4 rounded">
-                      <h2 className="text-base md:text-lg font-semibold">Events This Month</h2>
+                    <div className="py-2 px-4">
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">Events This Month</h2>
                     </div>
                     <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                       {groupedEvents.month.map((event: any) => (
@@ -562,8 +562,8 @@ export default function DiscoverPage() {
                 {/* Upcoming Events Section */}
                 {groupedEvents.upcoming.length > 0 && (
                   <div className="space-y-4">
-                    <div className="bg-gray-100 dark:bg-gray-800 py-2 px-4 rounded">
-                      <h2 className="text-base md:text-lg font-semibold">Upcoming Events</h2>
+                    <div className="py-2 px-4">
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">Upcoming Events</h2>
                     </div>
                     <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                       {groupedEvents.upcoming.map((event: any) => (
