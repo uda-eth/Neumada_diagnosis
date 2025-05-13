@@ -1162,12 +1162,15 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         const moodArray = Array.isArray(moods) ? moods : [moods];
         console.log(`Applying mood filters at database level: ${moodArray.join(', ')}`);
 
-        // Use SQL to directly apply the && operator (array overlap)
-        // For JSONB arrays (which currentMoods is), we need to use jsonb_array_elements and check if any value is in our list
-        query = query.where(sql`EXISTS (
-          SELECT 1 FROM jsonb_array_elements_text(${users.currentMoods}) as mood
-          WHERE mood IN (${sql.join(moodArray, sql`, `)})
-        )`);
+        // DEBUG: Log user moods before filtering
+        console.log("DEBUG: About to filter users by the following moods:", moodArray);
+        
+        // Use a more compatible approach for JSONB arrays
+        const jsonMoodArray = JSON.stringify(moodArray);
+        query = query.where(sql`${users.currentMoods}::jsonb && ${jsonMoodArray}::jsonb`);
+        
+        // Log query plan for debugging
+        console.log("Filtering users whose currentMoods contain ANY of:", moodArray);
       }
       
       // Log the query parameters for debugging
