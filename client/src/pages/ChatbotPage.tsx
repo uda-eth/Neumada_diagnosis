@@ -101,20 +101,20 @@ export default function ChatbotPage() {
           <CardContent className="p-4 flex flex-col h-[calc(100vh-16rem)]">
             {/* Quick prompts section */}
             <div className="py-4 border-b border-white/10">
-              <ScrollArea className="w-full whitespace-nowrap">
-                <div className="flex gap-2 pb-2">
+              <ScrollArea className="w-full" orientation="horizontal">
+                <div className="flex gap-3 pb-2 px-1">
                   {quickPrompts.map(({ text, icon: Icon, prompt, ariaLabel }) => (
                     <Button
                       key={text}
                       variant="outline"
                       size="sm"
-                      className="border-white/10 hover:bg-white/5 glass-hover flex items-center gap-2 interactive-hover whitespace-nowrap"
+                      className="border-white/10 hover:bg-white/5 glass-hover flex items-center gap-2 interactive-hover whitespace-nowrap min-w-max flex-shrink-0"
                       onClick={() => handleQuickPrompt(prompt)}
                       disabled={isLoading}
                       aria-label={ariaLabel}
                     >
-                      <Icon className="w-4 h-4" />
-                      {text}
+                      <Icon className="w-4 h-4 flex-shrink-0" />
+                      <span className="truncate">{text}</span>
                     </Button>
                   ))}
                 </div>
