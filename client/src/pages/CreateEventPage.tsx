@@ -288,13 +288,13 @@ export default function CreateEventPage() {
 
             <div className="space-y-4">
               <h3 className="text-sm font-medium">Vibes for this event</h3>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="flex flex-wrap gap-2">
                 {interestTags.map((tag) => (
                   <Button
                     key={tag}
                     type="button"
                     variant={selectedTags.includes(tag) ? "default" : "outline"}
-                    className={`h-8 text-sm ${
+                    className={`h-auto min-h-8 px-3 py-1.5 text-sm whitespace-normal break-words ${
                       selectedTags.includes(tag)
                         ? ""
                         : "bg-white/5 border-white/10 hover:bg-white/10"
