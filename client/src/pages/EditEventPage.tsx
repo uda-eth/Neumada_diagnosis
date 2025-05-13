@@ -454,7 +454,8 @@ export default function EditEventPage() {
               )}
             </div>
 
-            <div className="space-y-4">
+            {/* Add extra padding at the bottom for last section */}
+            <div className="space-y-4 pb-16">
               <div className="flex gap-4">
                 <Button
                   type="button"
