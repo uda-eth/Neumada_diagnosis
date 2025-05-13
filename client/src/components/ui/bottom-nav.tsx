@@ -52,11 +52,6 @@ export const menuItems = [
     ]
   },
   { 
-    icon: Settings, 
-    label: 'Settings', 
-    href: "/settings" 
-  },
-  { 
     icon: UserCircle, 
     label: 'Edit Profile', 
     href: "/profile-edit"

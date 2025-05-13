@@ -11,7 +11,6 @@ import ConnectPage from "./pages/ConnectPage";
 import ConnectionsPage from "./pages/ConnectionsPage";
 import MessagesPage from "./pages/MessagesPage";
 import ChatPage from "./pages/ChatPage";
-import SettingsPage from "./pages/SettingsPage";
 import PremiumPage from "./pages/PremiumPage";
 import PremiumSuccessPage from "./pages/PremiumSuccessPage";
 import InboxPage from "./pages/InboxPage";
@@ -94,7 +93,6 @@ function AppContent() {
             <Route path="/connections" component={ConnectionsPage} />
             <Route path="/messages" component={MessagesPage} />
             <Route path="/chat/:id" component={ChatPage} />
-            <Route path="/settings" component={SettingsPage} />
             <Route path="/premium" component={PremiumPage} />
             <Route path="/premium-success" component={PremiumSuccessPage} />
             <Route path="/inbox" component={InboxPage} />
