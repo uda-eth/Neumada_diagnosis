@@ -51,10 +51,13 @@ interface User {
   birthLocation?: string | null;
   nextLocation?: string | null;
   interests?: string[] | null;
-  currentMoods?: string[] | null;
+  // Important: currentMoods can be in multiple formats from the database
+  currentMoods?: string[] | string | null;
   profession?: string | null;
   age?: number | null;
   createdAt?: Date | string | null;
+  // Additional fields to match events
+  tags?: string[]; // We will map currentMoods to tags for consistent filtering
 }
 
 const moodStyles = {
@@ -161,13 +164,41 @@ export function ConnectPage() {
       const results = await response.json();
       console.log(`Received ${results.length} users from server`);
       
-      // Debug: Check the structure of user moods in the response
-      results.forEach((user: User) => {
-        console.log(`User ${user.fullName || user.username} has currentMoods:`, 
-          Array.isArray(user.currentMoods) ? user.currentMoods : "NO MOODS ARRAY");
+      // Process users to ensure they have tags for compatibility with event filtering
+      const processedUsers = results.map((user: User) => {
+        // Create tags array from currentMoods for compatibility with event filtering
+        let moodArray: string[] = [];
+        
+        if (user.currentMoods) {
+          if (Array.isArray(user.currentMoods)) {
+            moodArray = user.currentMoods;
+          } else if (typeof user.currentMoods === 'string') {
+            try {
+              // Try parsing as JSON string
+              const parsed = JSON.parse(user.currentMoods as string);
+              moodArray = Array.isArray(parsed) ? parsed : [];
+            } catch (e) {
+              // If it fails, try treating as comma-separated string
+              if (typeof user.currentMoods === 'string') {
+                moodArray = (user.currentMoods as string).split(',').map((m: string) => m.trim());
+              }
+            }
+          }
+        }
+        
+        // Add tags property for compatibility with event filtering
+        return {
+          ...user,
+          tags: moodArray // This makes filtering work exactly like in the Discover page
+        };
       });
       
-      return results;
+      // Debug: Check the structure after processing
+      processedUsers.forEach((user: User) => {
+        console.log(`User ${user.fullName || user.username} has tags:`, user.tags);
+      });
+      
+      return processedUsers;
     },
     refetchOnWindowFocus: false
   });
@@ -190,16 +221,43 @@ export function ConnectPage() {
       (user.username && user.username.toLowerCase().includes(searchTerm.toLowerCase()));
     
     // Check if user matches selected moods - EXACT same logic as Discover page uses for events
-    const matchesMoods = selectedMoods.length === 0 ||
-                        (user.currentMoods && user.currentMoods.some(mood => selectedMoods.includes(mood)));
+    // This needs to handle different possible formats of currentMoods
+    let matchesMoods = false;
     
-    // Debug logs to help understand why filtering might not be working
-    if (selectedMoods.length > 0) {
-      console.log(`User ${user.fullName} has moods:`, user.currentMoods);
-      console.log(`Matches selected moods (${selectedMoods.join(', ')}):`, matchesMoods);
+    if (selectedMoods.length === 0) {
+      // No mood filters selected, all users match
+      matchesMoods = true;
+    } else if (user.currentMoods) {
+      // Handle both string array and JSON string formats
+      let moodArray: string[] = [];
+      
+      if (Array.isArray(user.currentMoods)) {
+        // Array format
+        moodArray = user.currentMoods;
+      } else if (typeof user.currentMoods === 'string') {
+        try {
+          // Try parsing as JSON string
+          const parsed = JSON.parse(user.currentMoods);
+          moodArray = Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+          // If it fails, treat as a comma-separated string
+          moodArray = user.currentMoods.split(',').map(m => m.trim());
+        }
+      }
+      
+      // Now check if ANY selected mood matches ANY user mood
+      matchesMoods = moodArray.some(mood => selectedMoods.includes(mood));
     }
     
-    // Both conditions must be satisfied, exactly like in Discover page
+    // Debug logs to understand filtering
+    if (selectedMoods.length > 0) {
+      console.log(`User ${user.fullName || user.username} has moods:`, 
+        user.currentMoods, 
+        `Matches filters (${selectedMoods.join(', ')}):`, 
+        matchesMoods);
+    }
+    
+    // Both conditions must be satisfied
     return matchesSearch && matchesMoods;
   }) || [];
 
