@@ -184,7 +184,7 @@ export default function DiscoverPage() {
       >
         <div className="flex items-center gap-1 sm:gap-2">
           <Select value={selectedCity} onValueChange={setSelectedCity}>
-            <SelectTrigger className="w-[100px] sm:w-[140px] md:w-[180px] bg-transparent border-border text-xs sm:text-sm">
+            <SelectTrigger className="w-[130px] sm:w-[140px] md:w-[180px] bg-transparent border-border text-xs sm:text-sm">
               <SelectValue placeholder="Select city" />
             </SelectTrigger>
             <SelectContent>
