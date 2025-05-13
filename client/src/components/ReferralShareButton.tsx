@@ -88,6 +88,12 @@ export function ReferralShareButton({
     setShowShareDialog(false);
   };
 
+  // Check if children contains a Share2 icon to avoid duplication
+  const hasShareIconInChildren = React.Children.toArray(children).some(child => 
+    React.isValidElement(child) && 
+    child.type === Share2
+  );
+
   return (
     <>
       <Button
@@ -95,7 +101,7 @@ export function ReferralShareButton({
         className={`flex items-center gap-2 ${className}`}
         {...props}
       >
-        {showIcon && <Share2 className="h-4 w-4" />}
+        {showIcon && !hasShareIconInChildren && <Share2 className="h-4 w-4" />}
         {children || 'Share'}
       </Button>
 

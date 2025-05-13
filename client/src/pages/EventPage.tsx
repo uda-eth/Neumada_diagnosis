@@ -608,9 +608,8 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
             title={`Check out ${event.title} on Maly`}
             text={`${user?.fullName || user?.username || 'Someone'} has invited you to ${event.title} on Maly.`}
             variant="outline"
-            className={user && user.id !== event.creatorId ? 'flex-none' : 'flex-1'}
+            className={`${user && user.id !== event.creatorId ? 'flex-none' : 'flex-1'} whitespace-nowrap max-w-fit`}
           >
-            <Share2 className="h-4 w-4 mr-2" />
             Share
           </ReferralShareButton>
         </div>
