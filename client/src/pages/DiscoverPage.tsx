@@ -248,7 +248,7 @@ export default function DiscoverPage() {
                     variant="outline" 
                     className="w-full md:w-[180px] justify-between h-9 text-xs sm:text-sm px-2 sm:px-4"
                   >
-                    <span className="truncate">Event Vibe</span>
+                    <span className="truncate">Search by Vibe</span>
                     {selectedEventTypes.length > 0 && (
                       <Badge variant="secondary" className="ml-1 sm:ml-2 text-xs px-1.5">
                         {selectedEventTypes.length}
@@ -257,7 +257,7 @@ export default function DiscoverPage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-[240px] sm:w-[280px]">
-                  <DropdownMenuLabel className="text-xs sm:text-sm">Event Vibe</DropdownMenuLabel>
+                  <DropdownMenuLabel className="text-xs sm:text-sm">Search by Vibe</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto">
                     {EVENT_TYPES.map((type) => (
