@@ -456,10 +456,6 @@ export function ConnectPage() {
                     <div className="p-3 space-y-2">
                       <Skeleton className="h-5 w-3/4" />
                       <Skeleton className="h-3 w-full" />
-                      <div className="flex gap-1 mt-2">
-                        <Skeleton className="h-5 w-16" />
-                        <Skeleton className="h-5 w-16" />
-                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -523,24 +519,9 @@ export function ConnectPage() {
                       </div>
                       <div className="p-3">
                         {user.bio && (
-                          <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                          <p className="text-sm text-muted-foreground line-clamp-2">
                             {user.bio}
                           </p>
-                        )}
-                        {/* Display Mood & Vibe (using tags which combines interests and currentMoods) */}
-                        {user.tags && user.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            <span className="text-xs text-muted-foreground mr-1">Mood & Vibe:</span>
-                            {user.tags.slice(0, 3).map((mood, idx) => (
-                              <Badge 
-                                key={`mood-${idx}`} 
-                                variant="secondary" 
-                                className={`text-xs ${moodStyles[mood as keyof typeof moodStyles] || ''}`}
-                              >
-                                {mood}
-                              </Badge>
-                            ))}
-                          </div>
                         )}
                       </div>
                     </div>
