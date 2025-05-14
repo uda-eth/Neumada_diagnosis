@@ -445,7 +445,7 @@ export function ConnectPage() {
       <div className="w-full">
         {isLoading ? (
           // Loading skeletons in grid format
-          <div className="grid gap-4 gap-y-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-fr">
+          <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-fr">
             {Array(8).fill(0).map((_, index) => (
               <Card key={index} className="overflow-hidden h-full w-full">
                 <CardContent className="p-0">
@@ -468,7 +468,7 @@ export function ConnectPage() {
           </div>
         ) : filteredUsers.length > 0 ? (
           // Real users from database in grid format
-          <div className="grid gap-4 gap-y-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-fr">
+          <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-fr">
             {filteredUsers.map((user) => (
               <Link 
                 key={user.id}
