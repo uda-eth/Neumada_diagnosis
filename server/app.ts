@@ -2,12 +2,16 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import path from 'path';
 
 export async function createApp() {
   const app = express();
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use('/uploads', express.static('uploads'));
+  
+  // Serve assets directory for social media sharing images
+  app.use('/assets', express.static(path.join(process.cwd(), 'client', 'src', 'assets')));
 
   // Add CORS headers for development
   app.use((req, res, next) => {

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg 
+  viewBox="0 0 1200 630" 
+  fill="none" 
+  xmlns="http://www.w3.org/2000/svg"
+  width="1200"
+  height="630"
+>
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#1a1a1a" />
+  
+  <!-- Main text -->
+  <text
+    x="600"
+    y="300"
+    font-family="Arial, sans-serif"
+    font-size="140"
+    font-style="italic"
+    fill="#ffffff"
+    text-anchor="middle"
+    style="letter-spacing: 0.05em"
+  >
+    Maly
+  </text>
+
+  <!-- Tagline -->
+  <text
+    x="600"
+    y="400"
+    font-family="Arial, sans-serif"
+    font-size="40"
+    fill="#a35eff"
+    text-anchor="middle"
+  >
+    Discover and promote vibe-aligned events
+  </text>
+  
+  <!-- Second line of tagline -->
+  <text
+    x="600"
+    y="460"
+    font-family="Arial, sans-serif"
+    font-size="40"
+    fill="#a35eff"
+    text-anchor="middle"
+  >
+    people, and places worldwide
+  </text>
+</svg>

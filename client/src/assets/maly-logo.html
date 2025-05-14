@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Maly Logo</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: #1a1a1a;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    h1 {
+      font-size: 72px;
+      font-style: italic;
+      margin-bottom: 20px;
+      letter-spacing: 0.05em;
+    }
+    p {
+      font-size: 24px;
+      color: #a35eff;
+      max-width: 800px;
+      margin: 0 auto 40px;
+    }
+    .decoration {
+      width: 80%;
+      height: 2px;
+      background-color: #a35eff;
+      margin: 40px auto;
+      position: relative;
+    }
+    .decoration::before, .decoration::after {
+      content: "";
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #a35eff;
+      top: -3px;
+    }
+    .decoration::before {
+      left: 30%;
+    }
+    .decoration::after {
+      right: 30%;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="decoration"></div>
+    <h1>Maly</h1>
+    <p>Discover and promote vibe-aligned events, people, and places worldwide.</p>
+    <div class="decoration"></div>
+  </div>
+</body>
+</html>
