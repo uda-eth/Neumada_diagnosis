@@ -295,7 +295,7 @@ export default function EventPage() {
     }
     
     // Verify that the current user is the event creator
-    if (user.id !== event.creatorId) {
+    if (user.id !== event?.creatorId) {
       toast({
         variant: "destructive",
         title: "Permission Denied",
@@ -305,7 +305,7 @@ export default function EventPage() {
     }
     
     // Ask for confirmation before deleting
-    if (window.confirm(`Are you sure you want to delete "${event.title}"? This action cannot be undone.`)) {
+    if (event && window.confirm(`Are you sure you want to delete "${event.title}"? This action cannot be undone.`)) {
       try {
         await deleteEventMutation.mutateAsync();
       } catch (error) {
@@ -404,7 +404,8 @@ export default function EventPage() {
     );
   }
 
-  const isPrivateEvent = !event.price;
+  // All events are treated as public now
+  const isPrivateEvent = false;
   const attendingCount = event.attendingCount || 0;
   const interestedCount = event.interestedCount || 0;
 
@@ -919,7 +920,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                 onClick={() => setLocation(`/event/${id}/tickets`)}
                 disabled={participateMutation.isPending}
               >
-                {isPrivateEvent ? "Request Access" : `I'll be attending • $${typeof event.price === 'string' ? event.price : event.price?.toString()}`}
+                {`I'll be attending${event.price && parseFloat(event.price.toString()) > 0 ? ` • $${event.price}` : ''}`}
               </Button>
             </div>
           </div>
