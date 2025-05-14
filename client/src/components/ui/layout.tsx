@@ -17,8 +17,8 @@ const GradientInboxIcon = () => {
   return (
     <div className="relative">
       <svg 
-        width="28" 
-        height="28" 
+        width="33" 
+        height="33" 
         viewBox="0 0 24 24" 
         fill="none" 
         stroke="url(#inbox-gradient)" 
