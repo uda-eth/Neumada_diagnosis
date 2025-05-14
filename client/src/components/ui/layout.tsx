@@ -17,8 +17,8 @@ const GradientInboxIcon = () => {
   return (
     <div className="relative">
       <svg 
-        width="24" 
-        height="24" 
+        width="28" 
+        height="28" 
         viewBox="0 0 24 24" 
         fill="none" 
         stroke="url(#inbox-gradient)" 
@@ -135,7 +135,7 @@ export function Layout({ children }: LayoutProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="md:hidden interactive-hover"
+                  className="md:hidden interactive-hover p-2"
                   onClick={() => setLocation("/inbox")}
                 >
                   <GradientInboxIcon />
