@@ -101,6 +101,24 @@ export function Layout({ children }: LayoutProps) {
               </a>
             </div>
             <div className="flex items-center gap-4">
+              {/* Inbox icon - always show on desktop */}
+              {(userDisplayData || user) && (
+                <Button 
+                  variant="ghost"
+                  size="icon" 
+                  className="interactive-hover hidden md:flex items-center justify-center"
+                  onClick={() => setLocation("/inbox")}
+                >
+                  <div className="relative">
+                    <Inbox className="w-6 h-6 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent" />
+                    {/* Optional badge for unread messages */}
+                    <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                      3
+                    </span>
+                  </div>
+                </Button>
+              )}
+              
               {/* User profile or avatar - only show when authenticated */}
               {(userDisplayData || user) && (
                 <Button 
