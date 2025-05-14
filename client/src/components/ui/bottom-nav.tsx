@@ -114,17 +114,12 @@ export function BottomNav() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-64">
-              {menuItems.map(({ icon: Icon, label, href, isPremium, preview, badge }) => (
+              {menuItems.map(({ icon: Icon, label, href, isPremium }) => (
                 <DropdownMenuItem key={href}>
                   <Link href={href} className="flex items-center gap-2 w-full">
                     <div className={`flex items-center gap-2 w-full ${isPremium ? 'text-purple-500 font-medium' : ''}`}>
                       <Icon className="w-4 h-4" />
                       <span className="flex-1">{label}</span>
-                      {badge && (
-                        <Badge variant="secondary" className="ml-auto">
-                          {badge}
-                        </Badge>
-                      )}
                     </div>
                   </Link>
                 </DropdownMenuItem>
@@ -173,17 +168,12 @@ export function BottomNav() {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="center" side="right" className="w-64">
-            {menuItems.map(({ icon: Icon, label, href, isPremium, preview, badge }) => (
+            {menuItems.map(({ icon: Icon, label, href, isPremium }) => (
               <DropdownMenuItem key={href}>
                 <Link href={href} className="flex items-center gap-2 w-full">
                   <div className={`flex items-center gap-2 w-full ${isPremium ? 'text-purple-500 font-medium' : ''}`}>
                     <Icon className="w-4 h-4" />
                     <span className="flex-1">{label}</span>
-                    {badge && (
-                      <Badge variant="secondary" className="ml-auto">
-                        {badge}
-                      </Badge>
-                    )}
                   </div>
                 </Link>
               </DropdownMenuItem>
