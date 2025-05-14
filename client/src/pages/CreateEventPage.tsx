@@ -406,27 +406,6 @@ export default function CreateEventPage() {
               )}
             </div>
 
-            <div className="space-y-4">
-              <div className="flex gap-4">
-                <Button
-                  type="button"
-                  variant={!form.watch("isPrivate") ? "default" : "outline"}
-                  className="flex-1 h-12"
-                  onClick={() => form.setValue("isPrivate", false)}
-                >
-                  Public
-                </Button>
-                <Button
-                  type="button"
-                  variant={form.watch("isPrivate") ? "default" : "outline"}
-                  className="flex-1 h-12"
-                  onClick={() => form.setValue("isPrivate", true)}
-                >
-                  Private
-                </Button>
-              </div>
-            </div>
-
             {/* Event Itinerary */}
             <div className="space-y-4 bg-white/5 p-6 rounded-lg">
               <FormProvider {...form}>
