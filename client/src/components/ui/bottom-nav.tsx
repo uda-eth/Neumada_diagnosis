@@ -24,12 +24,11 @@ import {
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 
-// Main navigation items - only the 5 core features (including inbox)
+// Main navigation items - only the 4 core features
 export const mainNavItems = [
   { icon: Compass, label: 'discover', href: "/" },
   { icon: UsersRound, label: 'connect', href: "/connect" },
   { icon: PlusSquare, label: 'create', href: "/create" },
-  { icon: Inbox, label: 'inbox', href: "/inbox" },
   { icon: Bot, label: 'concierge', href: "/companion" }
 ] as const;
 
@@ -40,6 +39,17 @@ export const menuItems = [
     label: 'Premium Benefits', 
     href: "/premium", 
     isPremium: true 
+  },
+  { 
+    icon: Inbox, 
+    label: 'Inbox', 
+    href: "/inbox",
+    badge: "3",
+    preview: [
+      { name: "Sarah K.", image: "/attached_assets/profile-1.jpg" },
+      { name: "Miguel R.", image: "/attached_assets/profile-2.jpg" },
+      { name: "Lisa T.", image: "/attached_assets/profile-3.jpg" }
+    ]
   },
   { 
     icon: UserCircle, 
@@ -81,27 +91,10 @@ export function BottomNav() {
                     : "text-foreground/60 hover:text-foreground"
                 }`}
               >
-                {label === 'inbox' ? (
-                  <>
-                    <div className="relative">
-                      <Icon className={`w-5 h-5 transition-transform ${isActive ? "" : "bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent"}`} />
-                      {/* Badge for unread messages */}
-                      <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                        3
-                      </span>
-                    </div>
-                    <span className="text-[9px] font-medium text-center truncate max-w-full">
-                      {t(label)}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <Icon className="w-5 h-5 transition-transform" />
-                    <span className="text-[9px] font-medium text-center truncate max-w-full">
-                      {label === 'concierge' ? 'Concierge' : t(label)}
-                    </span>
-                  </>
-                )}
+                <Icon className="w-5 h-5 transition-transform" />
+                <span className="text-[9px] font-medium text-center truncate max-w-full">
+                  {label === 'concierge' ? 'Concierge' : t(label)}
+                </span>
               </Link>
             );
           })}
@@ -114,12 +107,17 @@ export function BottomNav() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-64">
-              {menuItems.map(({ icon: Icon, label, href, isPremium }) => (
+              {menuItems.map(({ icon: Icon, label, href, isPremium, preview, badge }) => (
                 <DropdownMenuItem key={href}>
                   <Link href={href} className="flex items-center gap-2 w-full">
                     <div className={`flex items-center gap-2 w-full ${isPremium ? 'text-purple-500 font-medium' : ''}`}>
                       <Icon className="w-4 h-4" />
                       <span className="flex-1">{label}</span>
+                      {badge && (
+                        <Badge variant="secondary" className="ml-auto">
+                          {badge}
+                        </Badge>
+                      )}
                     </div>
                   </Link>
                 </DropdownMenuItem>
@@ -168,12 +166,17 @@ export function BottomNav() {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="center" side="right" className="w-64">
-            {menuItems.map(({ icon: Icon, label, href, isPremium }) => (
+            {menuItems.map(({ icon: Icon, label, href, isPremium, preview, badge }) => (
               <DropdownMenuItem key={href}>
                 <Link href={href} className="flex items-center gap-2 w-full">
                   <div className={`flex items-center gap-2 w-full ${isPremium ? 'text-purple-500 font-medium' : ''}`}>
                     <Icon className="w-4 h-4" />
                     <span className="flex-1">{label}</span>
+                    {badge && (
+                      <Badge variant="secondary" className="ml-auto">
+                        {badge}
+                      </Badge>
+                    )}
                   </div>
                 </Link>
               </DropdownMenuItem>
