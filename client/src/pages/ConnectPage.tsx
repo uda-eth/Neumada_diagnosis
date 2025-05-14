@@ -496,18 +496,18 @@ export function ConnectPage() {
                               </h3>
                             </div>
                             {user.location && (
-                              <div className="flex items-center text-sm text-white/80">
-                                <MapPin className="h-3 w-3 mr-1" />
+                              <div className="flex items-center text-xs text-white/80">
+                                <MapPin className="h-2.5 w-2.5 mr-1" />
                                 <span className="truncate">{user.location}</span>
                               </div>
                             )}
                             {user.tags && user.tags.length > 0 && (
                               <div className="flex flex-wrap gap-1 mt-2">
-                                {user.tags.slice(0, 3).map((mood, index) => (
+                                {user.tags.slice(0, 2).map((mood, index) => (
                                   <Badge
                                     key={index}
                                     variant="secondary"
-                                    className={`${moodStyles[mood as keyof typeof moodStyles] || 'bg-secondary'} text-xs`}
+                                    className={`${moodStyles[mood as keyof typeof moodStyles] || 'bg-secondary'} text-xs text-[10px]`}
                                   >
                                     {mood}
                                   </Badge>
