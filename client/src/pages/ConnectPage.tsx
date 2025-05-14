@@ -367,7 +367,7 @@ export function ConnectPage() {
                     variant="outline" 
                     className="w-full justify-between h-9 text-xs sm:text-sm px-2 sm:px-4"
                   >
-                    <span className="truncate">Select vibes</span>
+                    <span className="truncate">Select Vibes</span>
                     <div className="flex items-center">
                       {selectedMoods.length > 0 && (
                         <Badge variant="secondary" className="mr-1.5 text-xs px-1.5">

@@ -237,7 +237,7 @@ export default function CreateEventPage() {
       <ScrollArea className="flex-1" style={{ height: 'calc(100vh - 140px)' }}>
         <div className="container mx-auto px-4 py-8 space-y-8 max-w-2xl">
             <div className="space-y-4">
-              <p className="text-sm text-white/60">Let's get started!</p>
+              <p className="text-sm text-white/60">Let's Get Started!</p>
               <div className="relative aspect-[3/2] bg-white/5 rounded-lg overflow-hidden">
                 {imagePreview ? (
                   <img
@@ -280,7 +280,7 @@ export default function CreateEventPage() {
                 <Textarea
                   {...form.register("description")}
                   className="bg-white/5 border-0 h-32 resize-none"
-                  placeholder="Fill in event details"
+                  placeholder="Fill in Event Details"
                 />
                 {form.formState.errors.description && (
                   <p className="text-red-500 text-xs">{form.formState.errors.description.message}</p>
@@ -289,7 +289,7 @@ export default function CreateEventPage() {
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-sm font-medium">Vibes for this event</h3>
+              <h3 className="text-sm font-medium">Vibes for this Event</h3>
               <div className="flex flex-wrap gap-2">
                 {interestTags.map((tag) => (
                   <Button
