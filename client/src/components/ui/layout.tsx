@@ -12,6 +12,35 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+// Custom styled inbox icon with gradient
+const GradientInboxIcon = () => {
+  return (
+    <div className="relative">
+      <svg 
+        width="33" 
+        height="33" 
+        viewBox="0 0 24 24" 
+        fill="none" 
+        stroke="url(#inbox-gradient)" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        strokeLinejoin="round"
+        className="lucide lucide-inbox"
+      >
+        <defs>
+          <linearGradient id="inbox-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#6366f1" />
+            <stop offset="50%" stopColor="#a855f7" />
+            <stop offset="100%" stopColor="#ec4899" />
+          </linearGradient>
+        </defs>
+        <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
+        <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+      </svg>
+    </div>
+  );
+};
+
 interface LayoutProps {
   children: React.ReactNode;
 }
@@ -101,6 +130,19 @@ export function Layout({ children }: LayoutProps) {
               </a>
             </div>
             <div className="flex items-center gap-4">
+              {/* Mobile Inbox Icon */}
+              {(userDisplayData || user) && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="md:hidden interactive-hover p-2"
+                  onClick={() => setLocation("/inbox")}
+                >
+                  <GradientInboxIcon />
+                  <span className="sr-only">Inbox</span>
+                </Button>
+              )}
+              
               {/* User profile or avatar - only show when authenticated */}
               {(userDisplayData || user) && (
                 <Button 
