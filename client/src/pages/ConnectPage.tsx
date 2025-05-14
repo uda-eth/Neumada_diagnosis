@@ -26,13 +26,7 @@ import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious
-} from "@/components/ui/carousel";
+// Carousel imports removed as they're no longer needed
 
 // Mood badge styles configuration
 // User interface based on the database schema
@@ -447,129 +441,114 @@ export function ConnectPage() {
         )}
       </div>
 
-      {/* Dating app-style horizontal scrolling carousel */}
+      {/* User profile grid display */}
       <div className="w-full">
         {isLoading ? (
-          // Loading skeletons in carousel format
-          <Carousel className="w-full">
-            <CarouselContent>
-              {Array(6).fill(0).map((_, index) => (
-                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-                  <div className="p-1">
-                    <Card className="overflow-hidden h-full w-full">
-                      <CardContent className="p-0">
-                        <div className="flex flex-col h-full">
-                          <div className="relative w-full aspect-[3/4] overflow-hidden bg-muted">
-                            <Skeleton className="h-full w-full" />
+          // Loading skeletons in grid format
+          <div className="grid gap-4 gap-y-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-fr">
+            {Array(8).fill(0).map((_, index) => (
+              <Card key={index} className="overflow-hidden h-full w-full">
+                <CardContent className="p-0">
+                  <div className="flex flex-col h-full">
+                    <div className="relative w-full aspect-[3/4] overflow-hidden bg-muted">
+                      <Skeleton className="h-full w-full" />
+                    </div>
+                    <div className="p-3 space-y-2">
+                      <Skeleton className="h-5 w-3/4" />
+                      <Skeleton className="h-3 w-full" />
+                      <div className="flex gap-1 mt-2">
+                        <Skeleton className="h-5 w-16" />
+                        <Skeleton className="h-5 w-16" />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : filteredUsers.length > 0 ? (
+          // Real users from database in grid format
+          <div className="grid gap-4 gap-y-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-fr">
+            {filteredUsers.map((user) => (
+              <Link 
+                key={user.id}
+                href={`/profile/${user.username}`} 
+                className="block h-full"
+              >
+                <Card className="overflow-hidden hover:bg-accent/5 transition-colors cursor-pointer group h-full">
+                  <CardContent className="p-0">
+                    <div className="flex flex-col h-full">
+                      <div className="relative w-full aspect-[3/4] overflow-hidden bg-muted">
+                        {user.profileImage ? (
+                          <img
+                            src={user.profileImage}
+                            alt={user.fullName || user.username}
+                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center bg-primary/10">
+                            <UserCircle className="h-20 w-20 text-primary/50" />
                           </div>
-                          <div className="p-3 space-y-2">
-                            <Skeleton className="h-5 w-3/4" />
-                            <Skeleton className="h-3 w-full" />
-                            <div className="flex gap-1 mt-2">
-                              <Skeleton className="h-5 w-16" />
-                              <Skeleton className="h-5 w-16" />
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 p-4">
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between">
+                              <h3 className="font-semibold text-base text-white truncate">
+                                {user.fullName || user.username}
+                                {/* Age is not displayed as requested */}
+                              </h3>
                             </div>
+                            {user.location && (
+                              <div className="flex items-center text-sm text-white/80">
+                                <MapPin className="h-3 w-3 mr-1" />
+                                <span className="truncate">{user.location}</span>
+                              </div>
+                            )}
+                            {user.tags && user.tags.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {user.tags.slice(0, 3).map((mood, index) => (
+                                  <Badge
+                                    key={index}
+                                    variant="secondary"
+                                    className={`${moodStyles[mood as keyof typeof moodStyles] || 'bg-secondary'} text-xs`}
+                                  >
+                                    {mood}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
-        ) : filteredUsers.length > 0 ? (
-          // Real users from database in carousel format
-          <Carousel className="w-full">
-            <CarouselContent>
-              {filteredUsers.map((user) => (
-                <CarouselItem 
-                  key={user.id} 
-                  className="sm:basis-2/3 md:basis-1/2 lg:basis-1/3 xl:basis-1/4"
-                >
-                  <div className="p-1">
-                    <Link href={`/profile/${user.username}`} className="block h-full">
-                      <Card className="overflow-hidden hover:bg-accent/5 transition-colors cursor-pointer group h-full">
-                        <CardContent className="p-0">
-                          <div className="flex flex-col h-full">
-                            <div className="relative w-full aspect-[3/4] overflow-hidden bg-muted">
-                              {user.profileImage ? (
-                                <img
-                                  src={user.profileImage}
-                                  alt={user.fullName || user.username}
-                                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                />
-                              ) : (
-                                <div className="h-full w-full flex items-center justify-center bg-primary/10">
-                                  <UserCircle className="h-20 w-20 text-primary/50" />
-                                </div>
-                              )}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent" />
-                              <div className="absolute bottom-0 left-0 right-0 p-4">
-                                <div className="space-y-1">
-                                  <div className="flex items-center justify-between">
-                                    <h3 className="font-semibold text-base text-white truncate">
-                                      {user.fullName || user.username}
-                                      {/* Age is not displayed as requested */}
-                                    </h3>
-                                  </div>
-                                  {user.location && (
-                                    <div className="flex items-center text-sm text-white/80">
-                                      <MapPin className="h-3 w-3 mr-1" />
-                                      <span className="truncate">{user.location}</span>
-                                    </div>
-                                  )}
-                                  {user.tags && user.tags.length > 0 && (
-                                    <div className="flex flex-wrap gap-1 mt-2">
-                                      {user.tags.slice(0, 3).map((mood, index) => (
-                                        <Badge
-                                          key={index}
-                                          variant="secondary"
-                                          className={`${moodStyles[mood as keyof typeof moodStyles] || 'bg-secondary'} text-xs`}
-                                        >
-                                          {mood}
-                                        </Badge>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="p-3">
-                              {user.bio && (
-                                <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
-                                  {user.bio}
-                                </p>
-                              )}
-                              {/* Display Mood & Vibe (using tags which combines interests and currentMoods) */}
-                              {user.tags && user.tags.length > 0 && (
-                                <div className="flex flex-wrap gap-1">
-                                  <span className="text-xs text-muted-foreground mr-1">Mood & Vibe:</span>
-                                  {user.tags.slice(0, 3).map((mood, idx) => (
-                                    <Badge 
-                                      key={`mood-${idx}`} 
-                                      variant="secondary" 
-                                      className={`text-xs ${moodStyles[mood as keyof typeof moodStyles] || ''}`}
-                                    >
-                                      {mood}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
+                      </div>
+                      <div className="p-3">
+                        {user.bio && (
+                          <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                            {user.bio}
+                          </p>
+                        )}
+                        {/* Display Mood & Vibe (using tags which combines interests and currentMoods) */}
+                        {user.tags && user.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            <span className="text-xs text-muted-foreground mr-1">Mood & Vibe:</span>
+                            {user.tags.slice(0, 3).map((mood, idx) => (
+                              <Badge 
+                                key={`mood-${idx}`} 
+                                variant="secondary" 
+                                className={`text-xs ${moodStyles[mood as keyof typeof moodStyles] || ''}`}
+                              >
+                                {mood}
+                              </Badge>
+                            ))}
                           </div>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <div className="hidden md:block">
-              <CarouselPrevious className="-left-5 sm:-left-8" />
-              <CarouselNext className="-right-5 sm:-right-8" />
-            </div>
-          </Carousel>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
         ) : (
           // No users found
           <div className="py-12 text-center w-full">
