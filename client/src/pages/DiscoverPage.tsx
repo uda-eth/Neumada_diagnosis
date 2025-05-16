@@ -130,10 +130,15 @@ export default function DiscoverPage() {
 
   // Group events by date categories
   const groupedEvents = {
-    today: filteredEvents.filter(event => {
+    todayOnly: filteredEvents.filter(event => {
       const eventDate = new Date(event.date);
-      // "This Weekend" - Events happening from today up to and including Sunday
-      return eventDate >= startOfToday && eventDate <= endOfWeekend;
+      // "TODAY'S EVENTS" - Events happening only today
+      return eventDate >= startOfToday && eventDate <= endOfToday;
+    }),
+    weekend: filteredEvents.filter(event => {
+      const eventDate = new Date(event.date);
+      // "This Weekend" - Events happening after today but up to and including Sunday
+      return eventDate > endOfToday && eventDate <= endOfWeekend;
     }),
     week: filteredEvents.filter(event => {
       const eventDate = new Date(event.date);
@@ -398,13 +403,13 @@ export default function DiscoverPage() {
             ) : (
               <div className="space-y-10">
                 {/* Today's Events Section */}
-                {groupedEvents.today.length > 0 && (
+                {groupedEvents.todayOnly.length > 0 && (
                   <div className="space-y-4">
                     <div className="py-2">
-                      <h2 className="text-base md:text-lg font-semibold text-gray-300">{t('thisWeekend')}</h2>
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">TODAY'S EVENTS</h2>
                     </div>
                     <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
-                      {groupedEvents.today.map((event: any) => (
+                      {groupedEvents.todayOnly.map((event: any) => (
                         <Card 
                           key={event.id} 
                           className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg h-auto max-h-[calc(100vh-4rem)]"
@@ -461,6 +466,50 @@ export default function DiscoverPage() {
                               ))}
                             </div>
                           </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* This Weekend Section */}
+                {groupedEvents.weekend.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="py-2">
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">{t('thisWeekend')}</h2>
+                    </div>
+                    <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+                      {groupedEvents.weekend.map((event: any) => (
+                        <Card 
+                          key={event.id} 
+                          className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg h-auto max-h-[calc(100vh-4rem)]"
+                          onClick={() => setLocation(`/event/${event.id}`)}
+                        >
+                          <div className="relative aspect-[1/2] sm:aspect-[1/2] overflow-hidden">
+                            <img
+                              src={event.image || "/placeholder-event.jpg"}
+                              alt={event.title}
+                              className="object-cover w-full h-full"
+                              loading="lazy"
+                            />
+                            <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 md:p-4 bg-gradient-to-t from-black/80 to-transparent">
+                              <div className="flex items-center justify-between">
+                                <Badge variant="outline" className="bg-black/30 text-[8px] sm:text-xs text-white px-1.5 py-0 sm:px-2 sm:py-0.5 border-white/10">
+                                  {format(new Date(event.date), 'EEE, MMM d')}
+                                </Badge>
+                                {event.price && event.price !== "0" ? (
+                                  <p className="font-medium text-white text-xs sm:text-sm">${event.price}</p>
+                                ) : (
+                                  <Badge variant="outline" className="bg-primary/20 text-[8px] sm:text-xs px-1.5 py-0 sm:px-2 sm:py-0.5 border-primary/10">
+                                    {t('free')}
+                                  </Badge>
+                                )}
+                              </div>
+                              <h3 className="font-semibold text-white text-xs sm:text-sm md:text-base mt-1 sm:mt-2 line-clamp-2">
+                                {event.title}
+                              </h3>
+                            </div>
+                          </div>
                         </Card>
                       ))}
                     </div>
@@ -656,7 +705,8 @@ export default function DiscoverPage() {
                 )}
 
                 {/* No Events Message */}
-                {groupedEvents.today.length === 0 && 
+                {groupedEvents.todayOnly.length === 0 && 
+                 groupedEvents.weekend.length === 0 &&
                  groupedEvents.week.length === 0 && 
                  groupedEvents.month.length === 0 && 
                  groupedEvents.upcoming.length === 0 && (
