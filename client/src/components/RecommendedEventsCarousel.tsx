@@ -13,15 +13,17 @@ import { MapPin } from "lucide-react";
 import { format } from "date-fns";
 import { useLocation } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "@/lib/translations";
 
 export function RecommendedEventsCarousel() {
   const { recommendedEvents, isLoading } = useRecommendedEvents();
   const [, setLocation] = useLocation();
+  const { t } = useTranslation();
 
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold text-white">Recommended For You</h2>
+        <h2 className="text-xl font-semibold text-white">{t('recommendedForYou')}</h2>
         <Carousel className="w-full">
           <CarouselContent>
             {[1, 2, 3].map((_, index) => (
@@ -74,7 +76,7 @@ export function RecommendedEventsCarousel() {
                             ))}
                             {((event.attendingCount || 0) + (event.interestedCount || 0)) > 10 && (
                               <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
-                                Trending
+                                {t('trending')}
                               </Badge>
                             )}
                           </div>

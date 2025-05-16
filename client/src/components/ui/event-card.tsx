@@ -81,7 +81,7 @@ export function EventCard({
             )}
           </div>
           <p className="text-sm text-white/60">
-            {interestedCount} interested
+            {interestedCount} {t('interested')}
           </p>
         </div>
       </CardContent>
