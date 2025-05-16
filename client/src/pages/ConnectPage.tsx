@@ -123,6 +123,7 @@ export function ConnectPage() {
   const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
   const [isFiltersVisible, setIsFiltersVisible] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   // Fetch real users from the API
   const { user: currentUser } = useUser();
@@ -287,7 +288,7 @@ export function ConnectPage() {
           <Link href="/connections">
             <Button variant="outline" size="sm" className="gap-1 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm h-8">
               <UserCircle className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="truncate">Connections</span>
+              <span className="truncate">{t('connections')}</span>
             </Button>
           </Link>
           <Button
