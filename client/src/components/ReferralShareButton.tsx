@@ -5,6 +5,7 @@ import { SiWhatsapp, SiGmail } from "react-icons/si";
 import { useReferral } from '@/hooks/use-referral';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useUser } from '@/hooks/use-user';
+import { useTranslation } from '@/lib/translations';
 
 type ContentType = 'event' | 'profile' | 'invite';
 
@@ -29,6 +30,7 @@ export function ReferralShareButton({
 }: ReferralShareButtonProps) {
   const { getShareLink } = useReferral();
   const { user } = useUser();
+  const { t } = useTranslation();
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
   const [copied, setCopied] = useState(false);
@@ -108,12 +110,12 @@ export function ReferralShareButton({
       <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
         <DialogContent aria-describedby="share-dialog-description">
           <DialogHeader>
-            <DialogTitle>Share {contentType === 'profile' ? 'profile' : contentType === 'event' ? 'event' : 'invitation'}</DialogTitle>
+            <DialogTitle>{t('shareModalTitle')} {contentType === 'profile' ? t('profile').toLowerCase() : contentType === 'event' ? t('create').toLowerCase() : 'invitation'}</DialogTitle>
           </DialogHeader>
           
           <div className="py-4">
             <p id="share-dialog-description" className="text-sm text-muted-foreground mb-4">
-              Share this {contentType} with friends via:
+              {t('shareModalDescription')}
             </p>
             
             <div className="flex items-center space-x-2 mb-6">
@@ -126,7 +128,7 @@ export function ReferralShareButton({
               </div>
               <Button onClick={handleCopyLink} variant="outline" size="sm">
                 <Link2 className="h-4 w-4 mr-2" />
-                {copied ? "Copied!" : "Copy"}
+                {copied ? t('copied') : t('copy')}
               </Button>
             </div>
             
@@ -137,7 +139,7 @@ export function ReferralShareButton({
                 onClick={handleShareViaEmail}
               >
                 <Mail className="h-5 w-5" />
-                <span>Email</span>
+                <span>{t('email')}</span>
               </Button>
               
               <Button
@@ -146,7 +148,7 @@ export function ReferralShareButton({
                 onClick={handleShareViaWhatsApp}
               >
                 <SiWhatsapp className="h-5 w-5" />
-                <span>WhatsApp</span>
+                <span>{t('whatsapp')}</span>
               </Button>
               
               <Button
@@ -155,13 +157,13 @@ export function ReferralShareButton({
                 onClick={handleShareViaSMS}
               >
                 <MessageSquare className="h-5 w-5" />
-                <span>SMS</span>
+                <span>{t('sms')}</span>
               </Button>
             </div>
           </div>
           
           <DialogFooter>
-            <Button variant="default" onClick={() => setShowShareDialog(false)}>Done</Button>
+            <Button variant="default" onClick={() => setShowShareDialog(false)}>{t('done')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

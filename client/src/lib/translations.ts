@@ -99,7 +99,15 @@ type TranslationKey =
   | 'shareProfile'
   | 'connectProfile'
   | 'viewLocations'
-  | 'moodAndVibe';
+  | 'moodAndVibe'
+  | 'shareModalTitle'
+  | 'shareModalDescription'
+  | 'copy'
+  | 'copied'
+  | 'email'
+  | 'whatsapp'
+  | 'sms'
+  | 'done';
 
 const translations: Record<string, Record<TranslationKey, string>> = {
   en: {
@@ -200,7 +208,15 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     shareProfile: 'Share Profile',
     connectProfile: 'Connect',
     viewLocations: 'View Locations',
-    moodAndVibe: 'Mood & Vibe'
+    moodAndVibe: 'Mood & Vibe',
+    shareModalTitle: 'Share',
+    shareModalDescription: 'Share this with friends via:',
+    copy: 'Copy',
+    copied: 'Copied!',
+    email: 'Email',
+    whatsapp: 'WhatsApp',
+    sms: 'SMS',
+    done: 'Done'
   },
   es: {
     discover: 'Descubrir',
@@ -300,7 +316,15 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     shareProfile: 'Compartir Perfil',
     connectProfile: 'Conectar',
     viewLocations: 'Ver Ubicaciones',
-    moodAndVibe: 'Estado y Ambiente'
+    moodAndVibe: 'Estado y Ambiente',
+    shareModalTitle: 'Compartir',
+    shareModalDescription: 'Compartir con amigos a través de:',
+    copy: 'Copiar',
+    copied: '¡Copiado!',
+    email: 'Correo',
+    whatsapp: 'WhatsApp',
+    sms: 'SMS',
+    done: 'Listo'
   }
 };
 
