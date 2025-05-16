@@ -1,5 +1,6 @@
 import { format, parse } from "date-fns";
 import { Clock } from "lucide-react";
+import { useTranslation } from "@/lib/translations";
 
 interface ItineraryItem {
   startTime: string;
@@ -12,6 +13,7 @@ interface EventItineraryProps {
 }
 
 export function EventItinerary({ itinerary }: EventItineraryProps) {
+  const { t } = useTranslation();
   if (!itinerary || itinerary.length === 0) {
     return null;
   }
