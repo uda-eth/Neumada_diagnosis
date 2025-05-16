@@ -117,7 +117,7 @@ export default function ChatbotPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#121212] text-white p-4">
+    <div className="min-h-screen bg-[#121212] text-white p-4 flex flex-col">
       <GradientHeader 
         title={t('concierge')}
         className="mb-4"
@@ -136,9 +136,9 @@ export default function ChatbotPage() {
         </select>
       </GradientHeader>
       
-      <div className="max-w-2xl mx-auto flex flex-col gap-4">
-        <Card className="flex-1 bg-black/40 border-white/10 shadow-card overflow-hidden">
-          <CardContent className="p-4 flex flex-col min-h-[500px] h-auto sm:h-[calc(100vh-16rem)]">
+      <div className="max-w-2xl mx-auto flex flex-col gap-4 flex-1">
+        <Card className="bg-black/40 border-white/10 shadow-card overflow-visible">
+          <CardContent className="p-4 flex flex-col">
             {/* Quick prompts section */}
             <div className="py-4 border-b border-white/10">
               <div className="flex flex-wrap gap-2 pb-2">
@@ -159,8 +159,8 @@ export default function ChatbotPage() {
               </div>
             </div>
 
-            <ScrollArea className="flex-1 pr-4 my-4 max-h-[60vh] sm:max-h-none">
-              <div className="space-y-4 pb-4 min-h-full">
+            <ScrollArea className="w-full pr-4 my-4 h-[400px] md:h-[500px]">
+              <div className="space-y-4 pb-4">
                 <AnimatePresence initial={false}>
                   {messages.map((message, index) => (
                     <motion.div
