@@ -79,7 +79,6 @@ export default function ChatbotPage() {
   const quickPrompts = getQuickPrompts(t, language);
   
   // Initialize messages with translated greeting
-  // Update quick prompts when language changes
   useEffect(() => {
     if (messages.length === 0) {
       setMessages([
@@ -106,10 +105,8 @@ export default function ChatbotPage() {
 
   const handleQuickPrompt = async (prompt: string, specializedPrompt?: string) => {
     if (isLoading) return;
-    // Create message with city prefix for display purposes
     const message = `[City: ${selectedCity}] ${prompt}`;
     try {
-      // Pass both the regular prompt for display and the specialized prompt for AI
       await sendMessage(message, specializedPrompt);
     } catch (error) {
       console.error("Error sending quick prompt:", error);
@@ -117,30 +114,29 @@ export default function ChatbotPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#121212] text-white p-4">
-      <GradientHeader 
-        title={t('concierge')}
-        className="mb-4"
-        showBackButton={true}
-        backButtonFallbackPath="/discover"
-      >
-        <select 
-          value={selectedCity}
-          onChange={(e) => setSelectedCity(e.target.value)}
-          className="bg-transparent border border-border rounded-md px-2 py-1 text-sm focus-visible"
-          aria-label="Select a city"
+    <div className="bg-[#121212] text-white min-h-screen">
+      <div className="p-4">
+        <GradientHeader 
+          title={t('concierge')}
+          className="mb-4"
+          showBackButton={true}
+          backButtonFallbackPath="/discover"
         >
-          {DIGITAL_NOMAD_CITIES.map(city => (
-            <option key={city} value={city}>{city}</option>
-          ))}
-        </select>
-      </GradientHeader>
-      
-      <div className="max-w-2xl mx-auto">
-        {/* Chat card */}
-        <div className="mb-4 bg-black/40 border border-white/10 rounded-lg shadow-card">
-          {/* Quick prompts section */}
-          <div className="p-4 border-b border-white/10">
+          <select 
+            value={selectedCity}
+            onChange={(e) => setSelectedCity(e.target.value)}
+            className="bg-transparent border border-border rounded-md px-2 py-1 text-sm focus-visible"
+            aria-label="Select a city"
+          >
+            {DIGITAL_NOMAD_CITIES.map(city => (
+              <option key={city} value={city}>{city}</option>
+            ))}
+          </select>
+        </GradientHeader>
+        
+        <div className="max-w-2xl mx-auto">
+          {/* Quick prompts */}
+          <div className="bg-black/40 border border-white/10 rounded-lg mb-4 p-4">
             <div className="flex flex-wrap gap-2">
               {quickPrompts.map(({ text, icon: Icon, prompt, specializedPrompt, ariaLabel }) => (
                 <Button
@@ -159,73 +155,69 @@ export default function ChatbotPage() {
             </div>
           </div>
           
-          {/* Chat messages */}
-          <div className="p-4">
-            <div className="messages-container min-h-[200px]">
-              <AnimatePresence initial={false}>
-                {messages.map((message, index) => (
-                  <motion.div
-                    key={index}
-                    variants={messageVariants}
-                    initial="hidden"
-                    animate="visible"
-                    className={`flex gap-3 mb-4 ${
-                      message.role === "assistant" ? "flex-row" : "flex-row-reverse"
+          {/* Messages */}
+          <div className="bg-black/40 border border-white/10 rounded-lg mb-4">
+            <div className="p-4">
+              {messages.map((message, index) => (
+                <div
+                  key={index}
+                  className={`flex gap-3 mb-4 ${
+                    message.role === "assistant" ? "flex-row" : "flex-row-reverse"
+                  }`}
+                >
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      message.role === "assistant"
+                        ? "bg-gradient-to-r from-purple-600 via-pink-600 to-red-500"
+                        : "bg-white/10"
                     }`}
                   >
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        message.role === "assistant"
-                          ? "bg-gradient-to-r from-purple-600 via-pink-600 to-red-500"
-                          : "bg-white/10"
-                      }`}
-                    >
-                      {message.role === "assistant" ? (
-                        <Bot className="w-5 h-5" />
-                      ) : (
-                        <User className="w-5 h-5" />
-                      )}
+                    {message.role === "assistant" ? (
+                      <Bot className="w-5 h-5" />
+                    ) : (
+                      <User className="w-5 h-5" />
+                    )}
+                  </div>
+                  <div
+                    className={`rounded-lg p-4 max-w-[85%] md:max-w-[80%] break-words ${
+                      message.role === "assistant"
+                        ? "bg-white/5 glass"
+                        : "bg-gradient-to-r from-purple-600 via-pink-600 to-red-500"
+                    }`}
+                  >
+                    <div className="text-sm">
+                      {message.content.split('\n').map((line, idx) => {
+                        // Match numbered list items (1., 2., etc.)
+                        if (/^\d+\./.test(line)) {
+                          return (
+                            <li key={idx} className="pl-2 ml-4 list-item list-decimal">
+                              {line.replace(/^\d+\.\s*/, '')}
+                            </li>
+                          );
+                        }
+                        // Match bullet list items
+                        else if (line.startsWith('•')) {
+                          return (
+                            <li key={idx} className="pl-2 ml-4 list-item list-disc">
+                              {line.slice(1).trim()}
+                            </li>
+                          );
+                        }
+                        // Regular paragraph text
+                        else if (line.trim()) {
+                          return <p key={idx} className="mb-2">{line}</p>;
+                        }
+                        // Empty lines become spacing
+                        else {
+                          return <div key={idx} className="h-2"></div>;
+                        }
+                      })}
                     </div>
-                    <div
-                      className={`rounded-lg p-4 max-w-[85%] md:max-w-[80%] break-words ${
-                        message.role === "assistant"
-                          ? "bg-white/5 glass"
-                          : "bg-gradient-to-r from-purple-600 via-pink-600 to-red-500"
-                      }`}
-                    >
-                      <div className="text-sm">
-                        {message.content.split('\n').map((line, idx) => {
-                          // Match numbered list items (1., 2., etc.)
-                          if (/^\d+\./.test(line)) {
-                            return (
-                              <li key={idx} className="pl-2 ml-4 list-item list-decimal">
-                                {line.replace(/^\d+\.\s*/, '')}
-                              </li>
-                            );
-                          }
-                          // Match bullet list items
-                          else if (line.startsWith('•')) {
-                            return (
-                              <li key={idx} className="pl-2 ml-4 list-item list-disc">
-                                {line.slice(1).trim()}
-                              </li>
-                            );
-                          }
-                          // Regular paragraph text
-                          else if (line.trim()) {
-                            return <p key={idx} className="mb-2">{line}</p>;
-                          }
-                          // Empty lines become spacing
-                          else {
-                            return <div key={idx} className="h-2"></div>;
-                          }
-                        })}
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+                  </div>
+                </div>
+              ))}
 
+              {/* Loading indicator */}
               {isLoading && (
                 <div className="flex gap-3 mb-4">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-red-500 flex items-center justify-center">
@@ -238,44 +230,41 @@ export default function ChatbotPage() {
                 </div>
               )}
             </div>
+            
+            {/* Message input */}
+            <div className="border-t border-white/10 p-4">
+              <form onSubmit={handleSubmit} className="flex gap-2">
+                <Input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder={`${t('askAnythingAbout')} ${selectedCity}...`}
+                  disabled={isLoading}
+                  className="bg-white/5 border-white/10 glass-hover focus-visible"
+                  aria-label="Type your message"
+                />
+                <Button 
+                  type="submit" 
+                  disabled={isLoading || !input.trim()}
+                  className="px-8 interactive-hover"
+                  aria-label="Send message"
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
+              </form>
+            </div>
           </div>
-          
-          {/* Message input */}
-          <div className="p-4 border-t border-white/10">
-            <form 
-              onSubmit={handleSubmit} 
-              className="flex gap-2"
-            >
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={`${t('askAnythingAbout')} ${selectedCity}...`}
-                disabled={isLoading}
-                className="bg-white/5 border-white/10 glass-hover focus-visible"
-                aria-label="Type your message"
-              />
-              <Button 
-                type="submit" 
-                disabled={isLoading || !input.trim()}
-                className="px-8 interactive-hover"
-                aria-label="Send message"
-              >
-                <Send className="w-4 h-4" />
-              </Button>
-            </form>
-          </div>
-        </div>
 
-        {/* Ad card */}
-        <div className="bg-black/40 border border-white/10 rounded-lg p-4">
-          <p className="text-center text-sm font-medium text-muted-foreground mb-4">
-            {t('premiumAdPartner')}
-          </p>
-          <img
-            src="/attached_assets/Screenshot 2025-03-05 at 8.12.59 AM.png"
-            alt="Premium Ad Partner"
-            className="w-full max-w-md mx-auto h-auto object-contain rounded-lg"
-          />
+          {/* Ad card */}
+          <div className="bg-black/40 border border-white/10 rounded-lg p-4">
+            <p className="text-center text-sm font-medium text-muted-foreground mb-4">
+              {t('premiumAdPartner')}
+            </p>
+            <img
+              src="/attached_assets/Screenshot 2025-03-05 at 8.12.59 AM.png"
+              alt="Premium Ad Partner"
+              className="w-full max-w-md mx-auto h-auto object-contain rounded-lg"
+            />
+          </div>
         </div>
       </div>
     </div>
