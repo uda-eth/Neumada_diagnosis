@@ -138,7 +138,7 @@ export default function ChatbotPage() {
       
       <div className="max-w-2xl mx-auto flex flex-col gap-4">
         <Card className="flex-1 bg-black/40 border-white/10 shadow-card overflow-hidden">
-          <CardContent className="p-4 flex flex-col h-[calc(100vh-16rem)]">
+          <CardContent className="p-4 flex flex-col min-h-[500px] h-auto sm:h-[calc(100vh-16rem)]">
             {/* Quick prompts section */}
             <div className="py-4 border-b border-white/10">
               <div className="flex flex-wrap gap-2 pb-2">
@@ -159,8 +159,8 @@ export default function ChatbotPage() {
               </div>
             </div>
 
-            <ScrollArea className="flex-1 pr-4 my-4">
-              <div className="space-y-4 pb-4">
+            <ScrollArea className="flex-1 pr-4 my-4 max-h-[60vh] sm:max-h-none">
+              <div className="space-y-4 pb-4 min-h-full">
                 <AnimatePresence initial={false}>
                   {messages.map((message, index) => (
                     <motion.div
@@ -186,7 +186,7 @@ export default function ChatbotPage() {
                         )}
                       </div>
                       <div
-                        className={`rounded-lg p-4 max-w-[80%] ${
+                        className={`rounded-lg p-4 max-w-[85%] md:max-w-[80%] break-words ${
                           message.role === "assistant"
                             ? "bg-white/5 glass"
                             : "bg-gradient-to-r from-purple-600 via-pink-600 to-red-500"
