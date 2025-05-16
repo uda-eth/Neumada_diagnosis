@@ -687,7 +687,77 @@ export default function DiscoverPage() {
                   </div>
                 )}
 
-                {/* Events This Month Section */}
+                
+                {/* Next Weekend Section */}
+                {groupedEvents.nextWeekend.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="py-2">
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">NEXT WEEKEND</h2>
+                    </div>
+                    <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+                      {groupedEvents.nextWeekend.map((event: any) => (
+                        <Card 
+                          key={event.id} 
+                          className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg h-auto max-h-[calc(100vh-4rem)]"
+                          onClick={() => setLocation(`/event/${event.id}`)}
+                        >
+                          <div className="relative aspect-[1/2] sm:aspect-[1/2] overflow-hidden">
+                            <img
+                              src={event.image || "/placeholder-event.jpg"}
+                              alt={event.title}
+                              className="object-cover w-full h-full"
+                              loading="lazy"
+                            />
+                            <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 md:p-4 bg-gradient-to-t from-black/80 to-transparent">
+                              <div className="flex items-center justify-between">
+                                <div className="max-w-[70%]">
+                                  <p className="text-[9px] sm:text-xs md:text-sm font-medium text-white/60">
+                                    {format(new Date(event.date), "MMM d, h:mm a")}
+                                  </p>
+                                  <h3 className="text-xs sm:text-sm md:text-lg font-semibold text-white mt-0.5 truncate">{event.title}</h3>
+                                </div>
+                                <div className="text-right text-white z-10">
+                                  {event.price === "0" ? (
+                                    <p className="font-semibold text-white text-xs sm:text-sm md:text-lg">Free</p>
+                                  ) : (
+                                    <>
+                                      <p className="font-semibold text-white text-xs sm:text-sm md:text-lg">${event.price}</p>
+                                      <p className="text-[8px] sm:text-xs md:text-sm text-white/60">per person</p>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <CardContent className="p-2 sm:p-3 md:p-4">
+                            <div className="flex items-center justify-between flex-wrap gap-y-1 sm:gap-y-2">
+                              <div className="flex items-center space-x-1 min-w-0 max-w-[50%]">
+                                <MapPin className="h-2.5 w-2.5 sm:h-3 md:h-4 sm:w-3 md:w-4 flex-shrink-0 text-muted-foreground" />
+                                <span className="text-[10px] sm:text-xs md:text-sm text-muted-foreground truncate">
+                                  {event.location}
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-1 min-w-0 max-w-[50%]">
+                                <Calendar className="h-2.5 w-2.5 sm:h-3 md:h-4 sm:w-3 md:w-4 flex-shrink-0 text-muted-foreground" />
+                                <span className="text-[10px] sm:text-xs md:text-sm text-muted-foreground truncate">
+                                  {event.category}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex flex-wrap gap-1 mt-1 sm:mt-2 md:mt-3">
+                              {event.tags?.slice(0, 2).map((tag: string, index: number) => (
+                                <Badge key={index} variant="secondary" className="rounded px-1 py-0 text-[8px] sm:text-[10px] md:text-xs">{tag}</Badge>
+                              ))}
+                            </div>
+                            <h3 className="text-xs sm:text-sm md:text-base font-semibold mt-1 sm:mt-2 md:mt-3 line-clamp-2">{event.title}</h3>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+{/* Events This Month Section */}
                 {groupedEvents.month.length > 0 && (
                   <div className="space-y-4">
                     <div className="py-2">
@@ -808,6 +878,7 @@ export default function DiscoverPage() {
                 {/* No Events Message */}
                 {groupedEvents.todayOnly.length === 0 && 
                  groupedEvents.thisWeek.length === 0 &&
+                 groupedEvents.nextWeekend.length === 0 &&
                  groupedEvents.thisWeekend.length === 0 &&
                  groupedEvents.nextWeek.length === 0 && 
                  groupedEvents.month.length === 0 && 
