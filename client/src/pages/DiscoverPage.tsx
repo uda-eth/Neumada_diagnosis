@@ -178,16 +178,16 @@ export default function DiscoverPage() {
         onClose={handleModalClose} 
       />
       <GradientHeader 
-        title="Discover"
+        title={t('discover')}
         showBackButton={false}
       >
         <div className="flex items-center gap-1 sm:gap-2">
           <Select value={selectedCity} onValueChange={setSelectedCity}>
             <SelectTrigger className="w-[130px] sm:w-[140px] md:w-[180px] bg-transparent border-border text-xs sm:text-sm">
-              <SelectValue placeholder="Select city" />
+              <SelectValue placeholder={t('selectCity')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Locations</SelectItem>
+              <SelectItem value="all">{t('allLocations')}</SelectItem>
               {DIGITAL_NOMAD_CITIES.map((city) => (
                 <SelectItem key={city} value={city}>
                   {city}
@@ -204,7 +204,7 @@ export default function DiscoverPage() {
             className="hidden md:inline-flex items-center"
           >
             <Users className="h-5 w-5 mr-2" />
-            Connect
+            {t('connect')}
           </Button>
           <Button
             variant="ghost"
@@ -213,7 +213,7 @@ export default function DiscoverPage() {
             className="hidden md:inline-flex items-center"
           >
             <UserCircle className="h-5 w-5 mr-2" />
-            My Network
+            {t('yourNetwork')}
           </Button>
           <Button
             className="bg-primary/10 hover:bg-primary/20 whitespace-nowrap px-2 py-1 sm:py-2 md:px-4 text-xs sm:text-sm flex-shrink-0"

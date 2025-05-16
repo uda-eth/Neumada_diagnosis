@@ -9,17 +9,18 @@ import {
   Inbox as InboxIcon 
 } from "lucide-react";
 
+// Define mapping for page titles to icons
 const iconMap = {
-  Discover: MapPin,
-  Connect: UserCircle,
-  Create: PlusCircle,
-  "Edit Event": PlusCircle,
-  Concierge: Globe,
-  Inbox: InboxIcon,
+  discover: MapPin,
+  connect: UserCircle,
+  create: PlusCircle,
+  edit: PlusCircle,
+  concierge: Globe,
+  inbox: InboxIcon,
 };
 
 interface GradientHeaderProps {
-  title: keyof typeof iconMap;
+  title: keyof typeof iconMap | string;
   children?: React.ReactNode;
   showBackButton?: boolean;
   backButtonFallbackPath?: string;
@@ -35,7 +36,16 @@ export function GradientHeader({
   forceUsePathFallback = false,
   className = ""
 }: GradientHeaderProps) {
-  const Icon = iconMap[title];
+  // Get the appropriate icon based on title, defaulting to discover icon
+  let Icon = iconMap.discover;
+  
+  // Try to match the title to a known icon, handling both translated and original titles
+  const lowerCaseTitle = title.toLowerCase();
+  Object.keys(iconMap).forEach(key => {
+    if (lowerCaseTitle.includes(key)) {
+      Icon = iconMap[key as keyof typeof iconMap];
+    }
+  });
   const [location] = useLocation();
   
   // Auto-detect if we're on profile page to force fallback
