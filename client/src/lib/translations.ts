@@ -47,7 +47,13 @@ type TranslationKey =
   | 'profileSetup'
   | 'digitalNomads'
   | 'allLocations'
-  | 'selectCity';
+  | 'selectCity'
+  | 'createEvent'
+  | 'eventsFound'
+  | 'searchByVibe'
+  | 'eventsThisMonth'
+  | 'free'
+  | 'perPerson';
 
 const translations: Record<string, Record<TranslationKey, string>> = {
   en: {
@@ -97,7 +103,13 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     profileSetup: 'Let\'s set up your profile and help you connect with like-minded nomads.',
     digitalNomads: 'digital nomads',
     allLocations: 'All Locations',
-    selectCity: 'Select city'
+    selectCity: 'Select city',
+    createEvent: 'Create Event',
+    eventsFound: 'events found',
+    searchByVibe: 'Search by Vibe',
+    eventsThisMonth: 'Events this month',
+    free: 'Free',
+    perPerson: 'per person'
   },
   es: {
     discover: 'Descubrir',
@@ -146,7 +158,13 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     profileSetup: 'Configuremos tu perfil y ayudemos a conectarte con nómadas afines.',
     digitalNomads: 'nómadas digitales',
     allLocations: 'Todas las Ubicaciones',
-    selectCity: 'Seleccionar ciudad'
+    selectCity: 'Seleccionar ciudad',
+    createEvent: 'Crear Evento',
+    eventsFound: 'eventos encontrados',
+    searchByVibe: 'Buscar por Ambiente',
+    eventsThisMonth: 'Eventos este mes',
+    free: 'Gratis',
+    perPerson: 'por persona'
   }
 };
 
