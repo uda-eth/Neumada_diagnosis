@@ -51,7 +51,7 @@ const messageVariants = {
 };
 
 export default function ChatbotPage() {
-  const { messages, isLoading, sendMessage } = useChat();
+  const { messages, setMessages, isLoading, sendMessage } = useChat();
   const { t } = useTranslation();
   const { language } = useLanguage();
   const [input, setInput] = useState("");
@@ -68,7 +68,7 @@ export default function ChatbotPage() {
         }
       ]);
     }
-  }, [language, messages.length, setMessages, t]);
+  }, [language, messages, setMessages, t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
