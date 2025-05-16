@@ -32,6 +32,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { VIBE_AND_MOOD_TAGS, DIGITAL_NOMAD_CITIES } from "@/lib/constants";
 import { useUser } from "@/hooks/use-user";
 import { ItineraryFormField } from "@/components/ItineraryFormField";
+import { useTranslation } from "@/lib/translations";
 
 // Define a simple schema for our form
 // Define a schema for itinerary items
@@ -67,6 +68,7 @@ export default function CreateEventPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { user } = useUser();
+  const { t } = useTranslation();
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -230,7 +232,7 @@ export default function CreateEventPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <GradientHeader 
-        title="Create"
+        title={t('create')}
         backButtonFallbackPath="/"
       />
 
@@ -250,7 +252,7 @@ export default function CreateEventPage() {
                     <div className="flex flex-col items-center gap-2">
                       <Plus className="w-8 h-8 text-white/60" />
                       <span className="text-sm text-white/60">
-                        Add photos or flyer for your event
+                        {t('addPhotosFlyer')}
                       </span>
                     </div>
                     <input
@@ -269,7 +271,7 @@ export default function CreateEventPage() {
                 <Input
                   {...form.register("title")}
                   className="bg-white/5 border-0 h-12 text-lg"
-                  placeholder="Event title"
+                  placeholder={t('eventTitle')}
                 />
                 {form.formState.errors.title && (
                   <p className="text-red-500 text-xs">{form.formState.errors.title.message}</p>
@@ -280,7 +282,7 @@ export default function CreateEventPage() {
                 <Textarea
                   {...form.register("description")}
                   className="bg-white/5 border-0 h-32 resize-none"
-                  placeholder="Fill in Event Details"
+                  placeholder={t('fillEventDetails')}
                 />
                 {form.formState.errors.description && (
                   <p className="text-red-500 text-xs">{form.formState.errors.description.message}</p>
@@ -289,7 +291,7 @@ export default function CreateEventPage() {
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-sm font-medium">Vibes for this Event</h3>
+              <h3 className="text-sm font-medium">{t('vibesForEvent')}</h3>
               <div className="flex flex-wrap gap-2">
                 {interestTags.map((tag) => (
                   <Button
@@ -316,13 +318,13 @@ export default function CreateEventPage() {
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-sm font-medium">Event Location</h3>
+              <h3 className="text-sm font-medium">{t('eventLocation')}</h3>
               <Select
                 value={form.watch("location")}
                 onValueChange={(value) => form.setValue("location", value)}
               >
                 <SelectTrigger className="w-full h-12 bg-white/5 border-white/10 hover:bg-white/10">
-                  <SelectValue placeholder="Select a city" />
+                  <SelectValue placeholder={t('selectCity')} />
                 </SelectTrigger>
                 <SelectContent>
                   {DIGITAL_NOMAD_CITIES.map((city) => (
@@ -341,7 +343,7 @@ export default function CreateEventPage() {
 
             {/* Date Picker */}
             <div className="space-y-2">
-              <h3 className="text-sm font-medium">Event Date</h3>
+              <h3 className="text-sm font-medium">{t('eventDate')}</h3>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
