@@ -93,7 +93,7 @@ export function ItineraryFormField({ name }: ItineraryFormFieldProps) {
 
           <div className="space-y-2">
             <Label htmlFor={`${name}.${index}.description`} className="text-xs text-white/60">
-              Description
+              {t('description')}
             </Label>
             <Textarea
               id={`${name}.${index}.description`}
@@ -114,7 +114,7 @@ export function ItineraryFormField({ name }: ItineraryFormFieldProps) {
           className="w-full text-xs flex items-center gap-1 mt-2"
         >
           <Plus className="h-3 w-3" />
-          Add Another Item
+          {t('addAnotherItem')}
         </Button>
       )}
     </div>
