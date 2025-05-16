@@ -469,7 +469,7 @@ export default function ProfilePage() {
                         ) : (
                           <UserPlus className="h-4 w-4" />
                         )}
-                        Connect
+                        {t('connectProfile')}
                       </Button>
                     )}
                   </div>
@@ -512,7 +512,7 @@ export default function ProfilePage() {
                 
                 {/* Locations */}
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Locations</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('viewLocations')}</h3>
                   <div className="space-y-2">
                     {profileData.location && (
                       <div className="flex items-center gap-2 text-sm">
@@ -577,7 +577,7 @@ export default function ProfilePage() {
                           key={`mood-${index}`}
                           className={`py-1.5 px-3 text-sm font-medium ${moodStyles[mood as keyof typeof moodStyles] || ''} rounded-full`}
                         >
-                          {mood}
+                          {t(mood)}
                         </Badge>
                       ))
                     : 
@@ -587,7 +587,7 @@ export default function ProfilePage() {
                           key={`interest-${index}`}
                           className={`py-1.5 px-3 text-sm font-medium ${moodStyles[interest as keyof typeof moodStyles] || ''} rounded-full`}
                         >
-                          {interest}
+                          {t(interest)}
                         </Badge>
                       ))
                     }
