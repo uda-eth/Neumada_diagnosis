@@ -93,6 +93,7 @@ export default function DiscoverPage() {
 
   // Date utilities for categorizing events
   const now = new Date();
+  const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
   
   // Reset hours to start of day for proper comparison
   const startOfToday = new Date(now);
@@ -102,35 +103,75 @@ export default function DiscoverPage() {
   const endOfToday = new Date(startOfToday);
   endOfToday.setHours(23, 59, 59, 999);
   
-  // Calculate end of this week (end of the current week - next Sunday 23:59:59)
+  // Calculate THIS WEEK (Monday-Friday of current week)
+  // If today is a weekend day, thisWeek will be empty
+  const startOfThisWeek = new Date(startOfToday);
   const endOfThisWeek = new Date(startOfToday);
-  const daysUntilSunday = 7 - now.getDay();
-  endOfThisWeek.setDate(startOfToday.getDate() + daysUntilSunday);
-  endOfThisWeek.setHours(23, 59, 59, 999);
   
-  // Calculate weekend boundaries (Friday, Saturday, Sunday)
-  const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-  
-  // Find the upcoming weekend (if today is part of the weekend, include it)
-  const endOfWeekend = new Date(startOfToday);
-  if (dayOfWeek === 0) { // Sunday - weekend ends today
-    // endOfWeekend is already today
-  } else if (dayOfWeek === 5 || dayOfWeek === 6) { // Friday or Saturday - weekend ends on Sunday
-    endOfWeekend.setDate(startOfToday.getDate() + (7 - dayOfWeek)); // Next Sunday
-  } else { // Monday to Thursday - weekend starts on Friday
-    endOfWeekend.setDate(startOfToday.getDate() + (5 - dayOfWeek) + 2); // Next Sunday (Friday + 2 days)
+  // Set to Monday of current week if we're before or on Friday
+  if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+    // Only include days after today up to Friday
+    // End of this week is Friday of current week
+    const daysUntilFriday = 5 - dayOfWeek;
+    endOfThisWeek.setDate(startOfToday.getDate() + daysUntilFriday);
+    endOfThisWeek.setHours(23, 59, 59, 999);
+  } else {
+    // If today is weekend, thisWeek is empty (set end before start)
+    endOfThisWeek.setDate(startOfToday.getDate() - 1);
   }
-  endOfWeekend.setHours(23, 59, 59, 999);
   
-  // Next week starts after the weekend and goes for the next 7 days
-  const startOfNextWeek = new Date(endOfWeekend);
-  startOfNextWeek.setDate(endOfWeekend.getDate() + 1);
+  // Calculate THIS WEEKEND (Saturday-Sunday of current week)
+  const startOfThisWeekend = new Date(startOfToday);
+  const endOfThisWeekend = new Date(startOfToday);
+  
+  if (dayOfWeek < 6) { // Before Saturday
+    // Start of this weekend is upcoming Saturday
+    startOfThisWeekend.setDate(startOfToday.getDate() + (6 - dayOfWeek));
+    startOfThisWeekend.setHours(0, 0, 0, 0);
+    
+    // End of this weekend is upcoming Sunday
+    endOfThisWeekend.setDate(startOfToday.getDate() + (7 - dayOfWeek));
+    endOfThisWeekend.setHours(23, 59, 59, 999);
+  } else if (dayOfWeek === 6) { // Today is Saturday
+    // Start of this weekend is today
+    // End of this weekend is tomorrow (Sunday)
+    endOfThisWeekend.setDate(startOfToday.getDate() + 1);
+    endOfThisWeekend.setHours(23, 59, 59, 999);
+  } else { // Today is Sunday
+    // Today is the last day of this weekend
+    endOfThisWeekend.setHours(23, 59, 59, 999);
+  }
+  
+  // Calculate NEXT WEEK (Monday-Friday of next week)
+  const startOfNextWeek = new Date(startOfToday);
+  const endOfNextWeek = new Date(startOfToday);
+  
+  // Find days until next Monday
+  let daysUntilNextMonday = (8 - dayOfWeek) % 7;
+  if (daysUntilNextMonday === 0) daysUntilNextMonday = 7; // If today is Monday, go to next Monday
+  
+  // Start of next week is next Monday
+  startOfNextWeek.setDate(startOfToday.getDate() + daysUntilNextMonday);
   startOfNextWeek.setHours(0, 0, 0, 0);
   
-  const endOfNextWeek = new Date(startOfNextWeek);
-  endOfNextWeek.setDate(startOfNextWeek.getDate() + 7);
+  // End of next week is next Friday
+  endOfNextWeek.setDate(startOfNextWeek.getDate() + 4); // Monday + 4 days = Friday
+  endOfNextWeek.setHours(23, 59, 59, 999);
   
-  // This month is everything after next week up to 30 days from today
+  // Calculate NEXT WEEKEND (Saturday-Sunday of next week)
+  const startOfNextWeekend = new Date(endOfNextWeek);
+  startOfNextWeekend.setDate(endOfNextWeek.getDate() + 1); // Friday + 1 = Saturday
+  startOfNextWeekend.setHours(0, 0, 0, 0);
+  
+  const endOfNextWeekend = new Date(startOfNextWeekend);
+  endOfNextWeekend.setDate(startOfNextWeekend.getDate() + 1); // Saturday + 1 = Sunday
+  endOfNextWeekend.setHours(23, 59, 59, 999);
+  
+  // THIS MONTH is everything after next weekend up to 30 days from today
+  const startOfRestOfMonth = new Date(endOfNextWeekend);
+  startOfRestOfMonth.setDate(endOfNextWeekend.getDate() + 1);
+  startOfRestOfMonth.setHours(0, 0, 0, 0);
+  
   const endOfMonth = new Date(startOfToday);
   endOfMonth.setDate(startOfToday.getDate() + 30);
 
@@ -143,27 +184,32 @@ export default function DiscoverPage() {
     }),
     thisWeek: filteredEvents.filter(event => {
       const eventDate = new Date(event.date);
-      // "THIS WEEK" - Events happening after today but within the current week (until Sunday)
+      // "THIS WEEK" - Weekdays (Mon-Fri) of current week, excluding today
       return eventDate > endOfToday && eventDate <= endOfThisWeek;
     }),
-    weekend: filteredEvents.filter(event => {
+    thisWeekend: filteredEvents.filter(event => {
       const eventDate = new Date(event.date);
-      // "THIS WEEKEND" - Events happening during the upcoming weekend (Fri-Sun)
-      return eventDate > endOfToday && eventDate <= endOfWeekend;
+      // "THIS WEEKEND" - Saturday and Sunday of current week
+      return eventDate >= startOfThisWeekend && eventDate <= endOfThisWeekend;
     }),
-    week: filteredEvents.filter(event => {
+    nextWeek: filteredEvents.filter(event => {
       const eventDate = new Date(event.date);
-      // "NEXT WEEK" - Events happening after the weekend but within the next 7 days after that
-      return eventDate > endOfWeekend && eventDate <= endOfNextWeek;
+      // "NEXT WEEK" - Weekdays (Mon-Fri) of next week
+      return eventDate >= startOfNextWeek && eventDate <= endOfNextWeek;
+    }),
+    nextWeekend: filteredEvents.filter(event => {
+      const eventDate = new Date(event.date);
+      // "NEXT WEEKEND" - Saturday and Sunday of next week
+      return eventDate >= startOfNextWeekend && eventDate <= endOfNextWeekend;
     }),
     month: filteredEvents.filter(event => {
       const eventDate = new Date(event.date);
-      // "Events This Month" - Events happening after next week but within 30 days from today
-      return eventDate > endOfNextWeek && eventDate < endOfMonth;
+      // "THIS MONTH" - Events after next weekend but within 30 days
+      return eventDate > endOfNextWeekend && eventDate < endOfMonth;
     }),
     upcoming: filteredEvents.filter(event => {
       const eventDate = new Date(event.date);
-      // "Upcoming" - Events happening more than 30 days from now
+      // "UPCOMING" - Events more than 30 days from now
       return eventDate >= endOfMonth;
     })
   };
@@ -528,13 +574,13 @@ export default function DiscoverPage() {
                 )}
                 
                 {/* This Weekend Section */}
-                {groupedEvents.weekend.length > 0 && (
+                {groupedEvents.thisWeekend.length > 0 && (
                   <div className="space-y-4">
                     <div className="py-2">
                       <h2 className="text-base md:text-lg font-semibold text-gray-300">THIS WEEKEND</h2>
                     </div>
                     <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
-                      {groupedEvents.weekend.map((event: any) => (
+                      {groupedEvents.thisWeekend.map((event: any) => (
                         <Card 
                           key={event.id} 
                           className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg h-auto max-h-[calc(100vh-4rem)]"
@@ -572,13 +618,13 @@ export default function DiscoverPage() {
                 )}
                 
                 {/* Events This Week Section */}
-                {groupedEvents.week.length > 0 && (
+                {groupedEvents.nextWeek.length > 0 && (
                   <div className="space-y-4">
                     <div className="py-2">
                       <h2 className="text-base md:text-lg font-semibold text-gray-300">NEXT WEEK</h2>
                     </div>
                     <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
-                      {groupedEvents.week.map((event: any) => (
+                      {groupedEvents.nextWeek.map((event: any) => (
                         <Card 
                           key={event.id} 
                           className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg h-auto max-h-[calc(100vh-4rem)]"
@@ -762,8 +808,8 @@ export default function DiscoverPage() {
                 {/* No Events Message */}
                 {groupedEvents.todayOnly.length === 0 && 
                  groupedEvents.thisWeek.length === 0 &&
-                 groupedEvents.weekend.length === 0 &&
-                 groupedEvents.week.length === 0 && 
+                 groupedEvents.thisWeekend.length === 0 &&
+                 groupedEvents.nextWeek.length === 0 && 
                  groupedEvents.month.length === 0 && 
                  groupedEvents.upcoming.length === 0 && (
                   <div className="flex flex-col items-center justify-center p-8 text-center">
