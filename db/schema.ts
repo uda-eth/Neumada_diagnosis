@@ -40,6 +40,7 @@ export const events = pgTable("events", {
   description: text("description").notNull(),
   city: text("city").notNull(), // For city filtering
   location: text("location").notNull(), // Specific venue location
+  address: text("address"), // Exact address of the event
   date: timestamp("date").notNull(),
   endDate: timestamp("end_date"), // Added for multi-day events
   image: text("image"),
