@@ -757,7 +757,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                     onClick={() => handleParticipate('not_attending')}
                     disabled={participateMutation.isPending}
                   >
-                    Cancel Participation
+                    {t('cancelParticipation')}
                   </Button>
                 )}
               </div>
@@ -828,7 +828,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
             size="sm"
           >
             <Share2 className="h-4 w-4 mr-1" />
-            Share
+            {t('share')}
           </ReferralShareButton>
         </div>
 
@@ -864,7 +864,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                   >
                     {event.creatorName ? getFirstName(event.creatorName) : "Event Host"}
                   </div>
-                  <div className="text-xs sm:text-sm text-white/60">Event Organizer</div>
+                  <div className="text-xs sm:text-sm text-white/60">{t('eventOrganizer')}</div>
                 </div>
               </div>
             </div>

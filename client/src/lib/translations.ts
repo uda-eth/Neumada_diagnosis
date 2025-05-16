@@ -201,7 +201,8 @@ type TranslationKey =
   | 'noLongerParticipating'
   | 'successfullyUpdated'
   | 'proceedToPayment'
-  | 'login';
+  | 'login'
+  | 'cancelParticipation';
 
 const translations: Record<string, Record<TranslationKey, string>> = {
   en: {
@@ -392,10 +393,13 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     youAreNowInterested: 'You are now interested in this event',
     noLongerParticipating: 'You are no longer participating in this event',
     successfullyUpdated: 'Successfully updated',
-    proceedToPayment: 'Proceed to Payment'
+    proceedToPayment: 'Proceed to Payment',
+    cancelParticipation: 'Cancel Participation'
   },
   es: {
     discover: 'Descubrir',
+    login: 'Iniciar Sesión',
+    share: 'Compartir',
     connect: 'Conectar',
     create: 'Crear',
     make: 'Hacer',
@@ -583,7 +587,8 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     total: 'Total',
     backToEvent: 'Volver al Evento',
     qrCodeTicket: 'Después del pago, recibirás un código QR que se puede utilizar para la entrada al evento.',
-    eventOrganizer: 'Organizador del Evento'
+    eventOrganizer: 'Organizador del Evento',
+    cancelParticipation: 'Cancelar Participación'
   }
 };
 
