@@ -61,6 +61,20 @@ type TranslationKey =
   | 'findPeopleWithSimilarVibes'
   | 'clearAll'
   | 'searchByName'
+  | 'addPhotosFlyer'
+  | 'eventTitle'
+  | 'fillEventDetails'
+  | 'vibesForEvent'
+  | 'eventLocation'
+  | 'eventDate'
+  | 'paid'
+  | 'eventSchedule'
+  | 'addItem'
+  | 'startTime'
+  | 'endTime'
+  | 'description'
+  | 'addAnotherItem'
+  | 'noScheduleItems'
   | 'Party & Nightlife'
   | 'Fashion & Style'
   | 'Networking & Business'
@@ -135,6 +149,20 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     findPeopleWithSimilarVibes: 'Find people with similar vibes',
     clearAll: 'Clear all',
     searchByName: 'Search by name...',
+    addPhotosFlyer: 'Add photos or flyer for your event',
+    eventTitle: 'Event title',
+    fillEventDetails: 'Fill in Event Details',
+    vibesForEvent: 'Vibes for this Event',
+    eventLocation: 'Event Location',
+    eventDate: 'Event Date',
+    paid: 'Paid',
+    eventSchedule: 'Event Schedule',
+    addItem: 'Add Item',
+    startTime: 'Start Time',
+    endTime: 'End Time',
+    description: 'Description',
+    addAnotherItem: 'Add Another Item',
+    noScheduleItems: 'No schedule items added yet. Click "Add Item" to create your event schedule.',
     'Party & Nightlife': 'Party & Nightlife',
     'Fashion & Style': 'Fashion & Style',
     'Networking & Business': 'Networking & Business',
@@ -208,6 +236,20 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     findPeopleWithSimilarVibes: 'Encuentra personas con ambientes similares',
     clearAll: 'Borrar todo',
     searchByName: 'Buscar por nombre...',
+    addPhotosFlyer: 'Añadir fotos o folleto para tu evento',
+    eventTitle: 'Título del evento',
+    fillEventDetails: 'Completar detalles del evento',
+    vibesForEvent: 'Ambientes para este evento',
+    eventLocation: 'Ubicación del evento',
+    eventDate: 'Fecha del evento',
+    paid: 'De pago',
+    eventSchedule: 'Agenda del evento',
+    addItem: 'Añadir elemento',
+    startTime: 'Hora de inicio',
+    endTime: 'Hora de fin',
+    description: 'Descripción',
+    addAnotherItem: 'Añadir otro elemento',
+    noScheduleItems: 'Aún no hay elementos en la agenda. Haz clic en "Añadir elemento" para crear la agenda del evento.',
     'Party & Nightlife': 'Fiesta y Vida Nocturna',
     'Fashion & Style': 'Moda y Estilo',
     'Networking & Business': 'Networking y Negocios',
