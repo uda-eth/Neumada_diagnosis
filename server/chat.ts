@@ -202,17 +202,18 @@ Unfortunately, I couldn't find any events in our database matching those criteri
     }
 
     // Default handling
-    const languageInstruction = responseLanguage === 'es' 
-      ? `${SYSTEM_PROMPT}\n\nIMPORTANT: Respond in Spanish language.` 
-      : SYSTEM_PROMPT;
+    // Use the provided context if available (for specialized prompts), otherwise use the default system prompt
+    const systemContent = context 
+      ? (responseLanguage === 'es' ? `${context}\n\nIMPORTANT: Respond in Spanish language.` : context)
+      : (responseLanguage === 'es' ? `${SYSTEM_PROMPT}\n\nIMPORTANT: Respond in Spanish language.` : SYSTEM_PROMPT);
       
     const completion = await openai.chat.completions.create({
-      model: "gpt-4-turbo-preview",
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       messages: [
-        { role: "system", content: languageInstruction },
+        { role: "system", content: systemContent },
         { role: "user", content: message }
       ],
-      max_tokens: 500
+      max_tokens: 800 // Increased token limit for more detailed responses
     });
 
     const response = completion.choices[0].message.content;
