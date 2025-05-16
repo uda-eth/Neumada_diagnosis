@@ -36,13 +36,13 @@ export const mainNavItems = [
 export const menuItems = [
   { 
     icon: Crown, 
-    label: 'Premium Benefits', 
+    label: 'premiumUpgrade', 
     href: "/premium", 
     isPremium: true 
   },
   { 
     icon: Inbox, 
-    label: 'Inbox', 
+    label: 'inbox', 
     href: "/inbox",
     badge: "3",
     preview: [
@@ -53,12 +53,12 @@ export const menuItems = [
   },
   { 
     icon: UserCircle, 
-    label: 'Edit Profile', 
+    label: 'profile', 
     href: "/profile-edit"
   },
   { 
     icon: Globe2, 
-    label: 'Language', 
+    label: 'translator', 
     href: "/translator" 
   }
 ];
@@ -103,7 +103,7 @@ export function BottomNav() {
             <DropdownMenuTrigger asChild>
               <button className="relative flex flex-col items-center justify-center gap-1 w-12 h-14 rounded-lg transition-all duration-300 ease-out touch-target interactive-hover text-foreground/60 hover:text-foreground">
                 <Menu className="w-5 h-5 transition-transform" />
-                <span className="text-[9px] font-medium truncate max-w-full">Menu</span>
+                <span className="text-[9px] font-medium truncate max-w-full">{t('settings')}</span>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-64">
@@ -112,7 +112,7 @@ export function BottomNav() {
                   <Link href={href} className="flex items-center gap-2 w-full">
                     <div className={`flex items-center gap-2 w-full ${isPremium ? 'text-purple-500 font-medium' : ''}`}>
                       <Icon className="w-4 h-4" />
-                      <span className="flex-1">{label}</span>
+                      <span className="flex-1">{t(label)}</span>
                       {badge && (
                         <Badge variant="secondary" className="ml-auto">
                           {badge}
@@ -128,7 +128,7 @@ export function BottomNav() {
               <DropdownMenuItem onClick={handleLogout}>
                 <div className="flex items-center gap-2 w-full">
                   <LogOut className="w-4 h-4" />
-                  <span className="flex-1">Logout</span>
+                  <span className="flex-1">{t('logout')}</span>
                 </div>
               </DropdownMenuItem>
             </DropdownMenuContent>

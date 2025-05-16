@@ -110,13 +110,13 @@ export function Layout({ children }: LayoutProps) {
   };
 
   const menuItems = [
-    { href: "/premium", label: "Premium Upgrade", icon: Crown, isPremium: true },
-    { href: "/inbox", label: "Inbox", icon: Inbox },
-    { href: "/translator", label: "Translator", icon: Globe },
-    { href: "/companion", label: "Concierge", icon: Bot },
-    { href: "/profile", label: "Profile", icon: UserCircle },
-    { href: "/admin", label: "Admin Panel", icon: Settings, isAdmin: true },
-    { onClick: handleLogout, label: "Logout", icon: LogOut }
+    { href: "/premium", label: "premiumUpgrade", icon: Crown, isPremium: true },
+    { href: "/inbox", label: "inbox", icon: Inbox },
+    { href: "/translator", label: "translator", icon: Globe },
+    { href: "/companion", label: "concierge", icon: Bot },
+    { href: "/profile", label: "profile", icon: UserCircle },
+    { href: "/admin", label: "adminPanel", icon: Settings, isAdmin: true },
+    { onClick: handleLogout, label: "logout", icon: LogOut }
   ];
 
   return (
