@@ -95,11 +95,12 @@ export default function EventPage() {
   const [, setLocation] = useLocation();
   const { user, logout } = useUser();
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t, language, translateEvent } = useTranslation();
   const queryClient = useQueryClient();
   const [userStatus, setUserStatus] = useState<ParticipationStatus>('not_attending');
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [translatedEvent, setTranslatedEvent] = useState<Event | null>(null);
 
   const { data: event, isLoading, error: queryError } = useQuery<Event>({
     queryKey: [`/api/events/${id}`],
@@ -149,6 +150,23 @@ export default function EventPage() {
       setUserStatus(participationData.status || 'not_attending');
     }
   }, [participationData]);
+  
+  // Translate event data when language changes or event data is loaded
+  useEffect(() => {
+    const translateEventData = async () => {
+      if (event) {
+        try {
+          const translated = await translateEvent(event, language);
+          setTranslatedEvent(translated as Event);
+        } catch (error) {
+          console.error("Error translating event:", error);
+          setTranslatedEvent(event); // Fallback to original event data if translation fails
+        }
+      }
+    };
+    
+    translateEventData();
+  }, [event, language, translateEvent]);
 
   const participateMutation = useMutation({
     mutationFn: async (status: ParticipationStatus) => {
@@ -404,14 +422,17 @@ export default function EventPage() {
     );
   }
 
+  // Use the translated event data if available, otherwise use the original event data
+  const displayEvent = translatedEvent || event;
+
   // All events are treated as public now
   const isPrivateEvent = false;
-  const attendingCount = event.attendingCount || 0;
-  const interestedCount = event.interestedCount || 0;
+  const attendingCount = displayEvent.attendingCount || 0;
+  const interestedCount = displayEvent.interestedCount || 0;
 
   // Use actual attendees data from the event object if available
-  const attendingUsers: EventUser[] = event.attendingUsers || [];
-  const interestedUsers: EventUser[] = event.interestedUsers || [];
+  const attendingUsers: EventUser[] = displayEvent.attendingUsers || [];
+  const interestedUsers: EventUser[] = displayEvent.interestedUsers || [];
 
   // Modified to support both username and ID-based profile navigation
 const handleUserClick = (userIdOrUsername: number | string, username?: string) => {

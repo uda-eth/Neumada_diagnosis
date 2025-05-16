@@ -495,6 +495,66 @@ export async function translateUserProfile(
   return result;
 }
 
+/**
+ * Translates event information
+ * @param event Event data
+ * @param language Target language ('en' or 'es')
+ */
+export async function translateEvent(
+  event: {
+    title: string;
+    description?: string;
+    location?: string;
+    category?: string;
+    tags?: string[];
+    [key: string]: any;
+  },
+  language: string
+): Promise<{
+    title: string;
+    description?: string;
+    location?: string;
+    category?: string;
+    tags?: string[];
+    [key: string]: any;
+}> {
+  if (language === 'en') return event; // No need to translate if target is English
+  
+  const result = { ...event };
+  
+  // Translate title
+  if (event.title) {
+    result.title = await translateText(event.title, language);
+  }
+  
+  // Translate description
+  if (event.description) {
+    result.description = await translateText(event.description, language);
+  }
+  
+  // Translate location
+  if (event.location) {
+    result.location = await translateText(event.location, language);
+  }
+  
+  // Translate category
+  if (event.category) {
+    // If category is in predefined translations, use that
+    const translatedCategory = translations[language][event.category as TranslationKey];
+    result.category = translatedCategory || await translateText(event.category, language);
+  }
+  
+  // Translate tags
+  if (event.tags && event.tags.length > 0) {
+    const translatedTags = await Promise.all(
+      event.tags.map(tag => translateTag(tag, language))
+    );
+    result.tags = translatedTags;
+  }
+  
+  return result;
+}
+
 export function useTranslation() {
   const { language, setLanguage } = useLanguage();
   
@@ -506,5 +566,5 @@ export function useTranslation() {
     return translations[language][key as TranslationKey] || translations['en'][key as TranslationKey];
   };
 
-  return { t, setLanguage, language, translateText, translateUserProfile, translateTag };
+  return { t, setLanguage, language, translateText, translateUserProfile, translateTag, translateEvent };
 }
