@@ -1,5 +1,6 @@
 
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "@/lib/translations";
 import { useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -296,7 +297,7 @@ export function ConnectPage() {
             className="gap-1 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm h-8"
           >
             <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="truncate">Filters</span>
+            <span className="truncate">{t('filters')}</span>
             {selectedMoods.length > 0 && (
               <Badge variant="secondary" className="ml-1 sm:ml-2 text-xs px-1.5">
                 {selectedMoods.length}
