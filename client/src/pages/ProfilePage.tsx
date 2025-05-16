@@ -517,19 +517,19 @@ export default function ProfilePage() {
                     {profileData.location && (
                       <div className="flex items-center gap-2 text-sm">
                         <MapPin className="h-3.5 w-3.5 text-primary" />
-                        <span>Currently in <span className="font-medium">{profileData.location}</span></span>
+                        <span>{language === 'es' ? 'Actualmente en' : 'Currently in'} <span className="font-medium">{t(profileData.location)}</span></span>
                       </div>
                     )}
                     {profileData.birthLocation && (
                       <div className="flex items-center gap-2 text-sm">
                         <MapPin className="h-3.5 w-3.5 text-blue-400" />
-                        <span>Born in <span className="font-medium">{profileData.birthLocation}</span></span>
+                        <span>{language === 'es' ? 'Nacido en' : 'Born in'} <span className="font-medium">{t(profileData.birthLocation)}</span></span>
                       </div>
                     )}
                     {profileData.nextLocation && (
                       <div className="flex items-center gap-2 text-sm">
                         <MapPin className="h-3.5 w-3.5 text-green-400" />
-                        <span>Going to <span className="font-medium">{profileData.nextLocation}</span></span>
+                        <span>{language === 'es' ? 'Próximo destino' : 'Going to'} <span className="font-medium">{t(profileData.nextLocation)}</span></span>
                       </div>
                     )}
                   </div>
