@@ -574,7 +574,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                   size="sm"
                 >
                   <Star className="h-3 w-3 mr-1" />
-                  Interested
+                  {t('interested')}
                   {userStatus === 'interested' && <CheckCircle className="h-3 w-3 ml-1" />}
                 </Button>
                 <Button
@@ -585,7 +585,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                   size="sm"
                 >
                   <Users className="h-3 w-3 mr-1" />
-                  Attending
+                  {t('attending')}
                   {userStatus === 'attending' && <CheckCircle className="h-3 w-3 ml-1" />}
                 </Button>
               </div>

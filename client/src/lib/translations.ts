@@ -533,7 +533,6 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     recommendedForYou: 'Recomendado Para Ti',
     trending: 'Tendencia',
     // Already added translations above, removing duplicates
-    login: 'Iniciar Sesión',
     // Profile Edit Page Translations
     fullName: 'Nombre Completo',
     username: 'Nombre de Usuario',
