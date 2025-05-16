@@ -151,11 +151,15 @@ const translations: Record<string, Record<TranslationKey, string>> = {
 };
 
 export function useTranslation() {
-  const { language } = useLanguage();
+  const { language, setLanguage } = useLanguage();
   
-  const t = (key: TranslationKey) => {
-    return translations[language][key] || translations['en'][key];
+  const t = (key: TranslationKey | string) => {
+    if (typeof key === 'string' && !translations[language][key as TranslationKey]) {
+      // Return the key itself if it's not found in translations
+      return key;
+    }
+    return translations[language][key as TranslationKey] || translations['en'][key as TranslationKey];
   };
 
-  return { t };
+  return { t, setLanguage, language };
 }

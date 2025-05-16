@@ -4,6 +4,7 @@ import { Menu, Bot, Globe, Inbox, Crown, Settings, UserCircle, LogOut } from "lu
 import { Button } from "./button";
 import { useLocation } from "wouter";
 import { useUser } from "@/hooks/use-user";
+import { useTranslation } from "@/lib/translations";
 import { useEffect, useState } from "react";
 import {
   DropdownMenu,
@@ -48,6 +49,7 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   const [location, setLocation] = useLocation();
   const { user, logout, isLoading, refetchUser, refreshUser } = useUser();
+  const { t } = useTranslation();
   const [authChecked, setAuthChecked] = useState(false);
   const [userDisplayData, setUserDisplayData] = useState<any>(null);
 
@@ -187,7 +189,7 @@ export function Layout({ children }: LayoutProps) {
                           onClick={() => item.onClick ? item.onClick() : setLocation(item.href)}
                         >
                           <item.icon className="w-4 h-4 mr-2" />
-                          <span>{item.label}</span>
+                          <span>{t(item.label as any)}</span>
                         </DropdownMenuItem>
                       )
                     )}

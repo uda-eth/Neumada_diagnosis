@@ -112,7 +112,7 @@ export function BottomNav() {
                   <Link href={href} className="flex items-center gap-2 w-full">
                     <div className={`flex items-center gap-2 w-full ${isPremium ? 'text-purple-500 font-medium' : ''}`}>
                       <Icon className="w-4 h-4" />
-                      <span className="flex-1">{t(label)}</span>
+                      <span className="flex-1">{t(label as any)}</span>
                       {badge && (
                         <Badge variant="secondary" className="ml-auto">
                           {badge}
@@ -128,7 +128,7 @@ export function BottomNav() {
               <DropdownMenuItem onClick={handleLogout}>
                 <div className="flex items-center gap-2 w-full">
                   <LogOut className="w-4 h-4" />
-                  <span className="flex-1">{t('logout')}</span>
+                  <span className="flex-1">{t('logout' as any)}</span>
                 </div>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -171,7 +171,7 @@ export function BottomNav() {
                 <Link href={href} className="flex items-center gap-2 w-full">
                   <div className={`flex items-center gap-2 w-full ${isPremium ? 'text-purple-500 font-medium' : ''}`}>
                     <Icon className="w-4 h-4" />
-                    <span className="flex-1">{label}</span>
+                    <span className="flex-1">{t(label as any)}</span>
                     {badge && (
                       <Badge variant="secondary" className="ml-auto">
                         {badge}
@@ -187,7 +187,7 @@ export function BottomNav() {
             <DropdownMenuItem onClick={handleLogout}>
               <div className="flex items-center gap-2 w-full">
                 <LogOut className="w-4 h-4" />
-                <span className="flex-1">Logout</span>
+                <span className="flex-1">{t('logout' as any)}</span>
               </div>
             </DropdownMenuItem>
           </DropdownMenuContent>
