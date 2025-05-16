@@ -493,6 +493,7 @@ export function ConnectPage() {
                           <div className="space-y-1">
                             <div className="flex items-center justify-between">
                               <h3 className="font-semibold text-base text-white truncate">
+                                {/* Using translation for user's name */}
                                 {user.fullName || user.username}
                                 {/* Age is not displayed as requested */}
                               </h3>
@@ -511,7 +512,7 @@ export function ConnectPage() {
                                     variant="secondary"
                                     className={`${moodStyles[mood as keyof typeof moodStyles] || 'bg-secondary'} text-xs text-[10px]`}
                                   >
-                                    {mood}
+                                    {t(mood)}
                                   </Badge>
                                 ))}
                               </div>
