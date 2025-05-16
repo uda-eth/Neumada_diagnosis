@@ -100,10 +100,13 @@ async function queryEventsFromUserMessage(message: string) {
 
 export async function handleChatMessage(req: Request, res: Response) {
   try {
-    const { message, context } = req.body;
+    const { message, context, language } = req.body;
     if (!message) {
       return res.status(400).json({ error: "Message is required" });
     }
+    
+    // Set response language based on client preference
+    const responseLanguage = language || 'en';
 
     // Check if message is asking about events
     const isEventQuery = message.toLowerCase().includes('events') || 
@@ -158,6 +161,7 @@ EVENT ${index + 1}: ${event.title}
 - Description: ${event.description}
 `).join('\n')}
 
+IMPORTANT: Respond in ${responseLanguage === 'es' ? 'Spanish' : 'English'} language.
 Respond in a friendly, helpful tone. Only mention events from the list above. If specific events match what the user is looking for, highlight those events. Provide event details including title, date, location, and price.`;
         
         // Send to OpenAI with the enhanced context
@@ -175,6 +179,8 @@ Respond in a friendly, helpful tone. Only mention events from the list above. If
       } else {
         // No events found, explain this to the user
         const noEventsPrompt = `You are an event concierge. The user asked about events: "${message}"
+
+IMPORTANT: Respond in ${responseLanguage === 'es' ? 'Spanish' : 'English'} language.
 
 Unfortunately, I couldn't find any events in our database matching those criteria. In your response:
 1. Apologize that you couldn't find matching events
@@ -196,10 +202,14 @@ Unfortunately, I couldn't find any events in our database matching those criteri
     }
 
     // Default handling
+    const languageInstruction = responseLanguage === 'es' 
+      ? `${SYSTEM_PROMPT}\n\nIMPORTANT: Respond in Spanish language.` 
+      : SYSTEM_PROMPT;
+      
     const completion = await openai.chat.completions.create({
       model: "gpt-4-turbo-preview",
       messages: [
-        { role: "system", content: SYSTEM_PROMPT },
+        { role: "system", content: languageInstruction },
         { role: "user", content: message }
       ],
       max_tokens: 500

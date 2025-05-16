@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { X, Plus, Clock } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { useTranslation } from "@/lib/translations";
 
 interface ItineraryFormFieldProps {
   name: string; // field name for the form context
@@ -11,6 +12,7 @@ interface ItineraryFormFieldProps {
 
 export function ItineraryFormField({ name }: ItineraryFormFieldProps) {
   const { control, register, formState } = useFormContext();
+  const { t } = useTranslation();
   
   // Use useFieldArray to handle the array of itinerary items
   const { fields, append, remove } = useFieldArray({
@@ -32,7 +34,7 @@ export function ItineraryFormField({ name }: ItineraryFormFieldProps) {
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-medium flex items-center gap-2">
           <Clock className="h-5 w-5" />
-          Event Schedule
+          {t('eventSchedule')}
         </h3>
         <Button 
           type="button" 
@@ -42,13 +44,13 @@ export function ItineraryFormField({ name }: ItineraryFormFieldProps) {
           className="text-xs flex items-center gap-1"
         >
           <Plus className="h-3 w-3" />
-          Add Item
+          {t('addItem')}
         </Button>
       </div>
 
       {fields.length === 0 && (
         <p className="text-sm text-white/60">
-          No schedule items added yet. Click "Add Item" to create your event schedule.
+          {t('noScheduleItems')}
         </p>
       )}
 
@@ -67,7 +69,7 @@ export function ItineraryFormField({ name }: ItineraryFormFieldProps) {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor={`${name}.${index}.startTime`} className="text-xs text-white/60">
-                Start Time
+                {t('startTime')}
               </Label>
               <Input
                 id={`${name}.${index}.startTime`}
@@ -78,7 +80,7 @@ export function ItineraryFormField({ name }: ItineraryFormFieldProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor={`${name}.${index}.endTime`} className="text-xs text-white/60">
-                End Time
+                {t('endTime')}
               </Label>
               <Input
                 id={`${name}.${index}.endTime`}
@@ -91,7 +93,7 @@ export function ItineraryFormField({ name }: ItineraryFormFieldProps) {
 
           <div className="space-y-2">
             <Label htmlFor={`${name}.${index}.description`} className="text-xs text-white/60">
-              Description
+              {t('description')}
             </Label>
             <Textarea
               id={`${name}.${index}.description`}
@@ -112,7 +114,7 @@ export function ItineraryFormField({ name }: ItineraryFormFieldProps) {
           className="w-full text-xs flex items-center gap-1 mt-2"
         >
           <Plus className="h-3 w-3" />
-          Add Another Item
+          {t('addAnotherItem')}
         </Button>
       )}
     </div>

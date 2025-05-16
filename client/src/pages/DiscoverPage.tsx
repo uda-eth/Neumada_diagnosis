@@ -51,6 +51,20 @@ const categories = [
 
 export default function DiscoverPage() {
   const { t } = useTranslation();
+  
+  // Price display helper function for translation
+  const renderPrice = (price: string) => {
+    if (price === "0") {
+      return <p className="font-semibold text-white text-xs sm:text-sm md:text-lg">{t('free')}</p>;
+    } else {
+      return (
+        <>
+          <p className="font-semibold text-white text-xs sm:text-sm md:text-lg">${price}</p>
+          <p className="text-[8px] sm:text-xs md:text-sm text-white/60">{t('perPerson')}</p>
+        </>
+      );
+    }
+  };
   const [selectedCity, setSelectedCity] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -178,16 +192,16 @@ export default function DiscoverPage() {
         onClose={handleModalClose} 
       />
       <GradientHeader 
-        title="Discover"
+        title={t('discover')}
         showBackButton={false}
       >
         <div className="flex items-center gap-1 sm:gap-2">
           <Select value={selectedCity} onValueChange={setSelectedCity}>
             <SelectTrigger className="w-[130px] sm:w-[140px] md:w-[180px] bg-transparent border-border text-xs sm:text-sm">
-              <SelectValue placeholder="Select city" />
+              <SelectValue placeholder={t('selectCity')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Locations</SelectItem>
+              <SelectItem value="all">{t('allLocations')}</SelectItem>
               {DIGITAL_NOMAD_CITIES.map((city) => (
                 <SelectItem key={city} value={city}>
                   {city}
@@ -204,7 +218,7 @@ export default function DiscoverPage() {
             className="hidden md:inline-flex items-center"
           >
             <Users className="h-5 w-5 mr-2" />
-            Connect
+            {t('connect')}
           </Button>
           <Button
             variant="ghost"
@@ -213,15 +227,15 @@ export default function DiscoverPage() {
             className="hidden md:inline-flex items-center"
           >
             <UserCircle className="h-5 w-5 mr-2" />
-            My Network
+            {t('yourNetwork')}
           </Button>
           <Button
             className="bg-primary/10 hover:bg-primary/20 whitespace-nowrap px-2 py-1 sm:py-2 md:px-4 text-xs sm:text-sm flex-shrink-0"
             onClick={() => setLocation("/create")}
           >
             <Plus className="h-4 w-4 sm:h-5 sm:w-5 md:mr-2" />
-            <span className="hidden md:inline">Create Event</span>
-            <span className="inline md:hidden">Create</span>
+            <span className="hidden md:inline">{t('publishEvent')}</span>
+            <span className="inline md:hidden">{t('create')}</span>
           </Button>
         </div>
       </GradientHeader>
@@ -248,7 +262,7 @@ export default function DiscoverPage() {
                     variant="outline" 
                     className="w-full md:w-[180px] justify-between h-9 text-xs sm:text-sm px-2 sm:px-4"
                   >
-                    <span className="truncate">Search by Vibe</span>
+                    <span className="truncate">{t('allCategories')}</span>
                     {selectedEventTypes.length > 0 && (
                       <Badge variant="secondary" className="ml-1 sm:ml-2 text-xs px-1.5">
                         {selectedEventTypes.length}
@@ -257,7 +271,7 @@ export default function DiscoverPage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-[240px] sm:w-[280px]">
-                  <DropdownMenuLabel className="text-xs sm:text-sm">Search by Vibe</DropdownMenuLabel>
+                  <DropdownMenuLabel className="text-xs sm:text-sm">{t('searchByVibe')}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto">
                     {EVENT_TYPES.map((type) => (
@@ -273,7 +287,7 @@ export default function DiscoverPage() {
                         }}
                         className="text-xs sm:text-sm"
                       >
-                        {type}
+                        {t(type)}
                       </DropdownMenuCheckboxItem>
                     ))}
                   </div>
@@ -330,7 +344,7 @@ export default function DiscoverPage() {
           {/* Event Grid with Date Categories */}
           <div className="space-y-6 sm:space-y-8">
             <h2 className="text-xs sm:text-sm font-medium text-muted-foreground mb-3 sm:mb-4">
-              {filteredEvents.length} Events Found
+              {filteredEvents.length} {t('eventsFound')}
             </h2>
 
             {isLoading ? (
@@ -355,7 +369,7 @@ export default function DiscoverPage() {
                   setSelectedCategory("all");
                   setSelectedEventTypes([]);
                 }}>
-                  Clear Filters
+                  {t('filters')}
                 </Button>
               </div>
             ) : (
@@ -364,7 +378,7 @@ export default function DiscoverPage() {
                 {groupedEvents.today.length > 0 && (
                   <div className="space-y-4">
                     <div className="py-2">
-                      <h2 className="text-base md:text-lg font-semibold text-gray-300">TODAYS EVENTS</h2>
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">{t('thisWeekend')}</h2>
                     </div>
                     <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                       {groupedEvents.today.map((event: any) => (
@@ -434,7 +448,7 @@ export default function DiscoverPage() {
                 {groupedEvents.week.length > 0 && (
                   <div className="space-y-4">
                     <div className="py-2">
-                      <h2 className="text-base md:text-lg font-semibold text-gray-300">EVENTS THIS WEEK</h2>
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">{t('nextWeek')}</h2>
                     </div>
                     <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                       {groupedEvents.week.map((event: any) => (
@@ -504,7 +518,7 @@ export default function DiscoverPage() {
                 {groupedEvents.month.length > 0 && (
                   <div className="space-y-4">
                     <div className="py-2">
-                      <h2 className="text-base md:text-lg font-semibold text-gray-300">EVENTS THIS MONTH</h2>
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">{t('eventsThisMonth')}</h2>
                     </div>
                     <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                       {groupedEvents.month.map((event: any) => (
@@ -563,7 +577,7 @@ export default function DiscoverPage() {
                 {groupedEvents.upcoming.length > 0 && (
                   <div className="space-y-4">
                     <div className="py-2">
-                      <h2 className="text-base md:text-lg font-semibold text-gray-300">UPCOMING EVENTS</h2>
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">{t('eventsThisMonth')}</h2>
                     </div>
                     <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                       {groupedEvents.upcoming.map((event: any) => (

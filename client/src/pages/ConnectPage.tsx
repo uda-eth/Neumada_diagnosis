@@ -1,5 +1,6 @@
 
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "@/lib/translations";
 import { useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -122,6 +123,7 @@ export function ConnectPage() {
   const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
   const [isFiltersVisible, setIsFiltersVisible] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   // Fetch real users from the API
   const { user: currentUser } = useUser();
@@ -279,14 +281,14 @@ export function ConnectPage() {
   return (
     <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
       <GradientHeader
-        title="Connect"
+        title={t('connect')}
         backButtonFallbackPath="/discover"
       >
         <div className="flex items-center gap-1 sm:gap-4 flex-shrink-0">
           <Link href="/connections">
             <Button variant="outline" size="sm" className="gap-1 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm h-8">
               <UserCircle className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="truncate">Connections</span>
+              <span className="truncate">{t('connections')}</span>
             </Button>
           </Link>
           <Button
@@ -296,7 +298,7 @@ export function ConnectPage() {
             className="gap-1 sm:gap-2 px-2 sm:px-3 text-xs sm:text-sm h-8"
           >
             <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="truncate">Filters</span>
+            <span className="truncate">{t('filters')}</span>
             {selectedMoods.length > 0 && (
               <Badge variant="secondary" className="ml-1 sm:ml-2 text-xs px-1.5">
                 {selectedMoods.length}
@@ -316,7 +318,7 @@ export function ConnectPage() {
                 variant="secondary"
                 className="px-2 sm:px-3 py-0.5 sm:py-1 flex items-center gap-0.5 sm:gap-1 text-xs"
               >
-                {mood}
+                {t(mood)}
                 <button
                   onClick={(e) => {
                     e.preventDefault();
@@ -334,7 +336,7 @@ export function ConnectPage() {
               onClick={() => setSelectedMoods([])}
               className="text-muted-foreground hover:text-foreground text-xs sm:text-sm h-6 sm:h-8 px-2 sm:px-3"
             >
-              Clear all
+              {t('clearAll')}
             </Button>
           </div>
         )}
@@ -344,14 +346,14 @@ export function ConnectPage() {
           <div className="space-y-3 sm:space-y-4 bg-accent/5 p-3 sm:p-4 rounded-lg border border-border">
             {/* City Filter */}
             <div className="space-y-1.5 sm:space-y-2">
-              <h3 className="text-xs sm:text-sm font-medium">Cities</h3>
+              <h3 className="text-xs sm:text-sm font-medium">{t('cities')}</h3>
               <Select value={selectedCity} onValueChange={setSelectedCity}>
                 <SelectTrigger className="w-full bg-background/5 border-border h-9 text-xs sm:text-sm flex justify-between items-center">
-                  <SelectValue placeholder="Select city" />
+                  <SelectValue placeholder={t('selectCity')} />
                   {/* Removed duplicate ChevronDown icon */}
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Cities</SelectItem>
+                  <SelectItem value="all">{t('allCities')}</SelectItem>
                   {cities.map((city) => (
                     <SelectItem key={city} value={city}>{city}</SelectItem>
                   ))}
@@ -360,14 +362,14 @@ export function ConnectPage() {
             </div>
             {/* Vibe and Mood Filter */}
             <div className="space-y-1.5 sm:space-y-2">
-              <h3 className="text-xs sm:text-sm font-medium">Vibe</h3>
+              <h3 className="text-xs sm:text-sm font-medium">{t('vibe')}</h3>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button 
                     variant="outline" 
                     className="w-full justify-between h-9 text-xs sm:text-sm px-2 sm:px-4"
                   >
-                    <span className="truncate">Select Vibes</span>
+                    <span className="truncate">{t('selectVibes')}</span>
                     <div className="flex items-center">
                       {selectedMoods.length > 0 && (
                         <Badge variant="secondary" className="mr-1.5 text-xs px-1.5">
@@ -379,7 +381,7 @@ export function ConnectPage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-[240px] sm:w-[280px]">
-                  <DropdownMenuLabel className="text-xs sm:text-sm">Find people with similar vibes</DropdownMenuLabel>
+                  <DropdownMenuLabel className="text-xs sm:text-sm">{t('findPeopleWithSimilarVibes')}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto">
                     {moods.map((mood) => (
@@ -396,7 +398,7 @@ export function ConnectPage() {
                         }}
                         className="text-xs sm:text-sm"
                       >
-                        {mood}
+                        {t(mood)}
                       </DropdownMenuCheckboxItem>
                     ))}
                   </div>
@@ -407,7 +409,7 @@ export function ConnectPage() {
                         className="justify-center text-muted-foreground text-xs sm:text-sm"
                         onClick={() => setSelectedMoods([])}
                       >
-                        Clear all filters
+                        {t('clearAll')}
                       </DropdownMenuItem>
                     </>
                   )}
@@ -417,11 +419,11 @@ export function ConnectPage() {
             
             {/* Search by name */}
             <div className="space-y-1.5 sm:space-y-2">
-              <h3 className="text-xs sm:text-sm font-medium">Search by name</h3>
+              <h3 className="text-xs sm:text-sm font-medium">{t('searchByName')}</h3>
               <div className="relative">
                 <Search className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
                 <Input
-                  placeholder="..."
+                  placeholder={t('searchByName')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-8 sm:pl-10 h-8 sm:h-9 text-xs sm:text-sm"
@@ -491,6 +493,7 @@ export function ConnectPage() {
                           <div className="space-y-1">
                             <div className="flex items-center justify-between">
                               <h3 className="font-semibold text-base text-white truncate">
+                                {/* Name doesn't need t() function since it's personal data */}
                                 {user.fullName || user.username}
                                 {/* Age is not displayed as requested */}
                               </h3>
@@ -509,7 +512,7 @@ export function ConnectPage() {
                                     variant="secondary"
                                     className={`${moodStyles[mood as keyof typeof moodStyles] || 'bg-secondary'} text-xs text-[10px]`}
                                   >
-                                    {mood}
+                                    {t(mood)}
                                   </Badge>
                                 ))}
                               </div>

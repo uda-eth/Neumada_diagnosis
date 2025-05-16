@@ -4,6 +4,7 @@ import { Menu, Bot, Globe, Inbox, Crown, Settings, UserCircle, LogOut } from "lu
 import { Button } from "./button";
 import { useLocation } from "wouter";
 import { useUser } from "@/hooks/use-user";
+import { useTranslation } from "@/lib/translations";
 import { useEffect, useState } from "react";
 import {
   DropdownMenu,
@@ -48,6 +49,7 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   const [location, setLocation] = useLocation();
   const { user, logout, isLoading, refetchUser, refreshUser } = useUser();
+  const { t } = useTranslation();
   const [authChecked, setAuthChecked] = useState(false);
   const [userDisplayData, setUserDisplayData] = useState<any>(null);
 
@@ -110,13 +112,13 @@ export function Layout({ children }: LayoutProps) {
   };
 
   const menuItems = [
-    { href: "/premium", label: "Premium Upgrade", icon: Crown, isPremium: true },
-    { href: "/inbox", label: "Inbox", icon: Inbox },
-    { href: "/translator", label: "Translator", icon: Globe },
-    { href: "/companion", label: "Concierge", icon: Bot },
-    { href: "/profile", label: "Profile", icon: UserCircle },
-    { href: "/admin", label: "Admin Panel", icon: Settings, isAdmin: true },
-    { onClick: handleLogout, label: "Logout", icon: LogOut }
+    { href: "/premium", label: "premiumUpgrade", icon: Crown, isPremium: true },
+    { href: "/inbox", label: "inbox", icon: Inbox },
+    { href: "/translator", label: "translator", icon: Globe },
+    { href: "/companion", label: "concierge", icon: Bot },
+    { href: "/profile", label: "profile", icon: UserCircle },
+    { href: "/admin", label: "adminPanel", icon: Settings, isAdmin: true },
+    { onClick: handleLogout, label: "logout", icon: LogOut }
   ];
 
   return (
@@ -187,7 +189,7 @@ export function Layout({ children }: LayoutProps) {
                           onClick={() => item.onClick ? item.onClick() : setLocation(item.href)}
                         >
                           <item.icon className="w-4 h-4 mr-2" />
-                          <span>{item.label}</span>
+                          <span>{t(item.label)}</span>
                         </DropdownMenuItem>
                       )
                     )}

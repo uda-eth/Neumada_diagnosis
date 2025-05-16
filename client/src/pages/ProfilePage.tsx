@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, ArrowLeft, MapPin, Mail, Briefcase, Calendar, UserPlus, Check, X, UserCheck, Smile, Heart, Edit3, UserCircle, Share2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { ReferralShareButton } from "@/components/ReferralShareButton";
+import { useTranslation } from "@/lib/translations";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
@@ -82,6 +83,7 @@ export default function ProfilePage() {
   const [isUpdatingMood, setIsUpdatingMood] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t, language } = useTranslation();
   
   // Available moods for selection
   const moods = VIBE_AND_MOOD_TAGS;
@@ -369,14 +371,14 @@ export default function ProfilePage() {
                   {profileData.location && (
                     <Badge className="bg-white/10 hover:bg-white/20 text-white py-1 px-2 text-xs backdrop-blur-sm">
                       <MapPin className="h-3 w-3 mr-1" />
-                      {profileData.location}
+                      {t(profileData.location)}
                     </Badge>
                   )}
                   
                   {profileData.profession && (
                     <Badge className="bg-white/10 hover:bg-white/20 text-white py-1 px-2 text-xs backdrop-blur-sm">
                       <Briefcase className="h-3 w-3 mr-1" />
-                      {profileData.profession}
+                      {t(profileData.profession)}
                     </Badge>
                   )}
                 </div>
@@ -394,7 +396,7 @@ export default function ProfilePage() {
                     onClick={() => setLocation('/profile-edit')}
                   >
                     <Edit3 className="h-4 w-4" />
-                    Edit Profile
+                    {t('editProfile')}
                   </Button>
                 )}
                 
@@ -408,7 +410,7 @@ export default function ProfilePage() {
                   className="gap-2"
                 >
                   <Share2 className="h-4 w-4" />
-                  Share Profile
+                  {t('shareProfile')}
                 </ReferralShareButton>
                 
                 {/* Connection Button - only show if viewing profile of other user and user is logged in */}
@@ -467,7 +469,7 @@ export default function ProfilePage() {
                         ) : (
                           <UserPlus className="h-4 w-4" />
                         )}
-                        Connect
+                        {t('connectProfile')}
                       </Button>
                     )}
                   </div>
@@ -510,24 +512,24 @@ export default function ProfilePage() {
                 
                 {/* Locations */}
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Locations</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('viewLocations')}</h3>
                   <div className="space-y-2">
                     {profileData.location && (
                       <div className="flex items-center gap-2 text-sm">
                         <MapPin className="h-3.5 w-3.5 text-primary" />
-                        <span>Currently in <span className="font-medium">{profileData.location}</span></span>
+                        <span>{language === 'es' ? 'Actualmente en' : 'Currently in'} <span className="font-medium">{t(profileData.location)}</span></span>
                       </div>
                     )}
                     {profileData.birthLocation && (
                       <div className="flex items-center gap-2 text-sm">
                         <MapPin className="h-3.5 w-3.5 text-blue-400" />
-                        <span>Born in <span className="font-medium">{profileData.birthLocation}</span></span>
+                        <span>{language === 'es' ? 'Nacido en' : 'Born in'} <span className="font-medium">{t(profileData.birthLocation)}</span></span>
                       </div>
                     )}
                     {profileData.nextLocation && (
                       <div className="flex items-center gap-2 text-sm">
                         <MapPin className="h-3.5 w-3.5 text-green-400" />
-                        <span>Going to <span className="font-medium">{profileData.nextLocation}</span></span>
+                        <span>{language === 'es' ? 'Próximo destino' : 'Going to'} <span className="font-medium">{t(profileData.nextLocation)}</span></span>
                       </div>
                     )}
                   </div>
@@ -541,7 +543,7 @@ export default function ProfilePage() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Smile className="h-4 w-4 text-primary" />
-                <h2 className="text-base font-semibold">Mood & Vibe</h2>
+                <h2 className="text-base font-semibold">{t('moodAndVibe')}</h2>
               </div>
               
               {/* Only show change mood button if viewing own profile */}
@@ -575,7 +577,7 @@ export default function ProfilePage() {
                           key={`mood-${index}`}
                           className={`py-1.5 px-3 text-sm font-medium ${moodStyles[mood as keyof typeof moodStyles] || ''} rounded-full`}
                         >
-                          {mood}
+                          {t(mood)}
                         </Badge>
                       ))
                     : 
@@ -585,7 +587,7 @@ export default function ProfilePage() {
                           key={`interest-${index}`}
                           className={`py-1.5 px-3 text-sm font-medium ${moodStyles[interest as keyof typeof moodStyles] || ''} rounded-full`}
                         >
-                          {interest}
+                          {t(interest)}
                         </Badge>
                       ))
                     }

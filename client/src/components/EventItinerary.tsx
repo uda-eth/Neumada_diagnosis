@@ -1,5 +1,6 @@
 import { format, parse } from "date-fns";
 import { Clock } from "lucide-react";
+import { useTranslation } from "@/lib/translations";
 
 interface ItineraryItem {
   startTime: string;
@@ -12,6 +13,7 @@ interface EventItineraryProps {
 }
 
 export function EventItinerary({ itinerary }: EventItineraryProps) {
+  const { t } = useTranslation();
   if (!itinerary || itinerary.length === 0) {
     return null;
   }
@@ -44,7 +46,7 @@ export function EventItinerary({ itinerary }: EventItineraryProps) {
     <div className="space-y-4">
       <h3 className="text-lg font-medium flex items-center gap-2">
         <Clock className="h-5 w-5" />
-        Event Schedule
+        {t('eventSchedule')}
       </h3>
       
       <div className="space-y-6">

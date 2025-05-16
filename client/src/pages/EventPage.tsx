@@ -95,11 +95,12 @@ export default function EventPage() {
   const [, setLocation] = useLocation();
   const { user, logout } = useUser();
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t, language, translateEvent } = useTranslation();
   const queryClient = useQueryClient();
   const [userStatus, setUserStatus] = useState<ParticipationStatus>('not_attending');
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [translatedEvent, setTranslatedEvent] = useState<Event | null>(null);
 
   const { data: event, isLoading, error: queryError } = useQuery<Event>({
     queryKey: [`/api/events/${id}`],
@@ -149,6 +150,29 @@ export default function EventPage() {
       setUserStatus(participationData.status || 'not_attending');
     }
   }, [participationData]);
+  
+  // Translate event data when language changes or event data is loaded
+  useEffect(() => {
+    const translateEventData = async () => {
+      if (event) {
+        try {
+          // Only translate if the language is Spanish (or any non-English language)
+          if (language !== 'en') {
+            console.log("Translating event data to:", language);
+            const translated = await translateEvent(event, language);
+            setTranslatedEvent(translated);
+          } else {
+            setTranslatedEvent(event); // Use original data for English
+          }
+        } catch (error) {
+          console.error("Error translating event:", error);
+          setTranslatedEvent(event); // Fallback to original event data if translation fails
+        }
+      }
+    };
+    
+    translateEventData();
+  }, [event, language, translateEvent]);
 
   const participateMutation = useMutation({
     mutationFn: async (status: ParticipationStatus) => {
@@ -404,14 +428,17 @@ export default function EventPage() {
     );
   }
 
+  // Use the translated event data if available, otherwise use the original event data
+  const displayEvent = translatedEvent || event;
+
   // All events are treated as public now
   const isPrivateEvent = false;
-  const attendingCount = event.attendingCount || 0;
-  const interestedCount = event.interestedCount || 0;
+  const attendingCount = displayEvent.attendingCount || 0;
+  const interestedCount = displayEvent.interestedCount || 0;
 
   // Use actual attendees data from the event object if available
-  const attendingUsers: EventUser[] = event.attendingUsers || [];
-  const interestedUsers: EventUser[] = event.interestedUsers || [];
+  const attendingUsers: EventUser[] = displayEvent.attendingUsers || [];
+  const interestedUsers: EventUser[] = displayEvent.interestedUsers || [];
 
   // Modified to support both username and ID-based profile navigation
 const handleUserClick = (userIdOrUsername: number | string, username?: string) => {
@@ -588,7 +615,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
           {/* Attending Users */}
           <div className="space-y-3">
             <h3 className="text-sm font-medium text-white/60">
-              Attending
+              {t('attending')}
             </h3>
             <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
               <div className="flex -space-x-2 sm:-space-x-3" onClick={() => handleViewAllUsers('attending')} style={{cursor: 'pointer'}}>
@@ -625,7 +652,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
           {/* Interested Users */}
           <div className="space-y-3">
             <h3 className="text-sm font-medium text-white/60">
-              Interested
+              {t('interested')}
             </h3>
             <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
               <div className="flex -space-x-2 sm:-space-x-3" onClick={() => handleViewAllUsers('interested')} style={{cursor: 'pointer'}}>
@@ -653,7 +680,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                   className="text-xs sm:text-sm text-white/60 hover:text-white h-8 px-2 sm:px-3"
                   onClick={() => handleViewAllUsers('interested')}
                 >
-                  +{interestedCount - 5} more
+                  +{interestedCount - 5} {t('more')}
                 </Button>
               )}
             </div>
@@ -671,9 +698,9 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <p className="text-sm text-white/60">Price</p>
+              <p className="text-sm text-white/60">{t('price')}</p>
               <p className="text-xl font-semibold">
-                {event.price ? `$${event.price}` : 'Free'}
+                {event.price ? `$${event.price}` : t('free')}
               </p>
             </div>
             {/* Only show ticket/attendance buttons if not the creator */}
@@ -704,7 +731,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                 className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white whitespace-nowrap"
                 onClick={() => setLocation(`/event/${event.id}/tickets`)}
               >
-                Get Tickets
+                {t('getTickets')}
               </Button>
             ) : (
               <div className="hidden sm:flex flex-col gap-4 w-full">
@@ -749,7 +776,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                 disabled={participateMutation.isPending}
               >
                 <Star className="h-4 w-4 mr-2" />
-                {userStatus === 'interested' ? 'Interested ✓' : 'Interested'}
+                {userStatus === 'interested' ? `${t('interested')} ✓` : t('interested')}
               </Button>
               <Button
                 variant={userStatus === 'attending' ? "default" : "outline"}
@@ -758,7 +785,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                 disabled={participateMutation.isPending}
               >
                 <Users className="h-4 w-4 mr-2" />
-                {userStatus === 'attending' ? 'Attending ✓' : 'Attending'}
+                {userStatus === 'attending' ? `${t('attending')} ✓` : t('attending')}
               </Button>
             </>
           )}
@@ -771,7 +798,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
               onClick={() => setLocation(`/edit-event/${event.id}`)}
             >
               <PencilIcon className="h-4 w-4 mr-2" />
-              Edit Event
+              {t('editEvent')}
             </Button>
           )}
           
@@ -807,7 +834,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
 
         {/* Description */}
         <div className="space-y-2">
-          <h2 className="text-lg font-semibold">About this event</h2>
+          <h2 className="text-lg font-semibold">{t('about')} this event</h2>
           <p className="text-white/80 whitespace-pre-wrap text-sm sm:text-base">
             {event.description}
           </p>

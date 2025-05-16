@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,25 +12,33 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { GradientHeader } from "@/components/ui/GradientHeader";
 import { DIGITAL_NOMAD_CITIES } from "@/lib/constants";
+import { useTranslation } from "@/lib/translations";
+import { useLanguage } from "@/lib/language-context";
 
 // Quick prompts for the most common questions
-const quickPrompts = [
+const getQuickPrompts = (t: (key: string) => string, language: string) => [
   {
-    text: "Best Rooftops",
+    text: t('bestRooftops'),
     icon: Wine,
-    prompt: "What are the best rooftop bars and restaurants with views?",
+    prompt: language === 'es' 
+      ? "¿Cuáles son los mejores bares y restaurantes en azoteas con vistas?" 
+      : "What are the best rooftop bars and restaurants with views?",
     ariaLabel: "Find best rooftops"
   },
   {
-    text: "Best Date Spots",
+    text: t('bestDateSpots'),
     icon: HeartHandshake,
-    prompt: "What are the most romantic and impressive date spots?",
+    prompt: language === 'es'
+      ? "¿Cuáles son los lugares más románticos e impresionantes para una cita?"
+      : "What are the most romantic and impressive date spots?",
     ariaLabel: "Find best date spots"
   },
   {
-    text: "Best Day Trips",
+    text: t('bestDayTrips'),
     icon: Plane,
-    prompt: "What are the best day trips from here?",
+    prompt: language === 'es'
+      ? "¿Cuáles son las mejores excursiones de un día desde aquí?"
+      : "What are the best day trips from here?",
     ariaLabel: "Find best day trips"
   }
 ];
@@ -49,9 +57,25 @@ const messageVariants = {
 };
 
 export default function ChatbotPage() {
-  const { messages, isLoading, sendMessage } = useChat();
+  const { messages, setMessages, isLoading, sendMessage } = useChat();
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const [input, setInput] = useState("");
   const [selectedCity, setSelectedCity] = useState("Mexico City");
+  const quickPrompts = getQuickPrompts(t, language);
+  
+  // Initialize messages with translated greeting
+  // Update quick prompts when language changes
+  useEffect(() => {
+    if (messages.length === 0) {
+      setMessages([
+        {
+          role: 'assistant',
+          content: t('conciergeGreeting')
+        }
+      ]);
+    }
+  }, [language, messages, setMessages, t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,7 +103,7 @@ export default function ChatbotPage() {
   return (
     <div className="min-h-screen bg-[#121212] text-white p-4">
       <GradientHeader 
-        title="Concierge"
+        title={t('concierge')}
         className="mb-4"
         showBackButton={true}
         backButtonFallbackPath="/discover"
@@ -102,7 +126,7 @@ export default function ChatbotPage() {
             {/* Quick prompts section */}
             <div className="py-4 border-b border-white/10">
               <div className="flex flex-wrap gap-2 pb-2">
-                {quickPrompts.map(({ text, icon: Icon, prompt, ariaLabel }) => (
+                {quickPrompts.map(({ text, icon: Icon, prompt, ariaLabel }: {text: string, icon: any, prompt: string, ariaLabel: string}) => (
                   <Button
                     key={text}
                     variant="outline"
@@ -192,7 +216,7 @@ export default function ChatbotPage() {
                     </div>
                     <div className="rounded-lg p-4 bg-white/5 glass flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="text-white/60">Finding local insights...</span>
+                      <span className="text-white/60">{t('findingLocalInsights')}</span>
                     </div>
                   </div>
                 )}
@@ -206,7 +230,7 @@ export default function ChatbotPage() {
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder={`Ask anything about ${selectedCity}...`}
+                placeholder={`${t('askAnythingAbout')} ${selectedCity}...`}
                 disabled={isLoading}
                 className="bg-white/5 border-white/10 glass-hover focus-visible"
                 aria-label="Type your message"
@@ -226,7 +250,7 @@ export default function ChatbotPage() {
         <Card className="bg-black/40 border-white/10">
           <CardContent className="p-4">
             <p className="text-center text-sm font-medium text-muted-foreground mb-4">
-              Premium Ad Partner
+              {t('premiumAdPartner')}
             </p>
             <img
               src="/attached_assets/Screenshot 2025-03-05 at 8.12.59 AM.png"
