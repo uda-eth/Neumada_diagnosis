@@ -15,7 +15,7 @@ export function useChat() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const sendMessage = async (message: string) => {
+  const sendMessage = async (message: string, specializedPrompt?: string) => {
     try {
       setIsLoading(true);
       
@@ -119,13 +119,17 @@ Do NOT make up events or search the internet for events.
         }
         
       } else {
-        // Not an event query, use the standard city concierge response
-        const response = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            message,
-            context: `You are a knowledgeable AI city concierge specializing in local experiences and recommendations.
+        // Not an event query, use the standard city concierge response or specialized prompt
+        // If a specialized prompt was passed (from a quick prompt button), use that instead
+        const baseContext = specializedPrompt 
+          ? `You are a knowledgeable AI city concierge specializing in local experiences and recommendations for ${extractedCity || 'the selected city'}.
+            
+            INSTRUCTION: ${specializedPrompt}
+            
+            Keep responses focused only on ${extractedCity || 'the selected city'}.
+            Provide specific venue names and locations when possible.
+            Keep responses concise but informative.`
+          : `You are a knowledgeable AI city concierge specializing in local experiences and recommendations.
             Focus on providing practical, up-to-date information specifically for ${extractedCity || 'the selected city'} about:
             - Local neighborhoods and best areas
             - Coworking spaces and cafes suitable for remote work
@@ -135,7 +139,14 @@ Do NOT make up events or search the internet for events.
 
             Keep responses focused only on ${extractedCity || 'the selected city'}.
             Provide specific venue names and locations when possible.
-            Keep responses concise but informative.`,
+            Keep responses concise but informative.`;
+        
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            message: cleanMessage, // Use clean message without city prefix
+            context: baseContext,
             language: language
           }),
         });
