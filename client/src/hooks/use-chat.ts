@@ -11,12 +11,7 @@ interface ChatMessage {
 
 export function useChat() {
   const { language } = useLanguage();
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      role: 'assistant',
-      content: "Hi, I'm Maly — like your local friend with great taste. I'll help you know where to go, who to know, and what to do.",
-    },
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -140,7 +135,8 @@ Do NOT make up events or search the internet for events.
 
             Keep responses focused only on ${extractedCity || 'the selected city'}.
             Provide specific venue names and locations when possible.
-            Keep responses concise but informative.`
+            Keep responses concise but informative.`,
+            language: language
           }),
         });
 
@@ -166,6 +162,7 @@ Do NOT make up events or search the internet for events.
 
   return {
     messages,
+    setMessages,
     isLoading,
     sendMessage,
   };

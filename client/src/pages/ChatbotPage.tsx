@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -57,6 +57,18 @@ export default function ChatbotPage() {
   const [input, setInput] = useState("");
   const [selectedCity, setSelectedCity] = useState("Mexico City");
   const quickPrompts = getQuickPrompts(t);
+  
+  // Initialize messages with translated greeting
+  useEffect(() => {
+    if (messages.length === 0) {
+      setMessages([
+        {
+          role: 'assistant',
+          content: t('conciergeGreeting')
+        }
+      ]);
+    }
+  }, [language, messages.length, setMessages, t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
