@@ -336,7 +336,7 @@ export function ConnectPage() {
               onClick={() => setSelectedMoods([])}
               className="text-muted-foreground hover:text-foreground text-xs sm:text-sm h-6 sm:h-8 px-2 sm:px-3"
             >
-              Clear all
+              {t('clearAll')}
             </Button>
           </div>
         )}
@@ -409,7 +409,7 @@ export function ConnectPage() {
                         className="justify-center text-muted-foreground text-xs sm:text-sm"
                         onClick={() => setSelectedMoods([])}
                       >
-                        Clear all filters
+                        {t('clearAll')}
                       </DropdownMenuItem>
                     </>
                   )}
