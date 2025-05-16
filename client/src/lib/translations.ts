@@ -175,7 +175,11 @@ type TranslationKey =
   | 'changePhoto'
   | 'cancel'
   | 'saveChanges'
-  | 'saving';
+  | 'saving'
+  | 'Tags are used for both your profile preferences and current mood.'
+  | 'Default (purple): Selected as your preferred vibe'
+  | 'Secondary (gray): Selected as your current mood'
+  | 'Ringed: Selected as both preferred vibe and current mood';
 
 const translations: Record<string, Record<TranslationKey, string>> = {
   en: {
@@ -340,7 +344,11 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     changePhoto: 'Change Photo',
     cancel: 'Cancel',
     saveChanges: 'Save Changes',
-    saving: 'Saving...'
+    saving: 'Saving...',
+    'Tags are used for both your profile preferences and current mood.': 'Tags are used for both your profile preferences and current mood.',
+    'Default (purple): Selected as your preferred vibe': 'Default (purple): Selected as your preferred vibe',
+    'Secondary (gray): Selected as your current mood': 'Secondary (gray): Selected as your current mood',
+    'Ringed: Selected as both preferred vibe and current mood': 'Ringed: Selected as both preferred vibe and current mood'
   },
   es: {
     discover: 'Descubrir',
@@ -504,7 +512,11 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     changePhoto: 'Cambiar Foto',
     cancel: 'Cancelar',
     saveChanges: 'Guardar Cambios',
-    saving: 'Guardando...'
+    saving: 'Guardando...',
+    'Tags are used for both your profile preferences and current mood.': 'Las etiquetas se utilizan tanto para tus preferencias de perfil como para tu estado actual.',
+    'Default (purple): Selected as your preferred vibe': 'Predeterminado (morado): Seleccionado como tu ambiente preferido',
+    'Secondary (gray): Selected as your current mood': 'Secundario (gris): Seleccionado como tu estado actual',
+    'Ringed: Selected as both preferred vibe and current mood': 'Con borde: Seleccionado como ambiente preferido y estado actual'
   }
 };
 
