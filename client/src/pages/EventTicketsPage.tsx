@@ -9,7 +9,7 @@ import { Loader2, ArrowLeft } from 'lucide-react';
 import { useUser } from '@/hooks/use-user';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useTranslation } from '@/lib/language-context';
+import { useTranslation } from '@/lib/translations';
 
 // Initialize Stripe Promise
 let stripePromise: Promise<any | null>;
@@ -257,7 +257,7 @@ export default function EventTicketsPage() {
                   className="mt-2 w-full"
                   onClick={() => setLocation('/auth')}
                 >
-                  Go to Login
+                  {t('login')}
                 </Button>
               )}
             </div>
