@@ -199,7 +199,8 @@ type TranslationKey =
   | 'youAreNowAttending'
   | 'youAreNowInterested'
   | 'noLongerParticipating'
-  | 'successfullyUpdated';
+  | 'successfullyUpdated'
+  | 'proceedToPayment';
 
 const translations: Record<string, Record<TranslationKey, string>> = {
   en: {
