@@ -384,7 +384,7 @@ export default function CreateEventPage() {
                   className="flex-1 h-12"
                   onClick={() => form.setValue("price", 0)}
                 >
-                  Free
+                  {t('free')}
                 </Button>
                 <Button
                   type="button"
@@ -392,7 +392,7 @@ export default function CreateEventPage() {
                   className="flex-1 h-12"
                   onClick={() => form.setValue("price", 10)}
                 >
-                  Paid
+                  {t('paid')}
                 </Button>
               </div>
 
@@ -427,7 +427,7 @@ export default function CreateEventPage() {
                   disabled={loading}
                   onClick={publishEvent}
                 >
-                  Publish Event
+                  {t('publishEvent')}
                 </Button>
               </div>
             </div>
