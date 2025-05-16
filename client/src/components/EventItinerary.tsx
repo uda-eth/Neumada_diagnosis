@@ -46,7 +46,7 @@ export function EventItinerary({ itinerary }: EventItineraryProps) {
     <div className="space-y-4">
       <h3 className="text-lg font-medium flex items-center gap-2">
         <Clock className="h-5 w-5" />
-        Event Schedule
+        {t('eventSchedule')}
       </h3>
       
       <div className="space-y-6">

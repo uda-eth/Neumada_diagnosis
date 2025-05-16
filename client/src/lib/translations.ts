@@ -69,7 +69,16 @@ type TranslationKey =
   | 'eventLocation'
   | 'eventDate'
   | 'paid'
+  | 'yourStatus'
+  | 'eventOptions'
+  | 'editEvent'
+  | 'deleteEvent'
+  | 'interested'
+  | 'attending'
+  | 'getTickets'
+  | 'about'
   | 'eventSchedule'
+  | 'attendees'
   | 'addItem'
   | 'startTime'
   | 'endTime'
@@ -305,7 +314,7 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     eventLocation: 'Ubicación del evento',
     eventDate: 'Fecha del evento',
     paid: 'De pago',
-    eventSchedule: 'Agenda del evento',
+
     addItem: 'Añadir elemento',
     startTime: 'Hora de inicio',
     endTime: 'Hora de fin',
