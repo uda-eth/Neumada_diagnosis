@@ -197,9 +197,9 @@ export default function EventPage() {
 
       // Show success message
       const messages = {
-        attending: "You are now attending this event!",
-        interested: "You are now interested in this event",
-        not_attending: "You are no longer participating in this event"
+        attending: t('youAreNowAttending'),
+        interested: t('youAreNowInterested'),
+        not_attending: t('noLongerParticipating')
       };
 
       toast({
@@ -423,7 +423,7 @@ export default function EventPage() {
   if (isLoading || !event) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black text-white/60">
-        Loading...
+        {t('loading')}
       </div>
     );
   }

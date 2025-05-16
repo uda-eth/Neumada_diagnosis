@@ -179,7 +179,27 @@ type TranslationKey =
   | 'Tags are used for both your profile preferences and current mood.'
   | 'Default (purple): Selected as your preferred vibe'
   | 'Secondary (gray): Selected as your current mood'
-  | 'Ringed: Selected as both preferred vibe and current mood';
+  | 'Ringed: Selected as both preferred vibe and current mood'
+  // Event Page Translations
+  | 'illBeAttending'
+  | 'imAttending'
+  | 'imInterested'
+  | 'share'
+  | 'eventOrganizer'
+  | 'purchaseTickets'
+  | 'ticketQuantity'
+  | 'ticketsAvailable'
+  | 'perTicket'
+  | 'subtotal'
+  | 'serviceFee'
+  | 'total'
+  | 'backToEvent'
+  | 'qrCodeTicket'
+  | 'loading'
+  | 'youAreNowAttending'
+  | 'youAreNowInterested'
+  | 'noLongerParticipating'
+  | 'successfullyUpdated';
 
 const translations: Record<string, Record<TranslationKey, string>> = {
   en: {
@@ -348,7 +368,27 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     'Tags are used for both your profile preferences and current mood.': 'Tags are used for both your profile preferences and current mood.',
     'Default (purple): Selected as your preferred vibe': 'Default (purple): Selected as your preferred vibe',
     'Secondary (gray): Selected as your current mood': 'Secondary (gray): Selected as your current mood',
-    'Ringed: Selected as both preferred vibe and current mood': 'Ringed: Selected as both preferred vibe and current mood'
+    'Ringed: Selected as both preferred vibe and current mood': 'Ringed: Selected as both preferred vibe and current mood',
+    // Event Page Translations
+    illBeAttending: 'I\'ll be attending',
+    imAttending: 'I\'m attending ✓',
+    imInterested: 'I\'m interested ✓',
+    share: 'Share',
+    eventOrganizer: 'Event Organizer',
+    purchaseTickets: 'Purchase Tickets',
+    ticketQuantity: 'Ticket Quantity',
+    ticketsAvailable: 'tickets available',
+    perTicket: 'per ticket',
+    subtotal: 'Subtotal',
+    serviceFee: 'Service Fee (5%)',
+    total: 'Total',
+    backToEvent: 'Back to Event',
+    qrCodeTicket: 'After payment, you\'ll receive a QR code ticket that can be used for event entry.',
+    loading: 'Loading...',
+    youAreNowAttending: 'You are now attending this event!',
+    youAreNowInterested: 'You are now interested in this event',
+    noLongerParticipating: 'You are no longer participating in this event',
+    successfullyUpdated: 'Successfully updated'
   },
   es: {
     discover: 'Descubrir',
@@ -516,7 +556,27 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     'Tags are used for both your profile preferences and current mood.': 'Las etiquetas se utilizan tanto para tus preferencias de perfil como para tu estado actual.',
     'Default (purple): Selected as your preferred vibe': 'Predeterminado (morado): Seleccionado como tu ambiente preferido',
     'Secondary (gray): Selected as your current mood': 'Secundario (gris): Seleccionado como tu estado actual',
-    'Ringed: Selected as both preferred vibe and current mood': 'Con borde: Seleccionado como ambiente preferido y estado actual'
+    'Ringed: Selected as both preferred vibe and current mood': 'Con borde: Seleccionado como ambiente preferido y estado actual',
+    // Event Page Translations
+    illBeAttending: 'Asistiré',
+    imAttending: 'Estoy asistiendo ✓',
+    imInterested: 'Estoy interesado/a ✓',
+    share: 'Compartir',
+    eventOrganizer: 'Organizador del Evento',
+    purchaseTickets: 'Comprar Entradas',
+    ticketQuantity: 'Cantidad de Entradas',
+    ticketsAvailable: 'entradas disponibles',
+    perTicket: 'por entrada',
+    subtotal: 'Subtotal',
+    serviceFee: 'Cargo por Servicio (5%)',
+    total: 'Total',
+    backToEvent: 'Volver al Evento',
+    qrCodeTicket: 'Después del pago, recibirás un código QR que se puede utilizar para la entrada al evento.',
+    loading: 'Cargando...',
+    youAreNowAttending: '¡Ahora estás asistiendo a este evento!',
+    youAreNowInterested: 'Ahora estás interesado/a en este evento',
+    noLongerParticipating: 'Ya no estás participando en este evento',
+    successfullyUpdated: 'Actualizado con éxito'
   }
 };
 
