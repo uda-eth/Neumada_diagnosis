@@ -71,13 +71,13 @@ const crypto = {
 };
 
 export function setupAuth(app: Express) {
-  // Use a stronger session secret combining REPL_ID and a fixed key
+  // Use a stronger session secret combining REPL_ID and a fixed key, or use SESSION_SECRET env var
   const sessionSecret = process.env.SESSION_SECRET || 
     (process.env.REPL_ID 
       ? `${process.env.REPL_ID}-maly-platform-key-${process.env.REPL_OWNER || 'default'}`
       : "maly-platform-local-development-secret-key");
   
-  // Initialize PG Session store
+  // Initialize PostgreSQL Session store
   const PgSession = pgSession(session);
 
   const sessionSettings: session.SessionOptions = {
