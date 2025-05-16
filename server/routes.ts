@@ -1770,6 +1770,7 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         title: req.body.title,
         description: req.body.description,
         location: req.body.location,
+        address: req.body.address || '', // Add the new address field
         city: req.body.city || 'Unknown',
         category: req.body.category || 'Other', // Add default category value
         ticketType: req.body.price && parseFloat(req.body.price) > 0 ? 'paid' : 'free',
