@@ -2,7 +2,7 @@ import { useParams, useLocation, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@/hooks/use-user";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, UserPlus2, Star, Users, CheckCircle, XCircle, Loader2, Share2, PencilIcon } from "lucide-react";
+import { MessageSquare, UserPlus2, Star, Users, CheckCircle, XCircle, Loader2, Share2, PencilIcon, MapPin, Building } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +21,7 @@ const EventSchema = z.object({
   title: z.string(),
   description: z.string(),
   location: z.string(),
+  address: z.string().optional(),
   date: z.string().or(z.date()),
   category: z.string(),
   price: z.number().nullable(),
@@ -604,9 +605,16 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
               <span>{format(new Date(event.date), "h:mm a")} -{" "}
               {format(new Date(event.date).setHours(new Date(event.date).getHours() + 2), "h:mm a")}</span>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2 mb-1.5">
+              <MapPin className="h-4 w-4 text-white/60" />
               <span>{event.location}</span>
             </div>
+            {event.address && (
+              <div className="flex items-center gap-2">
+                <Building className="h-4 w-4 text-white/60" />
+                <span className="text-white/80">{event.address}</span>
+              </div>
+            )}
           </div>
         </div>
 

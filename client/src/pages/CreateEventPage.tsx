@@ -46,6 +46,7 @@ const eventSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   location: z.string().min(3, "Location is required"),
+  address: z.string().optional(),
   price: z.coerce.number().min(0).default(0),
   isPrivate: z.boolean().default(false),
   // Add a proper date validator to ensure valid dates
@@ -336,6 +337,18 @@ export default function CreateEventPage() {
               </Select>
               {form.formState.errors.location && (
                 <p className="text-red-500 text-xs">{form.formState.errors.location.message}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium">Event Address</h3>
+              <Input
+                {...form.register("address")}
+                className="bg-white/5 border-0 h-12"
+                placeholder="Enter exact event address"
+              />
+              {form.formState.errors.address && (
+                <p className="text-red-500 text-xs">{form.formState.errors.address.message}</p>
               )}
             </div>
 
