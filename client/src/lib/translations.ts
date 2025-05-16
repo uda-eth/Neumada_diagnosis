@@ -388,7 +388,8 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     youAreNowAttending: 'You are now attending this event!',
     youAreNowInterested: 'You are now interested in this event',
     noLongerParticipating: 'You are no longer participating in this event',
-    successfullyUpdated: 'Successfully updated'
+    successfullyUpdated: 'Successfully updated',
+    proceedToPayment: 'Proceed to Payment'
   },
   es: {
     discover: 'Descubrir',
@@ -576,7 +577,8 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     youAreNowAttending: '¡Ahora estás asistiendo a este evento!',
     youAreNowInterested: 'Ahora estás interesado/a en este evento',
     noLongerParticipating: 'Ya no estás participando en este evento',
-    successfullyUpdated: 'Actualizado con éxito'
+    successfullyUpdated: 'Actualizado con éxito',
+    proceedToPayment: 'Proceder al Pago'
   }
 };
 

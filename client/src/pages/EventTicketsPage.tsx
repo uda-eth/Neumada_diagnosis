@@ -193,10 +193,10 @@ export default function EventTicketsPage() {
         className="mb-6"
       >
         <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Event
+        {t('backToEvent')}
       </Button>
       
-      <h1 className="text-3xl font-bold mb-6">Purchase Tickets</h1>
+      <h1 className="text-3xl font-bold mb-6">{t('purchaseTickets')}</h1>
       
       <Card className="mb-8">
         <CardHeader>
@@ -208,7 +208,7 @@ export default function EventTicketsPage() {
         <CardContent>
           <div className="flex items-center justify-between mb-4">
             <div className="w-full max-w-xs">
-              <Label htmlFor="quantity">Ticket Quantity</Label>
+              <Label htmlFor="quantity">{t('ticketQuantity')}</Label>
               <Input
                 id="quantity"
                 type="number"
@@ -220,7 +220,7 @@ export default function EventTicketsPage() {
               />
               {event.availableTickets && (
                 <p className="text-sm text-muted-foreground mt-1">
-                  {event.availableTickets} tickets available
+                  {event.availableTickets} {t('ticketsAvailable')}
                 </p>
               )}
             </div>
@@ -228,21 +228,21 @@ export default function EventTicketsPage() {
               <p className="text-lg font-semibold">
                 ${typeof event.price === 'string' ? parseFloat(event.price).toFixed(2) : event.price.toFixed(2)}
               </p>
-              <p className="text-sm text-muted-foreground">per ticket</p>
+              <p className="text-sm text-muted-foreground">{t('perTicket')}</p>
             </div>
           </div>
           
           <div className="border-t pt-4 mt-4">
             <div className="flex justify-between mb-2">
-              <span>Subtotal</span>
+              <span>{t('subtotal')}</span>
               <span>${subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between mb-2">
-              <span>Service Fee</span>
+              <span>{t('serviceFee')}</span>
               <span>${fees.toFixed(2)}</span>
             </div>
             <div className="flex justify-between font-bold text-lg mt-2 pt-2 border-t">
-              <span>Total</span>
+              <span>{t('total')}</span>
               <span>${total.toFixed(2)}</span>
             </div>
           </div>
@@ -270,7 +270,7 @@ export default function EventTicketsPage() {
             {isProcessing ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing...
+                {t('loading')}
               </>
             ) : (
               <>
@@ -283,7 +283,7 @@ export default function EventTicketsPage() {
       
       <div className="text-sm text-muted-foreground">
         <p className="mb-2">All purchases are final. No refunds will be issued.</p>
-        <p>After payment, you'll receive a QR code ticket that can be used for event entry.</p>
+        <p>{t('qrCodeTicket')}</p>
       </div>
     </div>
   );
