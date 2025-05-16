@@ -285,9 +285,9 @@ export default function ProfileEditPage() {
                     name="fullName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Full Name</FormLabel>
+                        <FormLabel>{t("fullName")}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Your full name" {...field} />
+                          <Input placeholder={t("fullName")} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -299,12 +299,12 @@ export default function ProfileEditPage() {
                     name="username"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Username</FormLabel>
+                        <FormLabel>{t("username")}</FormLabel>
                         <FormControl>
                           <Input placeholder="@username" {...field} disabled />
                         </FormControl>
                         <FormDescription>
-                          Username cannot be changed
+                          {t("usernameCannotBeChanged")}
                         </FormDescription>
                       </FormItem>
                     )}
@@ -316,11 +316,11 @@ export default function ProfileEditPage() {
                       name="gender"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Gender</FormLabel>
+                          <FormLabel>{t("gender")}</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select gender" />
+                                <SelectValue placeholder={t("selectGender")} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -341,11 +341,11 @@ export default function ProfileEditPage() {
                       name="sexualOrientation"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Sexual Orientation</FormLabel>
+                          <FormLabel>{t("sexualOrientation")}</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select orientation" />
+                                <SelectValue placeholder={t("selectOrientation")} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -367,7 +367,7 @@ export default function ProfileEditPage() {
                     name="age"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Age</FormLabel>
+                        <FormLabel>{t("age")}</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
@@ -385,9 +385,9 @@ export default function ProfileEditPage() {
                     name="profession"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Profession</FormLabel>
+                        <FormLabel>{t("profession")}</FormLabel>
                         <FormControl>
-                          <Input placeholder="What do you do?" {...field} />
+                          <Input placeholder={t("whatDoYouDo")} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -399,10 +399,10 @@ export default function ProfileEditPage() {
                     name="bio"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Bio</FormLabel>
+                        <FormLabel>{t("bio")}</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Tell us about yourself"
+                            placeholder={t("tellUsAboutYourself")}
                             className="min-h-[100px]"
                             {...field}
                           />
@@ -416,7 +416,7 @@ export default function ProfileEditPage() {
 
               {/* Locations */}
               <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Locations</h2>
+                <h2 className="text-xl font-semibold mb-4">{t("locations")}</h2>
                 <div className="space-y-4">
                   <FormField
                     control={form.control}
@@ -425,12 +425,12 @@ export default function ProfileEditPage() {
                       <FormItem>
                         <FormLabel className="flex items-center gap-2">
                           <MapPin className="w-4 h-4" />
-                          Current Location
+                          {t("currentLocation")}
                         </FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select your current location" />
+                              <SelectValue placeholder={t("selectYourCurrentLocation")} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -449,9 +449,9 @@ export default function ProfileEditPage() {
                     name="birthLocation"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Born</FormLabel>
+                        <FormLabel>{t("born")}</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Where were you born?" className="bg-white/5 border-white/10" />
+                          <Input {...field} placeholder={t("whereWereYouBorn")} className="bg-white/5 border-white/10" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
