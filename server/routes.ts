@@ -1562,6 +1562,7 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
         title,
         description,
         location,
+        address: req.body.address || '',  // Add the address field
         date: new Date(date),
         // Include category field with a default value to avoid NOT NULL constraint violation
         category: category || 'Other',
