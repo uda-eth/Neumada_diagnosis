@@ -51,6 +51,20 @@ const categories = [
 
 export default function DiscoverPage() {
   const { t } = useTranslation();
+  
+  // Price display helper function for translation
+  const renderPrice = (price: string) => {
+    if (price === "0") {
+      return <p className="font-semibold text-white text-xs sm:text-sm md:text-lg">{t('free')}</p>;
+    } else {
+      return (
+        <>
+          <p className="font-semibold text-white text-xs sm:text-sm md:text-lg">${price}</p>
+          <p className="text-[8px] sm:text-xs md:text-sm text-white/60">{t('perPerson')}</p>
+        </>
+      );
+    }
+  };
   const [selectedCity, setSelectedCity] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
