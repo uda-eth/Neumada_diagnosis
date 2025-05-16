@@ -189,7 +189,7 @@ export function Layout({ children }: LayoutProps) {
                           onClick={() => item.onClick ? item.onClick() : setLocation(item.href)}
                         >
                           <item.icon className="w-4 h-4 mr-2" />
-                          <span>{t(item.label as any)}</span>
+                          <span>{t(item.label)}</span>
                         </DropdownMenuItem>
                       )
                     )}
