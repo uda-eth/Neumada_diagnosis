@@ -337,6 +337,18 @@ export default function CreateEventPage() {
                 <p className="text-red-500 text-xs">{form.formState.errors.location.message}</p>
               )}
             </div>
+            
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium">Event Address</h3>
+              <Input
+                {...form.register("address")}
+                className="bg-white/5 border-0 h-12"
+                placeholder="Enter exact event address"
+              />
+              {form.formState.errors.address && (
+                <p className="text-red-500 text-xs">{form.formState.errors.address.message}</p>
+              )}
+            </div>
 
 
 
