@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/ui/back-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Check, X, UserCheck, UserPlus, Users, Clock, ArrowLeft } from "lucide-react";
+import { useTranslation } from "@/lib/translations";
 
 interface ConnectionUser {
   id: number;
@@ -23,6 +24,7 @@ interface ConnectionUser {
 }
 
 export default function ConnectionsPage() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const { user: currentUser } = useUser();
   const { toast } = useToast();
@@ -125,14 +127,14 @@ export default function ConnectionsPage() {
       <div className="container mx-auto py-8 px-4">
         <div className="flex items-center gap-3 mb-6">
           <BackButton fallbackPath="/discover" />
-          <h1 className="text-2xl font-bold">Your Network</h1>
+          <h1 className="text-2xl font-bold">{t('yourNetwork')}</h1>
         </div>
         
         <Tabs defaultValue="connections" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-8">
             <TabsTrigger value="connections" className="flex items-center gap-2">
               <UserCheck className="h-4 w-4" />
-              <span>Connections</span>
+              <span>{t('connections')}</span>
               {connections && connections.length > 0 && (
                 <span className="ml-1 bg-primary/20 text-primary px-2 py-0.5 rounded-full text-xs">
                   {connections.length}
@@ -141,7 +143,7 @@ export default function ConnectionsPage() {
             </TabsTrigger>
             <TabsTrigger value="requests" className="flex items-center gap-2">
               <UserPlus className="h-4 w-4" />
-              <span>Incoming Requests</span>
+              <span>{t('incomingRequests')}</span>
               {pendingRequests && pendingRequests.length > 0 && (
                 <span className="ml-1 bg-primary/20 text-primary px-2 py-0.5 rounded-full text-xs">
                   {pendingRequests.length}

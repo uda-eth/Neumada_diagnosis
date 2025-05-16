@@ -198,9 +198,9 @@ export default function EventPage() {
 
       // Show success message
       const messages = {
-        attending: "You are now attending this event!",
-        interested: "You are now interested in this event",
-        not_attending: "You are no longer participating in this event"
+        attending: t('youAreNowAttending'),
+        interested: t('youAreNowInterested'),
+        not_attending: t('noLongerParticipating')
       };
 
       toast({
@@ -424,7 +424,7 @@ export default function EventPage() {
   if (isLoading || !event) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black text-white/60">
-        Loading...
+        {t('loading')}
       </div>
     );
   }
@@ -575,7 +575,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                   size="sm"
                 >
                   <Star className="h-3 w-3 mr-1" />
-                  Interested
+                  {t('interested')}
                   {userStatus === 'interested' && <CheckCircle className="h-3 w-3 ml-1" />}
                 </Button>
                 <Button
@@ -586,7 +586,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                   size="sm"
                 >
                   <Users className="h-3 w-3 mr-1" />
-                  Attending
+                  {t('attending')}
                   {userStatus === 'attending' && <CheckCircle className="h-3 w-3 ml-1" />}
                 </Button>
               </div>
@@ -748,7 +748,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                   onClick={() => handleParticipate('attending')}
                   disabled={participateMutation.isPending}
                 >
-                  {userStatus === 'attending' ? "I'm attending ✓" : "I'll be attending"}
+                  {userStatus === 'attending' ? t('imAttending') : t('illBeAttending')}
                 </Button>
                 <Button 
                   variant="outline" 
@@ -756,7 +756,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                   onClick={() => handleParticipate('interested')}
                   disabled={participateMutation.isPending}
                 >
-                  {userStatus === 'interested' ? "I'm interested ✓" : "I'm interested"}
+                  {userStatus === 'interested' ? t('imInterested') : t('interested')}
                 </Button>
                 {userStatus !== 'not_attending' && (
                   <Button 
@@ -765,7 +765,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                     onClick={() => handleParticipate('not_attending')}
                     disabled={participateMutation.isPending}
                   >
-                    Cancel Participation
+                    {t('cancelParticipation')}
                   </Button>
                 )}
               </div>
@@ -820,7 +820,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
             className={`${user && user.id !== event.creatorId ? 'flex-none' : 'flex-1'} whitespace-nowrap max-w-fit`}
           >
             <Share2 className="h-4 w-4 mr-2" />
-            Share
+            {t('share')}
           </ReferralShareButton>
         </div>
         
@@ -836,7 +836,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
             size="sm"
           >
             <Share2 className="h-4 w-4 mr-1" />
-            Share
+            {t('share')}
           </ReferralShareButton>
         </div>
 
@@ -872,7 +872,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                   >
                     {event.creatorName ? getFirstName(event.creatorName) : "Event Host"}
                   </div>
-                  <div className="text-xs sm:text-sm text-white/60">Event Organizer</div>
+                  <div className="text-xs sm:text-sm text-white/60">{t('eventOrganizer')}</div>
                 </div>
               </div>
             </div>
@@ -955,7 +955,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                 onClick={() => setLocation(`/event/${id}/tickets`)}
                 disabled={participateMutation.isPending}
               >
-                {`I'll be attending${event.price && parseFloat(event.price.toString()) > 0 ? ` • $${event.price}` : ''}`}
+                {`${t('illBeAttending')}${event.price && parseFloat(event.price.toString()) > 0 ? ` • $${event.price}` : ''}`}
               </Button>
             </div>
           </div>

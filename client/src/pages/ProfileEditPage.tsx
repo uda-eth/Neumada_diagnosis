@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { DIGITAL_NOMAD_CITIES, VIBE_AND_MOOD_TAGS } from "@/lib/constants";
+import { useTranslation } from "@/lib/translations";
 
 const profileSchema = z.object({
   username: z.string().optional(),
@@ -56,26 +57,6 @@ const profileSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
-const genderOptions = [
-  { value: "male", label: "Male" },
-  { value: "female", label: "Female" },
-  { value: "non-binary", label: "Non-binary" },
-  { value: "other", label: "Other" },
-  { value: "prefer-not-to-say", label: "Prefer not to say" }
-];
-
-const orientationOptions = [
-  { value: "straight", label: "Straight" },
-  { value: "gay", label: "Gay" },
-  { value: "lesbian", label: "Lesbian" },
-  { value: "bisexual", label: "Bisexual" },
-  { value: "pansexual", label: "Pansexual" },
-  { value: "asexual", label: "Asexual" },
-  { value: "queer", label: "Queer" },
-  { value: "questioning", label: "Questioning" },
-  { value: "prefer-not-to-say", label: "Prefer not to say" }
-];
-
 export default function ProfileEditPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -84,6 +65,27 @@ export default function ProfileEditPage() {
   const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTranslation();
+  
+  const genderOptions = [
+    { value: "male", label: t("male") },
+    { value: "female", label: t("female") },
+    { value: "non-binary", label: t("nonBinary") },
+    { value: "other", label: t("other") },
+    { value: "prefer-not-to-say", label: t("preferNotToSay") }
+  ];
+  
+  const orientationOptions = [
+    { value: "straight", label: t("straight") },
+    { value: "gay", label: t("gay") },
+    { value: "lesbian", label: t("lesbian") },
+    { value: "bisexual", label: t("bisexual") },
+    { value: "pansexual", label: t("pansexual") },
+    { value: "asexual", label: t("asexual") },
+    { value: "queer", label: t("queer") },
+    { value: "questioning", label: t("questioning") },
+    { value: "prefer-not-to-say", label: t("preferNotToSay") }
+  ];
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -239,7 +241,7 @@ export default function ProfileEditPage() {
             </Button>
             <div className="flex items-center gap-2">
               <UserCircle className="w-6 h-6" />
-              <h1 className="text-lg font-semibold">Edit Profile</h1>
+              <h1 className="text-lg font-semibold">{t("editProfile")}</h1>
             </div>
           </div>
         </div>
@@ -272,7 +274,7 @@ export default function ProfileEditPage() {
                     </label>
                   </div>
                   <Button variant="outline" size="sm" onClick={() => document.getElementById('profile-image')?.click()}>
-                    Change Photo
+                    {t("changePhoto")}
                   </Button>
                 </div>
 
@@ -283,9 +285,9 @@ export default function ProfileEditPage() {
                     name="fullName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Full Name</FormLabel>
+                        <FormLabel>{t("fullName")}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Your full name" {...field} />
+                          <Input placeholder={t("fullName")} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -297,12 +299,12 @@ export default function ProfileEditPage() {
                     name="username"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Username</FormLabel>
+                        <FormLabel>{t("username")}</FormLabel>
                         <FormControl>
                           <Input placeholder="@username" {...field} disabled />
                         </FormControl>
                         <FormDescription>
-                          Username cannot be changed
+                          {t("usernameCannotBeChanged")}
                         </FormDescription>
                       </FormItem>
                     )}
@@ -314,11 +316,11 @@ export default function ProfileEditPage() {
                       name="gender"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Gender</FormLabel>
+                          <FormLabel>{t("gender")}</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select gender" />
+                                <SelectValue placeholder={t("selectGender")} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -339,11 +341,11 @@ export default function ProfileEditPage() {
                       name="sexualOrientation"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Sexual Orientation</FormLabel>
+                          <FormLabel>{t("sexualOrientation")}</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select orientation" />
+                                <SelectValue placeholder={t("selectOrientation")} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -365,7 +367,7 @@ export default function ProfileEditPage() {
                     name="age"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Age</FormLabel>
+                        <FormLabel>{t("age")}</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
@@ -383,9 +385,9 @@ export default function ProfileEditPage() {
                     name="profession"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Profession</FormLabel>
+                        <FormLabel>{t("profession")}</FormLabel>
                         <FormControl>
-                          <Input placeholder="What do you do?" {...field} />
+                          <Input placeholder={t("whatDoYouDo")} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -397,10 +399,10 @@ export default function ProfileEditPage() {
                     name="bio"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Bio</FormLabel>
+                        <FormLabel>{t("bio")}</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Tell us about yourself"
+                            placeholder={t("tellUsAboutYourself")}
                             className="min-h-[100px]"
                             {...field}
                           />
@@ -414,7 +416,7 @@ export default function ProfileEditPage() {
 
               {/* Locations */}
               <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Locations</h2>
+                <h2 className="text-xl font-semibold mb-4">{t("locations")}</h2>
                 <div className="space-y-4">
                   <FormField
                     control={form.control}
@@ -423,12 +425,12 @@ export default function ProfileEditPage() {
                       <FormItem>
                         <FormLabel className="flex items-center gap-2">
                           <MapPin className="w-4 h-4" />
-                          Current Location
+                          {t("currentLocation")}
                         </FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select your current location" />
+                              <SelectValue placeholder={t("selectYourCurrentLocation")} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -447,9 +449,9 @@ export default function ProfileEditPage() {
                     name="birthLocation"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Born</FormLabel>
+                        <FormLabel>{t("born")}</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Where were you born?" className="bg-white/5 border-white/10" />
+                          <Input {...field} placeholder={t("whereWereYouBorn")} className="bg-white/5 border-white/10" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -461,9 +463,9 @@ export default function ProfileEditPage() {
                     name="raisedLocation"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Raised</FormLabel>
+                        <FormLabel>{t("raised")}</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Where were you raised?" className="bg-white/5 border-white/10" />
+                          <Input {...field} placeholder={t("whereWereYouRaised")} className="bg-white/5 border-white/10" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -475,9 +477,9 @@ export default function ProfileEditPage() {
                     name="livedLocation"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Lived</FormLabel>
+                        <FormLabel>{t("lived")}</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="A meaningful place you've lived" className="bg-white/5 border-white/10" />
+                          <Input {...field} placeholder={t("meaningfulPlaceLived")} className="bg-white/5 border-white/10" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -491,10 +493,10 @@ export default function ProfileEditPage() {
                       <FormItem>
                         <FormLabel className="flex items-center gap-2">
                           <Globe className="w-4 h-4" />
-                          Upcoming
+                          {t("upcomingLocation")}
                         </FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Where are you going next?" className="bg-white/5 border-white/10" />
+                          <Input {...field} placeholder={t("whereAreYouGoingNext")} className="bg-white/5 border-white/10" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -505,14 +507,14 @@ export default function ProfileEditPage() {
 
               {/* Vibe and Mood */}
               <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Vibe and Mood</h2>
+                <h2 className="text-xl font-semibold mb-4">{t("vibeAndMood")}</h2>
                 <div className="space-y-6">
                   <div>
                     <FormLabel className="flex items-center gap-2">
                       <Smile className="w-4 h-4" /> 
-                      Vibe and Mood Tags
+                      {t("vibeAndMood")}
                     </FormLabel>
-                    <FormDescription>Select tags that represent your vibe and mood</FormDescription>
+                    <FormDescription>{t("selectVibeAndMood")}</FormDescription>
                     <div className="flex flex-wrap gap-2 mt-2">
                       {VIBE_AND_MOOD_TAGS.map(tag => {
                         const isInterest = selectedInterests.includes(tag);
@@ -556,7 +558,7 @@ export default function ProfileEditPage() {
                               form.setValue("currentMoods", newMoods);
                             }}
                           >
-                            {tag}
+                            {t(tag)}
                           </Badge>
                         );
                       })}
@@ -566,10 +568,10 @@ export default function ProfileEditPage() {
                       <FormMessage>{form.formState.errors.currentMoods?.message}</FormMessage>
                     </div>
                     <div className="mt-4 text-sm text-muted-foreground">
-                      <p>Tags are used for both your profile preferences and current mood.</p>
-                      <p className="mt-1">Default (purple): Selected as your preferred vibe</p>
-                      <p className="mt-1">Secondary (gray): Selected as your current mood</p>
-                      <p className="mt-1">Ringed: Selected as both preferred vibe and current mood</p>
+                      <p>{t("Tags are used for both your profile preferences and current mood.")}</p>
+                      <p className="mt-1">{t("Default (purple): Selected as your preferred vibe")}</p>
+                      <p className="mt-1">{t("Secondary (gray): Selected as your current mood")}</p>
+                      <p className="mt-1">{t("Ringed: Selected as both preferred vibe and current mood")}</p>
                     </div>
                   </div>
                 </div>
@@ -580,13 +582,13 @@ export default function ProfileEditPage() {
                   variant="outline" 
                   onClick={() => setLocation(`/profile/${user?.username}`)}
                 >
-                  Cancel
+                  {t("cancel")}
                 </Button>
                 <Button 
                   type="submit" 
                   disabled={isLoading}
                 >
-                  {isLoading ? "Saving..." : "Save Changes"}
+                  {isLoading ? t("saving") : t("saveChanges")}
                 </Button>
               </div>
             </form>

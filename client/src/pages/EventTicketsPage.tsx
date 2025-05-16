@@ -2,15 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { loadStripe } from '@stripe/stripe-js';
+import type { Stripe } from '@stripe/stripe-js';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { useUser } from '@/hooks/use-user';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/lib/translations';
 
 // Initialize Stripe Promise
-let stripePromise: Promise<Stripe | null>;
+let stripePromise: Promise<any | null>;
 const getStripe = () => {
   if (!stripePromise) {
     const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
@@ -45,6 +47,7 @@ export default function EventTicketsPage() {
   const [quantity, setQuantity] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   // Fetch event details
   const { data: event, isLoading, isError } = useQuery<Event>({
@@ -165,7 +168,7 @@ export default function EventTicketsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black text-white/60">
         <Loader2 className="h-8 w-8 animate-spin mr-2" />
-        <span>Loading event details...</span>
+        <span>{t('loading')}</span>
       </div>
     );
   }
@@ -176,7 +179,7 @@ export default function EventTicketsPage() {
         <p className="text-red-500 mb-4">Error loading event details</p>
         <Button onClick={() => setLocation(`/event/${id}`)}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Return to Event
+          {t('backToEvent')}
         </Button>
       </div>
     );
@@ -190,10 +193,10 @@ export default function EventTicketsPage() {
         className="mb-6"
       >
         <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Event
+        {t('backToEvent')}
       </Button>
       
-      <h1 className="text-3xl font-bold mb-6">Purchase Tickets</h1>
+      <h1 className="text-3xl font-bold mb-6">{t('purchaseTickets')}</h1>
       
       <Card className="mb-8">
         <CardHeader>
@@ -205,7 +208,7 @@ export default function EventTicketsPage() {
         <CardContent>
           <div className="flex items-center justify-between mb-4">
             <div className="w-full max-w-xs">
-              <Label htmlFor="quantity">Ticket Quantity</Label>
+              <Label htmlFor="quantity">{t('ticketQuantity')}</Label>
               <Input
                 id="quantity"
                 type="number"
@@ -217,7 +220,7 @@ export default function EventTicketsPage() {
               />
               {event.availableTickets && (
                 <p className="text-sm text-muted-foreground mt-1">
-                  {event.availableTickets} tickets available
+                  {event.availableTickets} {t('ticketsAvailable')}
                 </p>
               )}
             </div>
@@ -225,21 +228,21 @@ export default function EventTicketsPage() {
               <p className="text-lg font-semibold">
                 ${typeof event.price === 'string' ? parseFloat(event.price).toFixed(2) : event.price.toFixed(2)}
               </p>
-              <p className="text-sm text-muted-foreground">per ticket</p>
+              <p className="text-sm text-muted-foreground">{t('perTicket')}</p>
             </div>
           </div>
           
           <div className="border-t pt-4 mt-4">
             <div className="flex justify-between mb-2">
-              <span>Subtotal</span>
+              <span>{t('subtotal')}</span>
               <span>${subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between mb-2">
-              <span>Service Fee</span>
+              <span>{t('serviceFee')}</span>
               <span>${fees.toFixed(2)}</span>
             </div>
             <div className="flex justify-between font-bold text-lg mt-2 pt-2 border-t">
-              <span>Total</span>
+              <span>{t('total')}</span>
               <span>${total.toFixed(2)}</span>
             </div>
           </div>
@@ -254,7 +257,7 @@ export default function EventTicketsPage() {
                   className="mt-2 w-full"
                   onClick={() => setLocation('/auth')}
                 >
-                  Go to Login
+                  {t('login')}
                 </Button>
               )}
             </div>
@@ -267,11 +270,11 @@ export default function EventTicketsPage() {
             {isProcessing ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing...
+                {t('loading')}
               </>
             ) : (
               <>
-                Proceed to Payment
+                {t('proceedToPayment')}
               </>
             )}
           </Button>
@@ -280,7 +283,7 @@ export default function EventTicketsPage() {
       
       <div className="text-sm text-muted-foreground">
         <p className="mb-2">All purchases are final. No refunds will be issued.</p>
-        <p>After payment, you'll receive a QR code ticket that can be used for event entry.</p>
+        <p>{t('qrCodeTicket')}</p>
       </div>
     </div>
   );

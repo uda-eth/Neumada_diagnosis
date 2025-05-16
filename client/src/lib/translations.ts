@@ -38,6 +38,11 @@ type TranslationKey =
   | 'delete'
   | 'yourNetwork'
   | 'incomingRequests'
+  | 'searchMessages'
+  | 'noConversationsYet'
+  | 'noConversationsMatch'
+  | 'connectWithOthers'
+  | 'findConnections'
   | 'location'
   | 'category'
   | 'categoryFiltering'
@@ -132,11 +137,82 @@ type TranslationKey =
   | 'getTickets'
   | 'about'
   | 'eventSchedule'
-  | 'attendees';
+  | 'attendees'
+  // Profile Edit Page Translations
+  | 'fullName'
+  | 'username'
+  | 'usernameCannotBeChanged'
+  | 'gender'
+  | 'selectGender'
+  | 'male'
+  | 'female'
+  | 'nonBinary'
+  | 'other'
+  | 'preferNotToSay'
+  | 'sexualOrientation'
+  | 'selectOrientation'
+  | 'straight'
+  | 'gay'
+  | 'lesbian'
+  | 'bisexual'
+  | 'pansexual'
+  | 'asexual'
+  | 'queer'
+  | 'questioning'
+  | 'age'
+  | 'profession'
+  | 'whatDoYouDo'
+  | 'bio'
+  | 'tellUsAboutYourself'
+  | 'locations'
+  | 'currentLocation'
+  | 'selectYourCurrentLocation'
+  | 'born'
+  | 'whereWereYouBorn'
+  | 'raised'
+  | 'whereWereYouRaised'
+  | 'lived'
+  | 'meaningfulPlaceLived'
+  | 'upcomingLocation'
+  | 'whereAreYouGoingNext'
+  | 'vibeAndMood'
+  | 'selectVibeAndMood'
+  | 'changePhoto'
+  | 'cancel'
+  | 'saveChanges'
+  | 'saving'
+  | 'Tags are used for both your profile preferences and current mood.'
+  | 'Default (purple): Selected as your preferred vibe'
+  | 'Secondary (gray): Selected as your current mood'
+  | 'Ringed: Selected as both preferred vibe and current mood'
+  // Event Page Translations
+  | 'illBeAttending'
+  | 'imAttending'
+  | 'imInterested'
+  | 'share'
+  | 'eventOrganizer'
+  | 'purchaseTickets'
+  | 'ticketQuantity'
+  | 'ticketsAvailable'
+  | 'perTicket'
+  | 'subtotal'
+  | 'serviceFee'
+  | 'total'
+  | 'backToEvent'
+  | 'qrCodeTicket'
+  | 'loading'
+  | 'youAreNowAttending'
+  | 'youAreNowInterested'
+  | 'noLongerParticipating'
+  | 'successfullyUpdated'
+  | 'proceedToPayment'
+  | 'login'
+  | 'cancelParticipation';
 
 const translations: Record<string, Record<TranslationKey, string>> = {
   en: {
     discover: 'Discover',
+    login: 'Login',
     connect: 'Connect',
     create: 'Create',
     make: 'Make',
@@ -145,6 +221,7 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     settings: 'Settings',
     guide: 'City Guide',
     searchEvents: 'Search events...',
+    searchMessages: 'Search messages...',
     allCategories: 'All categories',
     thisWeekend: 'THIS WEEKEND',
     nextWeek: 'NEXT WEEK',
@@ -172,6 +249,10 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     delete: 'Delete',
     yourNetwork: 'Your Network',
     incomingRequests: 'Incoming Requests',
+    noConversationsYet: 'No conversations yet',
+    noConversationsMatch: 'No conversations match your search',
+    connectWithOthers: 'Connect with others to start messaging',
+    findConnections: 'Find connections',
     location: 'Location',
     category: 'Category',
     categoryFiltering: 'Category filtering',
@@ -254,10 +335,81 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     more: 'more',
     price: 'Price',
     recommendedForYou: 'Recommended For You',
-    trending: 'Trending'
+    trending: 'Trending',
+    // Profile Edit Page Translations
+    fullName: 'Full Name',
+    username: 'Username',
+    usernameCannotBeChanged: 'Username cannot be changed',
+    gender: 'Gender',
+    selectGender: 'Select gender',
+    male: 'Male',
+    female: 'Female',
+    nonBinary: 'Non-binary',
+    other: 'Other',
+    preferNotToSay: 'Prefer not to say',
+    sexualOrientation: 'Sexual Orientation',
+    selectOrientation: 'Select orientation',
+    straight: 'Straight',
+    gay: 'Gay',
+    lesbian: 'Lesbian',
+    bisexual: 'Bisexual',
+    pansexual: 'Pansexual',
+    asexual: 'Asexual',
+    queer: 'Queer',
+    questioning: 'Questioning',
+    age: 'Age',
+    profession: 'Profession',
+    whatDoYouDo: 'What do you do?',
+    bio: 'Bio',
+    tellUsAboutYourself: 'Tell us about yourself',
+    locations: 'Locations',
+    currentLocation: 'Current Location',
+    selectYourCurrentLocation: 'Select your current location',
+    born: 'Born',
+    whereWereYouBorn: 'Where were you born?',
+    raised: 'Raised',
+    whereWereYouRaised: 'Where were you raised?',
+    lived: 'Lived',
+    meaningfulPlaceLived: 'A meaningful place you\'ve lived',
+    upcomingLocation: 'Upcoming Location',
+    whereAreYouGoingNext: 'Where are you going next?',
+    vibeAndMood: 'Vibe and Mood',
+    selectVibeAndMood: 'Select tags that represent your vibe and mood',
+    changePhoto: 'Change Photo',
+    cancel: 'Cancel',
+    saveChanges: 'Save Changes',
+    saving: 'Saving...',
+    'Tags are used for both your profile preferences and current mood.': 'Tags are used for both your profile preferences and current mood.',
+    'Default (purple): Selected as your preferred vibe': 'Default (purple): Selected as your preferred vibe',
+    'Secondary (gray): Selected as your current mood': 'Secondary (gray): Selected as your current mood',
+    'Ringed: Selected as both preferred vibe and current mood': 'Ringed: Selected as both preferred vibe and current mood',
+    // Event Page Translations
+    illBeAttending: 'I\'ll be attending',
+    imAttending: 'I\'m attending ✓',
+    imInterested: 'I\'m interested ✓',
+    share: 'Share',
+    eventOrganizer: 'Event Organizer',
+    purchaseTickets: 'Purchase Tickets',
+    ticketQuantity: 'Ticket Quantity',
+    ticketsAvailable: 'tickets available',
+    perTicket: 'per ticket',
+    subtotal: 'Subtotal',
+    serviceFee: 'Service Fee (5%)',
+    total: 'Total',
+    backToEvent: 'Back to Event',
+    qrCodeTicket: 'After payment, you\'ll receive a QR code ticket that can be used for event entry.',
+    loading: 'Loading...',
+    youAreNowAttending: 'You are now attending this event!',
+    youAreNowInterested: 'You are now interested in this event',
+    noLongerParticipating: 'You are no longer participating in this event',
+    successfullyUpdated: 'Successfully updated',
+    proceedToPayment: 'Proceed to Payment',
+    cancelParticipation: 'Cancel Participation'
   },
   es: {
     discover: 'Descubrir',
+    login: 'Iniciar Sesión',
+    share: 'Compartir',
     connect: 'Conectar',
     create: 'Crear',
     make: 'Hacer',
@@ -266,6 +418,13 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     settings: 'Ajustes',
     guide: 'Guía Local',
     searchEvents: 'Buscar eventos...',
+    searchMessages: 'Buscar mensajes...',
+    noConversationsYet: 'No hay conversaciones aún',
+    noConversationsMatch: 'Ninguna conversación coincide con tu búsqueda',
+    connectWithOthers: 'Conecta con otros para comenzar a enviar mensajes',
+    findConnections: 'Encontrar conexiones',
+    yourNetwork: 'Tu Red',
+    incomingRequests: 'Solicitudes Entrantes',
     allCategories: 'Todas las categorías',
     thisWeekend: 'ESTE FIN DE SEMANA',
     nextWeek: 'PRÓXIMA SEMANA',
@@ -287,12 +446,9 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     home: 'Inicio',
     pageNotFound: 'Página No Encontrada',
     filters: 'Filtros',
-    connections: 'Conexiones',
     save: 'Guardar',
     edit: 'Editar',
     delete: 'Eliminar',
-    yourNetwork: 'Tu Red',
-    incomingRequests: 'Solicitudes Entrantes',
     location: 'Ubicación',
     category: 'Categoría',
     categoryFiltering: 'Filtrado por categoría',
@@ -322,7 +478,6 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     eventLocation: 'Ubicación del evento',
     eventDate: 'Fecha del evento',
     paid: 'De pago',
-
     addItem: 'Añadir elemento',
     startTime: 'Hora de inicio',
     endTime: 'Hora de fin',
@@ -376,7 +531,77 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     more: 'más',
     price: 'Precio',
     recommendedForYou: 'Recomendado Para Ti',
-    trending: 'Tendencia'
+    trending: 'Tendencia',
+    // Already added translations above, removing duplicates
+    // Profile Edit Page Translations
+    fullName: 'Nombre Completo',
+    username: 'Nombre de Usuario',
+    usernameCannotBeChanged: 'El nombre de usuario no se puede cambiar',
+    gender: 'Género',
+    selectGender: 'Seleccionar género',
+    male: 'Masculino',
+    female: 'Femenino',
+    nonBinary: 'No binario',
+    other: 'Otro',
+    preferNotToSay: 'Prefiero no decirlo',
+    sexualOrientation: 'Orientación Sexual',
+    selectOrientation: 'Seleccionar orientación',
+    straight: 'Heterosexual',
+    gay: 'Gay',
+    lesbian: 'Lesbiana',
+    bisexual: 'Bisexual',
+    pansexual: 'Pansexual',
+    asexual: 'Asexual',
+    queer: 'Queer',
+    questioning: 'Cuestionando',
+    age: 'Edad',
+    profession: 'Profesión',
+    whatDoYouDo: '¿A qué te dedicas?',
+    bio: 'Biografía',
+    tellUsAboutYourself: 'Cuéntanos sobre ti',
+    locations: 'Ubicaciones',
+    currentLocation: 'Ubicación Actual',
+    selectYourCurrentLocation: 'Selecciona tu ubicación actual',
+    born: 'Nacimiento',
+    whereWereYouBorn: '¿Dónde naciste?',
+    raised: 'Crianza',
+    whereWereYouRaised: '¿Dónde te criaste?',
+    lived: 'Vivido',
+    meaningfulPlaceLived: 'Un lugar significativo donde hayas vivido',
+    upcomingLocation: 'Próxima Ubicación',
+    whereAreYouGoingNext: '¿A dónde vas después?',
+    vibeAndMood: 'Ambiente y Estado',
+    selectVibeAndMood: 'Selecciona etiquetas que representen tu ambiente y estado',
+    changePhoto: 'Cambiar Foto',
+    cancel: 'Cancelar',
+    saveChanges: 'Guardar Cambios',
+    saving: 'Guardando...',
+    'Tags are used for both your profile preferences and current mood.': 'Las etiquetas se utilizan tanto para tus preferencias de perfil como para tu estado actual.',
+    'Default (purple): Selected as your preferred vibe': 'Predeterminado (morado): Seleccionado como tu ambiente preferido',
+    'Secondary (gray): Selected as your current mood': 'Secundario (gris): Seleccionado como tu estado actual',
+    'Ringed: Selected as both preferred vibe and current mood': 'Con borde: Seleccionado como ambiente preferido y estado actual',
+    // Add any missing event translations here
+    illBeAttending: 'Asistiré',
+    imAttending: 'Estoy asistiendo ✓',
+    imInterested: 'Estoy interesado/a ✓',
+    loading: 'Cargando...',
+    youAreNowAttending: '¡Ahora estás asistiendo a este evento!',
+    youAreNowInterested: 'Ahora estás interesado/a en este evento',
+    noLongerParticipating: 'Ya no estás participando en este evento',
+    successfullyUpdated: 'Actualizado con éxito',
+    proceedToPayment: 'Proceder al Pago',
+    login: 'Iniciar Sesión',
+    purchaseTickets: 'Comprar Entradas',
+    ticketQuantity: 'Cantidad de Entradas',
+    ticketsAvailable: 'entradas disponibles',
+    perTicket: 'por entrada',
+    subtotal: 'Subtotal',
+    serviceFee: 'Cargo por Servicio (5%)',
+    total: 'Total',
+    backToEvent: 'Volver al Evento',
+    qrCodeTicket: 'Después del pago, recibirás un código QR que se puede utilizar para la entrada al evento.',
+    eventOrganizer: 'Organizador del Evento',
+    cancelParticipation: 'Cancelar Participación'
   }
 };
 
