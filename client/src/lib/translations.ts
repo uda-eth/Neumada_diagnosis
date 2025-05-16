@@ -53,7 +53,18 @@ type TranslationKey =
   | 'searchByVibe'
   | 'eventsThisMonth'
   | 'free'
-  | 'perPerson';
+  | 'perPerson'
+  | 'Party & Nightlife'
+  | 'Fashion & Style'
+  | 'Networking & Business'
+  | 'Dining & Drinks'
+  | 'Outdoor & Nature'
+  | 'Wellness & Fitness'
+  | 'Creative & Artsy'
+  | 'Single & Social'
+  | 'Chill & Recharge'
+  | 'Adventure & Exploring'
+  | 'Spiritual & Intentional';
 
 const translations: Record<string, Record<TranslationKey, string>> = {
   en: {
@@ -109,7 +120,18 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     searchByVibe: 'Search by Vibe',
     eventsThisMonth: 'Events this month',
     free: 'Free',
-    perPerson: 'per person'
+    perPerson: 'per person',
+    'Party & Nightlife': 'Party & Nightlife',
+    'Fashion & Style': 'Fashion & Style',
+    'Networking & Business': 'Networking & Business',
+    'Dining & Drinks': 'Dining & Drinks',
+    'Outdoor & Nature': 'Outdoor & Nature',
+    'Wellness & Fitness': 'Wellness & Fitness',
+    'Creative & Artsy': 'Creative & Artsy',
+    'Single & Social': 'Single & Social',
+    'Chill & Recharge': 'Chill & Recharge',
+    'Adventure & Exploring': 'Adventure & Exploring',
+    'Spiritual & Intentional': 'Spiritual & Intentional'
   },
   es: {
     discover: 'Descubrir',
@@ -164,7 +186,18 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     searchByVibe: 'Buscar por Ambiente',
     eventsThisMonth: 'Eventos este mes',
     free: 'Gratis',
-    perPerson: 'por persona'
+    perPerson: 'por persona',
+    'Party & Nightlife': 'Fiesta y Vida Nocturna',
+    'Fashion & Style': 'Moda y Estilo',
+    'Networking & Business': 'Networking y Negocios',
+    'Dining & Drinks': 'Comidas y Bebidas',
+    'Outdoor & Nature': 'Aire Libre y Naturaleza',
+    'Wellness & Fitness': 'Bienestar y Fitness',
+    'Creative & Artsy': 'Creativo y Artístico',
+    'Single & Social': 'Solteros y Social',
+    'Chill & Recharge': 'Relajación y Recarga',
+    'Adventure & Exploring': 'Aventura y Exploración',
+    'Spiritual & Intentional': 'Espiritual e Intencional'
   }
 };
 

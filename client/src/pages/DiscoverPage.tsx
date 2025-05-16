@@ -287,7 +287,7 @@ export default function DiscoverPage() {
                         }}
                         className="text-xs sm:text-sm"
                       >
-                        {type}
+                        {t(type)}
                       </DropdownMenuCheckboxItem>
                     ))}
                   </div>
