@@ -54,6 +54,13 @@ type TranslationKey =
   | 'eventsThisMonth'
   | 'free'
   | 'perPerson'
+  | 'cities'
+  | 'vibe'
+  | 'allCities'
+  | 'selectVibes'
+  | 'findPeopleWithSimilarVibes'
+  | 'clearAll'
+  | 'searchByName'
   | 'Party & Nightlife'
   | 'Fashion & Style'
   | 'Networking & Business'
@@ -121,6 +128,13 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     eventsThisMonth: 'Events this month',
     free: 'Free',
     perPerson: 'per person',
+    cities: 'Cities',
+    vibe: 'Vibe',
+    allCities: 'All Cities',
+    selectVibes: 'Select Vibes',
+    findPeopleWithSimilarVibes: 'Find people with similar vibes',
+    clearAll: 'Clear all',
+    searchByName: 'Search by name...',
     'Party & Nightlife': 'Party & Nightlife',
     'Fashion & Style': 'Fashion & Style',
     'Networking & Business': 'Networking & Business',
@@ -187,6 +201,13 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     eventsThisMonth: 'Eventos este mes',
     free: 'Gratis',
     perPerson: 'por persona',
+    cities: 'Ciudades',
+    vibe: 'Ambiente',
+    allCities: 'Todas las Ciudades',
+    selectVibes: 'Seleccionar Ambientes',
+    findPeopleWithSimilarVibes: 'Encuentra personas con ambientes similares',
+    clearAll: 'Borrar todo',
+    searchByName: 'Buscar por nombre...',
     'Party & Nightlife': 'Fiesta y Vida Nocturna',
     'Fashion & Style': 'Moda y Estilo',
     'Networking & Business': 'Networking y Negocios',

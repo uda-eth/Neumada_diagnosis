@@ -346,14 +346,14 @@ export function ConnectPage() {
           <div className="space-y-3 sm:space-y-4 bg-accent/5 p-3 sm:p-4 rounded-lg border border-border">
             {/* City Filter */}
             <div className="space-y-1.5 sm:space-y-2">
-              <h3 className="text-xs sm:text-sm font-medium">Cities</h3>
+              <h3 className="text-xs sm:text-sm font-medium">{t('cities')}</h3>
               <Select value={selectedCity} onValueChange={setSelectedCity}>
                 <SelectTrigger className="w-full bg-background/5 border-border h-9 text-xs sm:text-sm flex justify-between items-center">
-                  <SelectValue placeholder="Select city" />
+                  <SelectValue placeholder={t('selectCity')} />
                   {/* Removed duplicate ChevronDown icon */}
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Cities</SelectItem>
+                  <SelectItem value="all">{t('allCities')}</SelectItem>
                   {cities.map((city) => (
                     <SelectItem key={city} value={city}>{city}</SelectItem>
                   ))}
@@ -362,14 +362,14 @@ export function ConnectPage() {
             </div>
             {/* Vibe and Mood Filter */}
             <div className="space-y-1.5 sm:space-y-2">
-              <h3 className="text-xs sm:text-sm font-medium">Vibe</h3>
+              <h3 className="text-xs sm:text-sm font-medium">{t('vibe')}</h3>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button 
                     variant="outline" 
                     className="w-full justify-between h-9 text-xs sm:text-sm px-2 sm:px-4"
                   >
-                    <span className="truncate">Select Vibes</span>
+                    <span className="truncate">{t('selectVibes')}</span>
                     <div className="flex items-center">
                       {selectedMoods.length > 0 && (
                         <Badge variant="secondary" className="mr-1.5 text-xs px-1.5">
@@ -381,7 +381,7 @@ export function ConnectPage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-[240px] sm:w-[280px]">
-                  <DropdownMenuLabel className="text-xs sm:text-sm">Find people with similar vibes</DropdownMenuLabel>
+                  <DropdownMenuLabel className="text-xs sm:text-sm">{t('findPeopleWithSimilarVibes')}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto">
                     {moods.map((mood) => (
