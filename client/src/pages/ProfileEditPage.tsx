@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { DIGITAL_NOMAD_CITIES, VIBE_AND_MOOD_TAGS } from "@/lib/constants";
+import { useTranslation } from "@/lib/translations";
 
 const profileSchema = z.object({
   username: z.string().optional(),
@@ -56,26 +57,6 @@ const profileSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
-const genderOptions = [
-  { value: "male", label: "Male" },
-  { value: "female", label: "Female" },
-  { value: "non-binary", label: "Non-binary" },
-  { value: "other", label: "Other" },
-  { value: "prefer-not-to-say", label: "Prefer not to say" }
-];
-
-const orientationOptions = [
-  { value: "straight", label: "Straight" },
-  { value: "gay", label: "Gay" },
-  { value: "lesbian", label: "Lesbian" },
-  { value: "bisexual", label: "Bisexual" },
-  { value: "pansexual", label: "Pansexual" },
-  { value: "asexual", label: "Asexual" },
-  { value: "queer", label: "Queer" },
-  { value: "questioning", label: "Questioning" },
-  { value: "prefer-not-to-say", label: "Prefer not to say" }
-];
-
 export default function ProfileEditPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -84,6 +65,27 @@ export default function ProfileEditPage() {
   const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTranslation();
+  
+  const genderOptions = [
+    { value: "male", label: t("male") },
+    { value: "female", label: t("female") },
+    { value: "non-binary", label: t("nonBinary") },
+    { value: "other", label: t("other") },
+    { value: "prefer-not-to-say", label: t("preferNotToSay") }
+  ];
+  
+  const orientationOptions = [
+    { value: "straight", label: t("straight") },
+    { value: "gay", label: t("gay") },
+    { value: "lesbian", label: t("lesbian") },
+    { value: "bisexual", label: t("bisexual") },
+    { value: "pansexual", label: t("pansexual") },
+    { value: "asexual", label: t("asexual") },
+    { value: "queer", label: t("queer") },
+    { value: "questioning", label: t("questioning") },
+    { value: "prefer-not-to-say", label: t("preferNotToSay") }
+  ];
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -239,7 +241,7 @@ export default function ProfileEditPage() {
             </Button>
             <div className="flex items-center gap-2">
               <UserCircle className="w-6 h-6" />
-              <h1 className="text-lg font-semibold">Edit Profile</h1>
+              <h1 className="text-lg font-semibold">{t("editProfile")}</h1>
             </div>
           </div>
         </div>
@@ -272,7 +274,7 @@ export default function ProfileEditPage() {
                     </label>
                   </div>
                   <Button variant="outline" size="sm" onClick={() => document.getElementById('profile-image')?.click()}>
-                    Change Photo
+                    {t("changePhoto")}
                   </Button>
                 </div>
 

@@ -132,7 +132,50 @@ type TranslationKey =
   | 'getTickets'
   | 'about'
   | 'eventSchedule'
-  | 'attendees';
+  | 'attendees'
+  // Profile Edit Page Translations
+  | 'fullName'
+  | 'username'
+  | 'usernameCannotBeChanged'
+  | 'gender'
+  | 'selectGender'
+  | 'male'
+  | 'female'
+  | 'nonBinary'
+  | 'other'
+  | 'preferNotToSay'
+  | 'sexualOrientation'
+  | 'selectOrientation'
+  | 'straight'
+  | 'gay'
+  | 'lesbian'
+  | 'bisexual'
+  | 'pansexual'
+  | 'asexual'
+  | 'queer'
+  | 'questioning'
+  | 'age'
+  | 'profession'
+  | 'whatDoYouDo'
+  | 'bio'
+  | 'tellUsAboutYourself'
+  | 'locations'
+  | 'currentLocation'
+  | 'selectYourCurrentLocation'
+  | 'born'
+  | 'whereWereYouBorn'
+  | 'raised'
+  | 'whereWereYouRaised'
+  | 'lived'
+  | 'meaningfulPlaceLived'
+  | 'upcomingLocation'
+  | 'whereAreYouGoingNext'
+  | 'vibeAndMood'
+  | 'selectVibeAndMood'
+  | 'changePhoto'
+  | 'cancel'
+  | 'saveChanges'
+  | 'saving';
 
 const translations: Record<string, Record<TranslationKey, string>> = {
   en: {
@@ -254,7 +297,50 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     more: 'more',
     price: 'Price',
     recommendedForYou: 'Recommended For You',
-    trending: 'Trending'
+    trending: 'Trending',
+    // Profile Edit Page Translations
+    fullName: 'Full Name',
+    username: 'Username',
+    usernameCannotBeChanged: 'Username cannot be changed',
+    gender: 'Gender',
+    selectGender: 'Select gender',
+    male: 'Male',
+    female: 'Female',
+    nonBinary: 'Non-binary',
+    other: 'Other',
+    preferNotToSay: 'Prefer not to say',
+    sexualOrientation: 'Sexual Orientation',
+    selectOrientation: 'Select orientation',
+    straight: 'Straight',
+    gay: 'Gay',
+    lesbian: 'Lesbian',
+    bisexual: 'Bisexual',
+    pansexual: 'Pansexual',
+    asexual: 'Asexual',
+    queer: 'Queer',
+    questioning: 'Questioning',
+    age: 'Age',
+    profession: 'Profession',
+    whatDoYouDo: 'What do you do?',
+    bio: 'Bio',
+    tellUsAboutYourself: 'Tell us about yourself',
+    locations: 'Locations',
+    currentLocation: 'Current Location',
+    selectYourCurrentLocation: 'Select your current location',
+    born: 'Born',
+    whereWereYouBorn: 'Where were you born?',
+    raised: 'Raised',
+    whereWereYouRaised: 'Where were you raised?',
+    lived: 'Lived',
+    meaningfulPlaceLived: 'A meaningful place you\'ve lived',
+    upcomingLocation: 'Upcoming Location',
+    whereAreYouGoingNext: 'Where are you going next?',
+    vibeAndMood: 'Vibe and Mood',
+    selectVibeAndMood: 'Select tags that represent your vibe and mood',
+    changePhoto: 'Change Photo',
+    cancel: 'Cancel',
+    saveChanges: 'Save Changes',
+    saving: 'Saving...'
   },
   es: {
     discover: 'Descubrir',
@@ -322,7 +408,6 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     eventLocation: 'Ubicación del evento',
     eventDate: 'Fecha del evento',
     paid: 'De pago',
-
     addItem: 'Añadir elemento',
     startTime: 'Hora de inicio',
     endTime: 'Hora de fin',
@@ -376,7 +461,50 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     more: 'más',
     price: 'Precio',
     recommendedForYou: 'Recomendado Para Ti',
-    trending: 'Tendencia'
+    trending: 'Tendencia',
+    // Profile Edit Page Translations
+    fullName: 'Nombre Completo',
+    username: 'Nombre de Usuario',
+    usernameCannotBeChanged: 'El nombre de usuario no se puede cambiar',
+    gender: 'Género',
+    selectGender: 'Seleccionar género',
+    male: 'Masculino',
+    female: 'Femenino',
+    nonBinary: 'No binario',
+    other: 'Otro',
+    preferNotToSay: 'Prefiero no decirlo',
+    sexualOrientation: 'Orientación Sexual',
+    selectOrientation: 'Seleccionar orientación',
+    straight: 'Heterosexual',
+    gay: 'Gay',
+    lesbian: 'Lesbiana',
+    bisexual: 'Bisexual',
+    pansexual: 'Pansexual',
+    asexual: 'Asexual',
+    queer: 'Queer',
+    questioning: 'Cuestionando',
+    age: 'Edad',
+    profession: 'Profesión',
+    whatDoYouDo: '¿A qué te dedicas?',
+    bio: 'Biografía',
+    tellUsAboutYourself: 'Cuéntanos sobre ti',
+    locations: 'Ubicaciones',
+    currentLocation: 'Ubicación Actual',
+    selectYourCurrentLocation: 'Selecciona tu ubicación actual',
+    born: 'Nacimiento',
+    whereWereYouBorn: '¿Dónde naciste?',
+    raised: 'Crianza',
+    whereWereYouRaised: '¿Dónde te criaste?',
+    lived: 'Vivido',
+    meaningfulPlaceLived: 'Un lugar significativo donde hayas vivido',
+    upcomingLocation: 'Próxima Ubicación',
+    whereAreYouGoingNext: '¿A dónde vas después?',
+    vibeAndMood: 'Ambiente y Estado',
+    selectVibeAndMood: 'Selecciona etiquetas que representen tu ambiente y estado',
+    changePhoto: 'Cambiar Foto',
+    cancel: 'Cancelar',
+    saveChanges: 'Guardar Cambios',
+    saving: 'Guardando...'
   }
 };
 
