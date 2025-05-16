@@ -1,4 +1,5 @@
 import { useLanguage } from './language-context';
+import OpenAI from 'openai';
 
 type TranslationKey = 
   | 'discover'
@@ -93,7 +94,11 @@ type TranslationKey =
   | 'Single & Social'
   | 'Chill & Recharge'
   | 'Adventure & Exploring'
-  | 'Spiritual & Intentional';
+  | 'Spiritual & Intentional'
+  | 'editProfile'
+  | 'shareProfile'
+  | 'connectProfile'
+  | 'viewLocations';
 
 const translations: Record<string, Record<TranslationKey, string>> = {
   en: {
@@ -189,7 +194,11 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     'Single & Social': 'Single & Social',
     'Chill & Recharge': 'Chill & Recharge',
     'Adventure & Exploring': 'Adventure & Exploring',
-    'Spiritual & Intentional': 'Spiritual & Intentional'
+    'Spiritual & Intentional': 'Spiritual & Intentional',
+    editProfile: 'Edit Profile',
+    shareProfile: 'Share Profile',
+    connectProfile: 'Connect',
+    viewLocations: 'View Locations'
   },
   es: {
     discover: 'Descubrir',
@@ -284,9 +293,128 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     'Single & Social': 'Solteros y Social',
     'Chill & Recharge': 'Relajación y Recarga',
     'Adventure & Exploring': 'Aventura y Exploración',
-    'Spiritual & Intentional': 'Espiritual e Intencional'
+    'Spiritual & Intentional': 'Espiritual e Intencional',
+    editProfile: 'Editar Perfil',
+    shareProfile: 'Compartir Perfil',
+    connectProfile: 'Conectar',
+    viewLocations: 'Ver Ubicaciones'
   }
 };
+
+// Initialize OpenAI client if API key is available
+const openai = new OpenAI({ 
+  apiKey: import.meta.env.VITE_OPENAI_API_KEY || '', 
+  dangerouslyAllowBrowser: true 
+});
+
+// Cache for translations to avoid repeated API calls
+const translationCache: Record<string, Record<string, string>> = {
+  'en': {},
+  'es': {}
+};
+
+/**
+ * Translates text using OpenAI if available, or returns the original text
+ * @param text Text to translate
+ * @param targetLanguage Language code to translate to
+ * @returns Translated text or original if translation fails
+ */
+export async function translateText(text: string, targetLanguage: string): Promise<string> {
+  if (!text || text.trim() === '') return text;
+  
+  // Check cache first
+  const cacheKey = `${text}_${targetLanguage}`;
+  if (translationCache[targetLanguage]?.[text]) {
+    return translationCache[targetLanguage][text];
+  }
+  
+  try {
+    // Use OpenAI for translation
+    if (openai.apiKey) {
+      const prompt = `Translate the following text to ${targetLanguage === 'es' ? 'Spanish' : 'English'}: "${text}"
+      Return ONLY the translated text, nothing else.`;
+      
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          { role: "system", content: "You are a professional translator. Provide only the translated text without any additional information." },
+          { role: "user", content: prompt }
+        ],
+      });
+      
+      const translatedText = response.choices[0].message.content?.trim() || text;
+      
+      // Cache the result
+      if (!translationCache[targetLanguage]) translationCache[targetLanguage] = {};
+      translationCache[targetLanguage][text] = translatedText;
+      
+      return translatedText;
+    }
+  } catch (error) {
+    console.error('Translation error:', error);
+  }
+  
+  // Fallback: return original text if translation fails
+  return text;
+}
+
+/**
+ * Translates a user tag or category
+ * @param tag The tag to translate
+ * @param language Target language ('en' or 'es')
+ */
+export async function translateTag(tag: string, language: string): Promise<string> {
+  // If tag is already in translations, use that directly
+  const translatedTag = translations[language][tag as TranslationKey];
+  if (translatedTag) return translatedTag;
+  
+  // Otherwise use the translation API
+  return await translateText(tag, language);
+}
+
+/**
+ * Translates user profile information
+ * @param profile User profile data
+ * @param language Target language ('en' or 'es')
+ */
+export async function translateUserProfile(
+  profile: {
+    fullName?: string | null;
+    username: string;
+    location?: string | null;
+    tags?: string[];
+  },
+  language: string
+): Promise<{
+  fullName?: string | null;
+  username: string;
+  location?: string | null;
+  tags?: string[];
+}> {
+  if (language === 'en') return profile; // No need to translate if target is English
+  
+  const result = { ...profile };
+  
+  // Translate name
+  if (profile.fullName) {
+    result.fullName = await translateText(profile.fullName, language);
+  }
+  
+  // Translate location
+  if (profile.location) {
+    result.location = await translateText(profile.location, language);
+  }
+  
+  // Translate tags
+  if (profile.tags && profile.tags.length > 0) {
+    const translatedTags = await Promise.all(
+      profile.tags.map(tag => translateTag(tag, language))
+    );
+    result.tags = translatedTags;
+  }
+  
+  return result;
+}
 
 export function useTranslation() {
   const { language, setLanguage } = useLanguage();
@@ -299,5 +427,5 @@ export function useTranslation() {
     return translations[language][key as TranslationKey] || translations['en'][key as TranslationKey];
   };
 
-  return { t, setLanguage, language };
+  return { t, setLanguage, language, translateText, translateUserProfile, translateTag };
 }
