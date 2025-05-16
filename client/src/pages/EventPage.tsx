@@ -671,9 +671,9 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <p className="text-sm text-white/60">Price</p>
+              <p className="text-sm text-white/60">{t('price')}</p>
               <p className="text-xl font-semibold">
-                {event.price ? `$${event.price}` : 'Free'}
+                {event.price ? `$${event.price}` : t('free')}
               </p>
             </div>
             {/* Only show ticket/attendance buttons if not the creator */}
@@ -749,7 +749,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                 disabled={participateMutation.isPending}
               >
                 <Star className="h-4 w-4 mr-2" />
-                {userStatus === 'interested' ? 'Interested ✓' : 'Interested'}
+                {userStatus === 'interested' ? `${t('interested')} ✓` : t('interested')}
               </Button>
               <Button
                 variant={userStatus === 'attending' ? "default" : "outline"}
@@ -758,7 +758,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                 disabled={participateMutation.isPending}
               >
                 <Users className="h-4 w-4 mr-2" />
-                {userStatus === 'attending' ? 'Attending ✓' : 'Attending'}
+                {userStatus === 'attending' ? `${t('attending')} ✓` : t('attending')}
               </Button>
             </>
           )}
@@ -771,7 +771,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
               onClick={() => setLocation(`/edit-event/${event.id}`)}
             >
               <PencilIcon className="h-4 w-4 mr-2" />
-              Edit Event
+              {t('editEvent')}
             </Button>
           )}
           
