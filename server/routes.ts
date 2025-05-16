@@ -1121,8 +1121,47 @@ export function registerRoutes(app: Express): { app: Express; httpServer: Server
       
       const interests = req.query['interests[]'] as string[] | string;
       const name = req.query.name as string;
-      const currentUserIdSource = req.user?.id || req.query.currentUserId as string;
-      const currentUserId = currentUserIdSource ? parseInt(currentUserIdSource.toString(), 10) : undefined;
+      
+      // Enhanced logic to get the current user ID from multiple sources
+      let currentUserId: number | undefined = undefined;
+      
+      // 1. First try passport authentication 
+      if (req.isAuthenticated() && req.user) {
+        currentUserId = (req.user as any).id;
+        console.log("User browse: Authenticated via passport:", currentUserId);
+      } 
+      // 2. Try to get from query parameter
+      else if (req.query.currentUserId) {
+        try {
+          currentUserId = parseInt(req.query.currentUserId as string, 10);
+          console.log("User browse: Using currentUserId from query:", currentUserId);
+        } catch (e) {
+          console.warn("Invalid currentUserId in query:", req.query.currentUserId);
+        }
+      }
+      // 3. Try to get from session ID header or cookie
+      else {
+        const headerSessionId = req.headers['x-session-id'] as string;
+        const cookieSessionId = req.cookies?.maly_session_id || req.cookies?.sessionId;
+        
+        if (headerSessionId || cookieSessionId) {
+          const sessionId = headerSessionId || cookieSessionId;
+          try {
+            const sessionResult = await db
+              .select()
+              .from(sessions)
+              .where(eq(sessions.id, sessionId))
+              .limit(1);
+              
+            if (sessionResult.length > 0 && sessionResult[0].userId) {
+              currentUserId = sessionResult[0].userId;
+              console.log("User browse: Authenticated via session ID:", currentUserId);
+            }
+          } catch (err) {
+            console.error("Error checking session for user browse:", err);
+          }
+        }
+      }
       
       // More detailed logging for debugging
       console.log(`User browse request received with city=${city}`);

@@ -1,0 +1,60 @@
+Step-by-Step Instructions
+Remove Old Session Storage Code:
+In your session management area, locate and remove any existing code that utilizes express-session with its default MemoryStore configuration. This typically includes the following:
+
+import session from "express-session";
+app.use(
+  session({
+    // Existing configuration needs to be removed
+    secret: process.env.SESSION_SECRET!,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+Install Required Packages:
+Install the packages for using PostgreSQL session management. Run this command in your terminal:
+
+npm install express-session connect-pg-simple
+Configure the Session Store:
+In your server/routes.ts (or the main entry file), immediately after creating the app instance, configure the new persistent session store using PostgreSQL. Add the following code:
+
+import session from "express-session";
+import pgSession from "connect-pg-simple";
+import { pool } from "./db"; // Adjust based on your project structure
+const PgSession = pgSession(session);
+app.use(
+  session({
+    store: new PgSession({
+      pool,                // Your PG connection pool
+      tableName: "session" // Defaults to 'session'
+    }),
+    secret: process.env.SESSION_SECRET!,  // Ensure this is set correctly
+    resave: false,                       // Don’t save unchanged sessions
+    saveUninitialized: false,            // Don’t create empty sessions
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24 * 7,   // 1 week (adjust as necessary)
+      secure: process.env.NODE_ENV === "production", 
+      httpOnly: true,
+      sameSite: "lax"
+    }
+  })
+);
+// Initialize Passport after session middleware
+import passport from "passport";
+app.use(passport.initialize());
+app.use(passport.session());
+Set Your SESSION_SECRET:
+Make sure to define a long, random string for SESSION_SECRET in your environment variables. This can be added to your .env file or Replit secrets.
+
+Verify Implementation:
+Restart your server and check that sessions persist after server rebuilds by verifying that users do not get logged out.
+
+Optional Logging:
+To assist with verifying that the new implementation works, you can add logging around req.session in your routes:
+
+app.get('/api/some-endpoint', (req, res) => {
+  console.log('Current session:', req.session);
+  // Your endpoint logic here
+});
+Summary
+These instructions guide you to remove the old session management setup and replace it with a persistent PostgreSQL-based session handling solution. This will fix the logout bug while ensuring users remain logged in across server rebuilds.

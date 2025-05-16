@@ -2,7 +2,7 @@ import passport from "passport";
 import { IVerifyOptions, Strategy as LocalStrategy } from "passport-local";
 import { type Express, Request, Response, NextFunction } from "express";
 import session from "express-session";
-import createMemoryStore from "memorystore";
+import pgSession from "connect-pg-simple";
 import { createHash } from "crypto";
 import { users, sessions } from "@db/schema";
 import { db } from "@db";
@@ -11,6 +11,7 @@ import { checkAuthentication } from './middleware/auth.middleware';
 import { upload, getFileUrl } from './utils/fileUpload';
 import fs from 'fs';
 import path from 'path';
+import pgPool from './lib/pg-pool';
 
 // Define the User type to match our schema
 type UserType = {
@@ -70,29 +71,33 @@ const crypto = {
 };
 
 export function setupAuth(app: Express) {
-  const MemoryStore = createMemoryStore(session);
-  // Use a stronger session secret combining REPL_ID and a fixed key
-  const sessionSecret = process.env.REPL_ID 
-    ? `${process.env.REPL_ID}-maly-platform-key-${process.env.REPL_OWNER || 'default'}`
-    : "maly-platform-local-development-secret-key";
+  // Use a stronger session secret combining REPL_ID and a fixed key, or use SESSION_SECRET env var
+  const sessionSecret = process.env.SESSION_SECRET || 
+    (process.env.REPL_ID 
+      ? `${process.env.REPL_ID}-maly-platform-key-${process.env.REPL_OWNER || 'default'}`
+      : "maly-platform-local-development-secret-key");
+  
+  // Initialize PostgreSQL Session store
+  const PgSession = pgSession(session);
 
   const sessionSettings: session.SessionOptions = {
+    store: new PgSession({
+      pool: pgPool,                // PostgreSQL connection pool
+      tableName: "session",        // Default is "session"
+      createTableIfMissing: true   // Create the session table if it doesn't exist
+    }),
     secret: sessionSecret,
     name: "maly_session",
-    resave: true,
+    resave: false,                // Don't save unchanged sessions
+    saveUninitialized: false,     // Don't create empty sessions
     rolling: true,
-    saveUninitialized: true,
     cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
       httpOnly: true,
-      sameSite: 'none',
+      sameSite: 'lax',
       path: '/',
-      secure: true
-    },
-    store: new MemoryStore({
-      checkPeriod: 86400000, // 24 hours
-      stale: false // Prevent stale sessions
-    }),
+      secure: process.env.NODE_ENV === "production"
+    }
   };
 
   // Always trust the proxy in Replit environment
@@ -111,6 +116,9 @@ export function setupAuth(app: Express) {
       secure: true // Needed for sameSite: 'none'
     };
   }
+  
+  // Log session configuration for debugging
+  console.log("Using PostgreSQL session store with table:", "session");
 
   app.use(session(sessionSettings));
   app.use(passport.initialize());

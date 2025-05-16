@@ -1,0 +1,101 @@
+Here’s what’s going on under the hood and why you lose your “logged-in” state whenever the server rebuilds:
+
+Current setup
+Tech stack (from your README):
+
+Backend: Node.js/Express with PostgreSQL & Drizzle
+
+Auth: Passport.js with session-based login sessions 
+GitHub
+
+Session storage today:
+By default, express-session uses an in-memory store (MemoryStore). That means:
+
+When you log in, a session entry (user ID, etc.) is kept in RAM on your server.
+
+Your browser holds only the session ID cookie (e.g. connect.sid).
+
+On rebuild, the Node process restarts, clearing all in-RAM sessions. Your browser still sends the old cookie, but the store has no matching session data—so req.user (or req.session.userId) comes back as undefined.
+
+When you log out + back in, a new session entry is created in RAM, matching a fresh cookie, and everything works again.
+
+This behavior is exactly what the express-session docs warn about:
+
+“The default server-side session storage, MemoryStore, is purposely not designed for a production environment… if the server restarts, all that information will be lost.” 
+npm
+
+How to fix it
+You need a persistent session store backed by your database (or Redis). That way, restarts don’t wipe out your logged-in users.
+
+1. Install a Postgres session store
+Since you already have PostgreSQL via Drizzle, a natural choice is connect-pg-simple.
+
+bash
+Copy
+Edit
+npm install express-session connect-pg-simple
+2. Add & configure express-session early in your app
+In your createApp() (or right after you define const app = express()), before any routes, do something like:
+
+ts
+Copy
+Edit
+import session from "express-session";
+import pgSession from "connect-pg-simple";
+// import or build your PG pool—e.g., from drizzle.config or your knex/pool setup
+import { pool } from "./db";  
+
+app.use(
+  session({
+    store: new pgSession({
+      pool,                // your PG connection pool
+      tableName: "session" // defaults to 'session'
+    }),
+    secret: process.env.SESSION_SECRET!,  // set this in .env & in Replit secrets
+    resave: false,                       // don’t save unchanged sessions
+    saveUninitialized: false,            // don’t create empty sessions
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24 * 7,   // 1 week (adjust as you like)
+      secure: process.env.NODE_ENV === "production", 
+      httpOnly: true,
+      sameSite: "lax"
+    }
+  })
+);
+
+// Initialize Passport **after** session middleware
+import passport from "passport";
+app.use(passport.initialize());
+app.use(passport.session());
+Why this order matters:
+
+express-session parses the cookie, loads req.session.
+
+passport.session() then picks up req.session.passport.user and populates req.user.
+
+If you swap them or omit the session store configuration, Passport has nothing to deserialize.
+
+3. Ensure your SESSION_SECRET is fixed
+If you ever rotate that secret, existing cookies cannot be decrypted and will likewise appear “undefined.” Always use a single, long random string in your .env (and in production env vars).
+
+After these changes
+Rebuild your server—existing sessions will be reloaded from Postgres.
+
+Your browser’s cookie still points to the same session row, so req.user stays defined.
+
+No more forced logout on every code change or redeploy.
+
+Quick checklist
+ Install & import express-session and connect-pg-simple.
+
+ Hook up your actual PG pool to the session store.
+
+ Move session(...) middleware to the top of your stack.
+
+ Call passport.initialize() then passport.session().
+
+ Set SESSION_SECRET as a stable env var.
+
+ (Optional) Add logging around req.session in your routes to verify persistence.
+
+Let me know once you’ve got a persistent store wired up, and we can fine-tune any remaining edge cases!
