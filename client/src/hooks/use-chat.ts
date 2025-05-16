@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { isEventQuery, parseFiltersFromText } from '@/utils/parseEventsFilter';
 import { fetchEvents } from '@/utils/fetchEvents';
+import { useLanguage } from '@/lib/language-context';
 
 interface ChatMessage {
   role: 'assistant' | 'user';
@@ -9,6 +10,7 @@ interface ChatMessage {
 }
 
 export function useChat() {
+  const { language } = useLanguage();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
@@ -77,7 +79,8 @@ Do NOT search the internet or mention any events not in the list above.
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
               message: cleanMessage,
-              context: eventsPrompt
+              context: eventsPrompt,
+              language: language
             }),
           });
           
@@ -107,7 +110,8 @@ Do NOT make up events or search the internet for events.
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
               message: cleanMessage,
-              context: noEventsPrompt
+              context: noEventsPrompt,
+              language: language
             }),
           });
           

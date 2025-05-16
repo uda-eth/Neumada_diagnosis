@@ -16,7 +16,7 @@ import { useTranslation } from "@/lib/translations";
 import { useLanguage } from "@/lib/language-context";
 
 // Quick prompts for the most common questions
-const getQuickPrompts = (t) => [
+const getQuickPrompts = (t: (key: string) => string) => [
   {
     text: t('bestRooftops'),
     icon: Wine,
@@ -84,7 +84,7 @@ export default function ChatbotPage() {
   return (
     <div className="min-h-screen bg-[#121212] text-white p-4">
       <GradientHeader 
-        title="Concierge"
+        title={t('concierge')}
         className="mb-4"
         showBackButton={true}
         backButtonFallbackPath="/discover"
@@ -107,7 +107,7 @@ export default function ChatbotPage() {
             {/* Quick prompts section */}
             <div className="py-4 border-b border-white/10">
               <div className="flex flex-wrap gap-2 pb-2">
-                {quickPrompts.map(({ text, icon: Icon, prompt, ariaLabel }) => (
+                {quickPrompts.map(({ text, icon: Icon, prompt, ariaLabel }: {text: string, icon: any, prompt: string, ariaLabel: string}) => (
                   <Button
                     key={text}
                     variant="outline"
@@ -197,7 +197,7 @@ export default function ChatbotPage() {
                     </div>
                     <div className="rounded-lg p-4 bg-white/5 glass flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="text-white/60">Finding local insights...</span>
+                      <span className="text-white/60">{t('findingLocalInsights')}</span>
                     </div>
                   </div>
                 )}
@@ -211,7 +211,7 @@ export default function ChatbotPage() {
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder={`Ask anything about ${selectedCity}...`}
+                placeholder={`${t('askAnythingAbout')} ${selectedCity}...`}
                 disabled={isLoading}
                 className="bg-white/5 border-white/10 glass-hover focus-visible"
                 aria-label="Type your message"
@@ -231,7 +231,7 @@ export default function ChatbotPage() {
         <Card className="bg-black/40 border-white/10">
           <CardContent className="p-4">
             <p className="text-center text-sm font-medium text-muted-foreground mb-4">
-              Premium Ad Partner
+              {t('premiumAdPartner')}
             </p>
             <img
               src="/attached_assets/Screenshot 2025-03-05 at 8.12.59 AM.png"
