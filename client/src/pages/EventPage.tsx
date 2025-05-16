@@ -704,7 +704,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                 className="bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 hover:from-teal-700 hover:via-blue-700 hover:to-purple-700 text-white whitespace-nowrap"
                 onClick={() => setLocation(`/event/${event.id}/tickets`)}
               >
-                Get Tickets
+                {t('getTickets')}
               </Button>
             ) : (
               <div className="hidden sm:flex flex-col gap-4 w-full">

@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
+import { useTranslation } from "@/lib/translations";
 
 interface EventCardProps {
   title: string;
@@ -30,6 +31,7 @@ export function EventCard({
   interestedCount,
   interestedUsers = [],
 }: EventCardProps) {
+  const { t } = useTranslation();
   return (
     <Card className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm">
       <div className="relative aspect-[4/3] overflow-hidden">
@@ -48,11 +50,11 @@ export function EventCard({
             </div>
             <div className="text-right text-white z-10">
               {price === "0" ? (
-                <p className="font-semibold text-white text-lg">Free</p>
+                <p className="font-semibold text-white text-lg">{t('free')}</p>
               ) : (
                 <>
                   <p className="font-semibold text-white text-lg">${price}</p>
-                  <p className="text-sm text-white/60">per person</p>
+                  <p className="text-sm text-white/60">{t('perPerson')}</p>
                 </>
               )}
             </div>
