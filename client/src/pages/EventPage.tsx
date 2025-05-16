@@ -807,7 +807,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
 
         {/* Description */}
         <div className="space-y-2">
-          <h2 className="text-lg font-semibold">About this event</h2>
+          <h2 className="text-lg font-semibold">{t('about')} this event</h2>
           <p className="text-white/80 whitespace-pre-wrap text-sm sm:text-base">
             {event.description}
           </p>

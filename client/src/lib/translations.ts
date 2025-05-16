@@ -174,8 +174,6 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     eventsFound: 'events found',
     searchByVibe: 'Search by Vibe',
     eventsThisMonth: 'Events this month',
-    free: 'Free',
-    perPerson: 'per person',
     cities: 'Cities',
     vibe: 'Vibe',
     allCities: 'All Cities',
