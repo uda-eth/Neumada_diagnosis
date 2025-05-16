@@ -239,7 +239,7 @@ export default function CreateEventPage() {
       <ScrollArea className="flex-1" style={{ height: 'calc(100vh - 140px)' }}>
         <div className="container mx-auto px-4 py-8 space-y-8 max-w-2xl">
             <div className="space-y-4">
-              <p className="text-sm text-white/60">Let's Get Started!</p>
+              <p className="text-sm text-white/60">{t('letsGetStarted')}</p>
               <div className="relative aspect-[3/2] bg-white/5 rounded-lg overflow-hidden">
                 {imagePreview ? (
                   <img

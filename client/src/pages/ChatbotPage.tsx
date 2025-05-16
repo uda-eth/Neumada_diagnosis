@@ -16,23 +16,29 @@ import { useTranslation } from "@/lib/translations";
 import { useLanguage } from "@/lib/language-context";
 
 // Quick prompts for the most common questions
-const getQuickPrompts = (t: (key: string) => string) => [
+const getQuickPrompts = (t: (key: string) => string, language: string) => [
   {
     text: t('bestRooftops'),
     icon: Wine,
-    prompt: "What are the best rooftop bars and restaurants with views?",
+    prompt: language === 'es' 
+      ? "¿Cuáles son los mejores bares y restaurantes en azoteas con vistas?" 
+      : "What are the best rooftop bars and restaurants with views?",
     ariaLabel: "Find best rooftops"
   },
   {
     text: t('bestDateSpots'),
     icon: HeartHandshake,
-    prompt: "What are the most romantic and impressive date spots?",
+    prompt: language === 'es'
+      ? "¿Cuáles son los lugares más románticos e impresionantes para una cita?"
+      : "What are the most romantic and impressive date spots?",
     ariaLabel: "Find best date spots"
   },
   {
     text: t('bestDayTrips'),
     icon: Plane,
-    prompt: "What are the best day trips from here?",
+    prompt: language === 'es'
+      ? "¿Cuáles son las mejores excursiones de un día desde aquí?"
+      : "What are the best day trips from here?",
     ariaLabel: "Find best day trips"
   }
 ];
@@ -56,9 +62,10 @@ export default function ChatbotPage() {
   const { language } = useLanguage();
   const [input, setInput] = useState("");
   const [selectedCity, setSelectedCity] = useState("Mexico City");
-  const quickPrompts = getQuickPrompts(t);
+  const quickPrompts = getQuickPrompts(t, language);
   
   // Initialize messages with translated greeting
+  // Update quick prompts when language changes
   useEffect(() => {
     if (messages.length === 0) {
       setMessages([
