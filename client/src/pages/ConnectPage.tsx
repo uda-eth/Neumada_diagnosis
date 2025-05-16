@@ -281,7 +281,7 @@ export function ConnectPage() {
   return (
     <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
       <GradientHeader
-        title="Connect"
+        title={t('connect')}
         backButtonFallbackPath="/discover"
       >
         <div className="flex items-center gap-1 sm:gap-4 flex-shrink-0">

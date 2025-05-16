@@ -82,6 +82,7 @@ type TranslationKey =
   | 'askAnythingAbout'
   | 'conciergeGreeting'
   | 'premiumAdPartner'
+  | 'letsGetStarted'
   | 'Party & Nightlife'
   | 'Fashion & Style'
   | 'Networking & Business'
