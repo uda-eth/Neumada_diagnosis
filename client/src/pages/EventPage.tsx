@@ -812,7 +812,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
             className={`${user && user.id !== event.creatorId ? 'flex-none' : 'flex-1'} whitespace-nowrap max-w-fit`}
           >
             <Share2 className="h-4 w-4 mr-2" />
-            Share
+            {t('share')}
           </ReferralShareButton>
         </div>
         

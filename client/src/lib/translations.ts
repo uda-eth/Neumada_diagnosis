@@ -200,11 +200,13 @@ type TranslationKey =
   | 'youAreNowInterested'
   | 'noLongerParticipating'
   | 'successfullyUpdated'
-  | 'proceedToPayment';
+  | 'proceedToPayment'
+  | 'login';
 
 const translations: Record<string, Record<TranslationKey, string>> = {
   en: {
     discover: 'Discover',
+    login: 'Login',
     connect: 'Connect',
     create: 'Create',
     make: 'Make',
@@ -512,27 +514,8 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     price: 'Precio',
     recommendedForYou: 'Recomendado Para Ti',
     trending: 'Tendencia',
-    // Event Page Translations
-    illBeAttending: 'Asistiré',
-    imAttending: 'Estoy asistiendo ✓',
-    imInterested: 'Estoy interesado/a ✓',
-    share: 'Compartir',
-    eventOrganizer: 'Organizador del Evento',
-    purchaseTickets: 'Comprar Entradas',
-    ticketQuantity: 'Cantidad de Entradas',
-    ticketsAvailable: 'entradas disponibles',
-    perTicket: 'por entrada',
-    subtotal: 'Subtotal',
-    serviceFee: 'Cargo por Servicio (5%)',
-    total: 'Total',
-    backToEvent: 'Volver al Evento',
-    qrCodeTicket: 'Después del pago, recibirás un código QR que se puede utilizar para la entrada al evento.',
-    loading: 'Cargando...',
-    youAreNowAttending: '¡Ahora estás asistiendo a este evento!',
-    youAreNowInterested: 'Ahora estás interesado/a en este evento',
-    noLongerParticipating: 'Ya no estás participando en este evento',
-    successfullyUpdated: 'Actualizado con éxito',
-    proceedToPayment: 'Proceder al Pago',
+    // Already added translations above, removing duplicates
+    login: 'Iniciar Sesión',
     // Profile Edit Page Translations
     fullName: 'Nombre Completo',
     username: 'Nombre de Usuario',
@@ -580,12 +563,17 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     'Default (purple): Selected as your preferred vibe': 'Predeterminado (morado): Seleccionado como tu ambiente preferido',
     'Secondary (gray): Selected as your current mood': 'Secundario (gris): Seleccionado como tu estado actual',
     'Ringed: Selected as both preferred vibe and current mood': 'Con borde: Seleccionado como ambiente preferido y estado actual',
-    // Event Page Translations
+    // Add any missing event translations here
     illBeAttending: 'Asistiré',
     imAttending: 'Estoy asistiendo ✓',
     imInterested: 'Estoy interesado/a ✓',
-    share: 'Compartir',
-    eventOrganizer: 'Organizador del Evento',
+    loading: 'Cargando...',
+    youAreNowAttending: '¡Ahora estás asistiendo a este evento!',
+    youAreNowInterested: 'Ahora estás interesado/a en este evento',
+    noLongerParticipating: 'Ya no estás participando en este evento',
+    successfullyUpdated: 'Actualizado con éxito',
+    proceedToPayment: 'Proceder al Pago',
+    login: 'Iniciar Sesión',
     purchaseTickets: 'Comprar Entradas',
     ticketQuantity: 'Cantidad de Entradas',
     ticketsAvailable: 'entradas disponibles',
@@ -595,12 +583,7 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     total: 'Total',
     backToEvent: 'Volver al Evento',
     qrCodeTicket: 'Después del pago, recibirás un código QR que se puede utilizar para la entrada al evento.',
-    loading: 'Cargando...',
-    youAreNowAttending: '¡Ahora estás asistiendo a este evento!',
-    youAreNowInterested: 'Ahora estás interesado/a en este evento',
-    noLongerParticipating: 'Ya no estás participando en este evento',
-    successfullyUpdated: 'Actualizado con éxito',
-    proceedToPayment: 'Proceder al Pago'
+    eventOrganizer: 'Organizador del Evento'
   }
 };
 
