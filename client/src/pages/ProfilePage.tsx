@@ -83,6 +83,7 @@ export default function ProfilePage() {
   const [isUpdatingMood, setIsUpdatingMood] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t, language } = useTranslation();
   
   // Available moods for selection
   const moods = VIBE_AND_MOOD_TAGS;
@@ -370,14 +371,14 @@ export default function ProfilePage() {
                   {profileData.location && (
                     <Badge className="bg-white/10 hover:bg-white/20 text-white py-1 px-2 text-xs backdrop-blur-sm">
                       <MapPin className="h-3 w-3 mr-1" />
-                      {profileData.location}
+                      {t(profileData.location)}
                     </Badge>
                   )}
                   
                   {profileData.profession && (
                     <Badge className="bg-white/10 hover:bg-white/20 text-white py-1 px-2 text-xs backdrop-blur-sm">
                       <Briefcase className="h-3 w-3 mr-1" />
-                      {profileData.profession}
+                      {t(profileData.profession)}
                     </Badge>
                   )}
                 </div>
@@ -395,7 +396,7 @@ export default function ProfilePage() {
                     onClick={() => setLocation('/profile-edit')}
                   >
                     <Edit3 className="h-4 w-4" />
-                    Edit Profile
+                    {t('editProfile')}
                   </Button>
                 )}
                 
@@ -409,7 +410,7 @@ export default function ProfilePage() {
                   className="gap-2"
                 >
                   <Share2 className="h-4 w-4" />
-                  Share Profile
+                  {t('shareProfile')}
                 </ReferralShareButton>
                 
                 {/* Connection Button - only show if viewing profile of other user and user is logged in */}
