@@ -93,6 +93,7 @@ export default function DiscoverPage() {
 
   // Date utilities for categorizing events
   const now = new Date();
+  const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
   
   // Reset hours to start of day for proper comparison
   const startOfToday = new Date(now);
@@ -102,29 +103,113 @@ export default function DiscoverPage() {
   const endOfToday = new Date(startOfToday);
   endOfToday.setHours(23, 59, 59, 999);
   
-  // Calculate start/end of week, month
-  const endOfWeek = new Date(startOfToday);
-  endOfWeek.setDate(startOfToday.getDate() + 7);
+  // Calculate THIS WEEK (Monday-Friday of current week)
+  // If today is a weekend day, thisWeek will be empty
+  const startOfThisWeek = new Date(startOfToday);
+  const endOfThisWeek = new Date(startOfToday);
+  
+  // Set to Monday of current week if we're before or on Friday
+  if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+    // Only include days after today up to Friday
+    // End of this week is Friday of current week
+    const daysUntilFriday = 5 - dayOfWeek;
+    endOfThisWeek.setDate(startOfToday.getDate() + daysUntilFriday);
+    endOfThisWeek.setHours(23, 59, 59, 999);
+  } else {
+    // If today is weekend, thisWeek is empty (set end before start)
+    endOfThisWeek.setDate(startOfToday.getDate() - 1);
+  }
+  
+  // Calculate THIS WEEKEND (Saturday-Sunday of current week)
+  const startOfThisWeekend = new Date(startOfToday);
+  const endOfThisWeekend = new Date(startOfToday);
+  
+  if (dayOfWeek < 6) { // Before Saturday
+    // Start of this weekend is upcoming Saturday
+    startOfThisWeekend.setDate(startOfToday.getDate() + (6 - dayOfWeek));
+    startOfThisWeekend.setHours(0, 0, 0, 0);
+    
+    // End of this weekend is upcoming Sunday
+    endOfThisWeekend.setDate(startOfToday.getDate() + (7 - dayOfWeek));
+    endOfThisWeekend.setHours(23, 59, 59, 999);
+  } else if (dayOfWeek === 6) { // Today is Saturday
+    // Start of this weekend is today
+    // End of this weekend is tomorrow (Sunday)
+    endOfThisWeekend.setDate(startOfToday.getDate() + 1);
+    endOfThisWeekend.setHours(23, 59, 59, 999);
+  } else { // Today is Sunday
+    // Today is the last day of this weekend
+    endOfThisWeekend.setHours(23, 59, 59, 999);
+  }
+  
+  // Calculate NEXT WEEK (Monday-Friday of next week)
+  const startOfNextWeek = new Date(startOfToday);
+  const endOfNextWeek = new Date(startOfToday);
+  
+  // Find days until next Monday
+  let daysUntilNextMonday = (8 - dayOfWeek) % 7;
+  if (daysUntilNextMonday === 0) daysUntilNextMonday = 7; // If today is Monday, go to next Monday
+  
+  // Start of next week is next Monday
+  startOfNextWeek.setDate(startOfToday.getDate() + daysUntilNextMonday);
+  startOfNextWeek.setHours(0, 0, 0, 0);
+  
+  // End of next week is next Friday
+  endOfNextWeek.setDate(startOfNextWeek.getDate() + 4); // Monday + 4 days = Friday
+  endOfNextWeek.setHours(23, 59, 59, 999);
+  
+  // Calculate NEXT WEEKEND (Saturday-Sunday of next week)
+  const startOfNextWeekend = new Date(endOfNextWeek);
+  startOfNextWeekend.setDate(endOfNextWeek.getDate() + 1); // Friday + 1 = Saturday
+  startOfNextWeekend.setHours(0, 0, 0, 0);
+  
+  const endOfNextWeekend = new Date(startOfNextWeekend);
+  endOfNextWeekend.setDate(startOfNextWeekend.getDate() + 1); // Saturday + 1 = Sunday
+  endOfNextWeekend.setHours(23, 59, 59, 999);
+  
+  // THIS MONTH is everything after next weekend up to 30 days from today
+  const startOfRestOfMonth = new Date(endOfNextWeekend);
+  startOfRestOfMonth.setDate(endOfNextWeekend.getDate() + 1);
+  startOfRestOfMonth.setHours(0, 0, 0, 0);
   
   const endOfMonth = new Date(startOfToday);
   endOfMonth.setDate(startOfToday.getDate() + 30);
 
   // Group events by date categories
   const groupedEvents = {
-    today: filteredEvents.filter(event => {
+    todayOnly: filteredEvents.filter(event => {
       const eventDate = new Date(event.date);
+      // "TODAY" - Events happening only today
       return eventDate >= startOfToday && eventDate <= endOfToday;
     }),
-    week: filteredEvents.filter(event => {
+    thisWeek: filteredEvents.filter(event => {
       const eventDate = new Date(event.date);
-      return eventDate > endOfToday && eventDate < endOfWeek;
+      // "THIS WEEK" - Weekdays (Mon-Fri) of current week, excluding today
+      return eventDate > endOfToday && eventDate <= endOfThisWeek;
+    }),
+    thisWeekend: filteredEvents.filter(event => {
+      const eventDate = new Date(event.date);
+      // "THIS WEEKEND" - Saturday and Sunday of current week
+      return eventDate >= startOfThisWeekend && eventDate <= endOfThisWeekend;
+    }),
+    nextWeek: filteredEvents.filter(event => {
+      const eventDate = new Date(event.date);
+      // "NEXT WEEK" - Weekdays (Mon-Fri) of next week
+      return eventDate >= startOfNextWeek && eventDate <= endOfNextWeek;
+    }),
+    nextWeekend: filteredEvents.filter(event => {
+      const eventDate = new Date(event.date);
+      // "NEXT WEEKEND" - Saturday and Sunday of next week
+      return eventDate >= startOfNextWeekend && eventDate <= endOfNextWeekend;
     }),
     month: filteredEvents.filter(event => {
       const eventDate = new Date(event.date);
-      return eventDate >= endOfWeek && eventDate < endOfMonth;
+      // "THIS MONTH" - Events after next weekend but within 30 days
+      return eventDate > endOfNextWeekend && eventDate < endOfMonth;
     }),
     upcoming: filteredEvents.filter(event => {
       const eventDate = new Date(event.date);
+      // "UPCOMING" - Events more than 30 days from now
       return eventDate >= endOfMonth;
     })
   };
@@ -375,13 +460,13 @@ export default function DiscoverPage() {
             ) : (
               <div className="space-y-10">
                 {/* Today's Events Section */}
-                {groupedEvents.today.length > 0 && (
+                {groupedEvents.todayOnly.length > 0 && (
                   <div className="space-y-4">
                     <div className="py-2">
-                      <h2 className="text-base md:text-lg font-semibold text-gray-300">{t('thisWeekend')}</h2>
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">TODAY</h2>
                     </div>
                     <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
-                      {groupedEvents.today.map((event: any) => (
+                      {groupedEvents.todayOnly.map((event: any) => (
                         <Card 
                           key={event.id} 
                           className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg h-auto max-h-[calc(100vh-4rem)]"
@@ -444,14 +529,102 @@ export default function DiscoverPage() {
                   </div>
                 )}
                 
-                {/* Events This Week Section */}
-                {groupedEvents.week.length > 0 && (
+                {/* This Week Section */}
+                {groupedEvents.thisWeek.length > 0 && (
                   <div className="space-y-4">
                     <div className="py-2">
-                      <h2 className="text-base md:text-lg font-semibold text-gray-300">{t('nextWeek')}</h2>
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">THIS WEEK</h2>
                     </div>
                     <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
-                      {groupedEvents.week.map((event: any) => (
+                      {groupedEvents.thisWeek.map((event: any) => (
+                        <Card 
+                          key={event.id} 
+                          className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg h-auto max-h-[calc(100vh-4rem)]"
+                          onClick={() => setLocation(`/event/${event.id}`)}
+                        >
+                          <div className="relative aspect-[1/2] sm:aspect-[1/2] overflow-hidden">
+                            <img
+                              src={event.image || "/placeholder-event.jpg"}
+                              alt={event.title}
+                              className="object-cover w-full h-full"
+                              loading="lazy"
+                            />
+                            <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 md:p-4 bg-gradient-to-t from-black/80 to-transparent">
+                              <div className="flex items-center justify-between">
+                                <Badge variant="outline" className="bg-black/30 text-[8px] sm:text-xs text-white px-1.5 py-0 sm:px-2 sm:py-0.5 border-white/10">
+                                  {format(new Date(event.date), 'EEE, MMM d')}
+                                </Badge>
+                                {event.price && event.price !== "0" ? (
+                                  <p className="font-medium text-white text-xs sm:text-sm">${event.price}</p>
+                                ) : (
+                                  <Badge variant="outline" className="bg-primary/20 text-[8px] sm:text-xs px-1.5 py-0 sm:px-2 sm:py-0.5 border-primary/10">
+                                    {t('free')}
+                                  </Badge>
+                                )}
+                              </div>
+                              <h3 className="font-semibold text-white text-xs sm:text-sm md:text-base mt-1 sm:mt-2 line-clamp-2">
+                                {event.title}
+                              </h3>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* This Weekend Section */}
+                {groupedEvents.thisWeekend.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="py-2">
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">THIS WEEKEND</h2>
+                    </div>
+                    <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+                      {groupedEvents.thisWeekend.map((event: any) => (
+                        <Card 
+                          key={event.id} 
+                          className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg h-auto max-h-[calc(100vh-4rem)]"
+                          onClick={() => setLocation(`/event/${event.id}`)}
+                        >
+                          <div className="relative aspect-[1/2] sm:aspect-[1/2] overflow-hidden">
+                            <img
+                              src={event.image || "/placeholder-event.jpg"}
+                              alt={event.title}
+                              className="object-cover w-full h-full"
+                              loading="lazy"
+                            />
+                            <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 md:p-4 bg-gradient-to-t from-black/80 to-transparent">
+                              <div className="flex items-center justify-between">
+                                <Badge variant="outline" className="bg-black/30 text-[8px] sm:text-xs text-white px-1.5 py-0 sm:px-2 sm:py-0.5 border-white/10">
+                                  {format(new Date(event.date), 'EEE, MMM d')}
+                                </Badge>
+                                {event.price && event.price !== "0" ? (
+                                  <p className="font-medium text-white text-xs sm:text-sm">${event.price}</p>
+                                ) : (
+                                  <Badge variant="outline" className="bg-primary/20 text-[8px] sm:text-xs px-1.5 py-0 sm:px-2 sm:py-0.5 border-primary/10">
+                                    {t('free')}
+                                  </Badge>
+                                )}
+                              </div>
+                              <h3 className="font-semibold text-white text-xs sm:text-sm md:text-base mt-1 sm:mt-2 line-clamp-2">
+                                {event.title}
+                              </h3>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Events This Week Section */}
+                {groupedEvents.nextWeek.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="py-2">
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">NEXT WEEK</h2>
+                    </div>
+                    <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+                      {groupedEvents.nextWeek.map((event: any) => (
                         <Card 
                           key={event.id} 
                           className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg h-auto max-h-[calc(100vh-4rem)]"
@@ -514,11 +687,81 @@ export default function DiscoverPage() {
                   </div>
                 )}
 
-                {/* Events This Month Section */}
+                
+                {/* Next Weekend Section */}
+                {groupedEvents.nextWeekend.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="py-2">
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">NEXT WEEKEND</h2>
+                    </div>
+                    <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+                      {groupedEvents.nextWeekend.map((event: any) => (
+                        <Card 
+                          key={event.id} 
+                          className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg h-auto max-h-[calc(100vh-4rem)]"
+                          onClick={() => setLocation(`/event/${event.id}`)}
+                        >
+                          <div className="relative aspect-[1/2] sm:aspect-[1/2] overflow-hidden">
+                            <img
+                              src={event.image || "/placeholder-event.jpg"}
+                              alt={event.title}
+                              className="object-cover w-full h-full"
+                              loading="lazy"
+                            />
+                            <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 md:p-4 bg-gradient-to-t from-black/80 to-transparent">
+                              <div className="flex items-center justify-between">
+                                <div className="max-w-[70%]">
+                                  <p className="text-[9px] sm:text-xs md:text-sm font-medium text-white/60">
+                                    {format(new Date(event.date), "MMM d, h:mm a")}
+                                  </p>
+                                  <h3 className="text-xs sm:text-sm md:text-lg font-semibold text-white mt-0.5 truncate">{event.title}</h3>
+                                </div>
+                                <div className="text-right text-white z-10">
+                                  {event.price === "0" ? (
+                                    <p className="font-semibold text-white text-xs sm:text-sm md:text-lg">Free</p>
+                                  ) : (
+                                    <>
+                                      <p className="font-semibold text-white text-xs sm:text-sm md:text-lg">${event.price}</p>
+                                      <p className="text-[8px] sm:text-xs md:text-sm text-white/60">per person</p>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <CardContent className="p-2 sm:p-3 md:p-4">
+                            <div className="flex items-center justify-between flex-wrap gap-y-1 sm:gap-y-2">
+                              <div className="flex items-center space-x-1 min-w-0 max-w-[50%]">
+                                <MapPin className="h-2.5 w-2.5 sm:h-3 md:h-4 sm:w-3 md:w-4 flex-shrink-0 text-muted-foreground" />
+                                <span className="text-[10px] sm:text-xs md:text-sm text-muted-foreground truncate">
+                                  {event.location}
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-1 min-w-0 max-w-[50%]">
+                                <Calendar className="h-2.5 w-2.5 sm:h-3 md:h-4 sm:w-3 md:w-4 flex-shrink-0 text-muted-foreground" />
+                                <span className="text-[10px] sm:text-xs md:text-sm text-muted-foreground truncate">
+                                  {event.category}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex flex-wrap gap-1 mt-1 sm:mt-2 md:mt-3">
+                              {event.tags?.slice(0, 2).map((tag: string, index: number) => (
+                                <Badge key={index} variant="secondary" className="rounded px-1 py-0 text-[8px] sm:text-[10px] md:text-xs">{tag}</Badge>
+                              ))}
+                            </div>
+                            <h3 className="text-xs sm:text-sm md:text-base font-semibold mt-1 sm:mt-2 md:mt-3 line-clamp-2">{event.title}</h3>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+{/* Events This Month Section */}
                 {groupedEvents.month.length > 0 && (
                   <div className="space-y-4">
                     <div className="py-2">
-                      <h2 className="text-base md:text-lg font-semibold text-gray-300">{t('eventsThisMonth')}</h2>
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">THIS MONTH</h2>
                     </div>
                     <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                       {groupedEvents.month.map((event: any) => (
@@ -577,7 +820,7 @@ export default function DiscoverPage() {
                 {groupedEvents.upcoming.length > 0 && (
                   <div className="space-y-4">
                     <div className="py-2">
-                      <h2 className="text-base md:text-lg font-semibold text-gray-300">{t('eventsThisMonth')}</h2>
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">UPCOMING</h2>
                     </div>
                     <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                       {groupedEvents.upcoming.map((event: any) => (
@@ -633,8 +876,11 @@ export default function DiscoverPage() {
                 )}
 
                 {/* No Events Message */}
-                {groupedEvents.today.length === 0 && 
-                 groupedEvents.week.length === 0 && 
+                {groupedEvents.todayOnly.length === 0 && 
+                 groupedEvents.thisWeek.length === 0 &&
+                 groupedEvents.nextWeekend.length === 0 &&
+                 groupedEvents.thisWeekend.length === 0 &&
+                 groupedEvents.nextWeek.length === 0 && 
                  groupedEvents.month.length === 0 && 
                  groupedEvents.upcoming.length === 0 && (
                   <div className="flex flex-col items-center justify-center p-8 text-center">
