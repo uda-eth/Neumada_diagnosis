@@ -463,9 +463,9 @@ export default function ProfileEditPage() {
                     name="raisedLocation"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Raised</FormLabel>
+                        <FormLabel>{t("raised")}</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Where were you raised?" className="bg-white/5 border-white/10" />
+                          <Input {...field} placeholder={t("whereWereYouRaised")} className="bg-white/5 border-white/10" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -477,9 +477,9 @@ export default function ProfileEditPage() {
                     name="livedLocation"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Lived</FormLabel>
+                        <FormLabel>{t("lived")}</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="A meaningful place you've lived" className="bg-white/5 border-white/10" />
+                          <Input {...field} placeholder={t("meaningfulPlaceLived")} className="bg-white/5 border-white/10" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -493,10 +493,10 @@ export default function ProfileEditPage() {
                       <FormItem>
                         <FormLabel className="flex items-center gap-2">
                           <Globe className="w-4 h-4" />
-                          Upcoming
+                          {t("upcomingLocation")}
                         </FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Where are you going next?" className="bg-white/5 border-white/10" />
+                          <Input {...field} placeholder={t("whereAreYouGoingNext")} className="bg-white/5 border-white/10" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -507,14 +507,14 @@ export default function ProfileEditPage() {
 
               {/* Vibe and Mood */}
               <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Vibe and Mood</h2>
+                <h2 className="text-xl font-semibold mb-4">{t("vibeAndMood")}</h2>
                 <div className="space-y-6">
                   <div>
                     <FormLabel className="flex items-center gap-2">
                       <Smile className="w-4 h-4" /> 
-                      Vibe and Mood Tags
+                      {t("vibeAndMood")}
                     </FormLabel>
-                    <FormDescription>Select tags that represent your vibe and mood</FormDescription>
+                    <FormDescription>{t("selectVibeAndMood")}</FormDescription>
                     <div className="flex flex-wrap gap-2 mt-2">
                       {VIBE_AND_MOOD_TAGS.map(tag => {
                         const isInterest = selectedInterests.includes(tag);
@@ -582,13 +582,13 @@ export default function ProfileEditPage() {
                   variant="outline" 
                   onClick={() => setLocation(`/profile/${user?.username}`)}
                 >
-                  Cancel
+                  {t("cancel")}
                 </Button>
                 <Button 
                   type="submit" 
                   disabled={isLoading}
                 >
-                  {isLoading ? "Saving..." : "Save Changes"}
+                  {isLoading ? t("saving") : t("saveChanges")}
                 </Button>
               </div>
             </form>
