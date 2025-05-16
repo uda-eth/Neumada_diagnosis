@@ -102,6 +102,12 @@ export default function DiscoverPage() {
   const endOfToday = new Date(startOfToday);
   endOfToday.setHours(23, 59, 59, 999);
   
+  // Calculate end of this week (end of the current week - next Sunday 23:59:59)
+  const endOfThisWeek = new Date(startOfToday);
+  const daysUntilSunday = 7 - now.getDay();
+  endOfThisWeek.setDate(startOfToday.getDate() + daysUntilSunday);
+  endOfThisWeek.setHours(23, 59, 59, 999);
+  
   // Calculate weekend boundaries (Friday, Saturday, Sunday)
   const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
   
@@ -132,17 +138,22 @@ export default function DiscoverPage() {
   const groupedEvents = {
     todayOnly: filteredEvents.filter(event => {
       const eventDate = new Date(event.date);
-      // "TODAY'S EVENTS" - Events happening only today
+      // "TODAY" - Events happening only today
       return eventDate >= startOfToday && eventDate <= endOfToday;
+    }),
+    thisWeek: filteredEvents.filter(event => {
+      const eventDate = new Date(event.date);
+      // "THIS WEEK" - Events happening after today but within the current week (until Sunday)
+      return eventDate > endOfToday && eventDate <= endOfThisWeek;
     }),
     weekend: filteredEvents.filter(event => {
       const eventDate = new Date(event.date);
-      // "This Weekend" - Events happening after today but up to and including Sunday
+      // "THIS WEEKEND" - Events happening during the upcoming weekend (Fri-Sun)
       return eventDate > endOfToday && eventDate <= endOfWeekend;
     }),
     week: filteredEvents.filter(event => {
       const eventDate = new Date(event.date);
-      // "Next Week" - Events happening after the weekend but within the next 7 days after that
+      // "NEXT WEEK" - Events happening after the weekend but within the next 7 days after that
       return eventDate > endOfWeekend && eventDate <= endOfNextWeek;
     }),
     month: filteredEvents.filter(event => {
@@ -406,7 +417,7 @@ export default function DiscoverPage() {
                 {groupedEvents.todayOnly.length > 0 && (
                   <div className="space-y-4">
                     <div className="py-2">
-                      <h2 className="text-base md:text-lg font-semibold text-gray-300">TODAY'S EVENTS</h2>
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">TODAY</h2>
                     </div>
                     <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                       {groupedEvents.todayOnly.map((event: any) => (
@@ -466,6 +477,50 @@ export default function DiscoverPage() {
                               ))}
                             </div>
                           </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* This Week Section */}
+                {groupedEvents.thisWeek.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="py-2">
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">THIS WEEK</h2>
+                    </div>
+                    <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+                      {groupedEvents.thisWeek.map((event: any) => (
+                        <Card 
+                          key={event.id} 
+                          className="overflow-hidden bg-black/40 border-white/10 backdrop-blur-sm cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg h-auto max-h-[calc(100vh-4rem)]"
+                          onClick={() => setLocation(`/event/${event.id}`)}
+                        >
+                          <div className="relative aspect-[1/2] sm:aspect-[1/2] overflow-hidden">
+                            <img
+                              src={event.image || "/placeholder-event.jpg"}
+                              alt={event.title}
+                              className="object-cover w-full h-full"
+                              loading="lazy"
+                            />
+                            <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 md:p-4 bg-gradient-to-t from-black/80 to-transparent">
+                              <div className="flex items-center justify-between">
+                                <Badge variant="outline" className="bg-black/30 text-[8px] sm:text-xs text-white px-1.5 py-0 sm:px-2 sm:py-0.5 border-white/10">
+                                  {format(new Date(event.date), 'EEE, MMM d')}
+                                </Badge>
+                                {event.price && event.price !== "0" ? (
+                                  <p className="font-medium text-white text-xs sm:text-sm">${event.price}</p>
+                                ) : (
+                                  <Badge variant="outline" className="bg-primary/20 text-[8px] sm:text-xs px-1.5 py-0 sm:px-2 sm:py-0.5 border-primary/10">
+                                    {t('free')}
+                                  </Badge>
+                                )}
+                              </div>
+                              <h3 className="font-semibold text-white text-xs sm:text-sm md:text-base mt-1 sm:mt-2 line-clamp-2">
+                                {event.title}
+                              </h3>
+                            </div>
+                          </div>
                         </Card>
                       ))}
                     </div>
@@ -706,6 +761,7 @@ export default function DiscoverPage() {
 
                 {/* No Events Message */}
                 {groupedEvents.todayOnly.length === 0 && 
+                 groupedEvents.thisWeek.length === 0 &&
                  groupedEvents.weekend.length === 0 &&
                  groupedEvents.week.length === 0 && 
                  groupedEvents.month.length === 0 && 
