@@ -588,7 +588,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
           {/* Attending Users */}
           <div className="space-y-3">
             <h3 className="text-sm font-medium text-white/60">
-              Attending
+              {t('attending')}
             </h3>
             <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
               <div className="flex -space-x-2 sm:-space-x-3" onClick={() => handleViewAllUsers('attending')} style={{cursor: 'pointer'}}>
@@ -625,7 +625,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
           {/* Interested Users */}
           <div className="space-y-3">
             <h3 className="text-sm font-medium text-white/60">
-              Interested
+              {t('interested')}
             </h3>
             <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
               <div className="flex -space-x-2 sm:-space-x-3" onClick={() => handleViewAllUsers('interested')} style={{cursor: 'pointer'}}>
@@ -653,7 +653,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                   className="text-xs sm:text-sm text-white/60 hover:text-white h-8 px-2 sm:px-3"
                   onClick={() => handleViewAllUsers('interested')}
                 >
-                  +{interestedCount - 5} more
+                  +{interestedCount - 5} {t('more')}
                 </Button>
               )}
             </div>

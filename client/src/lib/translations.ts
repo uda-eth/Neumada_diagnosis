@@ -79,6 +79,7 @@ type TranslationKey =
   | 'about'
   | 'eventSchedule'
   | 'attendees'
+  | 'more'
   | 'addItem'
   | 'startTime'
   | 'endTime'
@@ -246,7 +247,8 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     getTickets: 'Get Tickets',
     about: 'About',
     eventSchedule: 'Event Schedule',
-    attendees: 'Attendees'
+    attendees: 'Attendees',
+    more: 'more'
   },
   es: {
     discover: 'Descubrir',
@@ -364,7 +366,8 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     getTickets: 'Obtener Entradas',
     about: 'Acerca de',
     eventSchedule: 'Programa del Evento',
-    attendees: 'Asistentes'
+    attendees: 'Asistentes',
+    more: 'más'
   }
 };
 
