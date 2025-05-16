@@ -740,7 +740,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                   onClick={() => handleParticipate('attending')}
                   disabled={participateMutation.isPending}
                 >
-                  {userStatus === 'attending' ? "I'm attending ✓" : "I'll be attending"}
+                  {userStatus === 'attending' ? t('imAttending') : t('illBeAttending')}
                 </Button>
                 <Button 
                   variant="outline" 
@@ -748,7 +748,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                   onClick={() => handleParticipate('interested')}
                   disabled={participateMutation.isPending}
                 >
-                  {userStatus === 'interested' ? "I'm interested ✓" : "I'm interested"}
+                  {userStatus === 'interested' ? t('imInterested') : t('interested')}
                 </Button>
                 {userStatus !== 'not_attending' && (
                   <Button 
@@ -947,7 +947,7 @@ const handleUserClick = (userIdOrUsername: number | string, username?: string) =
                 onClick={() => setLocation(`/event/${id}/tickets`)}
                 disabled={participateMutation.isPending}
               >
-                {`I'll be attending${event.price && parseFloat(event.price.toString()) > 0 ? ` • $${event.price}` : ''}`}
+                {`${t('illBeAttending')}${event.price && parseFloat(event.price.toString()) > 0 ? ` • $${event.price}` : ''}`}
               </Button>
             </div>
           </div>

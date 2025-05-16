@@ -2,15 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { loadStripe } from '@stripe/stripe-js';
+import type { Stripe } from '@stripe/stripe-js';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { useUser } from '@/hooks/use-user';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/lib/language-context';
 
 // Initialize Stripe Promise
-let stripePromise: Promise<Stripe | null>;
+let stripePromise: Promise<any | null>;
 const getStripe = () => {
   if (!stripePromise) {
     const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
@@ -45,6 +47,7 @@ export default function EventTicketsPage() {
   const [quantity, setQuantity] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   // Fetch event details
   const { data: event, isLoading, isError } = useQuery<Event>({
@@ -165,7 +168,7 @@ export default function EventTicketsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black text-white/60">
         <Loader2 className="h-8 w-8 animate-spin mr-2" />
-        <span>Loading event details...</span>
+        <span>{t('loading')}</span>
       </div>
     );
   }
@@ -176,7 +179,7 @@ export default function EventTicketsPage() {
         <p className="text-red-500 mb-4">Error loading event details</p>
         <Button onClick={() => setLocation(`/event/${id}`)}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Return to Event
+          {t('backToEvent')}
         </Button>
       </div>
     );
