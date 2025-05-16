@@ -116,6 +116,9 @@ export function setupAuth(app: Express) {
       secure: true // Needed for sameSite: 'none'
     };
   }
+  
+  // Log session configuration for debugging
+  console.log("Using PostgreSQL session store with table:", "session");
 
   app.use(session(sessionSettings));
   app.use(passport.initialize());
