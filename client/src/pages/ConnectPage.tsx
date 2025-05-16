@@ -318,7 +318,7 @@ export function ConnectPage() {
                 variant="secondary"
                 className="px-2 sm:px-3 py-0.5 sm:py-1 flex items-center gap-0.5 sm:gap-1 text-xs"
               >
-                {mood}
+                {t(mood)}
                 <button
                   onClick={(e) => {
                     e.preventDefault();
@@ -398,7 +398,7 @@ export function ConnectPage() {
                         }}
                         className="text-xs sm:text-sm"
                       >
-                        {mood}
+                        {t(mood)}
                       </DropdownMenuCheckboxItem>
                     ))}
                   </div>
@@ -419,11 +419,11 @@ export function ConnectPage() {
             
             {/* Search by name */}
             <div className="space-y-1.5 sm:space-y-2">
-              <h3 className="text-xs sm:text-sm font-medium">Search by name</h3>
+              <h3 className="text-xs sm:text-sm font-medium">{t('searchByName')}</h3>
               <div className="relative">
                 <Search className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
                 <Input
-                  placeholder="..."
+                  placeholder={t('searchByName')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-8 sm:pl-10 h-8 sm:h-9 text-xs sm:text-sm"
