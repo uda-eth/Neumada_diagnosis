@@ -47,7 +47,7 @@ const getQuickPrompts = (t: (key: string) => string, language: string) => [
     ariaLabel: "Find best day trips"
   },
   {
-    text: t('cityGuide') || "City Guide",
+    text: "City Guide",
     icon: MapPin,
     prompt: language === 'es'
       ? "¿Cuál es la mejor guía para explorar esta ciudad?"
