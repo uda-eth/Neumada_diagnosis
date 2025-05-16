@@ -120,7 +120,7 @@ export default function InboxPage() {
   return (
     <div className="container max-w-4xl py-8 mx-auto px-4 sm:px-6 lg:px-8">
       <GradientHeader
-        title="Inbox"
+        title={t('inbox')}
         backButtonFallbackPath="/discover"
         className="mb-4"
       />
@@ -128,7 +128,7 @@ export default function InboxPage() {
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="flex flex-col space-y-1.5">
             <CardTitle className="flex items-center">
-              Inbox
+              {t('inbox')}
               {unreadCount > 0 && (
                 <Badge className="ml-2 bg-primary">{unreadCount}</Badge>
               )}
@@ -144,7 +144,7 @@ export default function InboxPage() {
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search messages..."
+              placeholder={t('searchMessages')}
               className="pl-8 pr-10"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -183,7 +183,7 @@ export default function InboxPage() {
                   <XCircle className="h-12 w-12 text-gray-400 mb-4" />
                   <h3 className="text-lg font-medium">No results found</h3>
                   <p className="text-sm text-gray-500 mt-2">
-                    No conversations match your search
+                    {t('noConversationsMatch')}
                   </p>
                   <Button variant="outline" className="mt-4" onClick={clearSearch}>
                     Clear search
@@ -192,15 +192,15 @@ export default function InboxPage() {
               ) : (
                 <>
                   <MessageSquare className="h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium">No conversations yet</h3>
+                  <h3 className="text-lg font-medium">{t('noConversationsYet')}</h3>
                   <p className="text-sm text-gray-500 mt-2">
-                    Connect with others to start messaging
+                    {t('connectWithOthers')}
                   </p>
                   <Button
                     className="mt-4"
                     onClick={() => setLocation('/connect')}
                   >
-                    Find connections
+                    {t('findConnections')}
                   </Button>
                 </>
               )}
