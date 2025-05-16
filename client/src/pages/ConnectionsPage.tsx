@@ -143,7 +143,7 @@ export default function ConnectionsPage() {
             </TabsTrigger>
             <TabsTrigger value="requests" className="flex items-center gap-2">
               <UserPlus className="h-4 w-4" />
-              <span>Incoming Requests</span>
+              <span>{t('incomingRequests')}</span>
               {pendingRequests && pendingRequests.length > 0 && (
                 <span className="ml-1 bg-primary/20 text-primary px-2 py-0.5 rounded-full text-xs">
                   {pendingRequests.length}
