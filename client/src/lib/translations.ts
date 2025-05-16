@@ -107,7 +107,19 @@ type TranslationKey =
   | 'email'
   | 'whatsapp'
   | 'sms'
-  | 'done';
+  | 'done'
+  | 'yourStatus'
+  | 'eventOptions'
+  | 'editEvent'
+  | 'deleteEvent'
+  | 'interested'
+  | 'attending'
+  | 'free'
+  | 'perPerson'
+  | 'getTickets'
+  | 'about'
+  | 'eventSchedule'
+  | 'attendees';
 
 const translations: Record<string, Record<TranslationKey, string>> = {
   en: {
@@ -178,7 +190,6 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     eventLocation: 'Event Location',
     eventDate: 'Event Date',
     paid: 'Paid',
-    eventSchedule: 'Event Schedule',
     addItem: 'Add Item',
     startTime: 'Start Time',
     endTime: 'End Time',
@@ -216,7 +227,19 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     email: 'Email',
     whatsapp: 'WhatsApp',
     sms: 'SMS',
-    done: 'Done'
+    done: 'Done',
+    yourStatus: 'Your Status',
+    eventOptions: 'Event Options',
+    editEvent: 'Edit Event',
+    deleteEvent: 'Delete Event',
+    interested: 'Interested',
+    attending: 'Attending',
+    free: 'Free',
+    perPerson: 'per person',
+    getTickets: 'Get Tickets',
+    about: 'About',
+    eventSchedule: 'Event Schedule',
+    attendees: 'Attendees'
   },
   es: {
     discover: 'Descubrir',
@@ -324,7 +347,19 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     email: 'Correo',
     whatsapp: 'WhatsApp',
     sms: 'SMS',
-    done: 'Listo'
+    done: 'Listo',
+    yourStatus: 'Tu Estado',
+    eventOptions: 'Opciones del Evento',
+    editEvent: 'Editar Evento',
+    deleteEvent: 'Eliminar Evento',
+    interested: 'Interesado',
+    attending: 'Asistiendo',
+    free: 'Gratis',
+    perPerson: 'por persona',
+    getTickets: 'Obtener Entradas',
+    about: 'Acerca de',
+    eventSchedule: 'Programa del Evento',
+    attendees: 'Asistentes'
   }
 };
 
