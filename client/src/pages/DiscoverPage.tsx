@@ -476,7 +476,7 @@ export default function DiscoverPage() {
                 {groupedEvents.weekend.length > 0 && (
                   <div className="space-y-4">
                     <div className="py-2">
-                      <h2 className="text-base md:text-lg font-semibold text-gray-300">{t('thisWeekend')}</h2>
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">THIS WEEKEND</h2>
                     </div>
                     <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                       {groupedEvents.weekend.map((event: any) => (
@@ -520,7 +520,7 @@ export default function DiscoverPage() {
                 {groupedEvents.week.length > 0 && (
                   <div className="space-y-4">
                     <div className="py-2">
-                      <h2 className="text-base md:text-lg font-semibold text-gray-300">{t('nextWeek')}</h2>
+                      <h2 className="text-base md:text-lg font-semibold text-gray-300">NEXT WEEK</h2>
                     </div>
                     <div className="grid gap-4 gap-y-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                       {groupedEvents.week.map((event: any) => (
