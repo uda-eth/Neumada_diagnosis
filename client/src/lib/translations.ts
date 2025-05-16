@@ -38,6 +38,11 @@ type TranslationKey =
   | 'delete'
   | 'yourNetwork'
   | 'incomingRequests'
+  | 'searchMessages'
+  | 'noConversationsYet'
+  | 'noConversationsMatch'
+  | 'connectWithOthers'
+  | 'findConnections'
   | 'location'
   | 'category'
   | 'categoryFiltering'
@@ -216,6 +221,7 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     settings: 'Settings',
     guide: 'City Guide',
     searchEvents: 'Search events...',
+    searchMessages: 'Search messages...',
     allCategories: 'All categories',
     thisWeekend: 'THIS WEEKEND',
     nextWeek: 'NEXT WEEK',
@@ -243,6 +249,10 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     delete: 'Delete',
     yourNetwork: 'Your Network',
     incomingRequests: 'Incoming Requests',
+    noConversationsYet: 'No conversations yet',
+    noConversationsMatch: 'No conversations match your search',
+    connectWithOthers: 'Connect with others to start messaging',
+    findConnections: 'Find connections',
     location: 'Location',
     category: 'Category',
     categoryFiltering: 'Category filtering',
@@ -408,6 +418,14 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     settings: 'Ajustes',
     guide: 'Guía Local',
     searchEvents: 'Buscar eventos...',
+    searchMessages: 'Buscar mensajes...',
+    noConversationsYet: 'No hay conversaciones aún',
+    noConversationsMatch: 'Ninguna conversación coincide con tu búsqueda',
+    connectWithOthers: 'Conecta con otros para comenzar a enviar mensajes',
+    findConnections: 'Encontrar conexiones',
+    yourNetwork: 'Tu Red',
+    incomingRequests: 'Solicitudes Entrantes',
+    connections: 'Conexiones',
     allCategories: 'Todas las categorías',
     thisWeekend: 'ESTE FIN DE SEMANA',
     nextWeek: 'PRÓXIMA SEMANA',

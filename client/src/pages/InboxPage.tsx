@@ -12,8 +12,10 @@ import { format } from 'date-fns';
 import { MessageSquare, Search, XCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GradientHeader } from '@/components/ui/GradientHeader';
+import { useTranslation } from '@/lib/translations';
 
 export default function InboxPage() {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredConversations, setFilteredConversations] = useState<Conversation[]>([]);
   const { user } = useUser();
