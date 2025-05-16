@@ -493,7 +493,7 @@ export function ConnectPage() {
                           <div className="space-y-1">
                             <div className="flex items-center justify-between">
                               <h3 className="font-semibold text-base text-white truncate">
-                                {/* Using translation for user's name */}
+                                {/* Name doesn't need t() function since it's personal data */}
                                 {user.fullName || user.username}
                                 {/* Age is not displayed as requested */}
                               </h3>

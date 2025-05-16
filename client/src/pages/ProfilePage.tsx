@@ -543,7 +543,7 @@ export default function ProfilePage() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Smile className="h-4 w-4 text-primary" />
-                <h2 className="text-base font-semibold">Mood & Vibe</h2>
+                <h2 className="text-base font-semibold">{t('moodAndVibe')}</h2>
               </div>
               
               {/* Only show change mood button if viewing own profile */}

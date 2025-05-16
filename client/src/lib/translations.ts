@@ -98,7 +98,8 @@ type TranslationKey =
   | 'editProfile'
   | 'shareProfile'
   | 'connectProfile'
-  | 'viewLocations';
+  | 'viewLocations'
+  | 'moodAndVibe';
 
 const translations: Record<string, Record<TranslationKey, string>> = {
   en: {
@@ -198,7 +199,8 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     editProfile: 'Edit Profile',
     shareProfile: 'Share Profile',
     connectProfile: 'Connect',
-    viewLocations: 'View Locations'
+    viewLocations: 'View Locations',
+    moodAndVibe: 'Mood & Vibe'
   },
   es: {
     discover: 'Descubrir',
@@ -297,7 +299,8 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     editProfile: 'Editar Perfil',
     shareProfile: 'Compartir Perfil',
     connectProfile: 'Conectar',
-    viewLocations: 'Ver Ubicaciones'
+    viewLocations: 'Ver Ubicaciones',
+    moodAndVibe: 'Estado y Ambiente'
   }
 };
 
