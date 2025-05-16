@@ -311,7 +311,7 @@ export default function CreateEventPage() {
                       );
                     }}
                   >
-                    {tag}
+                    {t(tag)}
                   </Button>
                 ))}
               </div>
