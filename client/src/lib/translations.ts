@@ -75,6 +75,13 @@ type TranslationKey =
   | 'description'
   | 'addAnotherItem'
   | 'noScheduleItems'
+  | 'bestRooftops'
+  | 'bestDateSpots'
+  | 'bestDayTrips'
+  | 'findingLocalInsights'
+  | 'askAnythingAbout'
+  | 'conciergeGreeting'
+  | 'premiumAdPartner'
   | 'Party & Nightlife'
   | 'Fashion & Style'
   | 'Networking & Business'
@@ -163,6 +170,13 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     description: 'Description',
     addAnotherItem: 'Add Another Item',
     noScheduleItems: 'No schedule items added yet. Click "Add Item" to create your event schedule.',
+    bestRooftops: 'Best Rooftops',
+    bestDateSpots: 'Best Date Spots',
+    bestDayTrips: 'Best Day Trips',
+    findingLocalInsights: 'Finding local insights...',
+    askAnythingAbout: 'Ask anything about',
+    conciergeGreeting: "Hi, I'm Maly — like your local friend with great taste. I'll help you know where to go, who to know, and what to do.",
+    premiumAdPartner: 'Premium Ad Partner',
     'Party & Nightlife': 'Party & Nightlife',
     'Fashion & Style': 'Fashion & Style',
     'Networking & Business': 'Networking & Business',
@@ -250,6 +264,13 @@ const translations: Record<string, Record<TranslationKey, string>> = {
     description: 'Descripción',
     addAnotherItem: 'Añadir otro elemento',
     noScheduleItems: 'Aún no hay elementos en la agenda. Haz clic en "Añadir elemento" para crear la agenda del evento.',
+    bestRooftops: 'Mejores Terrazas',
+    bestDateSpots: 'Mejores Lugares para Citas',
+    bestDayTrips: 'Mejores Excursiones de un Día',
+    findingLocalInsights: 'Buscando información local...',
+    askAnythingAbout: 'Pregunta cualquier cosa sobre',
+    conciergeGreeting: "Hola, soy Maly — como tu amigo local con buen gusto. Te ayudaré a saber dónde ir, a quién conocer y qué hacer.",
+    premiumAdPartner: 'Socio Premium de Publicidad',
     'Party & Nightlife': 'Fiesta y Vida Nocturna',
     'Fashion & Style': 'Moda y Estilo',
     'Networking & Business': 'Networking y Negocios',

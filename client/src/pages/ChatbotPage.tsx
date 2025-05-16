@@ -12,23 +12,25 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { GradientHeader } from "@/components/ui/GradientHeader";
 import { DIGITAL_NOMAD_CITIES } from "@/lib/constants";
+import { useTranslation } from "@/lib/translations";
+import { useLanguage } from "@/lib/language-context";
 
 // Quick prompts for the most common questions
-const quickPrompts = [
+const getQuickPrompts = (t) => [
   {
-    text: "Best Rooftops",
+    text: t('bestRooftops'),
     icon: Wine,
     prompt: "What are the best rooftop bars and restaurants with views?",
     ariaLabel: "Find best rooftops"
   },
   {
-    text: "Best Date Spots",
+    text: t('bestDateSpots'),
     icon: HeartHandshake,
     prompt: "What are the most romantic and impressive date spots?",
     ariaLabel: "Find best date spots"
   },
   {
-    text: "Best Day Trips",
+    text: t('bestDayTrips'),
     icon: Plane,
     prompt: "What are the best day trips from here?",
     ariaLabel: "Find best day trips"
@@ -50,8 +52,11 @@ const messageVariants = {
 
 export default function ChatbotPage() {
   const { messages, isLoading, sendMessage } = useChat();
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const [input, setInput] = useState("");
   const [selectedCity, setSelectedCity] = useState("Mexico City");
+  const quickPrompts = getQuickPrompts(t);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
