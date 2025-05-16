@@ -158,15 +158,45 @@ export default function HomePage() {
     return matchesSearch && matchesCategory && matchesEventTypes;
   });
 
-  const today = new Date();
-  const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-
+  const now = new Date();
+  
+  // Reset hours to start of day for proper comparison
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
+  
+  // Calculate weekend boundaries (Friday, Saturday, Sunday)
+  const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  
+  // Find the upcoming weekend (if today is part of the weekend, include it)
+  const endOfWeekend = new Date(startOfToday);
+  if (dayOfWeek === 0) { // Sunday - weekend ends today
+    // endOfWeekend is already today
+  } else if (dayOfWeek === 5 || dayOfWeek === 6) { // Friday or Saturday - weekend ends on Sunday
+    endOfWeekend.setDate(startOfToday.getDate() + (7 - dayOfWeek)); // Next Sunday
+  } else { // Monday to Thursday - weekend starts on Friday
+    endOfWeekend.setDate(startOfToday.getDate() + (5 - dayOfWeek) + 2); // Next Sunday (Friday + 2 days)
+  }
+  endOfWeekend.setHours(23, 59, 59, 999);
+  
+  // Next week starts after the weekend
+  const startOfNextWeek = new Date(endOfWeekend);
+  startOfNextWeek.setDate(endOfWeekend.getDate() + 1);
+  startOfNextWeek.setHours(0, 0, 0, 0);
+  
+  const endOfNextWeek = new Date(startOfNextWeek);
+  endOfNextWeek.setDate(startOfNextWeek.getDate() + 7);
+  
   const groupedEvents = filteredEvents.reduce(
     (acc: { thisWeekend: any[]; nextWeek: any[] }, event) => {
       const eventDate = new Date(event.date);
-      if (eventDate <= nextWeek && eventDate >= today) {
+      if (eventDate <= endOfWeekend && eventDate >= startOfToday) {
+        // This Weekend - events from now through Sunday
         acc.thisWeekend.push(event);
+      } else if (eventDate > endOfWeekend && eventDate <= endOfNextWeek) {
+        // Next Week - events after the weekend through the following week
+        acc.nextWeek.push(event);
       } else {
+        // Events beyond next week - still add to nextWeek for display
         acc.nextWeek.push(event);
       }
       return acc;
