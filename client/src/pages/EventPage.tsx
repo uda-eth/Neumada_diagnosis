@@ -156,8 +156,14 @@ export default function EventPage() {
     const translateEventData = async () => {
       if (event) {
         try {
-          const translated = await translateEvent(event, language);
-          setTranslatedEvent(translated as Event);
+          // Only translate if the language is Spanish (or any non-English language)
+          if (language !== 'en') {
+            console.log("Translating event data to:", language);
+            const translated = await translateEvent(event, language);
+            setTranslatedEvent(translated);
+          } else {
+            setTranslatedEvent(event); // Use original data for English
+          }
         } catch (error) {
           console.error("Error translating event:", error);
           setTranslatedEvent(event); // Fallback to original event data if translation fails

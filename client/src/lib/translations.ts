@@ -500,24 +500,17 @@ export async function translateUserProfile(
  * @param event Event data
  * @param language Target language ('en' or 'es')
  */
-export async function translateEvent(
-  event: {
-    title: string;
-    description?: string;
-    location?: string;
-    category?: string;
-    tags?: string[];
-    [key: string]: any;
-  },
+export async function translateEvent<T extends {
+  title: string;
+  description?: string | null;
+  location?: string | null;
+  category?: string | null;
+  tags?: string[] | null;
+  [key: string]: any;
+}>(
+  event: T,
   language: string
-): Promise<{
-    title: string;
-    description?: string;
-    location?: string;
-    category?: string;
-    tags?: string[];
-    [key: string]: any;
-}> {
+): Promise<T> {
   if (language === 'en') return event; // No need to translate if target is English
   
   const result = { ...event };
@@ -552,7 +545,7 @@ export async function translateEvent(
     result.tags = translatedTags;
   }
   
-  return result;
+  return result as T;
 }
 
 export function useTranslation() {
