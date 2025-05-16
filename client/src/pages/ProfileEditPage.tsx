@@ -567,12 +567,7 @@ export default function ProfileEditPage() {
                       <FormMessage>{form.formState.errors.interests?.message}</FormMessage>
                       <FormMessage>{form.formState.errors.currentMoods?.message}</FormMessage>
                     </div>
-                    <div className="mt-4 text-sm text-muted-foreground">
-                      <p>{t("Tags are used for both your profile preferences and current mood.")}</p>
-                      <p className="mt-1">{t("Default (purple): Selected as your preferred vibe")}</p>
-                      <p className="mt-1">{t("Secondary (gray): Selected as your current mood")}</p>
-                      <p className="mt-1">{t("Ringed: Selected as both preferred vibe and current mood")}</p>
-                    </div>
+
                   </div>
                 </div>
               </Card>
