@@ -57,8 +57,9 @@ This document provides developers with detailed instructions for setting up the 
    ```bash
    npm run db:push
    ```
-
-5. **Start the development server**
+5. Npm Run Build
+ 
+6. **Start the development server**
    ```bash
    npm run dev
    ```
