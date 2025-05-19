@@ -12,6 +12,15 @@ import { z } from "zod";
 import { Logo } from "@/components/ui/logo";
 import { Badge } from "@/components/ui/badge";
 import { VIBE_AND_MOOD_TAGS } from "@/lib/constants";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const loginSchema = z.object({
   username: z.string().min(3, "Username or email must be provided"),
@@ -27,6 +36,9 @@ const registerSchema = z.object({
   interests: z.string().optional(), // Changed to vibe/mood filters in UI
   age: z.string().optional(),
   profileImage: z.any().optional(), // For profile picture upload
+  termsAccepted: z.literal(true, {
+    errorMap: () => ({ message: "You must accept the Terms & Privacy Policy to register" }),
+  }),
 });
 
 // Mood style definitions for consistent visual appearance
@@ -56,6 +68,8 @@ export default function AuthPage() {
     age: "",
     profileImage: null as File | null,
   });
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -119,7 +133,11 @@ export default function AuthPage() {
       if (isLogin) {
         loginSchema.parse(formData);
       } else {
-        registerSchema.parse(formData);
+        // Include terms acceptance in validation
+        registerSchema.parse({
+          ...formData,
+          termsAccepted
+        });
       }
       return true;
     } catch (error) {
@@ -421,7 +439,117 @@ export default function AuthPage() {
               </>
             )}
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {!isLogin && (
+              <div className="flex items-start space-x-2 mb-4">
+                <Checkbox 
+                  id="terms" 
+                  checked={termsAccepted}
+                  onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
+                  className="mt-1"
+                />
+                <div className="grid gap-1.5 leading-none">
+                  <label
+                    htmlFor="terms"
+                    className="text-sm font-medium leading-none cursor-pointer"
+                  >
+                    I agree to the{" "}
+                    <Dialog open={showTerms} onOpenChange={setShowTerms}>
+                      <DialogTrigger asChild>
+                        <span className="text-primary cursor-pointer underline">Terms & Privacy Policy</span>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>Maly Platforms Inc. DBA Maly – Privacy Policy</DialogTitle>
+                          <DialogDescription>Effective Date: May 17, 2025</DialogDescription>
+                        </DialogHeader>
+                        <div className="text-sm space-y-4 mt-4">
+                          <p>This Privacy Policy explains how Maly Platforms Inc. ("Maly") collects, uses, and protects your personal data when you use our mobile and web-based services.</p>
+                          
+                          <div>
+                            <h3 className="font-bold mb-2">1. Information We Collect</h3>
+                            <ul className="list-disc pl-6 space-y-1">
+                              <li>Profile details (name, email, photo, etc.)</li>
+                              <li>Location data (with your permission)</li>
+                              <li>Content you submit (event listings, messages)</li>
+                              <li>Device and usage data (IP, browser, interactions)</li>
+                            </ul>
+                          </div>
+                          
+                          <div>
+                            <h3 className="font-bold mb-2">2. How We Use Your Data</h3>
+                            <ul className="list-disc pl-6 space-y-1">
+                              <li>To operate and improve our services</li>
+                              <li>To personalize content and event recommendations</li>
+                              <li>To communicate with you about updates, offers, and feedback</li>
+                              <li>To ensure safety and prevent abuse</li>
+                            </ul>
+                          </div>
+                          
+                          <div>
+                            <h3 className="font-bold mb-2">3. Sharing Your Data</h3>
+                            <ul className="list-disc pl-6 space-y-1">
+                              <li>With service providers who help us operate (e.g., hosting, analytics)</li>
+                              <li>With your consent (e.g., when sharing an event publicly)</li>
+                              <li>If required by law</li>
+                            </ul>
+                          </div>
+                          
+                          <div>
+                            <h3 className="font-bold mb-2">4. Your Choices</h3>
+                            <ul className="list-disc pl-6 space-y-1">
+                              <li>You can update your profile and communication settings at any time.</li>
+                              <li>You can request to delete your account and associated data.</li>
+                            </ul>
+                          </div>
+                          
+                          <div>
+                            <h3 className="font-bold mb-2">5. Data Security</h3>
+                            <p>We implement appropriate technical and organizational measures to protect your data.</p>
+                          </div>
+                          
+                          <div>
+                            <h3 className="font-bold mb-2">6. Children's Privacy</h3>
+                            <p>Maly is not intended for users under 18. We do not knowingly collect data from minors.</p>
+                          </div>
+                          
+                          <div>
+                            <h3 className="font-bold mb-2">7. Changes to this Policy</h3>
+                            <p>We may update this policy as our services evolve. Material changes will be communicated via the app or email.</p>
+                          </div>
+                          
+                          <div>
+                            <h3 className="font-bold mb-2">8. Contact</h3>
+                            <p>If you have questions, contact us at: support@malyapp.com</p>
+                          </div>
+                          
+                          <div>
+                            <h3 className="font-bold mb-2">9. International Users and GDPR/LGPD Compliance</h3>
+                            <p>If you are a resident of the European Union (EU) or Brazil, you are entitled to certain rights under the General Data Protection Regulation (GDPR) or the Lei Geral de Proteção de Dados (LGPD), respectively. These rights include:</p>
+                            <ul className="list-disc pl-6 space-y-1 mt-2">
+                              <li>The right to access, correct, or delete your personal data</li>
+                              <li>The right to object to or restrict the processing of your data</li>
+                              <li>The right to data portability</li>
+                              <li>The right to withdraw your consent at any time, where applicable</li>
+                            </ul>
+                            <p className="mt-2">We collect and process your personal data only where we have legal bases to do so, including your consent, to fulfill our contractual obligations to you, and based on our legitimate interests in operating and improving Maly.</p>
+                            <p className="mt-2">Please note that your data may be transferred to and processed in the United States. We take appropriate safeguards to ensure your information is treated securely and in accordance with applicable data protection laws.</p>
+                            <p className="mt-2">To exercise your rights or contact us with questions about our privacy practices, please reach out to us at:</p>
+                            <p>support@malyapp.com</p>
+                            <p>Subject: Data Privacy Request</p>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={isSubmitting || (!isLogin && !termsAccepted)}
+            >
               {isSubmitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : isLogin ? (
