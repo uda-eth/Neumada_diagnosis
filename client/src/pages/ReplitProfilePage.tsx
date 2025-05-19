@@ -50,6 +50,8 @@ const profileSchema = z.object({
   location: z.string(),
   interests: z.array(z.string()).min(1, "Select at least one interest"),
   currentMoods: z.array(z.string()),
+  // This is just a placeholder that will be validated in the form submission
+  profileImage: z.any(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -153,12 +155,27 @@ export default function ReplitProfilePage() {
   };
 
   const onSubmit = async (data: ProfileFormValues) => {
+    // First check if profile image has been uploaded
+    if (!imagePreview) {
+      toast({
+        title: "Profile Image Required",
+        description: "Please upload a profile photo to complete your registration.",
+        variant: "destructive",
+      });
+      // Set a custom form error for the profile image field
+      form.setError('profileImage', {
+        type: 'manual',
+        message: 'Profile photo is required'
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     try {
-      // Add profile image if available
+      // Add profile image to the form data
       const profileData = {
         ...data,
-        profileImage: imagePreview || null,
+        profileImage: imagePreview,
       };
       
       // Register the user
@@ -292,10 +309,27 @@ export default function ReplitProfilePage() {
                           accept="image/*"
                           className="hidden"
                           onChange={handleImageChange}
+                          required
                         />
                       </label>
                     </div>
                     <div className="flex-1">
+                      <div className="mb-2">
+                        <FormLabel htmlFor="profile-image">
+                          <span className="flex items-center gap-2 text-sm font-medium">
+                            Profile Photo <span className="text-destructive">*</span>
+                          </span>
+                        </FormLabel>
+                        <FormDescription>
+                          Upload a photo (required)
+                        </FormDescription>
+                        {form.formState.errors.profileImage && (
+                          <FormMessage>
+                            {form.formState.errors.profileImage.message}
+                          </FormMessage>
+                        )}
+                      </div>
+
                       <FormField
                         control={form.control}
                         name="fullName"
