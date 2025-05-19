@@ -1,0 +1,53 @@
+Maly Platforms Inc. DBA Maly – Privacy Policy
+Effective Date: May 17, 2025
+
+This Privacy Policy explains how Maly Platforms Inc. ("Maly") collects, uses, and protects your personal data when you use our mobile and web-based services.
+
+1. Information We Collect
+- Profile details (name, email, photo, etc.)
+- Location data (with your permission)
+- Content you submit (event listings, messages)
+- Device and usage data (IP, browser, interactions)
+
+2. How We Use Your Data
+- To operate and improve our services
+- To personalize content and event recommendations
+- To communicate with you about updates, offers, and feedback
+- To ensure safety and prevent abuse
+
+3. Sharing Your Data
+- With service providers who help us operate (e.g., hosting, analytics)
+- With your consent (e.g., when sharing an event publicly)
+- If required by law
+
+4. Your Choices
+- You can update your profile and communication settings at any time.
+- You can request to delete your account and associated data.
+
+5. Data Security
+We implement appropriate technical and organizational measures to protect your data.
+
+6. Children's Privacy
+Maly is not intended for users under 18. We do not knowingly collect data from minors.
+
+7. Changes to this Policy
+We may update this policy as our services evolve. Material changes will be communicated via the app or email.
+
+8. Contact
+If you have questions, contact us at: support@malyapp.com
+9. International Users and GDPR/LGPD Compliance
+
+If you are a resident of the European Union (EU) or Brazil, you are entitled to certain rights under the General Data Protection Regulation (GDPR) or the Lei Geral de Proteção de Dados (LGPD), respectively. These rights include:
+
+- The right to access, correct, or delete your personal data
+- The right to object to or restrict the processing of your data
+- The right to data portability
+- The right to withdraw your consent at any time, where applicable
+
+We collect and process your personal data only where we have legal bases to do so, including your consent, to fulfill our contractual obligations to you, and based on our legitimate interests in operating and improving Maly.
+
+Please note that your data may be transferred to and processed in the United States. We take appropriate safeguards to ensure your information is treated securely and in accordance with applicable data protection laws.
+
+To exercise your rights or contact us with questions about our privacy practices, please reach out to us at:
+support@malyapp.com
+Subject: Data Privacy Request
