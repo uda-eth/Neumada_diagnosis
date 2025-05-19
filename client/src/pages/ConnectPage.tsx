@@ -520,13 +520,6 @@ export function ConnectPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="p-3">
-                        {user.bio && (
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {user.bio}
-                          </p>
-                        )}
-                      </div>
                     </div>
                   </CardContent>
                 </Card>
