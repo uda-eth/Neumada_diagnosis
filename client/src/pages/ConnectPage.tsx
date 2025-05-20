@@ -85,16 +85,8 @@ const moodStyles = {
   "Creating": "bg-violet-500/20 text-violet-500 hover:bg-violet-500/30"
 } as const;
 
-const cities = [
-  "Bali",
-  "Bangkok",
-  "Barcelona",
-  "Berlin",
-  "Lisbon",
-  "London",
-  "Mexico City",
-  "New York",
-];
+// Import cities list and vibes from constants file
+import { DIGITAL_NOMAD_CITIES, VIBE_AND_MOOD_TAGS } from "@/lib/constants";
 
 const interests = [
   "Travel",
@@ -110,7 +102,6 @@ const interests = [
 ];
 
 import { useUser } from "@/hooks/use-user";
-import { VIBE_AND_MOOD_TAGS } from "@/lib/constants";
 
 // Use the same EVENT_TYPES constant as the Discover page uses
 const EVENT_TYPES = VIBE_AND_MOOD_TAGS;
@@ -354,7 +345,7 @@ export function ConnectPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t('allCities')}</SelectItem>
-                  {cities.map((city) => (
+                  {DIGITAL_NOMAD_CITIES.map((city) => (
                     <SelectItem key={city} value={city}>{city}</SelectItem>
                   ))}
                 </SelectContent>
