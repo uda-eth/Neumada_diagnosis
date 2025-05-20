@@ -1,6 +1,5 @@
 import { BottomNav } from "./bottom-nav";
 import { Logo } from "./logo";
-import { MalyLargeLogo } from "./maly-large-logo";
 import { Menu, Bot, Globe, Inbox, Crown, Settings, UserCircle, LogOut } from "lucide-react";
 import { Button } from "./button";
 import { useLocation } from "wouter";
@@ -129,11 +128,7 @@ export function Layout({ children }: LayoutProps) {
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <a className="flex items-center space-x-2" href="/">
-                <div className="flex items-center">
-                  <h1 className="text-4xl font-bold tracking-wider">
-                    M Ā L Y
-                  </h1>
-                </div>
+                <Logo className="h-8 w-auto" />
               </a>
             </div>
             <div className="flex items-center gap-4">

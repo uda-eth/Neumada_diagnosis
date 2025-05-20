@@ -10,7 +10,6 @@ import { Separator } from "@/components/ui/separator";
 import { useLocation } from "wouter";
 import { z } from "zod";
 import { Logo } from "@/components/ui/logo";
-import { MalyLargeLogo } from "@/components/ui/maly-large-logo";
 import { Badge } from "@/components/ui/badge";
 import { VIBE_AND_MOOD_TAGS } from "@/lib/constants";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -290,8 +289,8 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
-      <div className="mb-8 flex items-center justify-center">
-        <MalyLargeLogo className="" />
+      <div className="mb-8 flex items-center">
+        <Logo className="h-12 w-auto" />
       </div>
       
       <Card className="w-full max-w-md">
