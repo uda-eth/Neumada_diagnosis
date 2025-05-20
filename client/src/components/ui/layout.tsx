@@ -129,7 +129,7 @@ export function Layout({ children }: LayoutProps) {
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <a className="flex items-center space-x-2" href="/">
-                <div className="w-36 h-10">
+                <div className="w-72 h-20">
                   <img 
                     src="/attached_assets/53d65bf9-c361-49a1-86ea-7341b9288320-removebg-preview.png" 
                     alt="Maly Logo" 
