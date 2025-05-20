@@ -12,7 +12,7 @@ export const MalyLogo: React.FC<MalyLogoProps> = ({ className = "", color = "cur
         src="/attached_assets/53d65bf9-c361-49a1-86ea-7341b9288320-removebg-preview.png" 
         alt="Maly Logo" 
         className="object-contain w-full h-full" 
-        style={{ maxWidth: '400px', filter: `brightness(0) invert(${color === 'currentColor' ? 1 : 0})` }}
+        style={{ maxWidth: '800px', filter: `brightness(0) invert(${color === 'currentColor' ? 1 : 0})` }}
       />
     </div>
   );
