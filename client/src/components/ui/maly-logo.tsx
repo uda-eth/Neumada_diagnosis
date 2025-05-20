@@ -11,10 +11,10 @@ export const MalyLogo: React.FC<MalyLogoProps> = ({ className = "", color = "cur
       <img 
         src="/attached_assets/53d65bf9-c361-49a1-86ea-7341b9288320-removebg-preview.png" 
         alt="Maly Logo" 
-        className="object-contain h-full" 
+        className="h-full" 
         style={{ 
           filter: `brightness(0) invert(${color === 'currentColor' ? 1 : 0})`,
-          maxHeight: '100%',
+          height: '32px',
           width: 'auto'
         }}
       />
