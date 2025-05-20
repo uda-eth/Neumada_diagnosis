@@ -129,13 +129,10 @@ export function Layout({ children }: LayoutProps) {
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <a className="flex items-center space-x-2" href="/">
-                <div className="w-72 h-20">
-                  <img 
-                    src="/attached_assets/53d65bf9-c361-49a1-86ea-7341b9288320-removebg-preview.png" 
-                    alt="Maly Logo" 
-                    className="object-contain w-full h-full" 
-                    style={{ filter: "brightness(0) invert(1)" }}
-                  />
+                <div className="flex items-center">
+                  <h1 className="text-4xl font-bold tracking-wider">
+                    M Ā L Y
+                  </h1>
                 </div>
               </a>
             </div>
