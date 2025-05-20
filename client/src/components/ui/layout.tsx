@@ -1,5 +1,6 @@
 import { BottomNav } from "./bottom-nav";
 import { Logo } from "./logo";
+import { MalyLargeLogo } from "./maly-large-logo";
 import { Menu, Bot, Globe, Inbox, Crown, Settings, UserCircle, LogOut } from "lucide-react";
 import { Button } from "./button";
 import { useLocation } from "wouter";
