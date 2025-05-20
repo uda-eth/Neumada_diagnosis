@@ -14,7 +14,7 @@ export const MalyLogo: React.FC<MalyLogoProps> = ({ className = "", color = "cur
         className="h-full" 
         style={{ 
           filter: `brightness(0) invert(${color === 'currentColor' ? 1 : 0})`,
-          height: '32px',
+          height: '64px',
           width: 'auto'
         }}
       />
