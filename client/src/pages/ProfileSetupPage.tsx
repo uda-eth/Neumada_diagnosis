@@ -99,6 +99,18 @@ export default function ProfileSetupPage() {
   };
 
   const onSubmit = async (data: ProfileFormValues) => {
+    // Prevent form submission if profile image is missing
+    if (!imagePreview) {
+      toast({
+        title: "Profile Image Required",
+        description: "Please upload a profile photo to complete your registration.",
+        variant: "destructive",
+      });
+      
+      // Return early to prevent form submission
+      return;
+    }
+    
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -155,9 +167,9 @@ export default function ProfileSetupPage() {
                     </label>
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold">Profile Picture</h2>
+                    <h2 className="text-lg font-semibold">Profile Picture <span className="text-red-500">*</span></h2>
                     <p className="text-sm text-white/60">
-                      Upload a photo that best represents you
+                      Upload a photo that best represents you (required)
                     </p>
                   </div>
                 </div>
