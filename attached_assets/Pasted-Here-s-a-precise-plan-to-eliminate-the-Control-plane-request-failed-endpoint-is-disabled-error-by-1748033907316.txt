@@ -1,0 +1,47 @@
+Here’s a precise plan to eliminate the “Control plane request failed: endpoint is disabled” error by switching from the serverless HTTP-based client to a direct TCP connection using `pg` and the Node-Postgres driver in your Drizzle setup:
+
+1. **Replace the HTTP “postgres” client with Node-Postgres (`pg`)**
+   In `db/index.ts`, remove any imports of the serverless client (`import postgres from "postgres"`) and instead import the standard TCP pool:
+
+   ```ts
+   import { Pool } from "pg";
+   import { drizzle } from "drizzle-orm/node-postgres";
+   const pool = new Pool({
+     connectionString: process.env.DATABASE_URL,
+     ssl: { rejectUnauthorized: false }
+   });
+   export const db = drizzle(pool);
+   ```
+
+   This ensures your app connects directly over TCP on port 5432 rather than via the Control Plane HTTP proxy ([npm][1]) ([Node Postgres][2]).
+
+2. **Update all Drizzle migration and table-creation scripts**
+   In `db/migrate.ts` and `db/create-tables.ts`, switch any usage of `drizzle-orm/postgres-js` to `drizzle-orm/node-postgres`, and remove imports of the `postgres` package ([npm][1]) ([npm][3]).
+
+3. **Ensure your `DATABASE_URL` uses the direct “postgres\://…” format**
+   Grab the “Connection string” from your Neon dashboard (it begins with `postgres://`), and set it in Replit’s Secrets. Do **not** use any HTTP-based tokens or control-plane URLs ([Stack Overflow][4]).
+
+4. **Configure SSL to accept self-signed or managed certs**
+   By adding `ssl: { rejectUnauthorized: false }`, you allow secure TLS connections without certificate validation errors, which is often needed in cloud environments ([Stack Overflow][5]).
+
+5. **Remove any leftover serverless client usage**
+   Grep your repo for `import postgres from` or `drizzle-orm/postgres-js` and delete those code paths to prevent accidental fallback to the HTTP proxy ([Stack Overflow][4]).
+
+6. **Verify on public Wi-Fi by forcing a TCP test**
+   Write a quick script that uses `new Pool(...).connect()` to confirm your app can open a TCP socket to `your-db-host:5432` over both home and public networks ([Node Postgres][6]).
+
+7. **Monitor Neon dashboard ingress settings**
+   Ensure your Neon project’s firewall/ingress rules allow connections from “0.0.0.0/0” or your network’s IP range so that TCP connections aren’t blocked ([Stack Overflow][4]).
+
+8. **Restart and retest your Express server**
+   After making the above code changes, redeploy and watch the logs—errors about “Control plane request” should vanish, replaced by either successful connections or clear TCP refusal errors if port 5432 is blocked ([Fly.io][7]).
+
+By fully removing the HTTP-based proxy client and switching to a plain `pg.Pool` connection, you bypass the disabled Control Plane entirely and restore reliable database access on any network.
+
+[1]: https://www.npmjs.com/package/drizzle-orm-pg?utm_source=chatgpt.com "drizzle-orm-pg - NPM"
+[2]: https://node-postgres.com/features/ssl?utm_source=chatgpt.com "SSL - node-postgres"
+[3]: https://www.npmjs.com/package/drizzle-orm-mysql?utm_source=chatgpt.com "drizzle-orm-mysql - NPM"
+[4]: https://stackoverflow.com/questions/78412358/i-am-getting-an-error-when-install-the-drizzle-orm-npm-package-in-my-nextjs-14-a?utm_source=chatgpt.com "I am getting an error when install the drizzle-orm npm package in my ..."
+[5]: https://stackoverflow.com/questions/31861109/tls-what-exactly-does-rejectunauthorized-mean-for-me/31862256?utm_source=chatgpt.com "node.js - TLS what exactly does 'rejectUnauthorized' mean for me?"
+[6]: https://node-postgres.com/apis/utilities?utm_source=chatgpt.com "Utilities - node-postgres"
+[7]: https://community.fly.io/t/cannot-connect-node-js-app-to-postgres-db/6631?utm_source=chatgpt.com "Cannot connect Node.js app to Postgres db - Build debugging - Fly.io"
