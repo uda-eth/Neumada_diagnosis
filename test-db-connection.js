@@ -9,6 +9,12 @@ dotenv.config();
 async function testDatabaseConnection() {
   console.log('Testing database connection...');
   
+  // Create the pool with the proper configuration
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+  });
+  
   try {
     // Simple query to test the connection
     const result = await pool.query('SELECT NOW()');
