@@ -206,6 +206,14 @@ export function setupAuth(app: Express) {
         return res.status(400).send("Username, email, and password are required");
       }
 
+      // CRITICAL: Validate profile image is provided
+      if (!profileImage) {
+        return res.status(400).json({ 
+          error: "Profile picture is required",
+          message: "You must upload a profile picture to complete registration" 
+        });
+      }
+
       if (username.length < 3) {
         return res.status(400).send("Username must be at least 3 characters long");
       }
@@ -333,6 +341,14 @@ export function setupAuth(app: Express) {
         nextLocation
       } = req.body;
       
+      // CRITICAL: Validate profile image is provided
+      if (!req.file) {
+        return res.status(400).json({ 
+          error: "Profile picture is required",
+          message: "You must upload a profile picture to complete registration" 
+        });
+      }
+
       // Handle the uploaded profile image (with Cloudinary support)
       let profileImage = null;
       

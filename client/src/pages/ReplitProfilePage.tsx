@@ -50,8 +50,10 @@ const profileSchema = z.object({
   location: z.string(),
   interests: z.array(z.string()).min(1, "Select at least one interest"),
   currentMoods: z.array(z.string()),
-  // This is just a placeholder that will be validated in the form submission
-  profileImage: z.any(),
+  // Profile image is required - validated both here and in onSubmit
+  profileImage: z.any().refine((val) => val !== undefined, {
+    message: "Profile picture is required",
+  }),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -155,7 +157,7 @@ export default function ReplitProfilePage() {
   };
 
   const onSubmit = async (data: ProfileFormValues) => {
-    // First check if profile image has been uploaded
+    // Prevent form submission if profile image is missing
     if (!imagePreview) {
       toast({
         title: "Profile Image Required",
@@ -167,6 +169,7 @@ export default function ReplitProfilePage() {
         type: 'manual',
         message: 'Profile photo is required'
       });
+      // Return early to prevent form submission
       return;
     }
     
@@ -325,7 +328,7 @@ export default function ReplitProfilePage() {
                         </FormDescription>
                         {form.formState.errors.profileImage && (
                           <FormMessage>
-                            {form.formState.errors.profileImage.message}
+                            {String(form.formState.errors.profileImage?.message || "")}
                           </FormMessage>
                         )}
                       </div>

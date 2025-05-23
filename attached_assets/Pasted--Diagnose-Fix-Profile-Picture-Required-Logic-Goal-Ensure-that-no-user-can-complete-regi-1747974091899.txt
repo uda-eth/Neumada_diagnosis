@@ -1,0 +1,57 @@
+**Diagnose & Fix “Profile Picture Required” Logic**
+
+**Goal:** Ensure that no user can complete registration (or profile creation) without uploading a profile picture.
+
+---
+
+1. **Audit Backend Validation**
+
+   * **Locate** the registration and profile-update endpoints (e.g. `POST /api/register`, `/api/profile`).
+   * **Inspect** how the incoming multipart/form-data or JSON is parsed—confirm where `profileImage` (or its equivalent) is extracted.
+   * **Verify** that there is server-side validation enforcing `profileImage != null` before inserting/updating the user.
+   * **Identify** any early returns or “skip” paths that allow `profileImage` to be undefined.
+
+2. **Check Database Schema Constraints**
+
+   * **Examine** the `users` table in `db/schema.ts`—is `profileImage` marked as `.notNull()`?
+   * **Confirm** whether the database itself will reject null or empty values; if not, consider adding a NOT NULL constraint or default placeholder.
+
+3. **Review Frontend Form Logic**
+
+   * **Open** the signup/register component (AuthPage, Register form) and the Profile Edit form.
+   * **Ensure** the file-input for the profile picture is marked as **required**, and that its value is validated before form submission.
+   * **Check** that the client blocks submission or shows an error toast when no file is selected.
+
+4. **Trace Upload Handling**
+
+   * **Follow** the code path from file selection ➔ formData ➔ `uploadToObjectStorage` (or equivalent).
+   * **Confirm** that a successful upload returns a URL and that this URL is passed back into the user payload.
+   * **Identify** any branches where—on upload failure or network error—registration still proceeds.
+
+5. **Error Reporting & UX**
+
+   * **Validate** that, on missing picture, the API responds with a **400** and a clear error JSON/message.
+   * **Ensure** the frontend surfaces this error in the form (e.g. error banner, toast) and doesn’t silently swallow it.
+
+6. **Write Tests**
+
+   * **Server-Side Unit Tests** (e.g. Jest + Supertest):
+
+     1. Attempt to register without `profileImage` should return 400 + error message.
+     2. Attempt to update profile without `profileImage` should return 400 + error.
+     3. Register with a valid image file should succeed.
+   * **Frontend Integration Tests** (e.g. React Testing Library):
+
+     1. The registration form “Submit” button is disabled if no file chosen.
+     2. Display of validation error when user attempts to submit without a picture.
+     3. Successful navigation to dashboard when picture is provided.
+
+---
+
+**Deliverables:**
+
+* A clear list of each broken code path that allows a no-photo submission.
+* Patches to backend validation, schema constraints, and frontend form logic.
+* Automated tests covering all failure and success cases.
+
+Once complete, confirm end-to-end that profile creation **always** requires a photo upload.
