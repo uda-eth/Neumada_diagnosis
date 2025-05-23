@@ -1,0 +1,64 @@
+Here’s a stronger, step-by-step master prompt you can feed to the agent to ensure it completely rips out the HTTP “control-plane” client and replaces every usage with a true TCP connection via pg.Pool, then verifies the fix end-to-end:
+
+Your mission:
+Eliminate all HTTP-based PostgreSQL clients, switch entirely to a direct-TCP pg connection everywhere, and prove the “Control plane request failed: endpoint is disabled” error is gone on both home and public Wi-Fi. Don’t stop until you can spin up the app, hit every database-backed route, and see no control-plane errors.
+1. Wipe out any serverless-HTTP client
+    •    Search the entire repo for import postgres from, drizzle-orm/postgres-js or any new Client(...) from postgres and delete those lines.
+    •    Confirm: git grep -n "postgres-js\|import postgres" returns zero matches.
+2. Centralize on a single TCP pool
+    •    In db/index.ts (and only there), import and configure:
+import { Pool } from "pg";
+    •    import { drizzle } from "drizzle-orm/node-postgres";
+    •    
+    •    const pool = new Pool({
+    •      connectionString: process.env.DATABASE_URL,
+    •      ssl: { rejectUnauthorized: false }
+    •    });
+    •    
+    •    export const db = drizzle(pool);
+    •    
+    •    Remove any other database-client code from migrate.ts, create-tables.ts, run-migration.js, check-column.js, compiled migrations/ files, session-store helpers—everywhere.
+3. Update Drizzle scripts & migrations
+    •    In all migration or table-creation scripts, replace imports of drizzle-orm/postgres-js with drizzle-orm/node-postgres and remove any postgres() calls.
+    •    Confirm: git grep -n "postgres-js" is empty.
+4. Fix your session store
+    •    Wherever you configure connect-pg-simple (e.g. in server/auth.ts or server/lib/pg-pool.ts), pass it the same Pool instance:
+import { Pool } from "pg";
+    •    import connectPgSimple from "connect-pg-simple";
+    •    //…
+    •    const pgPool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+    •    const PgSession = connectPgSimple(session);
+    •    app.use(session({
+    •      store: new PgSession({ pool: pgPool, tableName: "session" }),
+    •      secret: process.env.SESSION_SECRET!,
+    •      resave: false,
+    •      saveUninitialized: false,
+    •      cookie: { secure: true, sameSite: "none", maxAge: 30*24*60*60*1000 }
+    •    }));
+    •    
+5. Validate your environment
+    •    Ensure only one DATABASE_URL secret is set (it must start with postgres://, not http://).
+    •    In Replit Secrets, verify DATABASE_URL, SESSION_SECRET, and remove any STORAGE_TOKEN or HTTP-based DB tokens.
+6. Rebuild, restart & smoke-test
+    •    Rebuild and restart your server.
+    •    From your dev machine and from a public-WiFi VM/sandbox (or curl --interface <public-ip>), run:
+curl -v http://localhost:5000/api/auth/check
+    •    curl -v http://localhost:5000/api/events
+    •    
+You must see no “Control plane request failed” errors—only valid JSON or 401/200 responses.
+7. End-to-end verification
+    •    Write a small test script (e.g. test-db-connection.js) that:
+    1    Imports your pool
+    2    Executes await pool.query("SELECT NOW()")
+    3    Exits cleanly.
+    •    Run it under both networks to prove TCP connectivity.
+8. Report success or failure
+    •    If any control-plane or HTTP errors remain, you must list exactly which files still contain old imports or configs—and fix them.
+    •    Only when the app runs cleanly everywhere and your test script passes should you mark the task complete.
+
+Remember:
+    •    Search & destroy every postgres HTTP client.
+    •    One pg.Pool config, used everywhere.
+    •    Verify zero old-client usages.
+    •    Test on home & public Wi-Fi.
+    •    Don’t stop until no control-plane errors reappear.
