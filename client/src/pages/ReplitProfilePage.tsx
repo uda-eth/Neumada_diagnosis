@@ -50,7 +50,7 @@ const profileSchema = z.object({
   location: z.string(),
   interests: z.array(z.string()).min(1, "Select at least one interest"),
   currentMoods: z.array(z.string()),
-  // This is just a placeholder that will be validated in the form submission
+  // Will be validated manually in onSubmit since we need to check imagePreview state
   profileImage: z.any(),
 });
 
@@ -155,7 +155,7 @@ export default function ReplitProfilePage() {
   };
 
   const onSubmit = async (data: ProfileFormValues) => {
-    // First check if profile image has been uploaded
+    // Prevent form submission if profile image is missing
     if (!imagePreview) {
       toast({
         title: "Profile Image Required",
@@ -167,6 +167,7 @@ export default function ReplitProfilePage() {
         type: 'manual',
         message: 'Profile photo is required'
       });
+      // Return early to prevent form submission
       return;
     }
     
