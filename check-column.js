@@ -1,4 +1,4 @@
-import postgres from "postgres";
+import pg from 'pg';
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -8,24 +8,27 @@ async function checkColumns() {
     throw new Error("DATABASE_URL environment variable is not set");
   }
 
-  const client = postgres(process.env.DATABASE_URL);
+  const pool = new pg.Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+  });
   
   try {
     console.log("Checking for required columns in event_participants table...");
     
-    const result = await client`
+    const result = await pool.query(`
       SELECT column_name, data_type 
       FROM information_schema.columns 
       WHERE table_name = 'event_participants' 
       AND column_name IN ('stripe_checkout_session_id', 'ticket_identifier')
       ORDER BY column_name
-    `;
+    `);
     
-    if (result.length > 0) {
+    if (result.rows.length > 0) {
       console.log("Found columns:");
-      result.forEach(col => console.log(`- ${col.column_name} (${col.data_type})`));
+      result.rows.forEach(col => console.log(`- ${col.column_name} (${col.data_type})`));
       
-      if (result.length === 2) {
+      if (result.rows.length === 2) {
         console.log("✅ All required columns exist!");
       } else {
         console.log("❌ Some columns are missing!");
@@ -36,7 +39,7 @@ async function checkColumns() {
   } catch (error) {
     console.error("Error checking columns:", error);
   } finally {
-    await client.end();
+    await pool.end();
   }
 }
 
