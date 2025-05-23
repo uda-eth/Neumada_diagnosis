@@ -328,7 +328,7 @@ export default function ReplitProfilePage() {
                         </FormDescription>
                         {form.formState.errors.profileImage && (
                           <FormMessage>
-                            {form.formState.errors.profileImage?.message}
+                            {String(form.formState.errors.profileImage?.message || "")}
                           </FormMessage>
                         )}
                       </div>
