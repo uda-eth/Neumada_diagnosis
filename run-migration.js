@@ -21,29 +21,33 @@ if (!process.env.DATABASE_URL) {
 console.log("Running SQL migration for adding stripe_checkout_session_id column...");
 
 // Execute the SQL directly
-import postgres from "postgres";
+import pg from 'pg';
+const { Pool } = pg;
 
 async function runSQLMigration() {
-  const client = postgres(process.env.DATABASE_URL);
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+  });
   
   try {
     console.log("Connected to database, running migrations...");
     
     // First migration: Add ticket_identifier column
     console.log("Adding ticket_identifier column...");
-    await client`
+    await pool.query(`
       ALTER TABLE "event_participants" ADD COLUMN IF NOT EXISTS "ticket_identifier" text UNIQUE;
-    `;
+    `);
     
     // Second migration: Add stripe_checkout_session_id column
     console.log("Adding stripe_checkout_session_id column...");
-    await client`
+    await pool.query(`
       ALTER TABLE "event_participants" ADD COLUMN IF NOT EXISTS "stripe_checkout_session_id" text;
-    `;
+    `);
 
     // Third migration: Create subscriptions table
     console.log("Creating subscriptions table...");
-    await client`
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS "subscriptions" (
         "id" SERIAL PRIMARY KEY,
         "user_id" INTEGER NOT NULL REFERENCES "users"("id"),
@@ -59,24 +63,26 @@ async function runSQLMigration() {
         "subscription_type" TEXT DEFAULT 'monthly',
         "price_id" TEXT
       );
-    `;
+    `);
     
     console.log("Migrations completed successfully!");
     
     // Verify the columns and table were added
-    const checkColumns = await client`
+    const checkColumnsResult = await pool.query(`
       SELECT column_name, data_type 
       FROM information_schema.columns 
       WHERE table_name = 'event_participants' 
       AND column_name IN ('stripe_checkout_session_id', 'ticket_identifier')
       ORDER BY column_name
-    `;
+    `);
+    const checkColumns = checkColumnsResult.rows;
 
-    const checkTable = await client`
+    const checkTableResult = await pool.query(`
       SELECT table_name
       FROM information_schema.tables
       WHERE table_name = 'subscriptions'
-    `;
+    `);
+    const checkTable = checkTableResult.rows;
     
     if (checkColumns.length > 0) {
       console.log("Columns verified! Details:");
@@ -93,7 +99,7 @@ async function runSQLMigration() {
   } catch (error) {
     console.error("Migration error:", error);
   } finally {
-    await client.end();
+    await pool.end();
   }
 }
 

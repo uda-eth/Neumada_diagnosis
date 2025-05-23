@@ -1,8 +1,5 @@
-import { Pool } from 'pg';
+// Import the pool from our central db/index.ts file
+import { pool } from '../../db/index';
 
-// Create a PostgreSQL connection pool that can be used by connect-pg-simple
-const pgPool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
-
-export default pgPool;
+// Export the pool to be used by connect-pg-simple
+export default pool;
