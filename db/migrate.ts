@@ -1,15 +1,18 @@
 
-import { drizzle } from "drizzle-orm/postgres-js";
-import { migrate } from "drizzle-orm/postgres-js/migrator";
-import postgres from "postgres";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
+import { Pool } from "pg";
 
 async function runMigration() {
   if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL environment variable is not set");
   }
 
-  const client = postgres(process.env.DATABASE_URL);
-  const db = drizzle(client);
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+  });
+  const db = drizzle(pool);
 
   console.log("Running migrations...");
   
@@ -20,7 +23,7 @@ async function runMigration() {
     console.error("Migration error:", error);
     throw error;
   } finally {
-    await client.end();
+    await pool.end();
   }
 }
 
