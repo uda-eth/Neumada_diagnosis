@@ -27,12 +27,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.db = void 0;
-var postgres_js_1 = require("drizzle-orm/postgres-js");
-var postgres_1 = __importDefault(require("postgres"));
+var node_postgres_1 = require("drizzle-orm/node-postgres");
+var pg_1 = require("pg");
 var schema = __importStar(require("@db/schema"));
 if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL must be set. Did you forget to provision a database?");
 }
-// Create postgres connection
-var client = (0, postgres_1.default)(process.env.DATABASE_URL);
-exports.db = (0, postgres_js_1.drizzle)(client, { schema: schema });
+// Create postgres connection pool
+var pool = new pg_1.Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+});
+exports.db = (0, node_postgres_1.drizzle)(pool, { schema: schema });
+exports.pool = pool;
