@@ -35,7 +35,9 @@ const registerSchema = z.object({
   location: z.string().optional(),
   interests: z.string().optional(), // Changed to vibe/mood filters in UI
   age: z.string().optional(),
-  profileImage: z.any().optional(), // For profile picture upload
+  profileImage: z.any().refine((file) => file && file.length > 0, {
+    message: "Profile picture is required",
+  }),
   termsAccepted: z.literal(true, {
     errorMap: () => ({ message: "You must accept the Terms and Conditions to register" }),
   }),
@@ -245,11 +247,14 @@ export default function AuthPage() {
         registrationData.append('interests', JSON.stringify(selectedMoods));
       }
       
-      // Add profile image if present
-      if (formData.profileImage) {
-        registrationData.append('profileImage', formData.profileImage);
-        console.log("Added profile image to form data:", formData.profileImage.name);
+      // CRITICAL: Validate profile image is present before submission
+      if (!formData.profileImage) {
+        throw new Error("Profile picture is required to complete registration");
       }
+      
+      // Add profile image
+      registrationData.append('profileImage', formData.profileImage);
+      console.log("Added profile image to form data:", formData.profileImage.name);
       
       // We're using fetch API with FormData for proper file handling
       try {
@@ -424,7 +429,12 @@ export default function AuthPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="profileImage">Profile Picture</Label>
+                  <Label htmlFor="profileImage">
+                    Profile Picture <span className="text-destructive">*</span>
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Upload a photo (required)
+                  </p>
                   {imagePreview && (
                     <div className="mb-2">
                       <img 
@@ -440,7 +450,13 @@ export default function AuthPage() {
                     accept="image/*"
                     onChange={handleImageChange}
                     className="cursor-pointer"
+                    required
                   />
+                  {!imagePreview && (
+                    <p className="text-sm text-destructive">
+                      Please upload a profile picture to continue
+                    </p>
+                  )}
                 </div>
               </>
             )}

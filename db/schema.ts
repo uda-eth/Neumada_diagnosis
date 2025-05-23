@@ -13,7 +13,7 @@ export const users = pgTable("users", {
   gender: text("gender"), // Added for gender filtering
   sexualOrientation: text("sexual_orientation"), // Added for orientation filtering
   bio: text("bio"),
-  profileImage: text("profile_image"), 
+  profileImage: text("profile_image").notNull(), 
   profileImages: jsonb("profile_images").$type<string[]>().default([]), 
   location: text("location"), // Current location
   birthLocation: text("birth_location"),

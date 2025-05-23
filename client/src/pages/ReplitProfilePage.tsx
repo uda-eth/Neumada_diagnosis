@@ -50,8 +50,10 @@ const profileSchema = z.object({
   location: z.string(),
   interests: z.array(z.string()).min(1, "Select at least one interest"),
   currentMoods: z.array(z.string()),
-  // Will be validated manually in onSubmit since we need to check imagePreview state
-  profileImage: z.any(),
+  // Profile image is required - validated both here and in onSubmit
+  profileImage: z.any().refine((val) => val !== undefined, {
+    message: "Profile picture is required",
+  }),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -326,7 +328,7 @@ export default function ReplitProfilePage() {
                         </FormDescription>
                         {form.formState.errors.profileImage && (
                           <FormMessage>
-                            {form.formState.errors.profileImage.message}
+                            {form.formState.errors.profileImage?.message}
                           </FormMessage>
                         )}
                       </div>
