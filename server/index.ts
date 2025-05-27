@@ -4,6 +4,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { createApp } from "./app";
 import path from 'path';
+import fs from 'fs';
 
 const app = express();
 app.use(express.json());
@@ -82,11 +83,18 @@ app.use((req, res, next) => {
       res.status(status).json({ message });
     });
 
-    // Setup Vite or static serving
+    // Setup Vite or static serving based on environment
     if (app.get("env") === "development") {
       await setupVite(app, httpServer);
     } else {
-      serveStatic(app);
+      const distPath = path.join(process.cwd(), 'dist', 'public');
+      // Check if build directory exists before serving static files
+      if (fs.existsSync(distPath)) {
+        serveStatic(app);
+      } else {
+        log('Warning: Build directory not found. Running in development mode.');
+        await setupVite(app, httpServer);
+      }
     }
 
     const startServer = async () => {
