@@ -14,41 +14,5 @@ run = ["npm", "run", "start"]
 localPort = 5000
 externalPort = 80
 
-[workflows]
-runButton = "Run"
-
-[[workflows.workflow]]
-name = "Project"
-mode = "parallel"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Start application"
-
-[[workflows.workflow]]
-name = "Start application"
-author = "agent"
-
-[workflows.workflow.metadata]
-agentRequireRestartOnSave = false
-
-[[workflows.workflow.tasks]]
-task = "packager.installForAll"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run dev"
-waitForPort = 5000
-
-[[workflows.workflow]]
-name = "Run"
-author = 808063
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run dev"
-
 [objectStorage]
 defaultBucketID = "replit-objstore-f945c3eb-851b-40c9-a101-b3bdbdc28497"

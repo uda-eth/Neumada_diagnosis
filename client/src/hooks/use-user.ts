@@ -33,27 +33,25 @@ async function handleRequest(
 
     if (!response.ok) {
       if (response.status >= 500) {
-        return { ok: false, message: response.statusText };
+        console.error(`Server error: ${response.statusText}`);
+        return { ok: false, message: 'Internal server error. Please try again later.' };
       }
       const message = await response.text();
+      console.error(`Request failed: ${message}`);
       return { ok: false, message };
     }
 
-    // For login and authentication endpoints, capture the session ID if returned
     if (url === '/api/login' || url === '/api/register' || url === '/api/auth/check') {
       try {
         const data = await response.json();
         
-        // If the response contains a sessionId, store it in localStorage
         if (data && data.sessionId) {
           console.log("Storing session ID from server response:", data.sessionId);
           localStorage.setItem('maly_session_id', data.sessionId);
         }
         
-        // Store user data if included in the response
         if (data && data.user) {
           localStorage.setItem('maly_user_data', JSON.stringify(data.user));
-          // Store userId separately for direct access
           if (data.user.id) {
             console.log("Storing user ID for auth:", data.user.id);
             localStorage.setItem('maly_user_id', data.user.id.toString());
@@ -63,44 +61,36 @@ async function handleRequest(
         return { ok: true };
       } catch (parseError) {
         console.warn("Error parsing JSON response:", parseError);
-        return { ok: true }; // Still succeed even if parsing fails
+        return { ok: true };
       }
     }
 
     return { ok: true };
   } catch (e: any) {
-    return { ok: false, message: e.toString() };
+    console.error('Network or fetch error:', e);
+    return { ok: false, message: 'Network error. Please check your connection and try again.' };
   }
 }
 
 export function useUser() {
   const queryClient = useQueryClient();
 
-  // Check if there's a session parameter in the URL
   const urlParams = new URLSearchParams(window.location.search);
   const sessionId = urlParams.get('sessionId');
   
-  // If we have a sessionId in the URL, clean it up by removing that parameter
-  // and store it in localStorage for persistence across webview issues
   if (sessionId) {
     console.log("Detected session parameter, storing in localStorage and refreshing user data");
-    
-    // Store the session in localStorage for persistence
     localStorage.setItem('maly_session_id', sessionId);
     
-    // Create a clean URL without the sessionId parameter
     const url = new URL(window.location.href);
     url.searchParams.delete('sessionId');
     url.searchParams.delete('ts');
     
-    // Replace the URL without reloading the page to remove sessionId from browser history
     window.history.replaceState({}, document.title, url.toString());
   }
 
-  // Retrieve stored session ID from localStorage if it exists
   const storedSessionId = localStorage.getItem('maly_session_id');
   
-  // Check for cached user data in localStorage
   const getCachedUser = (): UserResponse | null => {
     try {
       const cachedUserJson = localStorage.getItem('maly_user_data');
@@ -119,19 +109,14 @@ export function useUser() {
     queryFn: async () => {
       console.log("Fetching user data from server, sessionId present:", !!(sessionId || storedSessionId));
       
-      // Check for cached user data first to minimize API calls
       const cachedUser = getCachedUser();
       
-      // If we have a cached user and we're not forcing a refresh with sessionId, 
-      // use it without making an API call
       if (cachedUser && !sessionId && !window.location.pathname.startsWith('/auth')) {
         console.log("Using cached user data without verification");
-        // Only verify the cached user once every 5 minutes
         const lastVerified = localStorage.getItem('maly_user_verified_at');
         const now = Date.now();
         
         if (!lastVerified || now - parseInt(lastVerified, 10) > 5 * 60 * 1000) {
-          // Schedule verification in the background but don't wait for it
           setTimeout(async () => {
             try {
               const verifyResponse = await fetch('/api/verify-user', {
@@ -146,7 +131,6 @@ export function useUser() {
               if (verifyResponse.ok) {
                 localStorage.setItem('maly_user_verified_at', now.toString());
               } else {
-                // Only clear on explicit verification failure
                 queryClient.invalidateQueries({ queryKey: ['user'] });
               }
             } catch (error) {
@@ -158,17 +142,14 @@ export function useUser() {
         return cachedUser;
       }
       
-      // If we need to fetch, prepare headers
       const extraHeaders: Record<string, string> = {};
 
-      // Add user ID if available (primary auth method)
       const userId = localStorage.getItem('maly_user_id');
       if (userId) {
         console.log("Including user ID in auth check:", userId);
         extraHeaders['X-User-ID'] = userId;
       }
 
-      // Add session ID as fallback
       const malySessionId = localStorage.getItem('maly_session_id');
       if (malySessionId) {
         console.log("Including maly_session_id in auth check:", malySessionId.substring(0, 5) + '...');
@@ -178,7 +159,6 @@ export function useUser() {
         extraHeaders['X-Session-ID'] = storedSessionId;
       }
 
-      // Check auth status with the dedicated endpoint
       try {
         const authCheckResponse = await fetch('/api/auth/check', {
           credentials: 'include',
@@ -187,12 +167,11 @@ export function useUser() {
         
         if (!authCheckResponse.ok) {
           console.error("Auth check failed:", authCheckResponse.status);
-          return cachedUser || null;
+          throw new Error(`Auth check failed: ${authCheckResponse.status}`);
         }
         
         const authStatus = await authCheckResponse.json();
         
-        // If authenticated, use the user data
         if (authStatus.authenticated && authStatus.user) {
           console.log("User authenticated via auth check:", authStatus.user.username);
           localStorage.setItem('maly_user_data', JSON.stringify(authStatus.user));
@@ -200,7 +179,6 @@ export function useUser() {
           return authStatus.user;
         }
         
-        // If not authenticated via cookies, try stored session ID
         if (!authStatus.authenticated && storedSessionId) {
           console.log("Cookie auth failed, trying stored session ID");
           
@@ -222,9 +200,7 @@ export function useUser() {
           }
         }
         
-        // Not authenticated and no valid session
         if (cachedUser) {
-          // Clear cached data as server rejected authentication
           localStorage.removeItem('maly_user_data');
           localStorage.removeItem('maly_session_id');
           localStorage.removeItem('maly_user_verified_at');
@@ -233,15 +209,16 @@ export function useUser() {
         return null;
       } catch (error) {
         console.error("Auth check error:", error);
-        // On network errors, fall back to cached user data
-        return cachedUser || null;
+        if (cachedUser) {
+          return cachedUser;
+        }
+        throw error;
       }
     },
-    // Much more conservative refresh settings to reduce API calls
-    staleTime: 5 * 60 * 1000, // 5 minutes stale time
-    gcTime: 10 * 60 * 1000, // Keep data in cache for 10 minutes
-    refetchOnWindowFocus: false, 
-    refetchOnMount: false, // Only fetch when explicitly needed
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
     refetchOnReconnect: false,
     retry: 1,
     retryDelay: 2000,
@@ -252,7 +229,6 @@ export function useUser() {
     mutationFn: async (userData: any) => {
       const result = await handleRequest('/api/login', 'POST', userData);
       if (result.ok) {
-        // Force a refetch immediately after successful login
         await refetch();
       }
       return result;
@@ -266,7 +242,6 @@ export function useUser() {
     mutationFn: async (userData: any) => {
       const result = await handleRequest('/api/register', 'POST', userData);
       if (result.ok) {
-        // Force a refetch immediately after successful registration
         await refetch();
       }
       return result;
@@ -279,24 +254,19 @@ export function useUser() {
   const logout = useMutation({
     mutationFn: () => handleRequest('/api/logout', 'POST'),
     onSuccess: () => {
-      // Clear user data immediately
       queryClient.setQueryData(['user'], null);
       queryClient.invalidateQueries({ queryKey: ['user'] });
       
-      // Clear ALL localStorage cached data related to user session
       localStorage.removeItem('maly_user_data');
       localStorage.removeItem('maly_session_id');
       localStorage.removeItem('maly_user_id');
       localStorage.removeItem('maly_user_verified_at');
       localStorage.removeItem('sessionId');
-      
-      // Remove any other potential cached data
       localStorage.removeItem('connect.sid');
       localStorage.removeItem('maly_session');
       
       console.log("Cleared all cached user data on logout");
       
-      // Force a page reload to ensure a clean state
       window.location.href = '/auth';
     },
   });
@@ -306,14 +276,11 @@ export function useUser() {
     return `/chat/${userId}`;
   };
 
-  // Dedicated method to refresh user data and return the updated user
   const refreshUser = async (): Promise<UserResponse | null> => {
     try {
       console.log("Explicitly refreshing user data");
-      // Force invalidate the cache first
       queryClient.invalidateQueries({ queryKey: ['user'] });
       
-      // Then explicitly refetch
       const { data } = await refetch();
       console.log("User data refreshed successfully:", data);
       
@@ -324,12 +291,10 @@ export function useUser() {
     }
   };
   
-  // Immediately refresh user data if we have a sessionId in the URL
   if (sessionId) {
     refreshUser();
   }
 
-  // Add profile update mutation
   const updateProfile = useMutation({
     mutationFn: async (profileData: any) => {
       const response = await fetch('/api/profile', {
@@ -344,10 +309,8 @@ export function useUser() {
         throw new Error(`Failed to update profile: ${errorText}`);
       }
       
-      // Parse the updated user response
       const updatedUser = await response.json();
       
-      // Update localStorage cache with the fresh user data
       if (updatedUser) {
         localStorage.setItem('maly_user_data', JSON.stringify(updatedUser));
       }
@@ -355,12 +318,9 @@ export function useUser() {
       return { ok: true, user: updatedUser };
     },
     onSuccess: (data) => {
-      // Update the React Query cache with our updated user
       if (data.user) {
         queryClient.setQueryData(['user'], data.user);
       }
-      
-      // Then invalidate to make sure any components using the data are refreshed
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
   });
