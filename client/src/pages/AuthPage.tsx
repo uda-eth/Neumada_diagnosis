@@ -655,7 +655,7 @@ export default function AuthPage() {
             <Button 
               type="submit" 
               className="w-full" 
-              disabled={isSubmitting || (!isLogin && (!termsAccepted || !privacyAccepted))}
+              disabled={isSubmitting || (!isLogin && (!termsAccepted || !privacyAccepted || !formData.profileImage))}
             >
               {isSubmitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
