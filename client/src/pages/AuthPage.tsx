@@ -35,7 +35,7 @@ const registerSchema = z.object({
   location: z.string().optional(),
   interests: z.string().optional(), // Changed to vibe/mood filters in UI
   age: z.string().optional(),
-  profileImage: z.any().refine((file) => file && file.length > 0, {
+  profileImage: z.any().refine((file) => file instanceof File, {
     message: "Profile picture is required",
   }),
   termsAccepted: z.literal(true, {
