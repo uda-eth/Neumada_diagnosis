@@ -12,6 +12,9 @@ export async function createApp() {
   
   // Serve assets directory for social media sharing images
   app.use('/assets', express.static(path.join(process.cwd(), 'client', 'src', 'assets')));
+  
+  // Serve attached_assets directory for event images
+  app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
 
   // Add CORS headers for development
   app.use((req, res, next) => {
